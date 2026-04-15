@@ -1,0 +1,153 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "G:\\My Drive\\Alejo\\Ingenieria en Sistemas Informatico\\3 year\\1er Cuatrimestre\\Ingenieria de Software\\Trabajo Integrador\\tp_integrador\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{818F80C5-8C03-4051-AE10-8D2FAD71C6E5}|PRESENTATION\\PRESENTATION.csproj|g:\\my drive\\alejo\\ingenieria en sistemas informatico\\3 year\\1er cuatrimestre\\ingenieria de software\\trabajo integrador\\tp_integrador\\presentation\\forms\\auth\\frmcuenta.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{818F80C5-8C03-4051-AE10-8D2FAD71C6E5}|PRESENTATION\\PRESENTATION.csproj|solutionrelative:presentation\\forms\\auth\\frmcuenta.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{818F80C5-8C03-4051-AE10-8D2FAD71C6E5}|PRESENTATION\\PRESENTATION.csproj|g:\\my drive\\alejo\\ingenieria en sistemas informatico\\3 year\\1er cuatrimestre\\ingenieria de software\\trabajo integrador\\tp_integrador\\presentation\\forms\\auth\\frmcuenta.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{818F80C5-8C03-4051-AE10-8D2FAD71C6E5}|PRESENTATION\\PRESENTATION.csproj|solutionrelative:presentation\\forms\\auth\\frmcuenta.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{40FC3C2B-71E8-4986-B0A6-3427F4B8CC06}|APPLICATION\\APPLICATION.csproj|g:\\my drive\\alejo\\ingenieria en sistemas informatico\\3 year\\1er cuatrimestre\\ingenieria de software\\trabajo integrador\\tp_integrador\\application\\interfaces\\isesionusuario.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{40FC3C2B-71E8-4986-B0A6-3427F4B8CC06}|APPLICATION\\APPLICATION.csproj|solutionrelative:application\\interfaces\\isesionusuario.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9B788825-FA09-4599-BC05-7398E2D145ED}|CROSSCUTTING\\CROSSCUTTING.csproj|g:\\my drive\\alejo\\ingenieria en sistemas informatico\\3 year\\1er cuatrimestre\\ingenieria de software\\trabajo integrador\\tp_integrador\\crosscutting\\auth\\sessionmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9B788825-FA09-4599-BC05-7398E2D145ED}|CROSSCUTTING\\CROSSCUTTING.csproj|solutionrelative:crosscutting\\auth\\sessionmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{818F80C5-8C03-4051-AE10-8D2FAD71C6E5}|PRESENTATION\\PRESENTATION.csproj|g:\\my drive\\alejo\\ingenieria en sistemas informatico\\3 year\\1er cuatrimestre\\ingenieria de software\\trabajo integrador\\tp_integrador\\presentation\\forms\\frmprincipal.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{818F80C5-8C03-4051-AE10-8D2FAD71C6E5}|PRESENTATION\\PRESENTATION.csproj|solutionrelative:presentation\\forms\\frmprincipal.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{818F80C5-8C03-4051-AE10-8D2FAD71C6E5}|PRESENTATION\\PRESENTATION.csproj|g:\\my drive\\alejo\\ingenieria en sistemas informatico\\3 year\\1er cuatrimestre\\ingenieria de software\\trabajo integrador\\tp_integrador\\presentation\\forms\\frmprincipal.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{818F80C5-8C03-4051-AE10-8D2FAD71C6E5}|PRESENTATION\\PRESENTATION.csproj|solutionrelative:presentation\\forms\\frmprincipal.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{818F80C5-8C03-4051-AE10-8D2FAD71C6E5}|PRESENTATION\\PRESENTATION.csproj|g:\\my drive\\alejo\\ingenieria en sistemas informatico\\3 year\\1er cuatrimestre\\ingenieria de software\\trabajo integrador\\tp_integrador\\presentation\\forms\\auth\\frmlogin.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{818F80C5-8C03-4051-AE10-8D2FAD71C6E5}|PRESENTATION\\PRESENTATION.csproj|solutionrelative:presentation\\forms\\auth\\frmlogin.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{818F80C5-8C03-4051-AE10-8D2FAD71C6E5}|PRESENTATION\\PRESENTATION.csproj|g:\\my drive\\alejo\\ingenieria en sistemas informatico\\3 year\\1er cuatrimestre\\ingenieria de software\\trabajo integrador\\tp_integrador\\presentation\\forms\\auth\\frmlogin.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{818F80C5-8C03-4051-AE10-8D2FAD71C6E5}|PRESENTATION\\PRESENTATION.csproj|solutionrelative:presentation\\forms\\auth\\frmlogin.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 3,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "ISesionUsuario.cs",
+              "DocumentMoniker": "G:\\My Drive\\Alejo\\Ingenieria en Sistemas Informatico\\3 year\\1er Cuatrimestre\\Ingenieria de Software\\Trabajo Integrador\\tp_integrador\\APPLICATION\\Interfaces\\ISesionUsuario.cs",
+              "RelativeDocumentMoniker": "APPLICATION\\Interfaces\\ISesionUsuario.cs",
+              "ToolTip": "G:\\My Drive\\Alejo\\Ingenieria en Sistemas Informatico\\3 year\\1er Cuatrimestre\\Ingenieria de Software\\Trabajo Integrador\\tp_integrador\\APPLICATION\\Interfaces\\ISesionUsuario.cs",
+              "RelativeToolTip": "APPLICATION\\Interfaces\\ISesionUsuario.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAqwBEAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-15T06:27:54.868Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "SessionManager.cs",
+              "DocumentMoniker": "G:\\My Drive\\Alejo\\Ingenieria en Sistemas Informatico\\3 year\\1er Cuatrimestre\\Ingenieria de Software\\Trabajo Integrador\\tp_integrador\\CROSSCUTTING\\Auth\\SessionManager.cs",
+              "RelativeDocumentMoniker": "CROSSCUTTING\\Auth\\SessionManager.cs",
+              "ToolTip": "G:\\My Drive\\Alejo\\Ingenieria en Sistemas Informatico\\3 year\\1er Cuatrimestre\\Ingenieria de Software\\Trabajo Integrador\\tp_integrador\\CROSSCUTTING\\Auth\\SessionManager.cs",
+              "RelativeToolTip": "CROSSCUTTING\\Auth\\SessionManager.cs",
+              "ViewState": "AgIAAC0AAAAAAAAAAAAmwAoAAAAwAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-15T06:21:23.451Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "FrmCuenta.cs",
+              "DocumentMoniker": "G:\\My Drive\\Alejo\\Ingenieria en Sistemas Informatico\\3 year\\1er Cuatrimestre\\Ingenieria de Software\\Trabajo Integrador\\tp_integrador\\PRESENTATION\\Forms\\Auth\\FrmCuenta.cs",
+              "RelativeDocumentMoniker": "PRESENTATION\\Forms\\Auth\\FrmCuenta.cs",
+              "ToolTip": "G:\\My Drive\\Alejo\\Ingenieria en Sistemas Informatico\\3 year\\1er Cuatrimestre\\Ingenieria de Software\\Trabajo Integrador\\tp_integrador\\PRESENTATION\\Forms\\Auth\\FrmCuenta.cs",
+              "RelativeToolTip": "PRESENTATION\\Forms\\Auth\\FrmCuenta.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABoAAABCAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-15T06:05:14.521Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "FrmCuenta.cs [Design]",
+              "DocumentMoniker": "G:\\My Drive\\Alejo\\Ingenieria en Sistemas Informatico\\3 year\\1er Cuatrimestre\\Ingenieria de Software\\Trabajo Integrador\\tp_integrador\\PRESENTATION\\Forms\\Auth\\FrmCuenta.cs",
+              "RelativeDocumentMoniker": "PRESENTATION\\Forms\\Auth\\FrmCuenta.cs",
+              "ToolTip": "G:\\My Drive\\Alejo\\Ingenieria en Sistemas Informatico\\3 year\\1er Cuatrimestre\\Ingenieria de Software\\Trabajo Integrador\\tp_integrador\\PRESENTATION\\Forms\\Auth\\FrmCuenta.cs [Design]",
+              "RelativeToolTip": "PRESENTATION\\Forms\\Auth\\FrmCuenta.cs [Design]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-15T06:01:59.573Z",
+              "EditorCaption": " [Design]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "FrmPrincipal.cs [Design]",
+              "DocumentMoniker": "G:\\My Drive\\Alejo\\Ingenieria en Sistemas Informatico\\3 year\\1er Cuatrimestre\\Ingenieria de Software\\Trabajo Integrador\\tp_integrador\\PRESENTATION\\Forms\\FrmPrincipal.cs",
+              "RelativeDocumentMoniker": "PRESENTATION\\Forms\\FrmPrincipal.cs",
+              "ToolTip": "G:\\My Drive\\Alejo\\Ingenieria en Sistemas Informatico\\3 year\\1er Cuatrimestre\\Ingenieria de Software\\Trabajo Integrador\\tp_integrador\\PRESENTATION\\Forms\\FrmPrincipal.cs [Design]",
+              "RelativeToolTip": "PRESENTATION\\Forms\\FrmPrincipal.cs [Design]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-15T06:01:36.816Z",
+              "EditorCaption": " [Design]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "FrmLogin.cs",
+              "DocumentMoniker": "G:\\My Drive\\Alejo\\Ingenieria en Sistemas Informatico\\3 year\\1er Cuatrimestre\\Ingenieria de Software\\Trabajo Integrador\\tp_integrador\\PRESENTATION\\Forms\\Auth\\FrmLogin.cs",
+              "RelativeDocumentMoniker": "PRESENTATION\\Forms\\Auth\\FrmLogin.cs",
+              "ToolTip": "G:\\My Drive\\Alejo\\Ingenieria en Sistemas Informatico\\3 year\\1er Cuatrimestre\\Ingenieria de Software\\Trabajo Integrador\\tp_integrador\\PRESENTATION\\Forms\\Auth\\FrmLogin.cs",
+              "RelativeToolTip": "PRESENTATION\\Forms\\Auth\\FrmLogin.cs",
+              "ViewState": "AgIAAA8AAAAAAAAAAAArwCMAAAAQAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-15T05:50:44.789Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "FrmLogin.cs [Design]",
+              "DocumentMoniker": "G:\\My Drive\\Alejo\\Ingenieria en Sistemas Informatico\\3 year\\1er Cuatrimestre\\Ingenieria de Software\\Trabajo Integrador\\tp_integrador\\PRESENTATION\\Forms\\Auth\\FrmLogin.cs",
+              "RelativeDocumentMoniker": "PRESENTATION\\Forms\\Auth\\FrmLogin.cs",
+              "ToolTip": "G:\\My Drive\\Alejo\\Ingenieria en Sistemas Informatico\\3 year\\1er Cuatrimestre\\Ingenieria de Software\\Trabajo Integrador\\tp_integrador\\PRESENTATION\\Forms\\Auth\\FrmLogin.cs [Design]",
+              "RelativeToolTip": "PRESENTATION\\Forms\\Auth\\FrmLogin.cs [Design]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-15T05:48:08.681Z",
+              "EditorCaption": " [Design]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "FrmPrincipal.cs",
+              "DocumentMoniker": "G:\\My Drive\\Alejo\\Ingenieria en Sistemas Informatico\\3 year\\1er Cuatrimestre\\Ingenieria de Software\\Trabajo Integrador\\tp_integrador\\PRESENTATION\\Forms\\FrmPrincipal.cs",
+              "RelativeDocumentMoniker": "PRESENTATION\\Forms\\FrmPrincipal.cs",
+              "ToolTip": "G:\\My Drive\\Alejo\\Ingenieria en Sistemas Informatico\\3 year\\1er Cuatrimestre\\Ingenieria de Software\\Trabajo Integrador\\tp_integrador\\PRESENTATION\\Forms\\FrmPrincipal.cs",
+              "RelativeToolTip": "PRESENTATION\\Forms\\FrmPrincipal.cs",
+              "ViewState": "AgIAAF0AAAAAAAAAAAArwGsAAAAvAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-15T05:34:34.739Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
