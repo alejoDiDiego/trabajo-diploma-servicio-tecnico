@@ -41,10 +41,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Class1.cs" />
     <Compile Include="Features\Usuarios\DTOs\UsuarioDTO.cs" />
     <Compile Include="Features\Usuarios\Interfaces\IUsuarioRepository.cs" />
     <Compile Include="Features\Usuarios\UsuarioService.cs" />
+    <Compile Include="Interfaces\IEncryptionService.cs" />
+    <Compile Include="Interfaces\IPasswordHasher.cs" />
     <Compile Include="Interfaces\ISesionUsuario.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

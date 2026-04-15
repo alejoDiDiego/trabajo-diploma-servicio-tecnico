@@ -1,5 +1,6 @@
 ﻿using APPLICATION.Features.Usuarios.DTOs;
 using APPLICATION.Interfaces;
+using CROSSCUTTING.Security;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,8 +16,12 @@ namespace CROSSCUTTING.Auth
         public DateTime FechaInicio { get; private set; }
 
         private static object _lock = new object();
+        private readonly IPasswordHasher _passwordHasher;
 
-        private SessionManager() { }
+        private SessionManager()
+        {
+            _passwordHasher = new PasswordHasher();
+        }
 
         public static SessionManager GetInstance()
         {
@@ -37,7 +42,12 @@ namespace CROSSCUTTING.Auth
                 if(_usuarioActual != null)
                     throw new Exception("La sesión ya está iniciada.");
 
-                _usuarioActual = usuario;
+                _usuarioActual = new UsuarioDTO
+                {
+                    Id = usuario.Id,
+                    Username = usuario.Username,
+                    Password = _passwordHasher.HashPassword(usuario.Password)
+                };
                 FechaInicio = DateTime.Now;
             }
         }
@@ -57,7 +67,15 @@ namespace CROSSCUTTING.Auth
         {
             lock (_lock)
             {
-                return _usuarioActual;
+                if (_usuarioActual == null)
+                    return null;
+
+                return new UsuarioDTO
+                {
+                    Id = _usuarioActual.Id,
+                    Username = _usuarioActual.Username,
+                    Password = _usuarioActual.Password
+                };
             }
         }
 
