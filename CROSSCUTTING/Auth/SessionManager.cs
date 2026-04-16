@@ -41,6 +41,7 @@ namespace CROSSCUTTING.Auth
             {
                 if(_usuarioActual != null)
                     throw new Exception("La sesión ya está iniciada.");
+                
 
                 _usuarioActual = new UsuarioDTO
                 {

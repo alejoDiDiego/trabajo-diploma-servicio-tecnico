@@ -6,62 +6,41 @@ namespace CROSSCUTTING.Security
 {
     public class PasswordHasher : IPasswordHasher
     {
-        private const int SaltSize = 16;
-        private const int KeySize = 32;
+        private const int SaltSize = 16; // 128 bit
+        private const int KeySize = 32;  // 256 bit
         private const int Iterations = 10000;
+        private static readonly HashAlgorithmName _hashAlgorithm = HashAlgorithmName.SHA256;
 
         public string HashPassword(string password)
         {
-            if (password == null)
-                return null;
+            if (string.IsNullOrEmpty(password)) return null;
 
-            var salt = new byte[SaltSize];
-            using (var rng = RandomNumberGenerator.Create())
-            {
-                rng.GetBytes(salt);
-            }
+            byte[] salt = RandomNumberGenerator.GetBytes(SaltSize);
+            byte[] hash = Rfc2898DeriveBytes.Pbkdf2(password, salt, Iterations, _hashAlgorithm, KeySize);
 
-            using (var deriveBytes = new Rfc2898DeriveBytes(password, salt, Iterations))
-            {
-                var key = deriveBytes.GetBytes(KeySize);
-                var payload = new byte[SaltSize + KeySize];
-                Buffer.BlockCopy(salt, 0, payload, 0, SaltSize);
-                Buffer.BlockCopy(key, 0, payload, SaltSize, KeySize);
-                return Convert.ToBase64String(payload);
-            }
+            // Creamos el payload con la cantidad de bytes necesarios
+            byte[] payload = new byte[SaltSize + KeySize];
+            // Combinamos Salt + Hash en un solo arreglo para poder recuperarlos luego
+            Buffer.BlockCopy(salt, 0, payload, 0, SaltSize);
+            Buffer.BlockCopy(hash, 0, payload, SaltSize, KeySize);
+
+            return Convert.ToBase64String(payload);
         }
 
         public bool VerifyHashedPassword(string hashedPassword, string password)
         {
-            if (hashedPassword == null || password == null)
-                return false;
+            byte[] payload = Convert.FromBase64String(hashedPassword);
 
-            var payload = Convert.FromBase64String(hashedPassword);
-            if (payload.Length != SaltSize + KeySize)
-                return false;
+            // Toma los primeros (SaltSize) 
+            byte[] salt = payload.Take(SaltSize).ToArray();
 
-            var salt = new byte[SaltSize];
-            var storedKey = new byte[KeySize];
-            Buffer.BlockCopy(payload, 0, salt, 0, SaltSize);
-            Buffer.BlockCopy(payload, SaltSize, storedKey, 0, KeySize);
+            // Saltea (SaltSize) y lo que queda es la llave
+            byte[] storedKey = payload.Skip(SaltSize).ToArray();
 
-            using (var deriveBytes = new Rfc2898DeriveBytes(password, salt, Iterations))
-            {
-                var key = deriveBytes.GetBytes(KeySize);
-                return FixedTimeEquals(storedKey, key);
-            }
+            byte[] generatedKey = Rfc2898DeriveBytes.Pbkdf2(password, salt, Iterations, _hashAlgorithm, KeySize);
+
+            return CryptographicOperations.FixedTimeEquals(storedKey, generatedKey);
         }
 
-        private static bool FixedTimeEquals(byte[] left, byte[] right)
-        {
-            if (left == null || right == null || left.Length != right.Length)
-                return false;
-
-            var result = 0;
-            for (int i = 0; i < left.Length; i++)
-                result |= left[i] ^ right[i];
-
-            return result == 0;
-        }
     }
 }
