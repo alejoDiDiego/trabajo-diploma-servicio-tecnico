@@ -11,6 +11,7 @@ using System.Windows.Forms;
 using CROSSCUTTING.Configuration;
 using APPLICATION.Interfaces;
 using APPLICATION.Features.Usuarios.DTOs;
+using APPLICATION.Features.Usuarios;
 
 namespace PRESENTATION.Forms.Auth
 {

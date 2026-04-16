@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Features\Usuarios\DTOs\UsuarioDTO.cs" />
+    <Compile Include="Features\Usuarios\DTOs\UsuarioLoginDTO.cs" />
     <Compile Include="Features\Usuarios\Interfaces\IUsuarioRepository.cs" />
     <Compile Include="Features\Usuarios\UsuarioService.cs" />
     <Compile Include="Interfaces\IEncryptionService.cs" />
@@ -51,6 +52,12 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Features\Usuarios\Exceptions\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DOMAIN\DOMAIN.csproj">
+      <Project>{c5bd7b6a-7483-4782-bd1d-9237575e7bea}</Project>
+      <Name>DOMAIN</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

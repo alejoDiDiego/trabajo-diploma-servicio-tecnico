@@ -4,30 +4,50 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using APPLICATION.Features.Usuarios.DTOs;
+using APPLICATION.Features.Usuarios.Interfaces;
 using APPLICATION.Interfaces;
+using DOMAIN.Features.Usuarios;
 
 namespace APPLICATION.Features.Usuarios
 {
     public class UsuarioService
     {
         IPasswordHasher _passwordHasher;
+        IUsuarioRepository _usuarioRepository;
 
-        public class UsuarioService(IPasswordHasher _passwordHasher)
+        public UsuarioService(IPasswordHasher _passwordHasher, IUsuarioRepository _usuarioRepository)
         {
-            _passwordHasher = _passwordHasher;
+            this._passwordHasher = _passwordHasher;
+            this._usuarioRepository = _usuarioRepository;
         }
 
-        public bool Login(string username, string password)
+        public UsuarioDTO Login(UsuarioLoginDTO uDTO)
         {
-            /**Todo Implementar repository */
-            UsuarioDTO usuario = new UsuarioDTO
+            try
             {
-                Id = 1,
-                Username = username,
-                Password = password
-            };
+                Usuario usuarioForm = Usuario.CrearNuevo(
+                uDTO.Username,
+                uDTO.Password
+            );
 
-            return _passwordHasher.VerifyHashedPassword(usuario.Password, password);
+                Usuario usuarioDb = _usuarioRepository.ObtenerPorUsername(usuarioForm.Username);
+
+                bool passwordMatch = _passwordHasher.VerifyHashedPassword(usuarioDb.Password, usuarioForm.Password);
+
+                if (passwordMatch == false)
+                    throw new Exception("Usuario o Constraseña incorrectos");
+
+                return new UsuarioDTO
+                {
+                    Id = usuarioDb.Id,
+                    Username = usuarioDb.Username,
+                    Password = usuarioDb.Password
+                };
+            }
+            catch (Exception ex)
+            {
+
+            }
         }
 
         public UsuarioDTO Create(string username, string password)
@@ -42,6 +62,11 @@ namespace APPLICATION.Features.Usuarios
 
             /**Todo Implementar repository */
             return usuario;
+        }
+
+        public List<UsuarioDTO> Listar()
+        {
+            return new List<UsuarioDTO>();
         }
     }
 }

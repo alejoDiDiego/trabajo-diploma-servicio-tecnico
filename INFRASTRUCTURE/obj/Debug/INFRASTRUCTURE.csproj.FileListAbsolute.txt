@@ -9,3 +9,14 @@ G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ing
 G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\tp_integrador\INFRASTRUCTURE\obj\Debug\INFRASTR.551204E1.Up2Date
 G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\tp_integrador\INFRASTRUCTURE\obj\Debug\INFRASTRUCTURE.dll
 G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\tp_integrador\INFRASTRUCTURE\obj\Debug\INFRASTRUCTURE.pdb
+D:\Documents\proyectointegrador_is_uai\INFRASTRUCTURE\bin\Debug\INFRASTRUCTURE.dll
+D:\Documents\proyectointegrador_is_uai\INFRASTRUCTURE\bin\Debug\INFRASTRUCTURE.pdb
+D:\Documents\proyectointegrador_is_uai\INFRASTRUCTURE\bin\Debug\APPLICATION.dll
+D:\Documents\proyectointegrador_is_uai\INFRASTRUCTURE\bin\Debug\DOMAIN.dll
+D:\Documents\proyectointegrador_is_uai\INFRASTRUCTURE\bin\Debug\APPLICATION.pdb
+D:\Documents\proyectointegrador_is_uai\INFRASTRUCTURE\bin\Debug\DOMAIN.pdb
+D:\Documents\proyectointegrador_is_uai\INFRASTRUCTURE\obj\Debug\INFRASTRUCTURE.csproj.AssemblyReference.cache
+D:\Documents\proyectointegrador_is_uai\INFRASTRUCTURE\obj\Debug\INFRASTRUCTURE.csproj.CoreCompileInputs.cache
+D:\Documents\proyectointegrador_is_uai\INFRASTRUCTURE\obj\Debug\INFRASTR.551204E1.Up2Date
+D:\Documents\proyectointegrador_is_uai\INFRASTRUCTURE\obj\Debug\INFRASTRUCTURE.dll
+D:\Documents\proyectointegrador_is_uai\INFRASTRUCTURE\obj\Debug\INFRASTRUCTURE.pdb
