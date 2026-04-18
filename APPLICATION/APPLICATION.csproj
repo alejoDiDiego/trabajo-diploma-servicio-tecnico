@@ -43,6 +43,7 @@
   <ItemGroup>
     <Compile Include="Features\Usuarios\DTOs\UsuarioDTO.cs" />
     <Compile Include="Features\Usuarios\DTOs\UsuarioLoginDTO.cs" />
+    <Compile Include="Features\Usuarios\Exceptions\DatosUsuarioIncorrectosException.cs" />
     <Compile Include="Features\Usuarios\Interfaces\IUsuarioRepository.cs" />
     <Compile Include="Features\Usuarios\UsuarioService.cs" />
     <Compile Include="Interfaces\IEncryptionService.cs" />
@@ -50,9 +51,7 @@
     <Compile Include="Interfaces\ISesionUsuario.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Features\Usuarios\Exceptions\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\DOMAIN\DOMAIN.csproj">
       <Project>{c5bd7b6a-7483-4782-bd1d-9237575e7bea}</Project>

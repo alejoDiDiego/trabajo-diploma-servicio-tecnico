@@ -1,6 +1,7 @@
 ﻿using APPLICATION.Features.Usuarios.DTOs;
 using APPLICATION.Features.Usuarios.Interfaces;
 using DOMAIN.Features.Usuarios;
+using DOMAIN.Features.Usuarios.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -23,7 +24,7 @@ namespace INFRASTRUCTURE.Features.Usuarios
         public Usuario Agregar(Usuario u)
         {
             string query = @"
-                INSERT INTO Usuario (username, password) VALUES (@Username, @Password);
+                INSERT INTO Usuarios (username, password) VALUES (@Username, @Password);
             ";
 
             SqlParameter[] sqlParameters = new SqlParameter[]
@@ -32,13 +33,20 @@ namespace INFRASTRUCTURE.Features.Usuarios
                 new SqlParameter("@Password", u.Password)
             };
 
-            int id = _db.ExecuteScalar(query, sqlParameters);
+            try
+            {
+                int id = _db.ExecuteScalar(query, sqlParameters);
 
-            return Usuario.CargarDesdeDB(
-                id,
-                u.Username,
-                u.Password
-             );
+                return Usuario.CargarDesdeDB(
+                    id,
+                    u.Username,
+                    u.Password
+                 );
+            }
+            catch (SqlException ex) when (ex.Number == 2601 || ex.Number == 2627)
+            {
+                throw new UsuarioYaExisteException();
+            }
         }
 
         public void Eliminar(int id)

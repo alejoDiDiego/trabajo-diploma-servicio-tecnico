@@ -33,14 +33,11 @@
             this.menuToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.sesiónToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.iniciarSesionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.crearCuentaToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.statusStrip = new System.Windows.Forms.StatusStrip();
-            this.toolStripStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
-            this.toolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.verCuentaToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.administrarCuentasToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.cerrarSesionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.crearCuentaToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolTip = new System.Windows.Forms.ToolTip(this.components);
             this.menuStrip.SuspendLayout();
-            this.statusStrip.SuspendLayout();
             this.SuspendLayout();
             // 
             // menuStrip
@@ -65,7 +62,7 @@
             // 
             this.sesiónToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.iniciarSesionToolStripMenuItem,
-            this.verCuentaToolStripMenuItem,
+            this.administrarCuentasToolStripMenuItem,
             this.cerrarSesionToolStripMenuItem,
             this.crearCuentaToolStripMenuItem});
             this.sesiónToolStripMenuItem.Name = "sesiónToolStripMenuItem";
@@ -75,52 +72,35 @@
             // iniciarSesionToolStripMenuItem
             // 
             this.iniciarSesionToolStripMenuItem.Name = "iniciarSesionToolStripMenuItem";
-            this.iniciarSesionToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.iniciarSesionToolStripMenuItem.Size = new System.Drawing.Size(182, 22);
             this.iniciarSesionToolStripMenuItem.Text = "Iniciar Sesión";
             this.iniciarSesionToolStripMenuItem.Click += new System.EventHandler(this.iniciarSesionToolStripMenuItem_Click);
             // 
-            // crearCuentaToolStripMenuItem
+            // administrarCuentasToolStripMenuItem
             // 
-            this.crearCuentaToolStripMenuItem.Name = "crearCuentaToolStripMenuItem";
-            this.crearCuentaToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.crearCuentaToolStripMenuItem.Text = "Crear Cuenta";
-            // 
-            // statusStrip
-            // 
-            this.statusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripStatusLabel});
-            this.statusStrip.Location = new System.Drawing.Point(0, 431);
-            this.statusStrip.Name = "statusStrip";
-            this.statusStrip.Size = new System.Drawing.Size(632, 22);
-            this.statusStrip.TabIndex = 2;
-            this.statusStrip.Text = "StatusStrip";
-            // 
-            // toolStripStatusLabel
-            // 
-            this.toolStripStatusLabel.Name = "toolStripStatusLabel";
-            this.toolStripStatusLabel.Size = new System.Drawing.Size(39, 17);
-            this.toolStripStatusLabel.Text = "Status";
-            // 
-            // verCuentaToolStripMenuItem
-            // 
-            this.verCuentaToolStripMenuItem.Name = "verCuentaToolStripMenuItem";
-            this.verCuentaToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.verCuentaToolStripMenuItem.Text = "Ver Cuenta";
-            this.verCuentaToolStripMenuItem.Click += new System.EventHandler(this.verCuentaToolStripMenuItem_Click);
+            this.administrarCuentasToolStripMenuItem.Name = "administrarCuentasToolStripMenuItem";
+            this.administrarCuentasToolStripMenuItem.Size = new System.Drawing.Size(182, 22);
+            this.administrarCuentasToolStripMenuItem.Text = "Administrar Cuentas";
+            this.administrarCuentasToolStripMenuItem.Click += new System.EventHandler(this.administrarCuentasToolStripMenuItem_Click);
             // 
             // cerrarSesionToolStripMenuItem
             // 
             this.cerrarSesionToolStripMenuItem.Name = "cerrarSesionToolStripMenuItem";
-            this.cerrarSesionToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.cerrarSesionToolStripMenuItem.Size = new System.Drawing.Size(182, 22);
             this.cerrarSesionToolStripMenuItem.Text = "Cerrar Sesión";
             this.cerrarSesionToolStripMenuItem.Click += new System.EventHandler(this.cerrarSesionToolStripMenuItem_Click);
+            // 
+            // crearCuentaToolStripMenuItem
+            // 
+            this.crearCuentaToolStripMenuItem.Name = "crearCuentaToolStripMenuItem";
+            this.crearCuentaToolStripMenuItem.Size = new System.Drawing.Size(182, 22);
+            this.crearCuentaToolStripMenuItem.Text = "Crear Cuenta";
             // 
             // FrmPrincipal
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(632, 453);
-            this.Controls.Add(this.statusStrip);
             this.Controls.Add(this.menuStrip);
             this.IsMdiContainer = true;
             this.MainMenuStrip = this.menuStrip;
@@ -129,8 +109,6 @@
             this.Load += new System.EventHandler(this.FrmPrincipal_Load);
             this.menuStrip.ResumeLayout(false);
             this.menuStrip.PerformLayout();
-            this.statusStrip.ResumeLayout(false);
-            this.statusStrip.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -139,14 +117,12 @@
 
 
         private System.Windows.Forms.MenuStrip menuStrip;
-        private System.Windows.Forms.StatusStrip statusStrip;
-        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel;
         private System.Windows.Forms.ToolTip toolTip;
         private System.Windows.Forms.ToolStripMenuItem menuToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem sesiónToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem iniciarSesionToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem crearCuentaToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem verCuentaToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem administrarCuentasToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem cerrarSesionToolStripMenuItem;
     }
 }

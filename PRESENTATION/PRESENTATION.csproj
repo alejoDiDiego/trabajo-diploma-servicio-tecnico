@@ -46,11 +46,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Forms\Auth\FrmCuenta.cs">
+    <Compile Include="Forms\Auth\FrmAdministrarUsuarios.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\Auth\FrmCuenta.Designer.cs">
-      <DependentUpon>FrmCuenta.cs</DependentUpon>
+    <Compile Include="Forms\Auth\FrmAdministrarUsuarios.Designer.cs">
+      <DependentUpon>FrmAdministrarUsuarios.cs</DependentUpon>
     </Compile>
     <Compile Include="Forms\Auth\FrmLogin.cs">
       <SubType>Form</SubType>
@@ -66,8 +66,8 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="Forms\Auth\FrmCuenta.resx">
-      <DependentUpon>FrmCuenta.cs</DependentUpon>
+    <EmbeddedResource Include="Forms\Auth\FrmAdministrarUsuarios.resx">
+      <DependentUpon>FrmAdministrarUsuarios.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\Auth\FrmLogin.resx">
       <DependentUpon>FrmLogin.cs</DependentUpon>

@@ -21,6 +21,8 @@ namespace PRESENTATION.Forms.Auth
         public FrmLogin()
         {
             InitializeComponent();
+
+
         }
 
         private void BTN_Volver_Click(object sender, EventArgs e)
@@ -30,20 +32,35 @@ namespace PRESENTATION.Forms.Auth
 
         private void BTN_IniciarSesion_Click(object sender, EventArgs e)
         {
+            //UsuarioService usuarioService = InicializadorAplicacion.CrearUsuarioService();
+
+            //UsuarioLoginDTO usuarioForm = new UsuarioLoginDTO
+            //{
+            //    Username = "Admin",
+            //    Password = "123"
+            //};
+            //UsuarioDTO usuarioLogin = usuarioService.Create(usuarioForm);
+
+            //return;
+
             try
             {
                 ISesionUsuario sesion = InicializadorAplicacion.ObtenerSesion();
+                UsuarioService usuarioService = InicializadorAplicacion.CrearUsuarioService();
 
-                UsuarioDTO usuario = new UsuarioDTO
+                UsuarioLoginDTO usuarioForm = new UsuarioLoginDTO
                 {
                     Username = TBX_Username.Text,
                     Password = TBX_Password.Text
                 };
 
-                sesion.Login(usuario);
+                UsuarioDTO usuarioLogin = usuarioService.Login(usuarioForm);
+
+                sesion.Login(usuarioLogin);
 
                 MessageBox.Show($"¡Inicio de sesión exitoso!. Bienvenido {sesion.ObtenerUsuarioActual().Username}", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 MessageBox.Show($"Error al iniciar sesión: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }

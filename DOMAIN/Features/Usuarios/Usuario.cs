@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DOMAIN.Exceptions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,9 +20,9 @@ namespace DOMAIN.Features.Usuarios
             // Hago validación porque puede venir de una fuente no confiable (ej: un formulario o de un error de programación)
 
             if (string.IsNullOrEmpty(userName))
-                throw new Exception("El Nombre de Usuario es obligatorio.");
+                throw new ReglaNegocioException("El Nombre de Usuario es obligatorio.");
             if (string.IsNullOrEmpty(password))
-                throw new Exception("La Contraseña es obligatoria.");
+                throw new ReglaNegocioException("La Contraseña es obligatoria.");
             return new Usuario
             {
                 Username = userName,

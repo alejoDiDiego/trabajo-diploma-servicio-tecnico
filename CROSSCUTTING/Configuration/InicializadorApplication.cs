@@ -13,7 +13,7 @@ namespace CROSSCUTTING.Configuration
 {
     public static class InicializadorAplicacion
     {
-        private static readonly string cadenaConexion = "Server=localhost,1433;Database=EvaluacionDiagnostico;User Id=sa;Password=TuPasswordSeguro123!;TrustServerCertificate=True";
+        private static readonly string cadenaConexion = "Server=localhost,1433;Database=TPIntegrador;User Id=sa;Password=TuPasswordSeguro123!;TrustServerCertificate=True";
 
         public static ISesionUsuario ObtenerSesion()
         {

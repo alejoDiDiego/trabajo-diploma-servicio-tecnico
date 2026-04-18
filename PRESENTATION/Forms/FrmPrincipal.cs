@@ -121,7 +121,7 @@ namespace PRESENTATION.Forms
             }
         }
 
-        private void verCuentaToolStripMenuItem_Click(object sender, EventArgs e)
+        private void administrarCuentasToolStripMenuItem_Click(object sender, EventArgs e)
         {
             try
             {
@@ -133,7 +133,7 @@ namespace PRESENTATION.Forms
                     return;
                 }
 
-                FrmCuenta cuentaForm = new FrmCuenta();
+                FrmAdministrarUsuarios cuentaForm = new FrmAdministrarUsuarios();
                 cuentaForm.MdiParent = this;
                 cuentaForm.Show();
             } 

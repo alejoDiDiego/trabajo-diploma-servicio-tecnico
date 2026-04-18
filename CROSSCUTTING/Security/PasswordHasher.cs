@@ -15,8 +15,17 @@ namespace CROSSCUTTING.Security
         {
             if (string.IsNullOrEmpty(password)) return null;
 
-            byte[] salt = RandomNumberGenerator.GetBytes(SaltSize);
-            byte[] hash = Rfc2898DeriveBytes.Pbkdf2(password, salt, Iterations, _hashAlgorithm, KeySize);
+            byte[] salt = new byte[SaltSize];
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(salt);
+            }
+
+            byte[] hash;
+            using (var pbkdf2 = new Rfc2898DeriveBytes(password, salt, Iterations, _hashAlgorithm))
+            {
+                hash = pbkdf2.GetBytes(KeySize);
+            }
 
             // Creamos el payload con la cantidad de bytes necesarios
             byte[] payload = new byte[SaltSize + KeySize];
@@ -29,17 +38,48 @@ namespace CROSSCUTTING.Security
 
         public bool VerifyHashedPassword(string hashedPassword, string password)
         {
-            byte[] payload = Convert.FromBase64String(hashedPassword);
+            if (string.IsNullOrEmpty(hashedPassword) || string.IsNullOrEmpty(password)) return false;
+
+            byte[] payload;
+            try
+            {
+                payload = Convert.FromBase64String(hashedPassword);
+            }
+            catch (FormatException)
+            {
+                return false;
+            }
+
+            if (payload.Length != SaltSize + KeySize) return false;
 
             // Toma los primeros (SaltSize) 
-            byte[] salt = payload.Take(SaltSize).ToArray();
+            byte[] salt = new byte[SaltSize];
+            Buffer.BlockCopy(payload, 0, salt, 0, SaltSize);
 
             // Saltea (SaltSize) y lo que queda es la llave
-            byte[] storedKey = payload.Skip(SaltSize).ToArray();
+            byte[] storedKey = new byte[KeySize];
+            Buffer.BlockCopy(payload, SaltSize, storedKey, 0, KeySize);
 
-            byte[] generatedKey = Rfc2898DeriveBytes.Pbkdf2(password, salt, Iterations, _hashAlgorithm, KeySize);
+            byte[] generatedKey;
+            using (var pbkdf2 = new Rfc2898DeriveBytes(password, salt, Iterations, _hashAlgorithm))
+            {
+                generatedKey = pbkdf2.GetBytes(KeySize);
+            }
 
-            return CryptographicOperations.FixedTimeEquals(storedKey, generatedKey);
+            return FixedTimeEquals(storedKey, generatedKey);
+        }
+
+        private static bool FixedTimeEquals(byte[] left, byte[] right)
+        {
+            if (left == null || right == null || left.Length != right.Length) return false;
+
+            int diff = 0;
+            for (int i = 0; i < left.Length; i++)
+            {
+                diff |= left[i] ^ right[i];
+            }
+
+            return diff == 0;
         }
 
     }
