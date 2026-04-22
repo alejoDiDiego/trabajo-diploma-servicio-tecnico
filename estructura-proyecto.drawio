@@ -1,0 +1,87 @@
+<mxGraphModel adaptiveColors="auto">
+  <root>
+    <mxCell id="0"/>
+    <mxCell id="1" parent="0"/>
+    <mxCell id="2" value="TP_INTEGRADOR" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6e8eff;fontSize=16;fontStyle=1" vertex="1" parent="1">
+      <mxGeometry x="320" y="40" width="160" height="40" as="geometry"/>
+    </mxCell>
+    <mxCell id="3" value="DOMAIN" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2ce;strokeColor=#d79b00" vertex="1" parent="1">
+      <mxGeometry x="40" y="120" width="100" height="40" as="geometry"/>
+    </mxCell>
+    <mxCell id="4" value="APPLICATION" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2ce;strokeColor=#d79b00" vertex="1" parent="1">
+      <mxGeometry x="180" y="120" width="120" height="40" as="geometry"/>
+    </mxCell>
+    <mxCell id="5" value="INFRASTRUCTURE" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2ce;strokeColor=#d79b00" vertex="1" parent="1">
+      <mxGeometry x="340" y="120" width="130" height="40" as="geometry"/>
+    </mxCell>
+    <mxCell id="6" value="PRESENTATION" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2ce;strokeColor=#d79b00" vertex="1" parent="1">
+      <mxGeometry x="510" y="120" width="120" height="40" as="geometry"/>
+    </mxCell>
+    <mxCell id="7" value="CROSSCUTTING" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2ce;strokeColor=#d79b00" vertex="1" parent="1">
+      <mxGeometry x="670" y="120" width="130" height="40" as="geometry"/>
+    </mxCell>
+    <mxCell id="8" style="endArrow=classic;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0" edge="1" parent="1" source="3" target="9">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="9" value="Features/Usuarios" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#feffc9;strokeColor=#ccc" vertex="1" parent="1">
+      <mxGeometry x="40" y="200" width="100" height="30" as="geometry"/>
+    </mxCell>
+    <mxCell id="10" value="Exceptions" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#feffc9;strokeColor=#ccc" vertex="1" parent="1">
+      <mxGeometry x="40" y="240" width="100" height="30" as="geometry"/>
+    </mxCell>
+    <mxCell id="11" style="endArrow=classic;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0" edge="1" parent="1" target="14">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="12" value="Features/Usuarios" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#feffc9;strokeColor=#ccc" vertex="1" parent="1">
+      <mxGeometry x="180" y="200" width="120" height="30" as="geometry"/>
+    </mxCell>
+    <mxCell id="13" value="DTOs" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#feffc9;strokeColor=#ccc" vertex="1" parent="1">
+      <mxGeometry x="180" y="240" width="120" height="30" as="geometry"/>
+    </mxCell>
+    <mxCell id="14" value="Interfaces" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#feffc9;strokeColor=#ccc" vertex="1" parent="1">
+      <mxGeometry x="180" y="280" width="120" height="30" as="geometry"/>
+    </mxCell>
+    <mxCell id="15" style="endArrow=classic;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0" edge="1" parent="1" target="16">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="16" value="Features/Usuarios" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#feffc9;strokeColor=#ccc" vertex="1" parent="1">
+      <mxGeometry x="340" y="200" width="130" height="30" as="geometry"/>
+    </mxCell>
+    <mxCell id="17" style="endArrow=classic;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0" edge="1" parent="1" target="18">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="18" value="Forms/Auth" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#feffc9;strokeColor=#ccc" vertex="1" parent="1">
+      <mxGeometry x="510" y="200" width="120" height="30" as="geometry"/>
+    </mxCell>
+    <mxCell id="19" style="endArrow=classic;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0" edge="1" parent="1" target="20">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="20" value="Security" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#feffc9;strokeColor=#ccc" vertex="1" parent="1">
+      <mxGeometry x="670" y="200" width="130" height="30" as="geometry"/>
+    </mxCell>
+    <mxCell id="21" value="Auth" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#feffc9;strokeColor=#ccc" vertex="1" parent="1">
+      <mxGeometry x="670" y="240" width="130" height="30" as="geometry"/>
+    </mxCell>
+    <mxCell id="22" value="Configuration" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#feffc9;strokeColor=#ccc" vertex="1" parent="1">
+      <mxGeometry x="670" y="280" width="130" height="30" as="geometry"/>
+    </mxCell>
+    <mxCell id="23" value="Propiedades de Entidades" style="text;html=1;strokeColor=#d79b00;fillColor=#fff2ce;fontSize=10" vertex="1" parent="1">
+      <mxGeometry x="40" y="280" width="100" height="20" as="geometry"/>
+    </mxCell>
+    <mxCell id="24" value="Casos de Uso" style="text;html=1;strokeColor=#d79b00;fillColor=#fff2ce;fontSize=10" vertex="1" parent="1">
+      <mxGeometry x="180" y="320" width="120" height="20" as="geometry"/>
+    </mxCell>
+    <mxCell id="25" value="Implementación BD" style="text;html=1;strokeColor=#d79b00;fillColor=#fff2ce;fontSize=10" vertex="1" parent="1">
+      <mxGeometry x="340" y="240" width="130" height="20" as="geometry"/>
+    </mxCell>
+    <mxCell id="26" value="Formularios UI" style="text;html=1;strokeColor=#d79b00;fillColor=#fff2ce;fontSize=10" vertex="1" parent="1">
+      <mxGeometry x="510" y="240" width="120" height="20" as="geometry"/>
+    </mxCell>
+    <mxCell id="27" value="Servicios Transversales" style="text;html=1;strokeColor=#d79b00;fillColor=#fff2ce;fontSize=10" vertex="1" parent="1">
+      <mxGeometry x="670" y="320" width="130" height="20" as="geometry"/>
+    </mxCell>
+    <mxCell id="28" value="Arquitectura DDD/Capas" style="text;html=1;strokeColor=#6e8eff;fontSize=11;fontStyle=1" vertex="1" parent="1">
+      <mxGeometry x="320" y="360" width="160" height="20" as="geometry"/>
+    </mxCell>
+  </root>
+</mxGraphModel>

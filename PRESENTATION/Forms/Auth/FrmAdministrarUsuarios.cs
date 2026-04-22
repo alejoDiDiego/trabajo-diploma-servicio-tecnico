@@ -44,12 +44,6 @@ namespace PRESENTATION.Forms.Auth
         {
             ISesionUsuario sesion = InicializadorAplicacion.ObtenerSesion();
 
-            if (sesion.ObtenerUsuarioActual() == null)
-            {
-                MessageBox.Show("No tenés permiso para ejecutar esta acción.", "Acceso Denegado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
             try
             {
                 UsuarioService usuarioService = InicializadorAplicacion.CrearUsuarioService();

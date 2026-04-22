@@ -1,0 +1,54 @@
+<mxGraphModel adaptiveColors="auto">
+  <root>
+    <mxCell id="0"/>
+    <mxCell id="1" parent="0"/>
+    <mxCell id="2" value="IPasswordHasher" style="swimlane;fontStyle=1,childLayout=stackLayout;horizontal=1;startSize=40;fillColor=#d5e8d4;horizontalStack=0;resizeParent=1;resizeParentVert=0;collapsible=0;marginBottom=0;strokeColor=#82b366" vertex="1" parent="1">
+      <mxGeometry x="280" y="40" width="200" height="70" as="geometry"/>
+    </mxCell>
+    <mxCell id="3" value="+ HashPassword(string): string&#xa;+ VerifyHashedPassword(string, string): bool" style="text;strokeColor=none;fillColor=none;align=left;spacingLeft=4;overflow=hidden;rotable=0" vertex="1" parent="2">
+      <mxGeometry y="40" width="200" height="30" as="geometry"/>
+    </mxCell>
+    <mxCell id="4" value="PasswordHasher" style="swimlane;fontStyle=1,childLayout=stackLayout;horizontal=1;startSize=40;fillColor=#fff2ce;horizontalStack=0;resizeParent=1;resizeParentVert=0;collapsible=0;marginBottom=0;strokeColor=#d79b00" vertex="1" parent="1">
+      <mxGeometry x="280" y="140" width="200" height="110" as="geometry"/>
+    </mxCell>
+    <mxCell id="5" value="- SaltSize: int = 16&#xa;- KeySize: int = 32&#xa;- Iterations: int = 10000&#xa;- _hashAlgorithm: HashAlgorithmName&#xa;--&#xa;+ HashPassword(string): string&#xa;+ VerifyHashedPassword(string, string): bool" style="text;strokeColor=none;fillColor=none;align=left;spacingLeft=4;overflow=hidden;rotable=0;portConstraint=eastwest" vertex="1" parent="4">
+      <mxGeometry y="40" width="200" height="70" as="geometry"/>
+    </mxCell>
+    <mxCell id="6" style="endArrow=classic;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;dashed=1" edge="1" parent="1" source="4" target="2">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="7" value="UsuarioService" style="swimlane;fontStyle=1,childLayout=stackLayout;horizontal=1;startSize=40;fillColor=#dae8fc;horizontalStack=0;resizeParent=1;resizeParentVert=0;collapsible=0;marginBottom=0;strokeColor=#6e8eff" vertex="1" parent="1">
+      <mxGeometry x="40" y="40" width="200" height="100" as="geometry"/>
+    </mxCell>
+    <mxCell id="8" value="- _passwordHasher: IPasswordHasher&#xa;- _usuarioRepository: IUsuarioRepository&#xa;--&#xa;+ Login(UsuarioLoginDTO): UsuarioDTO&#xa;+ Create(UsuarioLoginDTO): UsuarioDTO&#xa;+ Listar(): List&lt;UsuarioDTO&gt;" style="text;strokeColor=none;fillColor=none;align=left;spacingLeft=4;overflow=hidden;rotable=0;portConstraint=eastwest" vertex="1" parent="7">
+      <mxGeometry y="40" width="200" height="60" as="geometry"/>
+    </mxCell>
+    <mxCell id="9" value="SessionManager" style="swimlane;fontStyle=1,childLayout=stackLayout;horizontal=1;startSize=40;fillColor=#dae8fc;horizontalStack=0;resizeParent=1;resizeParentVert=0;collapsible=0;marginBottom=0;strokeColor=#6e8eff" vertex="1" parent="1">
+      <mxGeometry x="520" y="40" width="200" height="140" as="geometry"/>
+    </mxCell>
+    <mxCell id="10" value="- _session: SessionManager&#xa;- _usuarioActual: UsuarioDTO&#xa;- _lock: object&#xa;- _passwordHasher: IPasswordHasher&#xa;- FechaInicio: DateTime&#xa;--&#xa;+ GetInstance(): SessionManager&#xa;+ Login(UsuarioDTO)&#xa;+ Logout()&#xa;+ ObtenerUsuarioActual(): UsuarioDTO&#xa;+ ObtenerFechaInicio(): DateTime" style="text;strokeColor=none;fillColor=none;align=left;spacingLeft=4;overflow=hidden;rotable=0;portConstraint=eastwest" vertex="1" parent="9">
+      <mxGeometry y="40" width="200" height="100" as="geometry"/>
+    </mxCell>
+    <mxCell id="11" style="endArrow=classic;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0" edge="1" parent="1" target="2">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="12" style="endArrow=classic;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0" edge="1" parent="1" source="7" target="10">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="13" style="endArrow=classic;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0" edge="1" parent="1" source="9" target="2">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="14" value="InicializadorAplicacion" style="swimlane;fontStyle=1,childLayout=stackLayout;horizontal=1;startSize=40;fillColor=#dae8fc;horizontalStack=0;resizeParent=1;resizeParentVert=0;collapsible=0;marginBottom=0;strokeColor=#6e8eff" vertex="1" parent="1">
+      <mxGeometry x="520" y="220" width="200" height="70" as="geometry"/>
+    </mxCell>
+    <mxCell id="15" value="- cadenaConexion: string&#xa;--&#xa;+ ObtenerSesion(): ISesionUsuario&#xa;+ CrearUsuarioService(): UsuarioService" style="text;strokeColor=none;fillColor=none;align=left;spacingLeft=4;overflow=hidden;rotable=0;portConstraint=eastwest" vertex="1" parent="14">
+      <mxGeometry y="40" width="200" height="30" as="geometry"/>
+    </mxCell>
+    <mxCell id="16" value="&lt;&lt;creates&gt;&gt;" style="endArrow=classic;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;dashed=1" edge="1" parent="1" source="14" target="4">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="17" value="T03 - Gestor de Encriptado" style="text;html=1;strokeColor=#6e8eff;fontSize=14;fontStyle=1" vertex="1" parent="1">
+      <mxGeometry x="280" y="280" width="200" height="20" as="geometry"/>
+    </mxCell>
+  </root>
+</mxGraphModel>

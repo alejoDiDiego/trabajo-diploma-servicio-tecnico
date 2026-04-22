@@ -1,0 +1,76 @@
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\tp_integrador\PRESENTATION\obj\Debug\PRESENTATION.csproj.AssemblyReference.cache
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\tp_integrador\PRESENTATION\obj\Debug\PRESENTATION.Forms.FrmPrincipal.resources
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\tp_integrador\PRESENTATION\obj\Debug\PRESENTATION.Properties.Resources.resources
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\tp_integrador\PRESENTATION\obj\Debug\PRESENTATION.csproj.GenerateResource.cache
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\tp_integrador\PRESENTATION\obj\Debug\PRESENTATION.csproj.CoreCompileInputs.cache
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\tp_integrador\PRESENTATION\bin\Debug\PRESENTATION.exe.config
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\tp_integrador\PRESENTATION\bin\Debug\PRESENTATION.exe
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\tp_integrador\PRESENTATION\bin\Debug\PRESENTATION.pdb
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\tp_integrador\PRESENTATION\bin\Debug\APPLICATION.dll
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\tp_integrador\PRESENTATION\bin\Debug\CROSSCUTTING.dll
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\tp_integrador\PRESENTATION\bin\Debug\APPLICATION.pdb
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\tp_integrador\PRESENTATION\bin\Debug\CROSSCUTTING.pdb
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\tp_integrador\PRESENTATION\obj\Debug\PRESENTA.B379B572.Up2Date
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\tp_integrador\PRESENTATION\obj\Debug\PRESENTATION.exe
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\tp_integrador\PRESENTATION\obj\Debug\PRESENTATION.pdb
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\tp_integrador\PRESENTATION\obj\Debug\PRESENTATION.Forms.Auth.FrmLogin.resources
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\tp_integrador\PRESENTATION\obj\Debug\PRESENTATION.Forms.Auth.FrmCuenta.resources
+D:\Documents\proyectointegrador_is_uai\PRESENTATION\bin\Debug\PRESENTATION.exe.config
+D:\Documents\proyectointegrador_is_uai\PRESENTATION\bin\Debug\PRESENTATION.exe
+D:\Documents\proyectointegrador_is_uai\PRESENTATION\bin\Debug\PRESENTATION.pdb
+D:\Documents\proyectointegrador_is_uai\PRESENTATION\bin\Debug\APPLICATION.dll
+D:\Documents\proyectointegrador_is_uai\PRESENTATION\bin\Debug\CROSSCUTTING.dll
+D:\Documents\proyectointegrador_is_uai\PRESENTATION\bin\Debug\APPLICATION.pdb
+D:\Documents\proyectointegrador_is_uai\PRESENTATION\bin\Debug\CROSSCUTTING.pdb
+D:\Documents\proyectointegrador_is_uai\PRESENTATION\obj\Debug\PRESENTATION.csproj.AssemblyReference.cache
+D:\Documents\proyectointegrador_is_uai\PRESENTATION\obj\Debug\PRESENTATION.Forms.Auth.FrmCuenta.resources
+D:\Documents\proyectointegrador_is_uai\PRESENTATION\obj\Debug\PRESENTATION.Forms.Auth.FrmLogin.resources
+D:\Documents\proyectointegrador_is_uai\PRESENTATION\obj\Debug\PRESENTATION.Forms.FrmPrincipal.resources
+D:\Documents\proyectointegrador_is_uai\PRESENTATION\obj\Debug\PRESENTATION.Properties.Resources.resources
+D:\Documents\proyectointegrador_is_uai\PRESENTATION\obj\Debug\PRESENTATION.csproj.GenerateResource.cache
+D:\Documents\proyectointegrador_is_uai\PRESENTATION\obj\Debug\PRESENTATION.csproj.CoreCompileInputs.cache
+D:\Documents\proyectointegrador_is_uai\PRESENTATION\obj\Debug\PRESENTA.B379B572.Up2Date
+D:\Documents\proyectointegrador_is_uai\PRESENTATION\obj\Debug\PRESENTATION.exe
+D:\Documents\proyectointegrador_is_uai\PRESENTATION\obj\Debug\PRESENTATION.pdb
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\proyectointegrador_is_uai\PRESENTATION\obj\Debug\PRESENTATION.csproj.AssemblyReference.cache
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\proyectointegrador_is_uai\PRESENTATION\obj\Debug\PRESENTATION.Forms.Auth.FrmAdministrarUsuarios.resources
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\proyectointegrador_is_uai\PRESENTATION\obj\Debug\PRESENTATION.Forms.Auth.FrmLogin.resources
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\proyectointegrador_is_uai\PRESENTATION\obj\Debug\PRESENTATION.Forms.FrmPrincipal.resources
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\proyectointegrador_is_uai\PRESENTATION\obj\Debug\PRESENTATION.Properties.Resources.resources
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\proyectointegrador_is_uai\PRESENTATION\obj\Debug\PRESENTATION.csproj.GenerateResource.cache
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\proyectointegrador_is_uai\PRESENTATION\obj\Debug\PRESENTATION.csproj.CoreCompileInputs.cache
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\proyectointegrador_is_uai\PRESENTATION\obj\Debug\PRESENTATION.exe
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\proyectointegrador_is_uai\PRESENTATION\obj\Debug\PRESENTATION.pdb
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\proyectointegrador_is_uai\PRESENTATION\bin\Debug\PRESENTATION.exe.config
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\proyectointegrador_is_uai\PRESENTATION\bin\Debug\PRESENTATION.exe
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\proyectointegrador_is_uai\PRESENTATION\bin\Debug\PRESENTATION.pdb
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\proyectointegrador_is_uai\PRESENTATION\bin\Debug\APPLICATION.dll
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\proyectointegrador_is_uai\PRESENTATION\bin\Debug\CROSSCUTTING.dll
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\proyectointegrador_is_uai\PRESENTATION\bin\Debug\DOMAIN.dll
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\proyectointegrador_is_uai\PRESENTATION\bin\Debug\INFRASTRUCTURE.dll
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\proyectointegrador_is_uai\PRESENTATION\bin\Debug\APPLICATION.pdb
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\proyectointegrador_is_uai\PRESENTATION\bin\Debug\CROSSCUTTING.pdb
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\proyectointegrador_is_uai\PRESENTATION\bin\Debug\DOMAIN.pdb
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\proyectointegrador_is_uai\PRESENTATION\bin\Debug\INFRASTRUCTURE.pdb
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\proyectointegrador_is_uai\PRESENTATION\obj\Debug\PRESENTA.B379B572.Up2Date
+C:\Users\Javi\source\repos\proyectointegrador_is_uai\PRESENTATION\bin\Debug\PRESENTATION.exe.config
+C:\Users\Javi\source\repos\proyectointegrador_is_uai\PRESENTATION\bin\Debug\PRESENTATION.exe
+C:\Users\Javi\source\repos\proyectointegrador_is_uai\PRESENTATION\bin\Debug\PRESENTATION.pdb
+C:\Users\Javi\source\repos\proyectointegrador_is_uai\PRESENTATION\bin\Debug\APPLICATION.dll
+C:\Users\Javi\source\repos\proyectointegrador_is_uai\PRESENTATION\bin\Debug\CROSSCUTTING.dll
+C:\Users\Javi\source\repos\proyectointegrador_is_uai\PRESENTATION\bin\Debug\DOMAIN.dll
+C:\Users\Javi\source\repos\proyectointegrador_is_uai\PRESENTATION\bin\Debug\INFRASTRUCTURE.dll
+C:\Users\Javi\source\repos\proyectointegrador_is_uai\PRESENTATION\bin\Debug\APPLICATION.pdb
+C:\Users\Javi\source\repos\proyectointegrador_is_uai\PRESENTATION\bin\Debug\CROSSCUTTING.pdb
+C:\Users\Javi\source\repos\proyectointegrador_is_uai\PRESENTATION\bin\Debug\DOMAIN.pdb
+C:\Users\Javi\source\repos\proyectointegrador_is_uai\PRESENTATION\bin\Debug\INFRASTRUCTURE.pdb
+C:\Users\Javi\source\repos\proyectointegrador_is_uai\PRESENTATION\obj\Debug\PRESENTATION.csproj.AssemblyReference.cache
+C:\Users\Javi\source\repos\proyectointegrador_is_uai\PRESENTATION\obj\Debug\PRESENTATION.exe.config
+C:\Users\Javi\source\repos\proyectointegrador_is_uai\PRESENTATION\obj\Debug\PRESENTATION.Forms.Auth.FrmAdministrarUsuarios.resources
+C:\Users\Javi\source\repos\proyectointegrador_is_uai\PRESENTATION\obj\Debug\PRESENTATION.Forms.Auth.FrmLogin.resources
+C:\Users\Javi\source\repos\proyectointegrador_is_uai\PRESENTATION\obj\Debug\PRESENTATION.Properties.Resources.resources
+C:\Users\Javi\source\repos\proyectointegrador_is_uai\PRESENTATION\obj\Debug\PRESENTATION.csproj.GenerateResource.cache
+C:\Users\Javi\source\repos\proyectointegrador_is_uai\PRESENTATION\obj\Debug\PRESENTATION.csproj.CoreCompileInputs.cache
+C:\Users\Javi\source\repos\proyectointegrador_is_uai\PRESENTATION\obj\Debug\PRESENTA.B379B572.Up2Date
+C:\Users\Javi\source\repos\proyectointegrador_is_uai\PRESENTATION\obj\Debug\PRESENTATION.exe
+C:\Users\Javi\source\repos\proyectointegrador_is_uai\PRESENTATION\obj\Debug\PRESENTATION.pdb

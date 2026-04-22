@@ -1,0 +1,46 @@
+<mxfile host="app.diagrams.net">
+  <diagram id="a7n4wEwIxkZXE4eLmJpq" name="Página-1">
+    <mxGraphModel dx="1414" dy="777" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0" adaptiveColors="auto">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="2" parent="1" style="swimlane;fontStyle=1,childLayout=stackLayout;horizontal=1;startSize=40;fillColor=#dae8fc;horizontalStack=0;resizeParent=1;resizeParentVert=0;collapsible=0;marginBottom=0;strokeColor=#6e8eff" value="FrmPrincipal" vertex="1">
+          <mxGeometry height="50" width="180" x="40" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="3" parent="2" style="text;strokeColor=none;fillColor=none;align=left;spacingLeft=4;overflow=hidden;rotable=0" value="+ Menu: ToolStrip" vertex="1">
+          <mxGeometry height="10" width="180" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="4" parent="1" style="swimlane;fontStyle=1,childLayout=stackLayout;horizontal=1;startSize=40;fillColor=#dae8fc;horizontalStack=0;resizeParent=1;resizeParentVert=0;collapsible=0;marginBottom=0;strokeColor=#6e8eff" value="InicializadorApplication" vertex="1">
+          <mxGeometry height="50" width="180" x="40" y="130" as="geometry" />
+        </mxCell>
+        <mxCell id="5" parent="4" style="text;strokeColor=none;fillColor=none;align=left;spacingLeft=4;overflow=hidden;rotable=0" value="+ ObtenerSesion(): ISesionUsuario" vertex="1">
+          <mxGeometry height="10" width="180" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="6" parent="1" style="swimlane;fontStyle=1,childLayout=stackLayout;horizontal=1;startSize=40;fillColor=#dae8fc;horizontalStack=0;resizeParent=1;resizeParentVert=0;collapsible=0;marginBottom=0;strokeColor=#6e8eff" value="SessionManager" vertex="1">
+          <mxGeometry height="100" width="180" x="40" y="220" as="geometry" />
+        </mxCell>
+        <mxCell id="7" parent="6" style="text;strokeColor=none;fillColor=none;align=left;spacingLeft=4;overflow=hidden;rotable=0;portConstraint=eastwest" value="- _session: SessionManager&#xa;- _usuarioActual: UsuarioDTO&#xa;- FechaInicio: DateTime&#xa;--&#xa;+ Logout()&#xa;+ ObtenerUsuarioActual(): UsuarioDTO" vertex="1">
+          <mxGeometry height="60" width="180" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="8" parent="1" style="swimlane;fontStyle=1,childLayout=stackLayout;horizontal=1;startSize=40;fillColor=#d5e8d4;horizontalStack=0;resizeParent=1;resizeParentVert=0;collapsible=0;marginBottom=0;strokeColor=#82b366" value="ISesionUsuario" vertex="1">
+          <mxGeometry height="60" width="180" x="40" y="360" as="geometry" />
+        </mxCell>
+        <mxCell id="9" parent="8" style="text;strokeColor=none;fillColor=none;align=left;spacingLeft=4;overflow=hidden;rotable=0" value="+ Logout()&#xa;+ ObtenerUsuarioActual(): UsuarioDTO" vertex="1">
+          <mxGeometry height="20" width="180" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="10" edge="1" parent="1" source="2" style="endArrow=classic;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0" target="4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="11" edge="1" parent="1" source="4" style="endArrow=classic;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0" target="6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="12" edge="1" parent="1" source="6" style="endArrow=classic;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;dashed=1" target="8">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="13" parent="1" style="text;html=1;strokeColor=#6e8eff;fontSize=14;fontStyle=1" value="T02 - Logout" vertex="1">
+          <mxGeometry height="20" width="180" x="40" y="440" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
