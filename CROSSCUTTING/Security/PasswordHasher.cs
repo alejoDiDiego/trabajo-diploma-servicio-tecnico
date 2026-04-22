@@ -1,5 +1,6 @@
 using APPLICATION.Interfaces;
 using System;
+using System.Linq;
 using System.Security.Cryptography;
 
 namespace CROSSCUTTING.Security
@@ -66,20 +67,7 @@ namespace CROSSCUTTING.Security
                 generatedKey = pbkdf2.GetBytes(KeySize);
             }
 
-            return FixedTimeEquals(storedKey, generatedKey);
-        }
-
-        private static bool FixedTimeEquals(byte[] left, byte[] right)
-        {
-            if (left == null || right == null || left.Length != right.Length) return false;
-
-            int diff = 0;
-            for (int i = 0; i < left.Length; i++)
-            {
-                diff |= left[i] ^ right[i];
-            }
-
-            return diff == 0;
+            return storedKey.SequenceEqual(generatedKey);
         }
 
     }
