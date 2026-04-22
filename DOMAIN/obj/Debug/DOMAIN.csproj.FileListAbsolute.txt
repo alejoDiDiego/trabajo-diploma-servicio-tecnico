@@ -16,3 +16,9 @@ G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ing
 G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\proyectointegrador_is_uai\DOMAIN\obj\Debug\DOMAIN.csproj.CoreCompileInputs.cache
 G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\proyectointegrador_is_uai\DOMAIN\obj\Debug\DOMAIN.dll
 G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\proyectointegrador_is_uai\DOMAIN\obj\Debug\DOMAIN.pdb
+C:\Users\Javi\source\repos\proyectointegrador_is_uai\DOMAIN\bin\Debug\DOMAIN.dll
+C:\Users\Javi\source\repos\proyectointegrador_is_uai\DOMAIN\bin\Debug\DOMAIN.pdb
+C:\Users\Javi\source\repos\proyectointegrador_is_uai\DOMAIN\obj\Debug\DOMAIN.csproj.AssemblyReference.cache
+C:\Users\Javi\source\repos\proyectointegrador_is_uai\DOMAIN\obj\Debug\DOMAIN.csproj.CoreCompileInputs.cache
+C:\Users\Javi\source\repos\proyectointegrador_is_uai\DOMAIN\obj\Debug\DOMAIN.dll
+C:\Users\Javi\source\repos\proyectointegrador_is_uai\DOMAIN\obj\Debug\DOMAIN.pdb

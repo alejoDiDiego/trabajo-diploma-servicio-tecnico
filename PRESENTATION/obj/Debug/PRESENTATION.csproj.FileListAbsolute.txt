@@ -65,7 +65,6 @@ C:\Users\Javi\source\repos\proyectointegrador_is_uai\PRESENTATION\bin\Debug\CROS
 C:\Users\Javi\source\repos\proyectointegrador_is_uai\PRESENTATION\bin\Debug\DOMAIN.pdb
 C:\Users\Javi\source\repos\proyectointegrador_is_uai\PRESENTATION\bin\Debug\INFRASTRUCTURE.pdb
 C:\Users\Javi\source\repos\proyectointegrador_is_uai\PRESENTATION\obj\Debug\PRESENTATION.csproj.AssemblyReference.cache
-C:\Users\Javi\source\repos\proyectointegrador_is_uai\PRESENTATION\obj\Debug\PRESENTATION.exe.config
 C:\Users\Javi\source\repos\proyectointegrador_is_uai\PRESENTATION\obj\Debug\PRESENTATION.Forms.Auth.FrmAdministrarUsuarios.resources
 C:\Users\Javi\source\repos\proyectointegrador_is_uai\PRESENTATION\obj\Debug\PRESENTATION.Forms.Auth.FrmLogin.resources
 C:\Users\Javi\source\repos\proyectointegrador_is_uai\PRESENTATION\obj\Debug\PRESENTATION.Properties.Resources.resources
