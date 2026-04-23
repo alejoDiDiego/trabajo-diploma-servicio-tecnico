@@ -22,3 +22,9 @@ C:\Users\Javi\source\repos\proyectointegrador_is_uai\DOMAIN\obj\Debug\DOMAIN.csp
 C:\Users\Javi\source\repos\proyectointegrador_is_uai\DOMAIN\obj\Debug\DOMAIN.csproj.CoreCompileInputs.cache
 C:\Users\Javi\source\repos\proyectointegrador_is_uai\DOMAIN\obj\Debug\DOMAIN.dll
 C:\Users\Javi\source\repos\proyectointegrador_is_uai\DOMAIN\obj\Debug\DOMAIN.pdb
+D:\ingsoftRodriguezDiDiego\proyectointegrador_is_uai\DOMAIN\bin\Debug\DOMAIN.dll
+D:\ingsoftRodriguezDiDiego\proyectointegrador_is_uai\DOMAIN\bin\Debug\DOMAIN.pdb
+D:\ingsoftRodriguezDiDiego\proyectointegrador_is_uai\DOMAIN\obj\Debug\DOMAIN.csproj.AssemblyReference.cache
+D:\ingsoftRodriguezDiDiego\proyectointegrador_is_uai\DOMAIN\obj\Debug\DOMAIN.csproj.CoreCompileInputs.cache
+D:\ingsoftRodriguezDiDiego\proyectointegrador_is_uai\DOMAIN\obj\Debug\DOMAIN.dll
+D:\ingsoftRodriguezDiDiego\proyectointegrador_is_uai\DOMAIN\obj\Debug\DOMAIN.pdb

@@ -8,12 +8,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Configuration;
 
 namespace CROSSCUTTING.Configuration
 {
     public static class InicializadorAplicacion
     {
-        private static readonly string cadenaConexion = "Server=localhost,1433;Database=TPIntegrador;User Id=sa;Password=TuPasswordSeguro123!;TrustServerCertificate=True";
 
         public static ISesionUsuario ObtenerSesion()
         {
@@ -22,7 +22,7 @@ namespace CROSSCUTTING.Configuration
 
         public static UsuarioService CrearUsuarioService()
         {
-            UsuarioRepository usuarioRepository = new UsuarioRepository(cadenaConexion);
+            UsuarioRepository usuarioRepository = new UsuarioRepository(ConfigurationManager.ConnectionStrings["UrlDB"].ConnectionString);
             PasswordHasher passwordHasher = new PasswordHasher();
 
             return new UsuarioService(passwordHasher, usuarioRepository);

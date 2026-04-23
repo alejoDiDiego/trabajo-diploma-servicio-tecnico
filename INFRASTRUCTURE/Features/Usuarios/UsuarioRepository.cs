@@ -24,7 +24,7 @@ namespace INFRASTRUCTURE.Features.Usuarios
         public Usuario Agregar(Usuario u)
         {
             string query = @"
-                INSERT INTO Usuarios (username, password) OUTPUT INSERTED.id_usuario VALUES (@Username, @Password);
+                INSERT INTO Usuarios (username, password) VALUES (@Username, @Password);
             ";
 
             SqlParameter[] sqlParameters = new SqlParameter[]
@@ -35,7 +35,7 @@ namespace INFRASTRUCTURE.Features.Usuarios
 
             try
             {
-                int id = _db.ExecuteScalar(query, sqlParameters);
+                int id = _db.ExecuteTransaction(query, sqlParameters);
 
                 return Usuario.CargarDesdeDB(
                     id,
@@ -60,7 +60,7 @@ namespace INFRASTRUCTURE.Features.Usuarios
                 new SqlParameter("@Id", id)
             };
 
-            _db.ExecuteScalar(query, sqlParameters);
+            _db.ExecuteTransaction(query, sqlParameters);
         }
 
         public Usuario ObtenerPorUsername(string userName)

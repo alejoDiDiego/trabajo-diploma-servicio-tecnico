@@ -32,7 +32,6 @@ namespace DOMAIN.Features.Usuarios
 
         public static Usuario CargarDesdeDB(int id, string userName, string password)
         {
-            // No valido porque confio que la db me manda lo correcto
 
             return new Usuario
             {
