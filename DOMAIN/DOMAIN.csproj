@@ -43,6 +43,7 @@
   <ItemGroup>
     <Compile Include="Class1.cs" />
     <Compile Include="Exceptions\ReglaNegocioException.cs" />
+    <Compile Include="Features\Usuarios\Exceptions\UsuarioNoExisteException.cs" />
     <Compile Include="Features\Usuarios\Exceptions\UsuarioYaExisteException.cs" />
     <Compile Include="Features\Usuarios\Usuario.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

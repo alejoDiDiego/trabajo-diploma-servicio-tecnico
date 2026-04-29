@@ -26,6 +26,8 @@ namespace PRESENTATION.Forms.Auth
             this.label1 = new System.Windows.Forms.Label();
             this.LBL_NuevoUsuario = new System.Windows.Forms.Label();
             this.DGV_Usuarios = new System.Windows.Forms.DataGridView();
+            this.BTN_EliminarUsuario = new System.Windows.Forms.Button();
+            this.BTN_EditarUsuario = new System.Windows.Forms.Button();
             this.PNL_Header.SuspendLayout();
             this.PNL_Permisos.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.DGV_Usuarios)).BeginInit();
@@ -93,6 +95,8 @@ namespace PRESENTATION.Forms.Auth
             // 
             // PNL_Permisos
             // 
+            this.PNL_Permisos.Controls.Add(this.BTN_EditarUsuario);
+            this.PNL_Permisos.Controls.Add(this.BTN_EliminarUsuario);
             this.PNL_Permisos.Controls.Add(this.BTN_CrearUsuario);
             this.PNL_Permisos.Controls.Add(this.TBX_Password);
             this.PNL_Permisos.Controls.Add(this.label2);
@@ -186,6 +190,39 @@ namespace PRESENTATION.Forms.Auth
             this.DGV_Usuarios.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.DGV_Usuarios.Size = new System.Drawing.Size(905, 360);
             this.DGV_Usuarios.TabIndex = 0;
+            this.DGV_Usuarios.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.DGV_Usuarios_CellClick);
+            // 
+            // BTN_EliminarUsuario
+            // 
+            this.BTN_EliminarUsuario.BackColor = System.Drawing.Color.Maroon;
+            this.BTN_EliminarUsuario.Enabled = false;
+            this.BTN_EliminarUsuario.FlatAppearance.BorderSize = 0;
+            this.BTN_EliminarUsuario.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.BTN_EliminarUsuario.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.BTN_EliminarUsuario.ForeColor = System.Drawing.Color.White;
+            this.BTN_EliminarUsuario.Location = new System.Drawing.Point(760, 383);
+            this.BTN_EliminarUsuario.Name = "BTN_EliminarUsuario";
+            this.BTN_EliminarUsuario.Size = new System.Drawing.Size(160, 28);
+            this.BTN_EliminarUsuario.TabIndex = 7;
+            this.BTN_EliminarUsuario.Text = "Eliminar Usuario";
+            this.BTN_EliminarUsuario.UseVisualStyleBackColor = false;
+            this.BTN_EliminarUsuario.Click += new System.EventHandler(this.BTN_EliminarUsuario_Click);
+            // 
+            // BTN_EditarUsuario
+            // 
+            this.BTN_EditarUsuario.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
+            this.BTN_EditarUsuario.Enabled = false;
+            this.BTN_EditarUsuario.FlatAppearance.BorderSize = 0;
+            this.BTN_EditarUsuario.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.BTN_EditarUsuario.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.BTN_EditarUsuario.ForeColor = System.Drawing.Color.White;
+            this.BTN_EditarUsuario.Location = new System.Drawing.Point(661, 438);
+            this.BTN_EditarUsuario.Name = "BTN_EditarUsuario";
+            this.BTN_EditarUsuario.Size = new System.Drawing.Size(160, 28);
+            this.BTN_EditarUsuario.TabIndex = 8;
+            this.BTN_EditarUsuario.Text = "Editar Usuario";
+            this.BTN_EditarUsuario.UseVisualStyleBackColor = false;
+            this.BTN_EditarUsuario.Click += new System.EventHandler(this.BTN_EditarUsuario_Click);
             // 
             // FrmAdministrarUsuarios
             // 
@@ -223,5 +260,7 @@ namespace PRESENTATION.Forms.Auth
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.TextBox TBX_Password;
         private System.Windows.Forms.Button BTN_CrearUsuario;
+        private System.Windows.Forms.Button BTN_EditarUsuario;
+        private System.Windows.Forms.Button BTN_EliminarUsuario;
     }
 }

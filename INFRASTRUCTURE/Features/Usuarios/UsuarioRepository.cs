@@ -24,7 +24,7 @@ namespace INFRASTRUCTURE.Features.Usuarios
         public Usuario Agregar(Usuario u)
         {
             string query = @"
-                INSERT INTO Usuarios (username, password) VALUES (@Username, @Password);
+                INSERT INTO Usuarios (username, password) OUTPUT INSERTED.id_usuario VALUES (@Username, @Password);
             ";
 
             SqlParameter[] sqlParameters = new SqlParameter[]
@@ -76,8 +76,31 @@ namespace INFRASTRUCTURE.Features.Usuarios
 
             DataTable dt = _db.ExecuteQuery(query, sqlParameters);
 
-            if (dt.Rows.Count <= 0)
-                throw new Exception("No hay usuarios");
+            if (dt.Rows.Count <= 0) return null;
+
+            DataRow fila = dt.Rows[0];
+
+            return Usuario.CargarDesdeDB(
+                Convert.ToInt32(fila["id_usuario"]),
+                fila["username"].ToString(),
+                fila["password"].ToString()
+            );
+        }
+
+        public Usuario ObtenerPorId(int id)
+        {
+            string query = @"
+                SELECT * FROM Usuarios WHERE id_usuario=@Id
+            ";
+
+            SqlParameter[] sqlParameters = new SqlParameter[]
+            {
+                new SqlParameter("@Id", id)
+            };
+
+            DataTable dt = _db.ExecuteQuery(query, sqlParameters);
+
+            if (dt.Rows.Count <= 0) return null;
 
             DataRow fila = dt.Rows[0];
 
@@ -115,6 +138,20 @@ namespace INFRASTRUCTURE.Features.Usuarios
             return usuarios;
         }
 
+        public void Modificar(Usuario u)
+        {
+            string query = @"
+                UPDATE Usuarios SET username=@Username, password=@Password WHERE id_usuario=@Id;
+            ";
 
+            SqlParameter[] sqlParameters = new SqlParameter[]
+            {
+                new SqlParameter("@Id", u.Id),
+                new SqlParameter("@Username", u.Username),
+                new SqlParameter("@Password", u.Password)
+            };
+
+            _db.ExecuteScalar(query, sqlParameters);
+        }
     }
 }

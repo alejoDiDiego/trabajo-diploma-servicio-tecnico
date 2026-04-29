@@ -65,7 +65,7 @@ namespace APPLICATION.Features.Usuarios
             }
         }
 
-        public UsuarioDTO Create(UsuarioLoginDTO uDTO)
+        public UsuarioDTO Crear(UsuarioLoginDTO uDTO)
         {
             try
             {
@@ -73,6 +73,9 @@ namespace APPLICATION.Features.Usuarios
                     uDTO.Username,
                     uDTO.Password
                 );
+
+                if (_usuarioRepository.ObtenerPorUsername(usuarioForm.Username) != null)
+                    throw new UsuarioYaExisteException();
 
                 string passwordHashed = _passwordHasher.HashPassword(usuarioForm.Password);
 
@@ -125,6 +128,64 @@ namespace APPLICATION.Features.Usuarios
             catch (Exception ex)
             {
                 throw new Exception("Error al listar usuarios", ex);
+            }
+        }
+
+        public void Eliminar(string username)
+        {
+            try
+            {
+                Usuario usuarioDB = _usuarioRepository.ObtenerPorUsername(username);
+
+                if (usuarioDB == null)
+                    throw new UsuarioNoExisteException();
+
+                _usuarioRepository.Eliminar(usuarioDB.Id);
+            }
+            catch (UsuarioNoExisteException ex)
+            {
+                throw new Exception(ex.Message, ex);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al eliminar usuario", ex);
+            }
+        }
+
+        public UsuarioDTO Modificar(UsuarioDTO usuarioForm)
+        {
+            try
+            {
+                Usuario usuarioDB = _usuarioRepository.ObtenerPorId(usuarioForm.Id);
+
+                if (usuarioDB == null)
+                    throw new UsuarioNoExisteException();
+
+                string passwordHashed = _passwordHasher.HashPassword(usuarioForm.Password);
+
+                Usuario usuarioToUpdate = Usuario.CargarDesdeDB(
+                    usuarioDB.Id,
+                    usuarioForm.Username,
+                    passwordHashed
+                );
+
+                _usuarioRepository.Modificar(usuarioToUpdate);
+
+                return new UsuarioDTO
+                {
+                    Id = usuarioToUpdate.Id,
+                    Username = usuarioToUpdate.Username,
+                    Password = passwordHashed
+                };
+
+            }
+            catch (UsuarioNoExisteException ex)
+            {
+                throw new Exception(ex.Message, ex);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al modificar usuario", ex);
             }
         }
     }

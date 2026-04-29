@@ -4,6 +4,7 @@ using APPLICATION.Interfaces;
 using CROSSCUTTING.Configuration;
 using System;
 using System.ComponentModel;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace PRESENTATION.Forms.Auth
@@ -54,7 +55,7 @@ namespace PRESENTATION.Forms.Auth
                     Password = TBX_Password.Text
                 };
 
-                UsuarioDTO usuarioCreado = usuarioService.Create(nuevoUsuario);
+                UsuarioDTO usuarioCreado = usuarioService.Crear(nuevoUsuario);
                 _usuariosBindingList.Add(usuarioCreado);
 
                 TBX_Username.Clear();
@@ -87,5 +88,88 @@ namespace PRESENTATION.Forms.Auth
             }
         }
 
+        private void DGV_Usuarios_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (DGV_Usuarios.SelectedRows.Count == 0)
+            {
+                BTN_EliminarUsuario.Enabled = false;
+                BTN_EditarUsuario.Enabled = false;
+                return;
+            }
+
+            BTN_EliminarUsuario.Enabled = true;
+            BTN_EditarUsuario.Enabled = true;
+
+            var usuarioSeleccionado = (UsuarioDTO)DGV_Usuarios.SelectedRows[0].DataBoundItem;
+
+            TBX_Username.Text = usuarioSeleccionado.Username;
+        }
+
+        private void BTN_EliminarUsuario_Click(object sender, EventArgs e)
+        {
+            var usuarioSeleccionado = (UsuarioDTO)DGV_Usuarios.SelectedRows[0].DataBoundItem;
+
+            var confirmResult = MessageBox.Show($"¿Estás seguro de eliminar al usuario '{usuarioSeleccionado.Username}'?", "Confirmar Eliminación", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+
+            if (confirmResult == DialogResult.No) return;
+
+            try
+            {
+                var usuarioService = InicializadorAplicacion.CrearUsuarioService();
+
+                usuarioService.Eliminar(usuarioSeleccionado.Username);
+
+                _usuariosBindingList.Remove(usuarioSeleccionado);
+
+                TBX_Username.Clear();
+                TBX_Password.Clear();
+
+                DGV_Usuarios.ClearSelection();
+                BTN_EliminarUsuario.Enabled = false;
+                BTN_EditarUsuario.Enabled = false;
+
+                MessageBox.Show("Usuario eliminado exitosamente.", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al eliminar usuario: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
+        }
+
+        private void BTN_EditarUsuario_Click(object sender, EventArgs e)
+        {
+            var usuarioSeleccionado = (UsuarioDTO)DGV_Usuarios.SelectedRows[0].DataBoundItem;
+
+            var confirmResult = MessageBox.Show($"¿Estás seguro de editar al usuario '{usuarioSeleccionado.Username}'?", "Confirmar Edición", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+
+            if (confirmResult == DialogResult.No) return;
+
+            try
+            {
+                var usuarioService = InicializadorAplicacion.CrearUsuarioService();
+
+                usuarioSeleccionado.Username = TBX_Username.Text;
+                usuarioSeleccionado.Password = TBX_Password.Text;
+
+                UsuarioDTO usuarioModificado = usuarioService.Modificar(usuarioSeleccionado);
+
+                usuarioSeleccionado.Username = usuarioModificado.Username;
+                usuarioSeleccionado.Password = usuarioModificado.Password;
+
+                TBX_Username.Clear();
+                TBX_Password.Clear();
+
+                DGV_Usuarios.ClearSelection();
+                BTN_EliminarUsuario.Enabled = false;
+                BTN_EditarUsuario.Enabled = false;
+
+                MessageBox.Show("Usuario editado exitosamente.", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al editar usuario: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
     }
 }

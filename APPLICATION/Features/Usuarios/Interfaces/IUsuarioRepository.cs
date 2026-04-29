@@ -12,6 +12,8 @@ namespace APPLICATION.Features.Usuarios.Interfaces
         Usuario Agregar(Usuario p);
         List<Usuario> Listar();
         Usuario ObtenerPorUsername(string userName);
+        Usuario ObtenerPorId(int id);
         void Eliminar(int id);
+        void Modificar(Usuario u);
     }
 }
