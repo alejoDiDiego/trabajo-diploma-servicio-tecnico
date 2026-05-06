@@ -1,9 +1,9 @@
-using APPLICATION.Interfaces;
+using ABSTRACTIONS.Services;
 using System;
 using System.Linq;
 using System.Security.Cryptography;
 
-namespace CROSSCUTTING.Security
+namespace SERVICES.Security
 {
     public class PasswordHasher : IPasswordHasher
     {

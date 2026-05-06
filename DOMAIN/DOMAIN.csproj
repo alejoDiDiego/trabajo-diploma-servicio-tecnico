@@ -47,6 +47,11 @@
     <Compile Include="Features\Usuarios\Usuario.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\ABSTRACTIONS\ABSTRACTIONS.csproj">
+      <Project>{d4d53c58-6239-4304-af5d-8439db5150d3}</Project>
+      <Name>ABSTRACTIONS</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

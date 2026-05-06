@@ -1,26 +1,19 @@
-﻿using APPLICATION.Features.Usuarios.DTOs;
-using APPLICATION.Interfaces;
-using CROSSCUTTING.Security;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using ABSTRACTIONS.Features.Usuarios;
+using ABSTRACTIONS.Services;
 
-namespace CROSSCUTTING.Auth
+namespace SERVICES.Auth
 {
     public class SessionManager : ISesionUsuario
     {
+        private static readonly object _lock = new object();
         private static SessionManager _session;
-        private UsuarioDTO _usuarioActual { get; set; }
-        public DateTime FechaInicio { get; private set; }
+        private UsuarioSesion _usuarioActual;
 
-        private static object _lock = new object();
-        private readonly IPasswordHasher _passwordHasher;
+        public DateTime FechaInicio { get; private set; }
 
         private SessionManager()
         {
-            _passwordHasher = new PasswordHasher();
         }
 
         public static SessionManager GetInstance()
@@ -28,26 +21,24 @@ namespace CROSSCUTTING.Auth
             lock (_lock)
             {
                 if (_session == null)
-                {
                     _session = new SessionManager();
-                }
+
                 return _session;
             }
         }
 
-        public void Login(UsuarioDTO usuario)
+        public void Login(IUsuario usuario)
         {
             lock (_lock)
             {
-                if(_usuarioActual != null)
-                    throw new Exception("La sesión ya está iniciada.");
-                
+                if (_usuarioActual != null)
+                    throw new Exception("La sesion ya esta iniciada.");
 
-                _usuarioActual = new UsuarioDTO
+                _usuarioActual = new UsuarioSesion
                 {
                     Id = usuario.Id,
                     Username = usuario.Username,
-                    Password = _passwordHasher.HashPassword(usuario.Password)
+                    Password = usuario.Password
                 };
                 FechaInicio = DateTime.Now;
             }
@@ -58,20 +49,20 @@ namespace CROSSCUTTING.Auth
             lock (_lock)
             {
                 if (_usuarioActual == null)
-                    throw new Exception("No hay ninguna sesión iniciada.");
+                    throw new Exception("No hay ninguna sesion iniciada.");
 
                 _usuarioActual = null;
             }
         }
 
-        public UsuarioDTO ObtenerUsuarioActual()
+        public IUsuario ObtenerUsuarioActual()
         {
             lock (_lock)
             {
                 if (_usuarioActual == null)
                     return null;
 
-                return new UsuarioDTO
+                return new UsuarioSesion
                 {
                     Id = _usuarioActual.Id,
                     Username = _usuarioActual.Username,
@@ -85,10 +76,17 @@ namespace CROSSCUTTING.Auth
             lock (_lock)
             {
                 if (_usuarioActual == null)
-                    throw new Exception("No hay ninguna sesión iniciada.");
+                    throw new Exception("No hay ninguna sesion iniciada.");
+
                 return FechaInicio;
             }
         }
 
+        private class UsuarioSesion : IUsuario
+        {
+            public int Id { get; set; }
+            public string Username { get; set; }
+            public string Password { get; set; }
+        }
     }
 }

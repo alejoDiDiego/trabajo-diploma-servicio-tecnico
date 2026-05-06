@@ -1,9 +1,9 @@
-using APPLICATION.Features.Usuarios;
-using APPLICATION.Features.Usuarios.DTOs;
-using APPLICATION.Interfaces;
-using CROSSCUTTING.Configuration;
 using System;
 using System.Windows.Forms;
+using ABSTRACTIONS.Services;
+using APPLICATION.Features.Usuarios;
+using APPLICATION.Features.Usuarios.DTOs;
+using SERVICES.Auth;
 
 namespace PRESENTATION.Forms.Auth
 {
@@ -18,8 +18,8 @@ namespace PRESENTATION.Forms.Auth
         {
             try
             {
-                ISesionUsuario sesion = InicializadorAplicacion.ObtenerSesion();
-                UsuarioService usuarioService = InicializadorAplicacion.CrearUsuarioService();
+                ISesionUsuario sesion = SessionManager.GetInstance();
+                UsuarioService usuarioService = new UsuarioService();
 
                 UsuarioLoginDTO usuarioForm = new UsuarioLoginDTO
                 {
@@ -30,11 +30,11 @@ namespace PRESENTATION.Forms.Auth
                 UsuarioDTO usuarioLogin = usuarioService.Login(usuarioForm);
                 sesion.Login(usuarioLogin);
 
-                this.DialogResult = DialogResult.OK;
+                DialogResult = DialogResult.OK;
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error al iniciar sesión: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Error al iniciar sesion: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }

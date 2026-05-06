@@ -1,7 +1,8 @@
 <Solution>
+  <Project Path="ABSTRACTIONS/ABSTRACTIONS.csproj" Id="d4d53c58-6239-4304-af5d-8439db5150d3" />
   <Project Path="APPLICATION/APPLICATION.csproj" Id="40fc3c2b-71e8-4986-b0a6-3427f4b8cc06" />
-  <Project Path="CROSSCUTTING/CROSSCUTTING.csproj" Id="9b788825-fa09-4599-bc05-7398e2d145ed" />
+  <Project Path="CROSSCUTTING/SERVICES.csproj" Id="9b788825-fa09-4599-bc05-7398e2d145ed" />
   <Project Path="DOMAIN/DOMAIN.csproj" Id="c5bd7b6a-7483-4782-bd1d-9237575e7bea" />
-  <Project Path="INFRASTRUCTURE/INFRASTRUCTURE.csproj" Id="c214b7f9-96f0-41a7-a69e-bf69eb9c279c" />
-  <Project Path="PRESENTATION/PRESENTATION.csproj" Id="818f80c5-8c03-4051-ae10-8d2fad71c6e5" />
+  <Project Path="INFRASTRUCTURE/REPOSITORY.csproj" Id="c214b7f9-96f0-41a7-a69e-bf69eb9c279c" />
+  <Project Path="PRESENTATION/UI.csproj" Id="818f80c5-8c03-4051-ae10-8d2fad71c6e5" />
 </Solution>

@@ -1,55 +1,47 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using ABSTRACTIONS.Services;
 using APPLICATION.Features.Usuarios.DTOs;
 using APPLICATION.Features.Usuarios.Exceptions;
-using APPLICATION.Features.Usuarios.Interfaces;
-using APPLICATION.Interfaces;
 using DOMAIN.Exceptions;
 using DOMAIN.Features.Usuarios;
 using DOMAIN.Features.Usuarios.Exceptions;
+using REPOSITORY.Features.Usuarios;
+using SERVICES.Security;
 
 namespace APPLICATION.Features.Usuarios
 {
     public class UsuarioService
     {
-        IPasswordHasher _passwordHasher;
-        IUsuarioRepository _usuarioRepository;
+        private readonly IPasswordHasher _passwordHasher;
+        private readonly UsuarioRepository _usuarioRepository;
 
-        public UsuarioService(IPasswordHasher _passwordHasher, IUsuarioRepository _usuarioRepository)
+        public UsuarioService()
         {
-            this._passwordHasher = _passwordHasher;
-            this._usuarioRepository = _usuarioRepository;
+            _passwordHasher = new PasswordHasher();
+            _usuarioRepository = new UsuarioRepository();
         }
 
-        public UsuarioDTO Login(UsuarioLoginDTO uDTO)
+        public UsuarioDTO Login(UsuarioLoginDTO usuarioLogin)
         {
             try
             {
                 Usuario usuarioForm = Usuario.CrearNuevo(
-                    uDTO.Username,
-                    uDTO.Password
+                    usuarioLogin.Username,
+                    usuarioLogin.Password
                 );
 
                 Usuario usuarioDb = _usuarioRepository.ObtenerPorUsername(usuarioForm.Username);
 
-                if(usuarioDb == null)
-                    throw new DatosUsuarioIncorrectosException("Usuario o Constraseña incorrectos");
+                if (usuarioDb == null)
+                    throw new DatosUsuarioIncorrectosException("Usuario o contrasena incorrectos");
 
                 bool passwordMatch = _passwordHasher.VerifyHashedPassword(usuarioDb.Password, usuarioForm.Password);
 
                 if (passwordMatch == false)
-                    throw new DatosUsuarioIncorrectosException("Usuario o Constraseña incorrectos");
+                    throw new DatosUsuarioIncorrectosException("Usuario o contrasena incorrectos");
 
-                return new UsuarioDTO
-                {
-                    Id = usuarioDb.Id,
-                    Username = usuarioDb.Username,
-                    Password = usuarioDb.Password
-                };
+                return MapearUsuario(usuarioDb);
             }
             catch (ReglaNegocioException ex)
             {
@@ -57,21 +49,21 @@ namespace APPLICATION.Features.Usuarios
             }
             catch (DatosUsuarioIncorrectosException ex)
             {
-                throw new Exception("Usuario o Constraseña incorrectos", ex);
+                throw new Exception("Usuario o contrasena incorrectos", ex);
             }
             catch (Exception ex)
             {
-                throw new Exception("Error al iniciar sesión", ex);
+                throw new Exception("Error al iniciar sesion", ex);
             }
         }
 
-        public UsuarioDTO Crear(UsuarioLoginDTO uDTO)
+        public UsuarioDTO Crear(UsuarioLoginDTO usuarioLogin)
         {
             try
             {
                 Usuario usuarioForm = Usuario.CrearNuevo(
-                    uDTO.Username,
-                    uDTO.Password
+                    usuarioLogin.Username,
+                    usuarioLogin.Password
                 );
 
                 if (_usuarioRepository.ObtenerPorUsername(usuarioForm.Username) != null)
@@ -86,12 +78,7 @@ namespace APPLICATION.Features.Usuarios
 
                 Usuario usuarioDb = _usuarioRepository.Agregar(usuarioToSave);
 
-                return new UsuarioDTO
-                {
-                    Id = usuarioDb.Id,
-                    Username = usuarioDb.Username,
-                    Password = usuarioDb.Password
-                };
+                return MapearUsuario(usuarioDb);
             }
             catch (ReglaNegocioException ex)
             {
@@ -111,19 +98,12 @@ namespace APPLICATION.Features.Usuarios
         {
             try
             {
-                List<UsuarioDTO> usuarioDTOs = new List<UsuarioDTO>();
+                List<UsuarioDTO> usuarios = new List<UsuarioDTO>();
 
-                foreach (var usuario in _usuarioRepository.Listar())
-                {
-                    usuarioDTOs.Add(new UsuarioDTO
-                    {
-                        Id = usuario.Id,
-                        Username = usuario.Username,
-                        Password = usuario.Password
-                    });
-                }
+                foreach (Usuario usuario in _usuarioRepository.Listar())
+                    usuarios.Add(MapearUsuario(usuario));
 
-                return usuarioDTOs;
+                return usuarios;
             }
             catch (Exception ex)
             {
@@ -135,12 +115,12 @@ namespace APPLICATION.Features.Usuarios
         {
             try
             {
-                Usuario usuarioDB = _usuarioRepository.ObtenerPorUsername(username);
+                Usuario usuarioDb = _usuarioRepository.ObtenerPorUsername(username);
 
-                if (usuarioDB == null)
+                if (usuarioDb == null)
                     throw new UsuarioNoExisteException();
 
-                _usuarioRepository.Eliminar(usuarioDB.Id);
+                _usuarioRepository.Eliminar(usuarioDb.Id);
             }
             catch (UsuarioNoExisteException ex)
             {
@@ -156,28 +136,22 @@ namespace APPLICATION.Features.Usuarios
         {
             try
             {
-                Usuario usuarioDB = _usuarioRepository.ObtenerPorId(usuarioForm.Id);
+                Usuario usuarioDb = _usuarioRepository.ObtenerPorId(usuarioForm.Id);
 
-                if (usuarioDB == null)
+                if (usuarioDb == null)
                     throw new UsuarioNoExisteException();
 
                 string passwordHashed = _passwordHasher.HashPassword(usuarioForm.Password);
 
                 Usuario usuarioToUpdate = Usuario.CargarDesdeDB(
-                    usuarioDB.Id,
+                    usuarioDb.Id,
                     usuarioForm.Username,
                     passwordHashed
                 );
 
                 _usuarioRepository.Modificar(usuarioToUpdate);
 
-                return new UsuarioDTO
-                {
-                    Id = usuarioToUpdate.Id,
-                    Username = usuarioToUpdate.Username,
-                    Password = passwordHashed
-                };
-
+                return MapearUsuario(usuarioToUpdate);
             }
             catch (UsuarioNoExisteException ex)
             {
@@ -187,6 +161,16 @@ namespace APPLICATION.Features.Usuarios
             {
                 throw new Exception("Error al modificar usuario", ex);
             }
+        }
+
+        private UsuarioDTO MapearUsuario(Usuario usuario)
+        {
+            return new UsuarioDTO
+            {
+                Id = usuario.Id,
+                Username = usuario.Username,
+                Password = usuario.Password
+            };
         }
     }
 }

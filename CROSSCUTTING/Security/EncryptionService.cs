@@ -1,10 +1,10 @@
-using APPLICATION.Interfaces;
+using ABSTRACTIONS.Services;
 using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace CROSSCUTTING.Security
+namespace SERVICES.Security
 {
     public class EncryptionService : IEncryptionService
     {

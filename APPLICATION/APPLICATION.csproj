@@ -44,18 +44,25 @@
     <Compile Include="Features\Usuarios\DTOs\UsuarioDTO.cs" />
     <Compile Include="Features\Usuarios\DTOs\UsuarioLoginDTO.cs" />
     <Compile Include="Features\Usuarios\Exceptions\DatosUsuarioIncorrectosException.cs" />
-    <Compile Include="Features\Usuarios\Interfaces\IUsuarioRepository.cs" />
     <Compile Include="Features\Usuarios\UsuarioService.cs" />
-    <Compile Include="Interfaces\IEncryptionService.cs" />
-    <Compile Include="Interfaces\IPasswordHasher.cs" />
-    <Compile Include="Interfaces\ISesionUsuario.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
+    <ProjectReference Include="..\ABSTRACTIONS\ABSTRACTIONS.csproj">
+      <Project>{d4d53c58-6239-4304-af5d-8439db5150d3}</Project>
+      <Name>ABSTRACTIONS</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CROSSCUTTING\SERVICES.csproj">
+      <Project>{9b788825-fa09-4599-bc05-7398e2d145ed}</Project>
+      <Name>SERVICES</Name>
+    </ProjectReference>
     <ProjectReference Include="..\DOMAIN\DOMAIN.csproj">
       <Project>{c5bd7b6a-7483-4782-bd1d-9237575e7bea}</Project>
       <Name>DOMAIN</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\INFRASTRUCTURE\REPOSITORY.csproj">
+      <Project>{c214b7f9-96f0-41a7-a69e-bf69eb9c279c}</Project>
+      <Name>REPOSITORY</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

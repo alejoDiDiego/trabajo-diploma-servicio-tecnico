@@ -1,11 +1,11 @@
-using APPLICATION.Features.Usuarios;
-using APPLICATION.Features.Usuarios.DTOs;
-using APPLICATION.Interfaces;
-using CROSSCUTTING.Configuration;
 using System;
 using System.ComponentModel;
-using System.Linq;
 using System.Windows.Forms;
+using ABSTRACTIONS.Features.Usuarios;
+using ABSTRACTIONS.Services;
+using APPLICATION.Features.Usuarios;
+using APPLICATION.Features.Usuarios.DTOs;
+using SERVICES.Auth;
 
 namespace PRESENTATION.Forms.Auth
 {
@@ -20,34 +20,31 @@ namespace PRESENTATION.Forms.Auth
 
         private void FrmAdministrarCuentas_Load(object sender, EventArgs e)
         {
-            ISesionUsuario sesion = InicializadorAplicacion.ObtenerSesion();
+            ISesionUsuario sesion = SessionManager.GetInstance();
 
             if (sesion.ObtenerUsuarioActual() == null)
             {
                 PNL_Permisos.Visible = false;
-                MessageBox.Show("No tenés permisos para acceder a esta sección.", "Acceso Denegado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("No tenes permisos para acceder a esta seccion.", "Acceso Denegado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             PNL_Permisos.Visible = true;
 
-            UsuarioDTO usuario = sesion.ObtenerUsuarioActual();
+            IUsuario usuario = sesion.ObtenerUsuarioActual();
             LBL_Username.Text = $"Usuario: {usuario.Username}";
-            LBL_FechaInicio.Text = $"Sesión iniciada: {sesion.ObtenerFechaInicio()}";
+            LBL_FechaInicio.Text = $"Sesion iniciada: {sesion.ObtenerFechaInicio()}";
 
-            var usuarioService = InicializadorAplicacion.CrearUsuarioService();
-            var usuarios = usuarioService.Listar();
-            _usuariosBindingList = new BindingList<UsuarioDTO>(usuarios);
+            UsuarioService usuarioService = new UsuarioService();
+            _usuariosBindingList = new BindingList<UsuarioDTO>(usuarioService.Listar());
             DGV_Usuarios.DataSource = _usuariosBindingList;
         }
 
         private void BTN_CrearUsuario_Click(object sender, EventArgs e)
         {
-            ISesionUsuario sesion = InicializadorAplicacion.ObtenerSesion();
-
             try
             {
-                UsuarioService usuarioService = InicializadorAplicacion.CrearUsuarioService();
+                UsuarioService usuarioService = new UsuarioService();
 
                 UsuarioLoginDTO nuevoUsuario = new UsuarioLoginDTO
                 {
@@ -61,7 +58,7 @@ namespace PRESENTATION.Forms.Auth
                 TBX_Username.Clear();
                 TBX_Password.Clear();
 
-                MessageBox.Show("Usuario creado exitosamente.", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Usuario creado exitosamente.", "Exito", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
@@ -71,19 +68,19 @@ namespace PRESENTATION.Forms.Auth
 
         private void BTN_CerrarSesion_Click(object sender, EventArgs e)
         {
-            InicializadorAplicacion.ObtenerSesion().Logout();
-            this.Hide();
+            SessionManager.GetInstance().Logout();
+            Hide();
 
             using (var login = new FrmLogin())
             {
                 if (login.ShowDialog() == DialogResult.OK)
                 {
                     FrmAdministrarCuentas_Load(this, EventArgs.Empty);
-                    this.Show();
+                    Show();
                 }
                 else
                 {
-                    this.Close();
+                    Close();
                 }
             }
         }
@@ -109,13 +106,14 @@ namespace PRESENTATION.Forms.Auth
         {
             var usuarioSeleccionado = (UsuarioDTO)DGV_Usuarios.SelectedRows[0].DataBoundItem;
 
-            var confirmResult = MessageBox.Show($"¿Estás seguro de eliminar al usuario '{usuarioSeleccionado.Username}'?", "Confirmar Eliminación", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+            var confirmResult = MessageBox.Show($"Estas seguro de eliminar al usuario '{usuarioSeleccionado.Username}'?", "Confirmar Eliminacion", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
 
-            if (confirmResult == DialogResult.No) return;
+            if (confirmResult == DialogResult.No)
+                return;
 
             try
             {
-                var usuarioService = InicializadorAplicacion.CrearUsuarioService();
+                UsuarioService usuarioService = new UsuarioService();
 
                 usuarioService.Eliminar(usuarioSeleccionado.Username);
 
@@ -128,26 +126,26 @@ namespace PRESENTATION.Forms.Auth
                 BTN_EliminarUsuario.Enabled = false;
                 BTN_EditarUsuario.Enabled = false;
 
-                MessageBox.Show("Usuario eliminado exitosamente.", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Usuario eliminado exitosamente.", "Exito", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error al eliminar usuario: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-
         }
 
         private void BTN_EditarUsuario_Click(object sender, EventArgs e)
         {
             var usuarioSeleccionado = (UsuarioDTO)DGV_Usuarios.SelectedRows[0].DataBoundItem;
 
-            var confirmResult = MessageBox.Show($"¿Estás seguro de editar al usuario '{usuarioSeleccionado.Username}'?", "Confirmar Edición", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+            var confirmResult = MessageBox.Show($"Estas seguro de editar al usuario '{usuarioSeleccionado.Username}'?", "Confirmar Edicion", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
 
-            if (confirmResult == DialogResult.No) return;
+            if (confirmResult == DialogResult.No)
+                return;
 
             try
             {
-                var usuarioService = InicializadorAplicacion.CrearUsuarioService();
+                UsuarioService usuarioService = new UsuarioService();
 
                 usuarioSeleccionado.Username = TBX_Username.Text;
                 usuarioSeleccionado.Password = TBX_Password.Text;
@@ -164,7 +162,7 @@ namespace PRESENTATION.Forms.Auth
                 BTN_EliminarUsuario.Enabled = false;
                 BTN_EditarUsuario.Enabled = false;
 
-                MessageBox.Show("Usuario editado exitosamente.", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Usuario editado exitosamente.", "Exito", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
