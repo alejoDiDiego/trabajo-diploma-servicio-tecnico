@@ -1,17 +1,15 @@
 using System;
 using System.ComponentModel;
 using System.Windows.Forms;
-using ABSTRACTIONS.Features.Usuarios;
-using ABSTRACTIONS.Services;
 using APPLICATION.Features.Usuarios;
-using APPLICATION.Features.Usuarios.DTOs;
+using DOMAIN.Features.Usuarios;
 using SERVICES.Auth;
 
-namespace PRESENTATION.Forms.Auth
+namespace UI.Forms.Auth
 {
     public partial class FrmAdministrarUsuarios : Form
     {
-        private BindingList<UsuarioDTO> _usuariosBindingList = null;
+        private BindingList<Usuario> _usuariosBindingList = null;
 
         public FrmAdministrarUsuarios()
         {
@@ -20,9 +18,9 @@ namespace PRESENTATION.Forms.Auth
 
         private void FrmAdministrarCuentas_Load(object sender, EventArgs e)
         {
-            ISesionUsuario sesion = SessionManager.GetInstance();
+            SessionManager sesion = SessionManager.GetInstance();
 
-            if (sesion.ObtenerUsuarioActual() == null)
+            if (sesion.Usuario == null)
             {
                 PNL_Permisos.Visible = false;
                 MessageBox.Show("No tenes permisos para acceder a esta seccion.", "Acceso Denegado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -31,12 +29,12 @@ namespace PRESENTATION.Forms.Auth
 
             PNL_Permisos.Visible = true;
 
-            IUsuario usuario = sesion.ObtenerUsuarioActual();
+            Usuario usuario = (Usuario)sesion.Usuario;
             LBL_Username.Text = $"Usuario: {usuario.Username}";
-            LBL_FechaInicio.Text = $"Sesion iniciada: {sesion.ObtenerFechaInicio()}";
+            LBL_FechaInicio.Text = $"Sesion iniciada: {sesion.FechaInicio}";
 
             UsuarioService usuarioService = new UsuarioService();
-            _usuariosBindingList = new BindingList<UsuarioDTO>(usuarioService.Listar());
+            _usuariosBindingList = new BindingList<Usuario>(usuarioService.Listar());
             DGV_Usuarios.DataSource = _usuariosBindingList;
         }
 
@@ -46,14 +44,8 @@ namespace PRESENTATION.Forms.Auth
             {
                 UsuarioService usuarioService = new UsuarioService();
 
-                UsuarioLoginDTO nuevoUsuario = new UsuarioLoginDTO
-                {
-                    Username = TBX_Username.Text,
-                    Password = TBX_Password.Text
-                };
-
-                UsuarioDTO usuarioCreado = usuarioService.Crear(nuevoUsuario);
-                _usuariosBindingList.Add(usuarioCreado);
+                Usuario usuario = usuarioService.Crear(TBX_Username.Text, TBX_Password.Text);
+                _usuariosBindingList.Add(usuario);
 
                 TBX_Username.Clear();
                 TBX_Password.Clear();
@@ -68,7 +60,7 @@ namespace PRESENTATION.Forms.Auth
 
         private void BTN_CerrarSesion_Click(object sender, EventArgs e)
         {
-            SessionManager.GetInstance().Logout();
+            SessionManager.Logout();
             Hide();
 
             using (var login = new FrmLogin())
@@ -97,14 +89,14 @@ namespace PRESENTATION.Forms.Auth
             BTN_EliminarUsuario.Enabled = true;
             BTN_EditarUsuario.Enabled = true;
 
-            var usuarioSeleccionado = (UsuarioDTO)DGV_Usuarios.SelectedRows[0].DataBoundItem;
+            var usuarioSeleccionado = (Usuario)DGV_Usuarios.SelectedRows[0].DataBoundItem;
 
             TBX_Username.Text = usuarioSeleccionado.Username;
         }
 
         private void BTN_EliminarUsuario_Click(object sender, EventArgs e)
         {
-            var usuarioSeleccionado = (UsuarioDTO)DGV_Usuarios.SelectedRows[0].DataBoundItem;
+            var usuarioSeleccionado = (Usuario)DGV_Usuarios.SelectedRows[0].DataBoundItem;
 
             var confirmResult = MessageBox.Show($"Estas seguro de eliminar al usuario '{usuarioSeleccionado.Username}'?", "Confirmar Eliminacion", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
 
@@ -136,7 +128,7 @@ namespace PRESENTATION.Forms.Auth
 
         private void BTN_EditarUsuario_Click(object sender, EventArgs e)
         {
-            var usuarioSeleccionado = (UsuarioDTO)DGV_Usuarios.SelectedRows[0].DataBoundItem;
+            var usuarioSeleccionado = (Usuario)DGV_Usuarios.SelectedRows[0].DataBoundItem;
 
             var confirmResult = MessageBox.Show($"Estas seguro de editar al usuario '{usuarioSeleccionado.Username}'?", "Confirmar Edicion", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
 
@@ -147,13 +139,9 @@ namespace PRESENTATION.Forms.Auth
             {
                 UsuarioService usuarioService = new UsuarioService();
 
-                usuarioSeleccionado.Username = TBX_Username.Text;
-                usuarioSeleccionado.Password = TBX_Password.Text;
+                Usuario usuarioModificado = usuarioService.Modificar(usuarioSeleccionado.Id, TBX_Username.Text, TBX_Password.Text);
 
-                UsuarioDTO usuarioModificado = usuarioService.Modificar(usuarioSeleccionado);
-
-                usuarioSeleccionado.Username = usuarioModificado.Username;
-                usuarioSeleccionado.Password = usuarioModificado.Password;
+                usuarioSeleccionado = usuarioModificado;
 
                 TBX_Username.Clear();
                 TBX_Password.Clear();

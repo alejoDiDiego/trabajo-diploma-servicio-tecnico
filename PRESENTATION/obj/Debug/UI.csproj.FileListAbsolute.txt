@@ -20,3 +20,25 @@ G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ing
 G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\proyectointegrador_is_uai\PRESENTATION\obj\Debug\UI.pdb
 G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\proyectointegrador_is_uai\PRESENTATION\bin\Debug\APPLICATION.dll
 G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\proyectointegrador_is_uai\PRESENTATION\bin\Debug\APPLICATION.pdb
+C:\Users\Navegador\source\repos\jotaerrec\proyectointegrador_is_uai\PRESENTATION\bin\Debug\UI.exe.config
+C:\Users\Navegador\source\repos\jotaerrec\proyectointegrador_is_uai\PRESENTATION\bin\Debug\UI.exe
+C:\Users\Navegador\source\repos\jotaerrec\proyectointegrador_is_uai\PRESENTATION\bin\Debug\UI.pdb
+C:\Users\Navegador\source\repos\jotaerrec\proyectointegrador_is_uai\PRESENTATION\bin\Debug\ABSTRACTIONS.dll
+C:\Users\Navegador\source\repos\jotaerrec\proyectointegrador_is_uai\PRESENTATION\bin\Debug\APPLICATION.dll
+C:\Users\Navegador\source\repos\jotaerrec\proyectointegrador_is_uai\PRESENTATION\bin\Debug\SERVICES.dll
+C:\Users\Navegador\source\repos\jotaerrec\proyectointegrador_is_uai\PRESENTATION\bin\Debug\REPOSITORY.dll
+C:\Users\Navegador\source\repos\jotaerrec\proyectointegrador_is_uai\PRESENTATION\bin\Debug\DOMAIN.dll
+C:\Users\Navegador\source\repos\jotaerrec\proyectointegrador_is_uai\PRESENTATION\bin\Debug\APPLICATION.pdb
+C:\Users\Navegador\source\repos\jotaerrec\proyectointegrador_is_uai\PRESENTATION\bin\Debug\ABSTRACTIONS.pdb
+C:\Users\Navegador\source\repos\jotaerrec\proyectointegrador_is_uai\PRESENTATION\bin\Debug\SERVICES.pdb
+C:\Users\Navegador\source\repos\jotaerrec\proyectointegrador_is_uai\PRESENTATION\bin\Debug\REPOSITORY.pdb
+C:\Users\Navegador\source\repos\jotaerrec\proyectointegrador_is_uai\PRESENTATION\bin\Debug\DOMAIN.pdb
+C:\Users\Navegador\source\repos\jotaerrec\proyectointegrador_is_uai\PRESENTATION\obj\Debug\UI.csproj.AssemblyReference.cache
+C:\Users\Navegador\source\repos\jotaerrec\proyectointegrador_is_uai\PRESENTATION\obj\Debug\UI.Properties.Resources.resources
+C:\Users\Navegador\source\repos\jotaerrec\proyectointegrador_is_uai\PRESENTATION\obj\Debug\UI.csproj.GenerateResource.cache
+C:\Users\Navegador\source\repos\jotaerrec\proyectointegrador_is_uai\PRESENTATION\obj\Debug\UI.csproj.CoreCompileInputs.cache
+C:\Users\Navegador\source\repos\jotaerrec\proyectointegrador_is_uai\PRESENTATION\obj\Debug\UI.csproj.Up2Date
+C:\Users\Navegador\source\repos\jotaerrec\proyectointegrador_is_uai\PRESENTATION\obj\Debug\UI.exe
+C:\Users\Navegador\source\repos\jotaerrec\proyectointegrador_is_uai\PRESENTATION\obj\Debug\UI.pdb
+C:\Users\Navegador\source\repos\jotaerrec\proyectointegrador_is_uai\PRESENTATION\obj\Debug\UI.Forms.Auth.FrmAdministrarUsuarios.resources
+C:\Users\Navegador\source\repos\jotaerrec\proyectointegrador_is_uai\PRESENTATION\obj\Debug\UI.Forms.Auth.FrmLogin.resources

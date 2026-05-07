@@ -1,7 +1,7 @@
 using System.Windows.Forms;
-using PRESENTATION.Forms.Auth;
+using UI.Forms.Auth;
 
-namespace PRESENTATION
+namespace UI
 {
     internal static class Program
     {

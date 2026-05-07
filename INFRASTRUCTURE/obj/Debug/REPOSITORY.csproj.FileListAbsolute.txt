@@ -9,3 +9,14 @@ G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ing
 G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\proyectointegrador_is_uai\INFRASTRUCTURE\obj\Debug\REPOSITORY.csproj.Up2Date
 G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\proyectointegrador_is_uai\INFRASTRUCTURE\obj\Debug\REPOSITORY.dll
 G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\proyectointegrador_is_uai\INFRASTRUCTURE\obj\Debug\REPOSITORY.pdb
+C:\Users\Navegador\source\repos\jotaerrec\proyectointegrador_is_uai\INFRASTRUCTURE\bin\Debug\REPOSITORY.dll
+C:\Users\Navegador\source\repos\jotaerrec\proyectointegrador_is_uai\INFRASTRUCTURE\bin\Debug\REPOSITORY.pdb
+C:\Users\Navegador\source\repos\jotaerrec\proyectointegrador_is_uai\INFRASTRUCTURE\bin\Debug\ABSTRACTIONS.dll
+C:\Users\Navegador\source\repos\jotaerrec\proyectointegrador_is_uai\INFRASTRUCTURE\bin\Debug\DOMAIN.dll
+C:\Users\Navegador\source\repos\jotaerrec\proyectointegrador_is_uai\INFRASTRUCTURE\bin\Debug\ABSTRACTIONS.pdb
+C:\Users\Navegador\source\repos\jotaerrec\proyectointegrador_is_uai\INFRASTRUCTURE\bin\Debug\DOMAIN.pdb
+C:\Users\Navegador\source\repos\jotaerrec\proyectointegrador_is_uai\INFRASTRUCTURE\obj\Debug\REPOSITORY.csproj.AssemblyReference.cache
+C:\Users\Navegador\source\repos\jotaerrec\proyectointegrador_is_uai\INFRASTRUCTURE\obj\Debug\REPOSITORY.csproj.CoreCompileInputs.cache
+C:\Users\Navegador\source\repos\jotaerrec\proyectointegrador_is_uai\INFRASTRUCTURE\obj\Debug\REPOSITORY.csproj.Up2Date
+C:\Users\Navegador\source\repos\jotaerrec\proyectointegrador_is_uai\INFRASTRUCTURE\obj\Debug\REPOSITORY.dll
+C:\Users\Navegador\source\repos\jotaerrec\proyectointegrador_is_uai\INFRASTRUCTURE\obj\Debug\REPOSITORY.pdb

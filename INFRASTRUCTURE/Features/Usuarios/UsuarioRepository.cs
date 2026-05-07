@@ -123,9 +123,6 @@ namespace REPOSITORY.Features.Usuarios
 
             DataTable dt = _db.ExecuteQuery(query);
 
-            if (dt.Rows.Count <= 0)
-                throw new Exception("No hay usuarios");
-
             List<Usuario> usuarios = new List<Usuario>();
 
             foreach (DataRow fila in dt.Rows)

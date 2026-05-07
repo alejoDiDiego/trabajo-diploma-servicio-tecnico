@@ -41,8 +41,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Features\Usuarios\DTOs\UsuarioDTO.cs" />
-    <Compile Include="Features\Usuarios\DTOs\UsuarioLoginDTO.cs" />
     <Compile Include="Features\Usuarios\Exceptions\DatosUsuarioIncorrectosException.cs" />
     <Compile Include="Features\Usuarios\UsuarioService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -52,7 +50,7 @@
       <Project>{d4d53c58-6239-4304-af5d-8439db5150d3}</Project>
       <Name>ABSTRACTIONS</Name>
     </ProjectReference>
-    <ProjectReference Include="..\CROSSCUTTING\SERVICES.csproj">
+    <ProjectReference Include="..\SERVICES\SERVICES.csproj">
       <Project>{9b788825-fa09-4599-bc05-7398e2d145ed}</Project>
       <Name>SERVICES</Name>
     </ProjectReference>

@@ -1,4 +1,4 @@
-namespace PRESENTATION.Forms.Auth
+namespace UI.Forms.Auth
 {
     partial class FrmAdministrarUsuarios
     {

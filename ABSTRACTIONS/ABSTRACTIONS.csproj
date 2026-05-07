@@ -40,7 +40,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\IEncryptionService.cs" />
     <Compile Include="Services\IPasswordHasher.cs" />
-    <Compile Include="Services\ISesionUsuario.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -7,3 +7,12 @@ G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ing
 G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\proyectointegrador_is_uai\CROSSCUTTING\obj\Debug\SERVICES.csproj.Up2Date
 G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\proyectointegrador_is_uai\CROSSCUTTING\obj\Debug\SERVICES.dll
 G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\proyectointegrador_is_uai\CROSSCUTTING\obj\Debug\SERVICES.pdb
+C:\Users\Navegador\source\repos\jotaerrec\proyectointegrador_is_uai\SERVICES\bin\Debug\SERVICES.dll
+C:\Users\Navegador\source\repos\jotaerrec\proyectointegrador_is_uai\SERVICES\bin\Debug\SERVICES.pdb
+C:\Users\Navegador\source\repos\jotaerrec\proyectointegrador_is_uai\SERVICES\bin\Debug\ABSTRACTIONS.dll
+C:\Users\Navegador\source\repos\jotaerrec\proyectointegrador_is_uai\SERVICES\bin\Debug\ABSTRACTIONS.pdb
+C:\Users\Navegador\source\repos\jotaerrec\proyectointegrador_is_uai\SERVICES\obj\Debug\SERVICES.csproj.AssemblyReference.cache
+C:\Users\Navegador\source\repos\jotaerrec\proyectointegrador_is_uai\SERVICES\obj\Debug\SERVICES.csproj.CoreCompileInputs.cache
+C:\Users\Navegador\source\repos\jotaerrec\proyectointegrador_is_uai\SERVICES\obj\Debug\SERVICES.csproj.Up2Date
+C:\Users\Navegador\source\repos\jotaerrec\proyectointegrador_is_uai\SERVICES\obj\Debug\SERVICES.dll
+C:\Users\Navegador\source\repos\jotaerrec\proyectointegrador_is_uai\SERVICES\obj\Debug\SERVICES.pdb

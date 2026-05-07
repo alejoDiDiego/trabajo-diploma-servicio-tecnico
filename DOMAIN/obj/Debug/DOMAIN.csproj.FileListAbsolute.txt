@@ -31,3 +31,12 @@ D:\ingsoftRodriguezDiDiego\proyectointegrador_is_uai\DOMAIN\obj\Debug\DOMAIN.pdb
 G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\proyectointegrador_is_uai\DOMAIN\bin\Debug\ABSTRACTIONS.dll
 G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\proyectointegrador_is_uai\DOMAIN\bin\Debug\ABSTRACTIONS.pdb
 G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\proyectointegrador_is_uai\DOMAIN\obj\Debug\DOMAIN.csproj.Up2Date
+C:\Users\Navegador\source\repos\jotaerrec\proyectointegrador_is_uai\DOMAIN\bin\Debug\DOMAIN.dll
+C:\Users\Navegador\source\repos\jotaerrec\proyectointegrador_is_uai\DOMAIN\bin\Debug\DOMAIN.pdb
+C:\Users\Navegador\source\repos\jotaerrec\proyectointegrador_is_uai\DOMAIN\bin\Debug\ABSTRACTIONS.dll
+C:\Users\Navegador\source\repos\jotaerrec\proyectointegrador_is_uai\DOMAIN\bin\Debug\ABSTRACTIONS.pdb
+C:\Users\Navegador\source\repos\jotaerrec\proyectointegrador_is_uai\DOMAIN\obj\Debug\DOMAIN.csproj.AssemblyReference.cache
+C:\Users\Navegador\source\repos\jotaerrec\proyectointegrador_is_uai\DOMAIN\obj\Debug\DOMAIN.csproj.CoreCompileInputs.cache
+C:\Users\Navegador\source\repos\jotaerrec\proyectointegrador_is_uai\DOMAIN\obj\Debug\DOMAIN.csproj.Up2Date
+C:\Users\Navegador\source\repos\jotaerrec\proyectointegrador_is_uai\DOMAIN\obj\Debug\DOMAIN.dll
+C:\Users\Navegador\source\repos\jotaerrec\proyectointegrador_is_uai\DOMAIN\obj\Debug\DOMAIN.pdb

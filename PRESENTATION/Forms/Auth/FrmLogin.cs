@@ -1,34 +1,34 @@
 using System;
 using System.Windows.Forms;
-using ABSTRACTIONS.Services;
 using APPLICATION.Features.Usuarios;
-using APPLICATION.Features.Usuarios.DTOs;
+using DOMAIN.Features.Usuarios;
 using SERVICES.Auth;
 
-namespace PRESENTATION.Forms.Auth
+namespace UI.Forms.Auth
 {
     public partial class FrmLogin : Form
     {
         public FrmLogin()
         {
             InitializeComponent();
+
+            UsuarioService usuarioService = new UsuarioService();
+
+            if(usuarioService.Listar().Count == 0)
+            {
+                MessageBox.Show("No hay usuarios registrados. Se creara un usuario por defecto con username 'admin' y password '123'.", "Usuario por defecto creado", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                usuarioService.Crear("admin", "123");
+            }
+
         }
 
         private void BTN_IniciarSesion_Click(object sender, EventArgs e)
         {
             try
             {
-                ISesionUsuario sesion = SessionManager.GetInstance();
                 UsuarioService usuarioService = new UsuarioService();
 
-                UsuarioLoginDTO usuarioForm = new UsuarioLoginDTO
-                {
-                    Username = TBX_Username.Text,
-                    Password = TBX_Password.Text
-                };
-
-                UsuarioDTO usuarioLogin = usuarioService.Login(usuarioForm);
-                sesion.Login(usuarioLogin);
+                usuarioService.Login(TBX_Username.Text, TBX_Password.Text);
 
                 DialogResult = DialogResult.OK;
             }

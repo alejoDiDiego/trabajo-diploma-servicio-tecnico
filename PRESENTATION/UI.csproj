@@ -89,15 +89,19 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\APPLICATION\APPLICATION.csproj">
-      <Project>{40fc3c2b-71e8-4986-b0a6-3427f4b8cc06}</Project>
-      <Name>APPLICATION</Name>
-    </ProjectReference>
     <ProjectReference Include="..\ABSTRACTIONS\ABSTRACTIONS.csproj">
       <Project>{d4d53c58-6239-4304-af5d-8439db5150d3}</Project>
       <Name>ABSTRACTIONS</Name>
     </ProjectReference>
-    <ProjectReference Include="..\CROSSCUTTING\SERVICES.csproj">
+    <ProjectReference Include="..\APPLICATION\APPLICATION.csproj">
+      <Project>{40fc3c2b-71e8-4986-b0a6-3427f4b8cc06}</Project>
+      <Name>APPLICATION</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DOMAIN\DOMAIN.csproj">
+      <Project>{c5bd7b6a-7483-4782-bd1d-9237575e7bea}</Project>
+      <Name>DOMAIN</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SERVICES\SERVICES.csproj">
       <Project>{9b788825-fa09-4599-bc05-7398e2d145ed}</Project>
       <Name>SERVICES</Name>
     </ProjectReference>
