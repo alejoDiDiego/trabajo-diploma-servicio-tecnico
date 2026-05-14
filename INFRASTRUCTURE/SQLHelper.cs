@@ -51,21 +51,6 @@ namespace REPOSITORY
             }
         }
 
-        public int ExecuteScalar(string query, SqlParameter[] parametros = null)
-        {
-            using (SqlConnection conexion = new SqlConnection(_cadenaConexion))
-            using (SqlCommand cmd = new SqlCommand(query, conexion))
-            {
-                if (parametros != null)
-                {
-                    cmd.Parameters.AddRange(parametros);
-                }
-
-                conexion.Open();
-                var result = cmd.ExecuteScalar();
-                return result != null ? Convert.ToInt32(result) : 0;
-            }
-        }
 
         public DataTable ExecuteQuery(string query, SqlParameter[] parametros = null)
         {

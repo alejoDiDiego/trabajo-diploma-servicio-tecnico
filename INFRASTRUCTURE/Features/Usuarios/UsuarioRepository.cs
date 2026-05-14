@@ -152,7 +152,7 @@ namespace REPOSITORY.Features.Usuarios
                 new SqlParameter("@Password", usuario.Password)
             };
 
-            _db.ExecuteScalar(query, sqlParameters);
+            _db.ExecuteTransaction(query, sqlParameters);
         }
     }
 }
