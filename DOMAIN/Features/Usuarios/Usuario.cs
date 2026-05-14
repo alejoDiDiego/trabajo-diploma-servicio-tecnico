@@ -1,4 +1,5 @@
 ﻿using DOMAIN.Exceptions;
+using ABSTRACTIONS.Features.Usuarios;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace DOMAIN.Features.Usuarios
 {
-    public class Usuario
+    public class Usuario : IUsuario
     {
         public int Id { get; private set; }
         public string Username { get; private set; }

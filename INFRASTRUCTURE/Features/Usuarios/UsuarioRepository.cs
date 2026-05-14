@@ -1,36 +1,38 @@
-﻿using APPLICATION.Features.Usuarios.DTOs;
-using APPLICATION.Features.Usuarios.Interfaces;
-using DOMAIN.Features.Usuarios;
-using DOMAIN.Features.Usuarios.Exceptions;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using DOMAIN.Features.Usuarios;
+using DOMAIN.Features.Usuarios.Exceptions;
 
-namespace INFRASTRUCTURE.Features.Usuarios
+namespace REPOSITORY.Features.Usuarios
 {
-    public class UsuarioRepository : IUsuarioRepository
+    public class UsuarioRepository
     {
         private readonly SqlHelper _db;
+
+        public UsuarioRepository()
+            : this(ConfigurationManager.ConnectionStrings["UrlDB"].ConnectionString)
+        {
+        }
 
         public UsuarioRepository(string cadenaConexion)
         {
             _db = new SqlHelper(cadenaConexion);
         }
 
-        public Usuario Agregar(Usuario u)
+        public Usuario Agregar(Usuario usuario)
         {
             string query = @"
                 INSERT INTO Usuarios (username, password) VALUES (@Username, @Password);
+                SELECT CAST(SCOPE_IDENTITY() AS int);
             ";
 
             SqlParameter[] sqlParameters = new SqlParameter[]
             {
-                new SqlParameter("@Username", u.Username),
-                new SqlParameter("@Password", u.Password)
+                new SqlParameter("@Username", usuario.Username),
+                new SqlParameter("@Password", usuario.Password)
             };
 
             try
@@ -39,9 +41,9 @@ namespace INFRASTRUCTURE.Features.Usuarios
 
                 return Usuario.CargarDesdeDB(
                     id,
-                    u.Username,
-                    u.Password
-                 );
+                    usuario.Username,
+                    usuario.Password
+                );
             }
             catch (SqlException ex) when (ex.Number == 2601 || ex.Number == 2627)
             {
@@ -76,7 +78,8 @@ namespace INFRASTRUCTURE.Features.Usuarios
 
             DataTable dt = _db.ExecuteQuery(query, sqlParameters);
 
-            if (dt.Rows.Count <= 0) return null;
+            if (dt.Rows.Count <= 0)
+                return null;
 
             DataRow fila = dt.Rows[0];
 
@@ -100,7 +103,8 @@ namespace INFRASTRUCTURE.Features.Usuarios
 
             DataTable dt = _db.ExecuteQuery(query, sqlParameters);
 
-            if (dt.Rows.Count <= 0) return null;
+            if (dt.Rows.Count <= 0)
+                return null;
 
             DataRow fila = dt.Rows[0];
 
@@ -119,9 +123,6 @@ namespace INFRASTRUCTURE.Features.Usuarios
 
             DataTable dt = _db.ExecuteQuery(query);
 
-            if (dt.Rows.Count <= 0)
-                throw new Exception("No hay usuarios");
-
             List<Usuario> usuarios = new List<Usuario>();
 
             foreach (DataRow fila in dt.Rows)
@@ -138,7 +139,7 @@ namespace INFRASTRUCTURE.Features.Usuarios
             return usuarios;
         }
 
-        public void Modificar(Usuario u)
+        public void Modificar(Usuario usuario)
         {
             string query = @"
                 UPDATE Usuarios SET username=@Username, password=@Password WHERE id_usuario=@Id;
@@ -146,9 +147,9 @@ namespace INFRASTRUCTURE.Features.Usuarios
 
             SqlParameter[] sqlParameters = new SqlParameter[]
             {
-                new SqlParameter("@Id", u.Id),
-                new SqlParameter("@Username", u.Username),
-                new SqlParameter("@Password", u.Password)
+                new SqlParameter("@Id", usuario.Id),
+                new SqlParameter("@Username", usuario.Username),
+                new SqlParameter("@Password", usuario.Password)
             };
 
             _db.ExecuteScalar(query, sqlParameters);

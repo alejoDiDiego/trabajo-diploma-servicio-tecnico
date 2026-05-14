@@ -1,0 +1,46 @@
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\tp_integrador\CROSSCUTTING\bin\Debug\CROSSCUTTING.dll
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\tp_integrador\CROSSCUTTING\bin\Debug\CROSSCUTTING.pdb
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\tp_integrador\CROSSCUTTING\bin\Debug\APPLICATION.dll
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\tp_integrador\CROSSCUTTING\bin\Debug\INFRASTRUCTURE.dll
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\tp_integrador\CROSSCUTTING\bin\Debug\APPLICATION.pdb
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\tp_integrador\CROSSCUTTING\bin\Debug\INFRASTRUCTURE.pdb
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\tp_integrador\CROSSCUTTING\obj\Debug\CROSSCUTTING.csproj.AssemblyReference.cache
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\tp_integrador\CROSSCUTTING\obj\Debug\CROSSCUTTING.csproj.CoreCompileInputs.cache
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\tp_integrador\CROSSCUTTING\obj\Debug\CROSSCUT.4C0E1BF9.Up2Date
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\tp_integrador\CROSSCUTTING\obj\Debug\CROSSCUTTING.dll
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\tp_integrador\CROSSCUTTING\obj\Debug\CROSSCUTTING.pdb
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\proyectointegrador_is_uai\CROSSCUTTING\obj\Debug\CROSSCUTTING.csproj.AssemblyReference.cache
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\proyectointegrador_is_uai\CROSSCUTTING\obj\Debug\CROSSCUTTING.csproj.CoreCompileInputs.cache
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\proyectointegrador_is_uai\CROSSCUTTING\obj\Debug\CROSSCUT.4C0E1BF9.Up2Date
+C:\Users\Javi\source\repos\proyectointegrador_is_uai\CROSSCUTTING\bin\Debug\CROSSCUTTING.dll
+C:\Users\Javi\source\repos\proyectointegrador_is_uai\CROSSCUTTING\bin\Debug\CROSSCUTTING.pdb
+C:\Users\Javi\source\repos\proyectointegrador_is_uai\CROSSCUTTING\bin\Debug\APPLICATION.dll
+C:\Users\Javi\source\repos\proyectointegrador_is_uai\CROSSCUTTING\bin\Debug\INFRASTRUCTURE.dll
+C:\Users\Javi\source\repos\proyectointegrador_is_uai\CROSSCUTTING\bin\Debug\DOMAIN.dll
+C:\Users\Javi\source\repos\proyectointegrador_is_uai\CROSSCUTTING\bin\Debug\APPLICATION.pdb
+C:\Users\Javi\source\repos\proyectointegrador_is_uai\CROSSCUTTING\bin\Debug\INFRASTRUCTURE.pdb
+C:\Users\Javi\source\repos\proyectointegrador_is_uai\CROSSCUTTING\bin\Debug\DOMAIN.pdb
+C:\Users\Javi\source\repos\proyectointegrador_is_uai\CROSSCUTTING\obj\Debug\CROSSCUTTING.csproj.AssemblyReference.cache
+C:\Users\Javi\source\repos\proyectointegrador_is_uai\CROSSCUTTING\obj\Debug\CROSSCUTTING.csproj.CoreCompileInputs.cache
+C:\Users\Javi\source\repos\proyectointegrador_is_uai\CROSSCUTTING\obj\Debug\CROSSCUT.4C0E1BF9.Up2Date
+C:\Users\Javi\source\repos\proyectointegrador_is_uai\CROSSCUTTING\obj\Debug\CROSSCUTTING.dll
+C:\Users\Javi\source\repos\proyectointegrador_is_uai\CROSSCUTTING\obj\Debug\CROSSCUTTING.pdb
+D:\ingsoftRodriguezDiDiego\proyectointegrador_is_uai\CROSSCUTTING\bin\Debug\CROSSCUTTING.dll
+D:\ingsoftRodriguezDiDiego\proyectointegrador_is_uai\CROSSCUTTING\bin\Debug\CROSSCUTTING.pdb
+D:\ingsoftRodriguezDiDiego\proyectointegrador_is_uai\CROSSCUTTING\bin\Debug\APPLICATION.dll
+D:\ingsoftRodriguezDiDiego\proyectointegrador_is_uai\CROSSCUTTING\bin\Debug\INFRASTRUCTURE.dll
+D:\ingsoftRodriguezDiDiego\proyectointegrador_is_uai\CROSSCUTTING\bin\Debug\DOMAIN.dll
+D:\ingsoftRodriguezDiDiego\proyectointegrador_is_uai\CROSSCUTTING\bin\Debug\APPLICATION.pdb
+D:\ingsoftRodriguezDiDiego\proyectointegrador_is_uai\CROSSCUTTING\bin\Debug\INFRASTRUCTURE.pdb
+D:\ingsoftRodriguezDiDiego\proyectointegrador_is_uai\CROSSCUTTING\bin\Debug\DOMAIN.pdb
+D:\ingsoftRodriguezDiDiego\proyectointegrador_is_uai\CROSSCUTTING\obj\Debug\CROSSCUTTING.csproj.AssemblyReference.cache
+D:\ingsoftRodriguezDiDiego\proyectointegrador_is_uai\CROSSCUTTING\obj\Debug\CROSSCUTTING.csproj.CoreCompileInputs.cache
+D:\ingsoftRodriguezDiDiego\proyectointegrador_is_uai\CROSSCUTTING\obj\Debug\CROSSCUT.4C0E1BF9.Up2Date
+D:\ingsoftRodriguezDiDiego\proyectointegrador_is_uai\CROSSCUTTING\obj\Debug\CROSSCUTTING.dll
+D:\ingsoftRodriguezDiDiego\proyectointegrador_is_uai\CROSSCUTTING\obj\Debug\CROSSCUTTING.pdb
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\proyectointegrador_is_uai\CROSSCUTTING\bin\Debug\SERVICES.dll
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\proyectointegrador_is_uai\CROSSCUTTING\bin\Debug\SERVICES.pdb
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\proyectointegrador_is_uai\CROSSCUTTING\bin\Debug\ABSTRACTIONS.dll
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\proyectointegrador_is_uai\CROSSCUTTING\bin\Debug\ABSTRACTIONS.pdb
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\proyectointegrador_is_uai\CROSSCUTTING\obj\Debug\SERVICES.dll
+G:\My Drive\Alejo\Ingenieria en Sistemas Informatico\3 year\1er Cuatrimestre\Ingenieria de Software\Trabajo Integrador\proyectointegrador_is_uai\CROSSCUTTING\obj\Debug\SERVICES.pdb
