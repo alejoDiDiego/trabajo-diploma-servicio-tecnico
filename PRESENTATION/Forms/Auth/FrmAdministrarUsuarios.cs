@@ -16,6 +16,12 @@ namespace UI.Forms.Auth
             InitializeComponent();
         }
 
+        private void ActualizarLista() { 
+            UsuarioService usuarioService = new UsuarioService();
+            _usuariosBindingList = new BindingList<Usuario>(usuarioService.Listar());
+            DGV_Usuarios.DataSource = _usuariosBindingList;
+        }
+
         private void FrmAdministrarCuentas_Load(object sender, EventArgs e)
         {
             SessionManager sesion = SessionManager.GetInstance();
@@ -96,7 +102,16 @@ namespace UI.Forms.Auth
 
         private void BTN_EliminarUsuario_Click(object sender, EventArgs e)
         {
+
+            SessionManager sesion = SessionManager.GetInstance();
             var usuarioSeleccionado = (Usuario)DGV_Usuarios.SelectedRows[0].DataBoundItem;
+
+            if (sesion.Usuario.Id == usuarioSeleccionado.Id)
+            {
+                MessageBox.Show("No podes eliminarte a vos mismo.", "Acceso Denegado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
 
             var confirmResult = MessageBox.Show($"Estas seguro de eliminar al usuario '{usuarioSeleccionado.Username}'?", "Confirmar Eliminacion", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
 
@@ -141,21 +156,20 @@ namespace UI.Forms.Auth
 
                 Usuario usuarioModificado = usuarioService.Modificar(usuarioSeleccionado.Id, TBX_Username.Text, TBX_Password.Text);
 
-                usuarioSeleccionado = usuarioModificado;
-
                 TBX_Username.Clear();
                 TBX_Password.Clear();
 
                 DGV_Usuarios.ClearSelection();
                 BTN_EliminarUsuario.Enabled = false;
                 BTN_EditarUsuario.Enabled = false;
-
+                ActualizarLista();
                 MessageBox.Show("Usuario editado exitosamente.", "Exito", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error al editar usuario: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+
         }
     }
 }
