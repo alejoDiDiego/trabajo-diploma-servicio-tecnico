@@ -1,5 +1,5 @@
 using System.Windows.Forms;
-using UI.Forms.Auth;
+using UI.Forms;
 
 namespace UI
 {
@@ -10,11 +10,7 @@ namespace UI
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            using (var login = new FrmLogin())
-            {
-                if (login.ShowDialog() == DialogResult.OK)
-                    Application.Run(new FrmAdministrarUsuarios());
-            }
+            Application.Run(new FrmPrincipal());
         }
     }
 }

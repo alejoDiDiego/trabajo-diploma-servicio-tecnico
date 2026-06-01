@@ -24,14 +24,17 @@ namespace UI.Forms.Auth
 
         private void FrmAdministrarCuentas_Load(object sender, EventArgs e)
         {
-            SessionManager sesion = SessionManager.GetInstance();
+            BTN_CerrarSesion.Visible = false;
 
-            if (sesion.Usuario == null)
+            if (!SessionManager.HaySesionActiva())
             {
                 PNL_Permisos.Visible = false;
                 MessageBox.Show("No tenes permisos para acceder a esta seccion.", "Acceso Denegado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                Close();
                 return;
             }
+
+            SessionManager sesion = SessionManager.GetInstance();
 
             PNL_Permisos.Visible = true;
 
@@ -66,21 +69,7 @@ namespace UI.Forms.Auth
 
         private void BTN_CerrarSesion_Click(object sender, EventArgs e)
         {
-            SessionManager.Logout();
-            Hide();
-
-            using (var login = new FrmLogin())
-            {
-                if (login.ShowDialog() == DialogResult.OK)
-                {
-                    FrmAdministrarCuentas_Load(this, EventArgs.Empty);
-                    Show();
-                }
-                else
-                {
-                    Close();
-                }
-            }
+            Close();
         }
 
         private void DGV_Usuarios_CellClick(object sender, DataGridViewCellEventArgs e)

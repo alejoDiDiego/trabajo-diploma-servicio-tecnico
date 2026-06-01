@@ -26,6 +26,25 @@ namespace SERVICES.Auth
             }
         }
 
+        public static bool HaySesionActiva()
+        {
+            lock (_lock)
+            {
+                return _session != null && _session.Usuario != null;
+            }
+        }
+
+        public static IUsuario ObtenerUsuarioActual()
+        {
+            lock (_lock)
+            {
+                if (_session == null)
+                    return null;
+
+                return _session.Usuario;
+            }
+        }
+
         public static void Login(IUsuario usuario)
         {
             lock (_lock)

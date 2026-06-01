@@ -31,6 +31,7 @@ namespace UI.Forms.Auth
                 usuarioService.Login(TBX_Username.Text, TBX_Password.Text);
 
                 DialogResult = DialogResult.OK;
+                Close();
             }
             catch (Exception ex)
             {

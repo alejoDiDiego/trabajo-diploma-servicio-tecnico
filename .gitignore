@@ -42,3 +42,7 @@ _ReSharper*/
 *.*~
 project.lock.json
 .DS_Store
+
+# Build results
+[Bb]in/
+[Oo]bj/
