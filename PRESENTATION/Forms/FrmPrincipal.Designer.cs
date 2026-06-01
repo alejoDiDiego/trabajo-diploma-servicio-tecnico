@@ -18,13 +18,17 @@ namespace UI.Forms
             this.TSMI_IniciarSesion = new System.Windows.Forms.ToolStripMenuItem();
             this.TSMI_CerrarSesion = new System.Windows.Forms.ToolStripMenuItem();
             this.TSMI_AdministrarUsuarios = new System.Windows.Forms.ToolStripMenuItem();
+            this.TSMI_Idioma = new System.Windows.Forms.ToolStripMenuItem();
+            this.TSMI_IdiomaEspanol = new System.Windows.Forms.ToolStripMenuItem();
+            this.TSMI_IdiomaIngles = new System.Windows.Forms.ToolStripMenuItem();
             this.MSP_Principal.SuspendLayout();
             this.SuspendLayout();
             // 
             // MSP_Principal
             // 
             this.MSP_Principal.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.TSMI_Usuario});
+            this.TSMI_Usuario,
+            this.TSMI_Idioma});
             this.MSP_Principal.Location = new System.Drawing.Point(0, 0);
             this.MSP_Principal.Name = "MSP_Principal";
             this.MSP_Principal.Size = new System.Drawing.Size(984, 24);
@@ -39,12 +43,14 @@ namespace UI.Forms
             this.TSMI_AdministrarUsuarios});
             this.TSMI_Usuario.Name = "TSMI_Usuario";
             this.TSMI_Usuario.Size = new System.Drawing.Size(59, 20);
+            this.TSMI_Usuario.Tag = "Menu.Usuario";
             this.TSMI_Usuario.Text = "Usuario";
             // 
             // TSMI_IniciarSesion
             // 
             this.TSMI_IniciarSesion.Name = "TSMI_IniciarSesion";
             this.TSMI_IniciarSesion.Size = new System.Drawing.Size(180, 22);
+            this.TSMI_IniciarSesion.Tag = "Menu.IniciarSesion";
             this.TSMI_IniciarSesion.Text = "Iniciar sesion";
             this.TSMI_IniciarSesion.Click += new System.EventHandler(this.TSMI_IniciarSesion_Click);
             // 
@@ -52,6 +58,7 @@ namespace UI.Forms
             // 
             this.TSMI_CerrarSesion.Name = "TSMI_CerrarSesion";
             this.TSMI_CerrarSesion.Size = new System.Drawing.Size(180, 22);
+            this.TSMI_CerrarSesion.Tag = "Menu.CerrarSesion";
             this.TSMI_CerrarSesion.Text = "Cerrar sesion";
             this.TSMI_CerrarSesion.Click += new System.EventHandler(this.TSMI_CerrarSesion_Click);
             // 
@@ -59,8 +66,35 @@ namespace UI.Forms
             // 
             this.TSMI_AdministrarUsuarios.Name = "TSMI_AdministrarUsuarios";
             this.TSMI_AdministrarUsuarios.Size = new System.Drawing.Size(180, 22);
+            this.TSMI_AdministrarUsuarios.Tag = "Menu.AdministrarUsuarios";
             this.TSMI_AdministrarUsuarios.Text = "Administrar usuarios";
             this.TSMI_AdministrarUsuarios.Click += new System.EventHandler(this.TSMI_AdministrarUsuarios_Click);
+            // 
+            // TSMI_Idioma
+            // 
+            this.TSMI_Idioma.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.TSMI_IdiomaEspanol,
+            this.TSMI_IdiomaIngles});
+            this.TSMI_Idioma.Name = "TSMI_Idioma";
+            this.TSMI_Idioma.Size = new System.Drawing.Size(56, 20);
+            this.TSMI_Idioma.Tag = "Menu.Idioma";
+            this.TSMI_Idioma.Text = "Idioma";
+            // 
+            // TSMI_IdiomaEspanol
+            // 
+            this.TSMI_IdiomaEspanol.Name = "TSMI_IdiomaEspanol";
+            this.TSMI_IdiomaEspanol.Size = new System.Drawing.Size(180, 22);
+            this.TSMI_IdiomaEspanol.Tag = "Idioma.Espanol";
+            this.TSMI_IdiomaEspanol.Text = "Espanol";
+            this.TSMI_IdiomaEspanol.Click += new System.EventHandler(this.TSMI_IdiomaEspanol_Click);
+            // 
+            // TSMI_IdiomaIngles
+            // 
+            this.TSMI_IdiomaIngles.Name = "TSMI_IdiomaIngles";
+            this.TSMI_IdiomaIngles.Size = new System.Drawing.Size(180, 22);
+            this.TSMI_IdiomaIngles.Tag = "Idioma.Ingles";
+            this.TSMI_IdiomaIngles.Text = "Ingles";
+            this.TSMI_IdiomaIngles.Click += new System.EventHandler(this.TSMI_IdiomaIngles_Click);
             // 
             // FrmPrincipal
             // 
@@ -72,6 +106,7 @@ namespace UI.Forms
             this.MainMenuStrip = this.MSP_Principal;
             this.Name = "FrmPrincipal";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+            this.Tag = "FrmPrincipal.Text";
             this.Text = "Sistema";
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.Load += new System.EventHandler(this.FrmPrincipal_Load);
@@ -87,5 +122,8 @@ namespace UI.Forms
         private System.Windows.Forms.ToolStripMenuItem TSMI_IniciarSesion;
         private System.Windows.Forms.ToolStripMenuItem TSMI_CerrarSesion;
         private System.Windows.Forms.ToolStripMenuItem TSMI_AdministrarUsuarios;
+        private System.Windows.Forms.ToolStripMenuItem TSMI_Idioma;
+        private System.Windows.Forms.ToolStripMenuItem TSMI_IdiomaEspanol;
+        private System.Windows.Forms.ToolStripMenuItem TSMI_IdiomaIngles;
     }
 }

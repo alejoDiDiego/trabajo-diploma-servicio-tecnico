@@ -1,25 +1,50 @@
 using System;
 using System.Windows.Forms;
+using ABSTRACTIONS.Features.Idiomas;
 using APPLICATION.Features.Usuarios;
-using DOMAIN.Features.Usuarios;
-using SERVICES.Auth;
+using SERVICES.Idiomas;
 
 namespace UI.Forms.Auth
 {
-    public partial class FrmLogin : Form
+    public partial class FrmLogin : Form, IObservador
     {
+        private readonly SesionIdioma _sesionIdioma;
+
         public FrmLogin()
         {
+            _sesionIdioma = SesionIdioma.GetInstance();
             InitializeComponent();
 
             UsuarioService usuarioService = new UsuarioService();
 
             if(usuarioService.Listar().Count == 0)
             {
-                MessageBox.Show("No hay usuarios registrados. Se creara un usuario por defecto con username 'admin' y password '123'.", "Usuario por defecto creado", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(
+                    _sesionIdioma.idioma.BuscarTraduccion("Mensaje.UsuarioDefectoCreado"),
+                    _sesionIdioma.idioma.BuscarTraduccion("Titulo.UsuarioDefectoCreado"),
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
                 usuarioService.Crear("admin", "123");
             }
 
+        }
+
+        public void Actualizar(IIdioma idiomaObservado)
+        {
+            if (idiomaObservado == null)
+                return;
+
+            Text = idiomaObservado.BuscarTraduccion(Tag.ToString());
+            LBL_Titulo.Text = idiomaObservado.BuscarTraduccion(LBL_Titulo.Tag.ToString());
+            label1.Text = idiomaObservado.BuscarTraduccion(label1.Tag.ToString());
+            label2.Text = idiomaObservado.BuscarTraduccion(label2.Tag.ToString());
+            BTN_IniciarSesion.Text = idiomaObservado.BuscarTraduccion(BTN_IniciarSesion.Tag.ToString());
+        }
+
+        private void FrmLogin_Load(object sender, EventArgs e)
+        {
+            _sesionIdioma.RegistrarObservador(this);
+            Actualizar(_sesionIdioma.idioma);
         }
 
         private void BTN_IniciarSesion_Click(object sender, EventArgs e)
@@ -35,8 +60,18 @@ namespace UI.Forms.Auth
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error al iniciar sesion: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(
+                    string.Format(_sesionIdioma.idioma.BuscarTraduccion("Mensaje.ErrorIniciarSesion"), ex.Message),
+                    _sesionIdioma.idioma.BuscarTraduccion("Titulo.Error"),
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
             }
+        }
+
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            _sesionIdioma.DesregistrarObservador(this);
+            base.OnFormClosed(e);
         }
     }
 }

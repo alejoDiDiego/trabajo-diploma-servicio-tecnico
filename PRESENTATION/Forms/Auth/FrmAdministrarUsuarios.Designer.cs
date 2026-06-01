@@ -56,6 +56,7 @@ namespace UI.Forms.Auth
             this.BTN_CerrarSesion.Name = "BTN_CerrarSesion";
             this.BTN_CerrarSesion.Size = new System.Drawing.Size(125, 30);
             this.BTN_CerrarSesion.TabIndex = 10;
+            this.BTN_CerrarSesion.Tag = "Menu.CerrarSesion";
             this.BTN_CerrarSesion.Text = "Cerrar Sesión";
             this.BTN_CerrarSesion.UseVisualStyleBackColor = false;
             this.BTN_CerrarSesion.Click += new System.EventHandler(this.BTN_CerrarSesion_Click);
@@ -69,6 +70,7 @@ namespace UI.Forms.Auth
             this.LBL_FechaInicio.Name = "LBL_FechaInicio";
             this.LBL_FechaInicio.Size = new System.Drawing.Size(91, 15);
             this.LBL_FechaInicio.TabIndex = 11;
+            this.LBL_FechaInicio.Tag = "AdministrarUsuarios.SesionIniciada";
             this.LBL_FechaInicio.Text = "Sesión iniciada: ";
             // 
             // LBL_Username
@@ -80,6 +82,7 @@ namespace UI.Forms.Auth
             this.LBL_Username.Name = "LBL_Username";
             this.LBL_Username.Size = new System.Drawing.Size(53, 15);
             this.LBL_Username.TabIndex = 12;
+            this.LBL_Username.Tag = "AdministrarUsuarios.UsuarioActual";
             this.LBL_Username.Text = "Usuario: ";
             // 
             // LBL_Titulo
@@ -91,6 +94,7 @@ namespace UI.Forms.Auth
             this.LBL_Titulo.Name = "LBL_Titulo";
             this.LBL_Titulo.Size = new System.Drawing.Size(256, 25);
             this.LBL_Titulo.TabIndex = 13;
+            this.LBL_Titulo.Tag = "AdministrarUsuarios.Titulo";
             this.LBL_Titulo.Text = "Administración de Usuarios";
             // 
             // PNL_Permisos
@@ -122,6 +126,7 @@ namespace UI.Forms.Auth
             this.BTN_CrearUsuario.Name = "BTN_CrearUsuario";
             this.BTN_CrearUsuario.Size = new System.Drawing.Size(160, 28);
             this.BTN_CrearUsuario.TabIndex = 3;
+            this.BTN_CrearUsuario.Tag = "AdministrarUsuarios.CrearUsuario";
             this.BTN_CrearUsuario.Text = "Crear Usuario";
             this.BTN_CrearUsuario.UseVisualStyleBackColor = false;
             this.BTN_CrearUsuario.Click += new System.EventHandler(this.BTN_CrearUsuario_Click);
@@ -143,6 +148,7 @@ namespace UI.Forms.Auth
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(67, 15);
             this.label2.TabIndex = 4;
+            this.label2.Tag = "Campo.Password";
             this.label2.Text = "Contraseña";
             // 
             // TBX_Username
@@ -161,6 +167,7 @@ namespace UI.Forms.Auth
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(110, 15);
             this.label1.TabIndex = 5;
+            this.label1.Tag = "Campo.Username";
             this.label1.Text = "Nombre de Usuario";
             // 
             // LBL_NuevoUsuario
@@ -172,6 +179,7 @@ namespace UI.Forms.Auth
             this.LBL_NuevoUsuario.Name = "LBL_NuevoUsuario";
             this.LBL_NuevoUsuario.Size = new System.Drawing.Size(108, 19);
             this.LBL_NuevoUsuario.TabIndex = 6;
+            this.LBL_NuevoUsuario.Tag = "AdministrarUsuarios.NuevoUsuario";
             this.LBL_NuevoUsuario.Text = "Nuevo Usuario";
             // 
             // DGV_Usuarios
@@ -204,6 +212,7 @@ namespace UI.Forms.Auth
             this.BTN_EliminarUsuario.Name = "BTN_EliminarUsuario";
             this.BTN_EliminarUsuario.Size = new System.Drawing.Size(160, 28);
             this.BTN_EliminarUsuario.TabIndex = 7;
+            this.BTN_EliminarUsuario.Tag = "AdministrarUsuarios.EliminarUsuario";
             this.BTN_EliminarUsuario.Text = "Eliminar Usuario";
             this.BTN_EliminarUsuario.UseVisualStyleBackColor = false;
             this.BTN_EliminarUsuario.Click += new System.EventHandler(this.BTN_EliminarUsuario_Click);
@@ -220,6 +229,7 @@ namespace UI.Forms.Auth
             this.BTN_EditarUsuario.Name = "BTN_EditarUsuario";
             this.BTN_EditarUsuario.Size = new System.Drawing.Size(160, 28);
             this.BTN_EditarUsuario.TabIndex = 8;
+            this.BTN_EditarUsuario.Tag = "AdministrarUsuarios.EditarUsuario";
             this.BTN_EditarUsuario.Text = "Editar Usuario";
             this.BTN_EditarUsuario.UseVisualStyleBackColor = false;
             this.BTN_EditarUsuario.Click += new System.EventHandler(this.BTN_EditarUsuario_Click);
@@ -236,6 +246,7 @@ namespace UI.Forms.Auth
             this.MaximizeBox = false;
             this.Name = "FrmAdministrarUsuarios";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+            this.Tag = "FrmAdministrarUsuarios.Text";
             this.Text = "Administración de Usuarios";
             this.Load += new System.EventHandler(this.FrmAdministrarCuentas_Load);
             this.PNL_Header.ResumeLayout(false);

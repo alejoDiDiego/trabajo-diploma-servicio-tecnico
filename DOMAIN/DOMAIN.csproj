@@ -42,6 +42,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Exceptions\ReglaNegocioException.cs" />
+    <Compile Include="Features\Idiomas\Idioma.cs" />
+    <Compile Include="Features\Idiomas\Palabra.cs" />
+    <Compile Include="Features\Idiomas\Traduccion.cs" />
     <Compile Include="Features\Usuarios\Exceptions\UsuarioNoExisteException.cs" />
     <Compile Include="Features\Usuarios\Exceptions\UsuarioYaExisteException.cs" />
     <Compile Include="Features\Usuarios\Usuario.cs" />

@@ -37,6 +37,7 @@ namespace UI.Forms.Auth
             this.LBL_Titulo.ForeColor = System.Drawing.Color.White;
             this.LBL_Titulo.Location = new System.Drawing.Point(15, 16);
             this.LBL_Titulo.Name = "LBL_Titulo";
+            this.LBL_Titulo.Tag = "Login.Titulo";
             this.LBL_Titulo.Text = "Iniciar Sesión";
 
             // label1
@@ -44,6 +45,7 @@ namespace UI.Forms.Auth
             this.label1.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.label1.Location = new System.Drawing.Point(40, 85);
             this.label1.Name = "label1";
+            this.label1.Tag = "Campo.Username";
             this.label1.Text = "Nombre de Usuario";
 
             // TBX_Username
@@ -58,6 +60,7 @@ namespace UI.Forms.Auth
             this.label2.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.label2.Location = new System.Drawing.Point(40, 148);
             this.label2.Name = "label2";
+            this.label2.Tag = "Campo.Password";
             this.label2.Text = "Contraseña";
 
             // TBX_Password
@@ -78,6 +81,7 @@ namespace UI.Forms.Auth
             this.BTN_IniciarSesion.Name = "BTN_IniciarSesion";
             this.BTN_IniciarSesion.Size = new System.Drawing.Size(260, 36);
             this.BTN_IniciarSesion.TabIndex = 3;
+            this.BTN_IniciarSesion.Tag = "Login.Titulo";
             this.BTN_IniciarSesion.Text = "Iniciar Sesión";
             this.BTN_IniciarSesion.UseVisualStyleBackColor = false;
             this.BTN_IniciarSesion.Click += new System.EventHandler(this.BTN_IniciarSesion_Click);
@@ -98,7 +102,9 @@ namespace UI.Forms.Auth
             this.MinimizeBox = false;
             this.Name = "FrmLogin";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+            this.Tag = "FrmLogin.Text";
             this.Text = "Iniciar Sesión";
+            this.Load += new System.EventHandler(this.FrmLogin_Load);
 
             this.PNL_Header.ResumeLayout(false);
             this.PNL_Header.PerformLayout();

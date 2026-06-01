@@ -41,6 +41,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Features\Idiomas\IdiomaService.cs" />
     <Compile Include="Features\Usuarios\Exceptions\DatosUsuarioIncorrectosException.cs" />
     <Compile Include="Features\Usuarios\UsuarioService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
