@@ -126,7 +126,7 @@ namespace UI.Forms
 
             var usuario = SessionManager.ObtenerUsuarioActual();
             TSMI_Usuario.Text = haySesionActiva
-                ? string.Format(_sesionIdioma.idioma.BuscarTraduccion("Menu.UsuarioActual"), usuario.Username)
+                ? _sesionIdioma.idioma.BuscarTraduccion("Menu.UsuarioActual").Replace("{0}", usuario.Username)
                 : _sesionIdioma.idioma.BuscarTraduccion("Menu.Usuario");
         }
 

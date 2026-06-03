@@ -64,7 +64,6 @@ namespace UI.Forms.Auth
             // 
             // TVW_Permisos
             // 
-            this.TVW_Permisos.AllowDrop = true;
             this.TVW_Permisos.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
@@ -78,10 +77,6 @@ namespace UI.Forms.Auth
             this.TVW_Permisos.Size = new System.Drawing.Size(382, 462);
             this.TVW_Permisos.TabIndex = 0;
             this.TVW_Permisos.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.TVW_Permisos_AfterSelect);
-            this.TVW_Permisos.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.TVW_Permisos_ItemDrag);
-            this.TVW_Permisos.DragDrop += new System.Windows.Forms.DragEventHandler(this.TVW_Permisos_DragDrop);
-            this.TVW_Permisos.DragEnter += new System.Windows.Forms.DragEventHandler(this.TVW_Permisos_DragEnter);
-            this.TVW_Permisos.DragOver += new System.Windows.Forms.DragEventHandler(this.TVW_Permisos_DragOver);
             // 
             // GBX_Detalle
             // 

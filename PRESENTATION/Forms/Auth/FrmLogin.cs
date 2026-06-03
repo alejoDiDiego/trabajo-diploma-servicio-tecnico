@@ -61,7 +61,7 @@ namespace UI.Forms.Auth
             catch (Exception ex)
             {
                 MessageBox.Show(
-                    string.Format(_sesionIdioma.idioma.BuscarTraduccion("Mensaje.ErrorIniciarSesion"), ex.Message),
+                    _sesionIdioma.idioma.BuscarTraduccion("Mensaje.ErrorIniciarSesion").Replace("{0}", ex.Message),
                     _sesionIdioma.idioma.BuscarTraduccion("Titulo.Error"),
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);

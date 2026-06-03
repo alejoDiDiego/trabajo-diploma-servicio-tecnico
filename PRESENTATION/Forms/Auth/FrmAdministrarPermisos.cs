@@ -17,12 +17,14 @@ namespace UI.Forms.Auth
         private readonly PermisoService _permisoService;
         private readonly SesionIdioma _sesionIdioma;
         private List<PermisoComponent> _permisos;
+        private List<int> _idsPadres;
 
         public FrmAdministrarPermisos()
         {
             _permisoService = new PermisoService();
             _sesionIdioma = SesionIdioma.GetInstance();
             _permisos = new List<PermisoComponent>();
+            _idsPadres = new List<int>();
             InitializeComponent();
         }
 
@@ -73,11 +75,11 @@ namespace UI.Forms.Auth
         {
             try
             {
-                TipoPermisoItem tipo = ObtenerTipoSeleccionado();
+                bool esFamilia = CBX_Tipo.SelectedIndex == 1;
                 int? idPadre = ObtenerIdPadreSeleccionado();
                 PermisoComponent permiso;
 
-                if (tipo.EsFamilia)
+                if (esFamilia)
                     permiso = _permisoService.CrearFamilia(TBX_Nombre.Text, TBX_Codigo.Text, TBX_Descripcion.Text, idPadre);
                 else
                     permiso = _permisoService.CrearPermiso(TBX_Nombre.Text, TBX_Codigo.Text, TBX_Descripcion.Text, idPadre);
@@ -107,7 +109,8 @@ namespace UI.Forms.Auth
 
             try
             {
-                _permisoService.Modificar(permiso.Id, TBX_Nombre.Text, TBX_Codigo.Text, TBX_Descripcion.Text);
+                bool esFamilia = CBX_Tipo.SelectedIndex == 1;
+                _permisoService.Modificar(permiso.Id, TBX_Nombre.Text, TBX_Codigo.Text, TBX_Descripcion.Text, esFamilia);
                 CargarArbol(permiso.Id);
                 MessageBox.Show(
                     T("Mensaje.PermisoEditado"),
@@ -132,7 +135,7 @@ namespace UI.Forms.Auth
             }
 
             DialogResult confirmResult = MessageBox.Show(
-                string.Format(T("Mensaje.ConfirmarEliminarPermiso"), permiso.Nombre),
+                T("Mensaje.ConfirmarEliminarPermiso").Replace("{0}", permiso.Nombre),
                 T("Titulo.ConfirmarEliminacion"),
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Warning);
@@ -207,88 +210,6 @@ namespace UI.Forms.Auth
             ActualizarBotones();
         }
 
-        private void TVW_Permisos_ItemDrag(object sender, ItemDragEventArgs e)
-        {
-            DoDragDrop(e.Item, DragDropEffects.Move);
-        }
-
-        private void TVW_Permisos_DragEnter(object sender, DragEventArgs e)
-        {
-            e.Effect = ObtenerEfectoDrag(e);
-        }
-
-        private void TVW_Permisos_DragOver(object sender, DragEventArgs e)
-        {
-            e.Effect = ObtenerEfectoDrag(e);
-        }
-
-        private void TVW_Permisos_DragDrop(object sender, DragEventArgs e)
-        {
-            TreeNode nodoOrigen = e.Data.GetData(typeof(TreeNode)) as TreeNode;
-            TreeNode nodoDestino = ObtenerNodoDestino(e);
-
-            if (!EsDestinoValido(nodoOrigen, nodoDestino))
-            {
-                MessageBox.Show(
-                    T("Mensaje.DropInvalido"),
-                    T("Titulo.Error"),
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Warning);
-                return;
-            }
-
-            PermisoComponent permisoOrigen = nodoOrigen.Tag as PermisoComponent;
-            PermisoComponent permisoDestino = nodoDestino == null ? null : nodoDestino.Tag as PermisoComponent;
-
-            try
-            {
-                _permisoService.Mover(permisoOrigen.Id, permisoDestino == null ? (int?)null : permisoDestino.Id);
-                CargarArbol(permisoOrigen.Id);
-            }
-            catch (Exception ex)
-            {
-                MostrarError(ex);
-            }
-        }
-
-        private DragDropEffects ObtenerEfectoDrag(DragEventArgs e)
-        {
-            TreeNode nodoOrigen = e.Data.GetData(typeof(TreeNode)) as TreeNode;
-            TreeNode nodoDestino = ObtenerNodoDestino(e);
-
-            return EsDestinoValido(nodoOrigen, nodoDestino)
-                ? DragDropEffects.Move
-                : DragDropEffects.None;
-        }
-
-        private TreeNode ObtenerNodoDestino(DragEventArgs e)
-        {
-            System.Drawing.Point punto = TVW_Permisos.PointToClient(new System.Drawing.Point(e.X, e.Y));
-            return TVW_Permisos.GetNodeAt(punto);
-        }
-
-        private bool EsDestinoValido(TreeNode nodoOrigen, TreeNode nodoDestino)
-        {
-            if (nodoOrigen == null)
-                return false;
-
-            PermisoComponent permisoOrigen = nodoOrigen.Tag as PermisoComponent;
-
-            if (permisoOrigen == null)
-                return false;
-            if (nodoDestino == null)
-                return true;
-
-            PermisoComponent permisoDestino = nodoDestino.Tag as PermisoComponent;
-
-            if (permisoDestino == null)
-                return false;
-            if (!permisoDestino.EsFamilia)
-                return false;
-
-            return !permisoOrigen.Contiene(permisoDestino);
-        }
-
         private void CargarArbol(int? idSeleccionar = null)
         {
             _permisos = _permisoService.ListarArbol();
@@ -324,42 +245,26 @@ namespace UI.Forms.Auth
 
         private string FormatearNodo(PermisoComponent permiso)
         {
-            return string.Format("{0} {1} ({2})", permiso.EsFamilia ? "[F]" : "[P]", permiso.Nombre, permiso.Codigo);
+            string tipo = permiso.EsFamilia ? "[F]" : "[P]";
+            return tipo + " " + permiso.Nombre + " (" + permiso.Codigo + ")";
         }
 
         private void CargarTipos()
         {
-            bool esFamilia = ObtenerTipoSeleccionado().EsFamilia;
+            bool esFamilia = CBX_Tipo.SelectedIndex == 1;
 
             CBX_Tipo.Items.Clear();
-            CBX_Tipo.Items.Add(new TipoPermisoItem(false, T("Permisos.TipoPermiso")));
-            CBX_Tipo.Items.Add(new TipoPermisoItem(true, T("Permisos.TipoFamilia")));
+            CBX_Tipo.Items.Add(T("Permisos.TipoPermiso"));
+            CBX_Tipo.Items.Add(T("Permisos.TipoFamilia"));
             SeleccionarTipo(esFamilia);
         }
 
         private void SeleccionarTipo(bool esFamilia)
         {
-            foreach (TipoPermisoItem item in CBX_Tipo.Items)
-            {
-                if (item.EsFamilia == esFamilia)
-                {
-                    CBX_Tipo.SelectedItem = item;
-                    return;
-                }
-            }
+            if (CBX_Tipo.Items.Count <= 0)
+                return;
 
-            if (CBX_Tipo.Items.Count > 0)
-                CBX_Tipo.SelectedIndex = 0;
-        }
-
-        private TipoPermisoItem ObtenerTipoSeleccionado()
-        {
-            TipoPermisoItem item = CBX_Tipo.SelectedItem as TipoPermisoItem;
-
-            if (item != null)
-                return item;
-
-            return new TipoPermisoItem(false, T("Permisos.TipoPermiso"));
+            CBX_Tipo.SelectedIndex = esFamilia ? 1 : 0;
         }
 
         private void CargarPadres(PermisoComponent permisoSeleccionado)
@@ -368,37 +273,37 @@ namespace UI.Forms.Auth
                 ? IdRaiz
                 : ObtenerIdPadre(permisoSeleccionado.Id);
 
-            CBX_Padre.Items.Clear();
-            PermisoPadreItem raiz = new PermisoPadreItem(IdRaiz, T("Permisos.Raiz"));
-            CBX_Padre.Items.Add(raiz);
+            _idsPadres.Clear();
 
-            foreach (PermisoPadreItem item in ListarFamilias(_permisos, string.Empty))
-                CBX_Padre.Items.Add(item);
+            CBX_Padre.Items.Clear();
+            CBX_Padre.Items.Add(T("Permisos.Raiz"));
+            _idsPadres.Add(IdRaiz);
+
+            CargarFamiliasEnCombo(_permisos, string.Empty);
 
             SeleccionarPadre(idPadreActual);
         }
 
-        private IEnumerable<PermisoPadreItem> ListarFamilias(IEnumerable<PermisoComponent> permisos, string prefijo)
+        private void CargarFamiliasEnCombo(IEnumerable<PermisoComponent> permisos, string prefijo)
         {
             foreach (PermisoComponent permiso in permisos.OrderBy(x => x.Nombre))
             {
                 if (permiso.EsFamilia)
                 {
-                    yield return new PermisoPadreItem(permiso.Id, prefijo + permiso.Nombre);
-
-                    foreach (PermisoPadreItem item in ListarFamilias(permiso.Hijos.OfType<PermisoComponent>(), prefijo + "  "))
-                        yield return item;
+                    CBX_Padre.Items.Add(prefijo + permiso.Nombre);
+                    _idsPadres.Add(permiso.Id);
+                    CargarFamiliasEnCombo(permiso.Hijos.OfType<PermisoComponent>(), prefijo + "  ");
                 }
             }
         }
 
         private void SeleccionarPadre(int idPadre)
         {
-            foreach (PermisoPadreItem item in CBX_Padre.Items)
+            for (int i = 0; i < _idsPadres.Count; i++)
             {
-                if (item.Id == idPadre)
+                if (_idsPadres[i] == idPadre)
                 {
-                    CBX_Padre.SelectedItem = item;
+                    CBX_Padre.SelectedIndex = i;
                     return;
                 }
             }
@@ -409,12 +314,15 @@ namespace UI.Forms.Auth
 
         private int? ObtenerIdPadreSeleccionado()
         {
-            PermisoPadreItem item = CBX_Padre.SelectedItem as PermisoPadreItem;
-
-            if (item == null || item.Id == IdRaiz)
+            if (CBX_Padre.SelectedIndex < 0 || CBX_Padre.SelectedIndex >= _idsPadres.Count)
                 return null;
 
-            return item.Id;
+            int idPadre = _idsPadres[CBX_Padre.SelectedIndex];
+
+            if (idPadre == IdRaiz)
+                return null;
+
+            return idPadre;
         }
 
         private int ObtenerIdPadre(int idPermiso)
@@ -507,7 +415,7 @@ namespace UI.Forms.Auth
         private void MostrarError(Exception ex)
         {
             MessageBox.Show(
-                string.Format(T("Mensaje.ErrorPermiso"), ex.Message),
+                T("Mensaje.ErrorPermiso").Replace("{0}", ex.Message),
                 T("Titulo.Error"),
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error);
@@ -524,38 +432,5 @@ namespace UI.Forms.Auth
             base.OnFormClosed(e);
         }
 
-        private class TipoPermisoItem
-        {
-            public bool EsFamilia { get; private set; }
-            private readonly string _texto;
-
-            public TipoPermisoItem(bool esFamilia, string texto)
-            {
-                EsFamilia = esFamilia;
-                _texto = texto;
-            }
-
-            public override string ToString()
-            {
-                return _texto;
-            }
-        }
-
-        private class PermisoPadreItem
-        {
-            public int Id { get; private set; }
-            private readonly string _texto;
-
-            public PermisoPadreItem(int id, string texto)
-            {
-                Id = id;
-                _texto = texto;
-            }
-
-            public override string ToString()
-            {
-                return _texto;
-            }
-        }
     }
 }

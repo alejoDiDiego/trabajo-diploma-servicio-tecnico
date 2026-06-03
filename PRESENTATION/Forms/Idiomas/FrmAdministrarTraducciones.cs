@@ -166,7 +166,7 @@ namespace UI.Forms.Idiomas
                 }
 
                 DialogResult confirmacion = MessageBox.Show(
-                    string.Format(_sesionIdioma.idioma.BuscarTraduccion("Mensaje.ConfirmarEliminarTraduccion"), TBX_Clave.Text),
+                    _sesionIdioma.idioma.BuscarTraduccion("Mensaje.ConfirmarEliminarTraduccion").Replace("{0}", TBX_Clave.Text),
                     _sesionIdioma.idioma.BuscarTraduccion("Titulo.ConfirmarEliminacion"),
                     MessageBoxButtons.YesNo,
                     MessageBoxIcon.Warning);
@@ -258,7 +258,7 @@ namespace UI.Forms.Idiomas
                 }
 
                 DialogResult confirmacion = MessageBox.Show(
-                    string.Format(_sesionIdioma.idioma.BuscarTraduccion("Mensaje.ConfirmarEliminarIdioma"), TBX_NombreIdioma.Text),
+                    _sesionIdioma.idioma.BuscarTraduccion("Mensaje.ConfirmarEliminarIdioma").Replace("{0}", TBX_NombreIdioma.Text),
                     _sesionIdioma.idioma.BuscarTraduccion("Titulo.ConfirmarEliminacion"),
                     MessageBoxButtons.YesNo,
                     MessageBoxIcon.Warning);
@@ -343,7 +343,7 @@ namespace UI.Forms.Idiomas
         private void MostrarError(Exception ex)
         {
             MessageBox.Show(
-                string.Format(_sesionIdioma.idioma.BuscarTraduccion("Mensaje.ErrorOperacion"), ex.Message),
+                _sesionIdioma.idioma.BuscarTraduccion("Mensaje.ErrorOperacion").Replace("{0}", ex.Message),
                 _sesionIdioma.idioma.BuscarTraduccion("Titulo.Error"),
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error);

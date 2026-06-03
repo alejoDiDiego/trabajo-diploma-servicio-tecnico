@@ -95,7 +95,7 @@ namespace UI.Forms.Auth
             catch (Exception ex)
             {
                 MessageBox.Show(
-                    string.Format(_sesionIdioma.idioma.BuscarTraduccion("Mensaje.ErrorCrearUsuario"), ex.Message),
+                    _sesionIdioma.idioma.BuscarTraduccion("Mensaje.ErrorCrearUsuario").Replace("{0}", ex.Message),
                     _sesionIdioma.idioma.BuscarTraduccion("Titulo.Error"),
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
@@ -142,7 +142,7 @@ namespace UI.Forms.Auth
 
 
             var confirmResult = MessageBox.Show(
-                string.Format(_sesionIdioma.idioma.BuscarTraduccion("Mensaje.ConfirmarEliminarUsuario"), usuarioSeleccionado.Username),
+                _sesionIdioma.idioma.BuscarTraduccion("Mensaje.ConfirmarEliminarUsuario").Replace("{0}", usuarioSeleccionado.Username),
                 _sesionIdioma.idioma.BuscarTraduccion("Titulo.ConfirmarEliminacion"),
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Warning);
@@ -174,7 +174,7 @@ namespace UI.Forms.Auth
             catch (Exception ex)
             {
                 MessageBox.Show(
-                    string.Format(_sesionIdioma.idioma.BuscarTraduccion("Mensaje.ErrorEliminarUsuario"), ex.Message),
+                    _sesionIdioma.idioma.BuscarTraduccion("Mensaje.ErrorEliminarUsuario").Replace("{0}", ex.Message),
                     _sesionIdioma.idioma.BuscarTraduccion("Titulo.Error"),
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
@@ -186,7 +186,7 @@ namespace UI.Forms.Auth
             var usuarioSeleccionado = (Usuario)DGV_Usuarios.SelectedRows[0].DataBoundItem;
 
             var confirmResult = MessageBox.Show(
-                string.Format(_sesionIdioma.idioma.BuscarTraduccion("Mensaje.ConfirmarEditarUsuario"), usuarioSeleccionado.Username),
+                _sesionIdioma.idioma.BuscarTraduccion("Mensaje.ConfirmarEditarUsuario").Replace("{0}", usuarioSeleccionado.Username),
                 _sesionIdioma.idioma.BuscarTraduccion("Titulo.ConfirmarEdicion"),
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Warning);
@@ -216,7 +216,7 @@ namespace UI.Forms.Auth
             catch (Exception ex)
             {
                 MessageBox.Show(
-                    string.Format(_sesionIdioma.idioma.BuscarTraduccion("Mensaje.ErrorEditarUsuario"), ex.Message),
+                    _sesionIdioma.idioma.BuscarTraduccion("Mensaje.ErrorEditarUsuario").Replace("{0}", ex.Message),
                     _sesionIdioma.idioma.BuscarTraduccion("Titulo.Error"),
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
@@ -232,8 +232,8 @@ namespace UI.Forms.Auth
             SessionManager sesion = SessionManager.GetInstance();
             Usuario usuario = (Usuario)sesion.Usuario;
 
-            LBL_Username.Text = string.Format(_sesionIdioma.idioma.BuscarTraduccion("AdministrarUsuarios.UsuarioActual"), usuario.Username);
-            LBL_FechaInicio.Text = string.Format(_sesionIdioma.idioma.BuscarTraduccion("AdministrarUsuarios.SesionIniciada"), sesion.FechaInicio);
+            LBL_Username.Text = _sesionIdioma.idioma.BuscarTraduccion("AdministrarUsuarios.UsuarioActual").Replace("{0}", usuario.Username);
+            LBL_FechaInicio.Text = _sesionIdioma.idioma.BuscarTraduccion("AdministrarUsuarios.SesionIniciada").Replace("{0}", sesion.FechaInicio.ToString());
         }
 
         private void ConfigurarColumnasUsuarios()

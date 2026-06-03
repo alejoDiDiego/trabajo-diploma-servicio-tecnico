@@ -41,12 +41,13 @@ namespace APPLICATION.Features.Permisos
             return (FamiliaPermiso)_permisoRepository.Agregar(nombre.Trim(), codigo.Trim(), descripcion, true, idPadre);
         }
 
-        public void Modificar(int id, string nombre, string codigo, string descripcion)
+        public void Modificar(int id, string nombre, string codigo, string descripcion, bool esFamilia)
         {
-            PermisoComponent permiso = ObtenerPermisoExistente(id);
             PermisoComponent permisoValidado;
 
-            if (permiso.EsFamilia)
+            ObtenerPermisoExistente(id);
+
+            if (esFamilia)
                 permisoValidado = FamiliaPermiso.CargarDesdeDB(id, nombre, codigo, descripcion);
             else
                 permisoValidado = PermisoSimple.CargarDesdeDB(id, nombre, codigo, descripcion);
@@ -55,7 +56,8 @@ namespace APPLICATION.Features.Permisos
                 permisoValidado.Id,
                 permisoValidado.Nombre,
                 permisoValidado.Codigo,
-                permisoValidado.Descripcion);
+                permisoValidado.Descripcion,
+                permisoValidado.EsFamilia);
         }
 
         public void Eliminar(int id)

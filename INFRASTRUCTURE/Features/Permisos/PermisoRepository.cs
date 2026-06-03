@@ -113,11 +113,14 @@ namespace REPOSITORY.Features.Permisos
             }
         }
 
-        public void Modificar(int id, string nombre, string codigo, string descripcion)
+        public void Modificar(int id, string nombre, string codigo, string descripcion, bool esFamilia)
         {
+            if (!esFamilia && TieneHijos(id))
+                throw new ReglaNegocioException("No se puede convertir una familia con permisos hijos en permiso simple.");
+
             string query = @"
                 UPDATE Permisos
-                SET nombre=@Nombre, codigo=@Codigo, descripcion=@Descripcion
+                SET nombre=@Nombre, codigo=@Codigo, descripcion=@Descripcion, es_familia=@EsFamilia
                 WHERE id_permiso=@Id;
             ";
 
@@ -126,7 +129,8 @@ namespace REPOSITORY.Features.Permisos
                 new SqlParameter("@Id", id),
                 new SqlParameter("@Nombre", nombre),
                 new SqlParameter("@Codigo", codigo),
-                new SqlParameter("@Descripcion", (object)descripcion ?? DBNull.Value)
+                new SqlParameter("@Descripcion", (object)descripcion ?? DBNull.Value),
+                new SqlParameter("@EsFamilia", esFamilia)
             };
 
             try
