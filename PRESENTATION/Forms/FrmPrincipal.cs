@@ -32,6 +32,7 @@ namespace UI.Forms
             TSMI_IniciarSesion.Text = idiomaObservado.BuscarTraduccion(TSMI_IniciarSesion.Tag.ToString());
             TSMI_CerrarSesion.Text = idiomaObservado.BuscarTraduccion(TSMI_CerrarSesion.Tag.ToString());
             TSMI_AdministrarUsuarios.Text = idiomaObservado.BuscarTraduccion(TSMI_AdministrarUsuarios.Tag.ToString());
+            TSMI_AdministrarPermisos.Text = idiomaObservado.BuscarTraduccion(TSMI_AdministrarPermisos.Tag.ToString());
             TSMI_Idioma.Text = idiomaObservado.BuscarTraduccion(TSMI_Idioma.Tag.ToString());
             TSMI_AdministrarTraducciones.Text = idiomaObservado.BuscarTraduccion(TSMI_AdministrarTraducciones.Tag.ToString());
 
@@ -114,11 +115,13 @@ namespace UI.Forms
             TSMI_IniciarSesion.Visible = !haySesionActiva;
             TSMI_CerrarSesion.Visible = haySesionActiva;
             TSMI_AdministrarUsuarios.Visible = haySesionActiva;
+            TSMI_AdministrarPermisos.Visible = haySesionActiva;
             TSMI_AdministrarTraducciones.Visible = haySesionActiva;
 
             TSMI_IniciarSesion.Enabled = !haySesionActiva;
             TSMI_CerrarSesion.Enabled = haySesionActiva;
             TSMI_AdministrarUsuarios.Enabled = haySesionActiva;
+            TSMI_AdministrarPermisos.Enabled = haySesionActiva;
             TSMI_AdministrarTraducciones.Enabled = haySesionActiva;
 
             var usuario = SessionManager.ObtenerUsuarioActual();
@@ -200,6 +203,34 @@ namespace UI.Forms
             frmAdministrarTraducciones.MdiParent = this;
             frmAdministrarTraducciones.FormClosed += FormularioHijo_FormClosed;
             frmAdministrarTraducciones.Show();
+        }
+
+        private void TSMI_AdministrarPermisos_Click(object sender, EventArgs e)
+        {
+            if (!SessionManager.HaySesionActiva())
+            {
+                MessageBox.Show(
+                    _sesionIdioma.idioma.BuscarTraduccion("Mensaje.DebeIniciarSesion"),
+                    _sesionIdioma.idioma.BuscarTraduccion("Titulo.AccesoDenegado"),
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+                ActualizarMenuUsuario();
+                return;
+            }
+
+            foreach (Form formulario in MdiChildren)
+            {
+                if (formulario is FrmAdministrarPermisos)
+                {
+                    formulario.Activate();
+                    return;
+                }
+            }
+
+            FrmAdministrarPermisos frmAdministrarPermisos = new FrmAdministrarPermisos();
+            frmAdministrarPermisos.MdiParent = this;
+            frmAdministrarPermisos.FormClosed += FormularioHijo_FormClosed;
+            frmAdministrarPermisos.Show();
         }
 
         private void CambiarIdioma(int idIdioma)
