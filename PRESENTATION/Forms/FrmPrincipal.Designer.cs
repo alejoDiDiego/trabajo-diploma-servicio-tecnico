@@ -19,8 +19,7 @@ namespace UI.Forms
             this.TSMI_CerrarSesion = new System.Windows.Forms.ToolStripMenuItem();
             this.TSMI_AdministrarUsuarios = new System.Windows.Forms.ToolStripMenuItem();
             this.TSMI_Idioma = new System.Windows.Forms.ToolStripMenuItem();
-            this.TSMI_IdiomaEspanol = new System.Windows.Forms.ToolStripMenuItem();
-            this.TSMI_IdiomaIngles = new System.Windows.Forms.ToolStripMenuItem();
+            this.TSMI_AdministrarTraducciones = new System.Windows.Forms.ToolStripMenuItem();
             this.MSP_Principal.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -73,28 +72,19 @@ namespace UI.Forms
             // TSMI_Idioma
             // 
             this.TSMI_Idioma.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.TSMI_IdiomaEspanol,
-            this.TSMI_IdiomaIngles});
+            this.TSMI_AdministrarTraducciones});
             this.TSMI_Idioma.Name = "TSMI_Idioma";
             this.TSMI_Idioma.Size = new System.Drawing.Size(56, 20);
             this.TSMI_Idioma.Tag = "Menu.Idioma";
             this.TSMI_Idioma.Text = "Idioma";
             // 
-            // TSMI_IdiomaEspanol
+            // TSMI_AdministrarTraducciones
             // 
-            this.TSMI_IdiomaEspanol.Name = "TSMI_IdiomaEspanol";
-            this.TSMI_IdiomaEspanol.Size = new System.Drawing.Size(180, 22);
-            this.TSMI_IdiomaEspanol.Tag = "Idioma.Espanol";
-            this.TSMI_IdiomaEspanol.Text = "Espanol";
-            this.TSMI_IdiomaEspanol.Click += new System.EventHandler(this.TSMI_IdiomaEspanol_Click);
-            // 
-            // TSMI_IdiomaIngles
-            // 
-            this.TSMI_IdiomaIngles.Name = "TSMI_IdiomaIngles";
-            this.TSMI_IdiomaIngles.Size = new System.Drawing.Size(180, 22);
-            this.TSMI_IdiomaIngles.Tag = "Idioma.Ingles";
-            this.TSMI_IdiomaIngles.Text = "Ingles";
-            this.TSMI_IdiomaIngles.Click += new System.EventHandler(this.TSMI_IdiomaIngles_Click);
+            this.TSMI_AdministrarTraducciones.Name = "TSMI_AdministrarTraducciones";
+            this.TSMI_AdministrarTraducciones.Size = new System.Drawing.Size(220, 22);
+            this.TSMI_AdministrarTraducciones.Tag = "Menu.AdministrarTraducciones";
+            this.TSMI_AdministrarTraducciones.Text = "Administrar traducciones";
+            this.TSMI_AdministrarTraducciones.Click += new System.EventHandler(this.TSMI_AdministrarTraducciones_Click);
             // 
             // FrmPrincipal
             // 
@@ -123,7 +113,6 @@ namespace UI.Forms
         private System.Windows.Forms.ToolStripMenuItem TSMI_CerrarSesion;
         private System.Windows.Forms.ToolStripMenuItem TSMI_AdministrarUsuarios;
         private System.Windows.Forms.ToolStripMenuItem TSMI_Idioma;
-        private System.Windows.Forms.ToolStripMenuItem TSMI_IdiomaEspanol;
-        private System.Windows.Forms.ToolStripMenuItem TSMI_IdiomaIngles;
+        private System.Windows.Forms.ToolStripMenuItem TSMI_AdministrarTraducciones;
     }
 }

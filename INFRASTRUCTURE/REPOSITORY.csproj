@@ -42,6 +42,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Features\Idiomas\IdiomaRepository.cs" />
     <Compile Include="Features\Usuarios\UsuarioRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SQLHelper.cs" />
@@ -55,6 +56,9 @@
       <Project>{c5bd7b6a-7483-4782-bd1d-9237575e7bea}</Project>
       <Name>DOMAIN</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Scripts\001_Idiomas_Traducciones.sql" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

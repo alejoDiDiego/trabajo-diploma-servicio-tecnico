@@ -1,0 +1,527 @@
+using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Data;
+using System.Data.SqlClient;
+using DOMAIN.Features.Idiomas;
+
+namespace REPOSITORY.Features.Idiomas
+{
+    public class IdiomaRepository
+    {
+        private readonly SqlHelper _db;
+
+        public IdiomaRepository()
+            : this(ConfigurationManager.ConnectionStrings["UrlDB"].ConnectionString)
+        {
+        }
+
+        public IdiomaRepository(string cadenaConexion)
+        {
+            _db = new SqlHelper(cadenaConexion);
+        }
+
+        public void Inicializar()
+        {
+            CrearTablas();
+            SembrarDatosIniciales();
+        }
+
+        public List<Idioma> Listar()
+        {
+            string query = @"
+                SELECT
+                    i.id_idioma,
+                    i.nombre,
+                    t.id_traduccion,
+                    p.id_palabra,
+                    p.texto AS clave,
+                    t.palabra_traducida
+                FROM Idiomas i
+                LEFT JOIN Traducciones t ON t.id_idioma = i.id_idioma
+                LEFT JOIN Palabras p ON p.id_palabra = t.id_palabra
+                ORDER BY i.id_idioma, p.texto
+            ";
+
+            DataTable dt = _db.ExecuteQuery(query);
+            Dictionary<int, Idioma> idiomas = new Dictionary<int, Idioma>();
+
+            foreach (DataRow fila in dt.Rows)
+            {
+                int idIdioma = Convert.ToInt32(fila["id_idioma"]);
+
+                if (!idiomas.ContainsKey(idIdioma))
+                {
+                    idiomas.Add(
+                        idIdioma,
+                        Idioma.Crear(idIdioma, fila["nombre"].ToString())
+                    );
+                }
+
+                if (fila["id_traduccion"] == DBNull.Value)
+                    continue;
+
+                Palabra palabra = Palabra.Crear(
+                    Convert.ToInt32(fila["id_palabra"]),
+                    fila["clave"].ToString()
+                );
+
+                Traduccion traduccion = Traduccion.Crear(
+                    Convert.ToInt32(fila["id_traduccion"]),
+                    palabra,
+                    fila["palabra_traducida"].ToString()
+                );
+
+                idiomas[idIdioma].AgregarTraduccion(traduccion);
+            }
+
+            return new List<Idioma>(idiomas.Values);
+        }
+
+        public Idioma ObtenerPorId(int id)
+        {
+            foreach (Idioma idioma in Listar())
+            {
+                if (idioma.Id == id)
+                    return idioma;
+            }
+
+            return null;
+        }
+
+        public Idioma ObtenerPorNombre(string nombre)
+        {
+            foreach (Idioma idioma in Listar())
+            {
+                if (string.Equals(idioma.Nombre, nombre, StringComparison.OrdinalIgnoreCase))
+                    return idioma;
+            }
+
+            return null;
+        }
+
+        public List<TraduccionItem> ListarTraducciones()
+        {
+            string query = @"
+                SELECT
+                    t.id_traduccion,
+                    p.id_palabra,
+                    i.id_idioma,
+                    p.texto AS clave,
+                    i.nombre AS idioma,
+                    t.palabra_traducida
+                FROM Traducciones t
+                INNER JOIN Palabras p ON p.id_palabra = t.id_palabra
+                INNER JOIN Idiomas i ON i.id_idioma = t.id_idioma
+                ORDER BY p.texto, i.nombre
+            ";
+
+            DataTable dt = _db.ExecuteQuery(query);
+            List<TraduccionItem> traducciones = new List<TraduccionItem>();
+
+            foreach (DataRow fila in dt.Rows)
+            {
+                traducciones.Add(TraduccionItem.Crear(
+                    Convert.ToInt32(fila["id_traduccion"]),
+                    Convert.ToInt32(fila["id_palabra"]),
+                    Convert.ToInt32(fila["id_idioma"]),
+                    fila["clave"].ToString(),
+                    fila["idioma"].ToString(),
+                    fila["palabra_traducida"].ToString()
+                ));
+            }
+
+            return traducciones;
+        }
+
+        public Idioma AgregarIdioma(string nombre)
+        {
+            string query = @"
+                INSERT INTO Idiomas (nombre) VALUES (@Nombre);
+                SELECT CAST(SCOPE_IDENTITY() AS int);
+            ";
+
+            SqlParameter[] sqlParameters = new SqlParameter[]
+            {
+                new SqlParameter("@Nombre", nombre)
+            };
+
+            int id = _db.ExecuteTransaction(query, sqlParameters);
+            return Idioma.Crear(id, nombre);
+        }
+
+        public void ModificarIdioma(int id, string nombre)
+        {
+            string query = @"
+                UPDATE Idiomas SET nombre=@Nombre WHERE id_idioma=@Id;
+            ";
+
+            SqlParameter[] sqlParameters = new SqlParameter[]
+            {
+                new SqlParameter("@Id", id),
+                new SqlParameter("@Nombre", nombre)
+            };
+
+            _db.ExecuteTransaction(query, sqlParameters);
+        }
+
+        public void EliminarIdioma(int id)
+        {
+            string query = @"
+                DELETE FROM Idiomas WHERE id_idioma=@Id;
+            ";
+
+            SqlParameter[] sqlParameters = new SqlParameter[]
+            {
+                new SqlParameter("@Id", id)
+            };
+
+            _db.ExecuteTransaction(query, sqlParameters);
+        }
+
+        public TraduccionItem AgregarTraduccion(int idIdioma, string clave, string texto)
+        {
+            string query = @"
+                DECLARE @IdPalabra int;
+
+                SELECT @IdPalabra = id_palabra FROM Palabras WHERE texto=@Clave;
+
+                IF @IdPalabra IS NULL
+                BEGIN
+                    INSERT INTO Palabras (texto) VALUES (@Clave);
+                    SET @IdPalabra = CAST(SCOPE_IDENTITY() AS int);
+                END
+
+                INSERT INTO Traducciones (id_idioma, id_palabra, palabra_traducida)
+                VALUES (@IdIdioma, @IdPalabra, @Texto);
+
+                SELECT CAST(SCOPE_IDENTITY() AS int);
+            ";
+
+            SqlParameter[] sqlParameters = new SqlParameter[]
+            {
+                new SqlParameter("@IdIdioma", idIdioma),
+                new SqlParameter("@Clave", clave),
+                new SqlParameter("@Texto", texto)
+            };
+
+            int id = _db.ExecuteTransaction(query, sqlParameters);
+            return ObtenerTraduccionPorId(id);
+        }
+
+        public void ModificarTraduccion(int idTraduccion, int idIdioma, string texto)
+        {
+            string query = @"
+                UPDATE Traducciones
+                SET id_idioma=@IdIdioma, palabra_traducida=@Texto
+                WHERE id_traduccion=@IdTraduccion;
+            ";
+
+            SqlParameter[] sqlParameters = new SqlParameter[]
+            {
+                new SqlParameter("@IdTraduccion", idTraduccion),
+                new SqlParameter("@IdIdioma", idIdioma),
+                new SqlParameter("@Texto", texto)
+            };
+
+            _db.ExecuteTransaction(query, sqlParameters);
+        }
+
+        public void EliminarTraduccion(int idTraduccion)
+        {
+            string query = @"
+                DELETE FROM Traducciones WHERE id_traduccion=@IdTraduccion;
+            ";
+
+            SqlParameter[] sqlParameters = new SqlParameter[]
+            {
+                new SqlParameter("@IdTraduccion", idTraduccion)
+            };
+
+            _db.ExecuteTransaction(query, sqlParameters);
+        }
+
+        public TraduccionItem ObtenerTraduccionPorId(int idTraduccion)
+        {
+            string query = @"
+                SELECT
+                    t.id_traduccion,
+                    p.id_palabra,
+                    i.id_idioma,
+                    p.texto AS clave,
+                    i.nombre AS idioma,
+                    t.palabra_traducida
+                FROM Traducciones t
+                INNER JOIN Palabras p ON p.id_palabra = t.id_palabra
+                INNER JOIN Idiomas i ON i.id_idioma = t.id_idioma
+                WHERE t.id_traduccion=@IdTraduccion
+            ";
+
+            SqlParameter[] sqlParameters = new SqlParameter[]
+            {
+                new SqlParameter("@IdTraduccion", idTraduccion)
+            };
+
+            DataTable dt = _db.ExecuteQuery(query, sqlParameters);
+
+            if (dt.Rows.Count <= 0)
+                return null;
+
+            DataRow fila = dt.Rows[0];
+
+            return TraduccionItem.Crear(
+                Convert.ToInt32(fila["id_traduccion"]),
+                Convert.ToInt32(fila["id_palabra"]),
+                Convert.ToInt32(fila["id_idioma"]),
+                fila["clave"].ToString(),
+                fila["idioma"].ToString(),
+                fila["palabra_traducida"].ToString()
+            );
+        }
+
+        private void CrearTablas()
+        {
+            string query = @"
+                IF OBJECT_ID('Idiomas', 'U') IS NULL
+                BEGIN
+                    CREATE TABLE Idiomas (
+                        id_idioma int IDENTITY(1,1) NOT NULL PRIMARY KEY,
+                        nombre nvarchar(100) NOT NULL UNIQUE
+                    );
+                END
+
+                IF OBJECT_ID('Palabras', 'U') IS NULL
+                BEGIN
+                    CREATE TABLE Palabras (
+                        id_palabra int IDENTITY(1,1) NOT NULL PRIMARY KEY,
+                        texto nvarchar(200) NOT NULL UNIQUE
+                    );
+                END
+
+                IF OBJECT_ID('Traducciones', 'U') IS NULL
+                BEGIN
+                    CREATE TABLE Traducciones (
+                        id_traduccion int IDENTITY(1,1) NOT NULL PRIMARY KEY,
+                        id_idioma int NOT NULL,
+                        id_palabra int NOT NULL,
+                        palabra_traducida nvarchar(max) NOT NULL,
+                        CONSTRAINT FK_Traducciones_Idiomas FOREIGN KEY (id_idioma)
+                            REFERENCES Idiomas(id_idioma) ON DELETE CASCADE,
+                        CONSTRAINT FK_Traducciones_Palabras FOREIGN KEY (id_palabra)
+                            REFERENCES Palabras(id_palabra) ON DELETE CASCADE,
+                        CONSTRAINT UQ_Traducciones_Idioma_Palabra UNIQUE (id_idioma, id_palabra)
+                    );
+                END
+
+                SELECT 0;
+            ";
+
+            _db.ExecuteTransaction(query);
+        }
+
+        private void SembrarDatosIniciales()
+        {
+            AgregarSeed("Espanol", "FrmPrincipal.Text", "Sistema");
+            AgregarSeed("Ingles", "FrmPrincipal.Text", "System");
+            AgregarSeed("Espanol", "Menu.Usuario", "Usuario");
+            AgregarSeed("Ingles", "Menu.Usuario", "User");
+            AgregarSeed("Espanol", "Menu.UsuarioActual", "Usuario: {0}");
+            AgregarSeed("Ingles", "Menu.UsuarioActual", "User: {0}");
+            AgregarSeed("Espanol", "Menu.IniciarSesion", "Iniciar sesion");
+            AgregarSeed("Ingles", "Menu.IniciarSesion", "Log in");
+            AgregarSeed("Espanol", "Menu.CerrarSesion", "Cerrar sesion");
+            AgregarSeed("Ingles", "Menu.CerrarSesion", "Log out");
+            AgregarSeed("Espanol", "Menu.AdministrarUsuarios", "Administrar usuarios");
+            AgregarSeed("Ingles", "Menu.AdministrarUsuarios", "Manage users");
+            AgregarSeed("Espanol", "Menu.Idioma", "Idioma");
+            AgregarSeed("Ingles", "Menu.Idioma", "Language");
+            AgregarSeed("Espanol", "Menu.AdministrarTraducciones", "Administrar traducciones");
+            AgregarSeed("Ingles", "Menu.AdministrarTraducciones", "Manage translations");
+            AgregarSeed("Espanol", "Idioma.Espanol", "Espanol");
+            AgregarSeed("Ingles", "Idioma.Espanol", "Spanish");
+            AgregarSeed("Espanol", "Idioma.Ingles", "Ingles");
+            AgregarSeed("Ingles", "Idioma.Ingles", "English");
+
+            AgregarSeed("Espanol", "FrmLogin.Text", "Iniciar sesion");
+            AgregarSeed("Ingles", "FrmLogin.Text", "Log in");
+            AgregarSeed("Espanol", "Login.Titulo", "Iniciar sesion");
+            AgregarSeed("Ingles", "Login.Titulo", "Log in");
+            AgregarSeed("Espanol", "Campo.Username", "Nombre de usuario");
+            AgregarSeed("Ingles", "Campo.Username", "Username");
+            AgregarSeed("Espanol", "Campo.Password", "Contrasena");
+            AgregarSeed("Ingles", "Campo.Password", "Password");
+
+            AgregarSeed("Espanol", "FrmAdministrarUsuarios.Text", "Administracion de usuarios");
+            AgregarSeed("Ingles", "FrmAdministrarUsuarios.Text", "User administration");
+            AgregarSeed("Espanol", "AdministrarUsuarios.Titulo", "Administracion de usuarios");
+            AgregarSeed("Ingles", "AdministrarUsuarios.Titulo", "User administration");
+            AgregarSeed("Espanol", "AdministrarUsuarios.NuevoUsuario", "Nuevo usuario");
+            AgregarSeed("Ingles", "AdministrarUsuarios.NuevoUsuario", "New user");
+            AgregarSeed("Espanol", "AdministrarUsuarios.CrearUsuario", "Crear usuario");
+            AgregarSeed("Ingles", "AdministrarUsuarios.CrearUsuario", "Create user");
+            AgregarSeed("Espanol", "AdministrarUsuarios.EditarUsuario", "Editar usuario");
+            AgregarSeed("Ingles", "AdministrarUsuarios.EditarUsuario", "Edit user");
+            AgregarSeed("Espanol", "AdministrarUsuarios.EliminarUsuario", "Eliminar usuario");
+            AgregarSeed("Ingles", "AdministrarUsuarios.EliminarUsuario", "Delete user");
+            AgregarSeed("Espanol", "AdministrarUsuarios.UsuarioActual", "Usuario: {0}");
+            AgregarSeed("Ingles", "AdministrarUsuarios.UsuarioActual", "User: {0}");
+            AgregarSeed("Espanol", "AdministrarUsuarios.SesionIniciada", "Sesion iniciada: {0}");
+            AgregarSeed("Ingles", "AdministrarUsuarios.SesionIniciada", "Session started: {0}");
+
+            AgregarSeed("Espanol", "FrmAdministrarTraducciones.Text", "Administracion de traducciones");
+            AgregarSeed("Ingles", "FrmAdministrarTraducciones.Text", "Translation administration");
+            AgregarSeed("Espanol", "Traducciones.Titulo", "Administracion de traducciones");
+            AgregarSeed("Ingles", "Traducciones.Titulo", "Translation administration");
+            AgregarSeed("Espanol", "Traducciones.GestionTraducciones", "Traducciones");
+            AgregarSeed("Ingles", "Traducciones.GestionTraducciones", "Translations");
+            AgregarSeed("Espanol", "Traducciones.GestionIdiomas", "Idiomas");
+            AgregarSeed("Ingles", "Traducciones.GestionIdiomas", "Languages");
+            AgregarSeed("Espanol", "Traducciones.Clave", "Clave");
+            AgregarSeed("Ingles", "Traducciones.Clave", "Key");
+            AgregarSeed("Espanol", "Traducciones.Idioma", "Idioma");
+            AgregarSeed("Ingles", "Traducciones.Idioma", "Language");
+            AgregarSeed("Espanol", "Traducciones.Texto", "Texto");
+            AgregarSeed("Ingles", "Traducciones.Texto", "Text");
+            AgregarSeed("Espanol", "Traducciones.Crear", "Crear traduccion");
+            AgregarSeed("Ingles", "Traducciones.Crear", "Create translation");
+            AgregarSeed("Espanol", "Traducciones.Editar", "Editar traduccion");
+            AgregarSeed("Ingles", "Traducciones.Editar", "Edit translation");
+            AgregarSeed("Espanol", "Traducciones.Eliminar", "Eliminar traduccion");
+            AgregarSeed("Ingles", "Traducciones.Eliminar", "Delete translation");
+            AgregarSeed("Espanol", "Accion.Limpiar", "Limpiar");
+            AgregarSeed("Ingles", "Accion.Limpiar", "Clear");
+            AgregarSeed("Espanol", "Idiomas.Nombre", "Nombre");
+            AgregarSeed("Ingles", "Idiomas.Nombre", "Name");
+            AgregarSeed("Espanol", "Idiomas.Crear", "Crear idioma");
+            AgregarSeed("Ingles", "Idiomas.Crear", "Create language");
+            AgregarSeed("Espanol", "Idiomas.Editar", "Editar idioma");
+            AgregarSeed("Ingles", "Idiomas.Editar", "Edit language");
+            AgregarSeed("Espanol", "Idiomas.Eliminar", "Eliminar idioma");
+            AgregarSeed("Ingles", "Idiomas.Eliminar", "Delete language");
+
+            AgregarSeed("Espanol", "Columna.Id", "Id");
+            AgregarSeed("Ingles", "Columna.Id", "Id");
+            AgregarSeed("Espanol", "Columna.Username", "Nombre de usuario");
+            AgregarSeed("Ingles", "Columna.Username", "Username");
+            AgregarSeed("Espanol", "Columna.Password", "Contrasena");
+            AgregarSeed("Ingles", "Columna.Password", "Password");
+            AgregarSeed("Espanol", "Columna.IdTraduccion", "Id");
+            AgregarSeed("Ingles", "Columna.IdTraduccion", "Id");
+            AgregarSeed("Espanol", "Columna.Clave", "Clave");
+            AgregarSeed("Ingles", "Columna.Clave", "Key");
+            AgregarSeed("Espanol", "Columna.Idioma", "Idioma");
+            AgregarSeed("Ingles", "Columna.Idioma", "Language");
+            AgregarSeed("Espanol", "Columna.Texto", "Texto");
+            AgregarSeed("Ingles", "Columna.Texto", "Text");
+            AgregarSeed("Espanol", "Columna.Nombre", "Nombre");
+            AgregarSeed("Ingles", "Columna.Nombre", "Name");
+
+            AgregarSeed("Espanol", "Titulo.AccesoDenegado", "Acceso denegado");
+            AgregarSeed("Ingles", "Titulo.AccesoDenegado", "Access denied");
+            AgregarSeed("Espanol", "Titulo.Error", "Error");
+            AgregarSeed("Ingles", "Titulo.Error", "Error");
+            AgregarSeed("Espanol", "Titulo.Exito", "Exito");
+            AgregarSeed("Ingles", "Titulo.Exito", "Success");
+            AgregarSeed("Espanol", "Titulo.ConfirmarEliminacion", "Confirmar eliminacion");
+            AgregarSeed("Ingles", "Titulo.ConfirmarEliminacion", "Confirm deletion");
+            AgregarSeed("Espanol", "Titulo.ConfirmarEdicion", "Confirmar edicion");
+            AgregarSeed("Ingles", "Titulo.ConfirmarEdicion", "Confirm edition");
+            AgregarSeed("Espanol", "Titulo.UsuarioDefectoCreado", "Usuario por defecto creado");
+            AgregarSeed("Ingles", "Titulo.UsuarioDefectoCreado", "Default user created");
+
+            AgregarSeed("Espanol", "Mensaje.DebeIniciarSesion", "Debes iniciar sesion para acceder a esta seccion.");
+            AgregarSeed("Ingles", "Mensaje.DebeIniciarSesion", "You must log in to access this section.");
+            AgregarSeed("Espanol", "Mensaje.SinPermisos", "No tenes permisos para acceder a esta seccion.");
+            AgregarSeed("Ingles", "Mensaje.SinPermisos", "You do not have permission to access this section.");
+            AgregarSeed("Espanol", "Mensaje.UsuarioDefectoCreado", "No hay usuarios registrados. Se creara un usuario por defecto con username 'admin' y password '123'.");
+            AgregarSeed("Ingles", "Mensaje.UsuarioDefectoCreado", "There are no registered users. A default user will be created with username 'admin' and password '123'.");
+            AgregarSeed("Espanol", "Mensaje.ErrorIniciarSesion", "Error al iniciar sesion: {0}");
+            AgregarSeed("Ingles", "Mensaje.ErrorIniciarSesion", "Login error: {0}");
+            AgregarSeed("Espanol", "Mensaje.UsuarioCreado", "Usuario creado exitosamente.");
+            AgregarSeed("Ingles", "Mensaje.UsuarioCreado", "User created successfully.");
+            AgregarSeed("Espanol", "Mensaje.ErrorCrearUsuario", "Error al crear usuario: {0}");
+            AgregarSeed("Ingles", "Mensaje.ErrorCrearUsuario", "Error creating user: {0}");
+            AgregarSeed("Espanol", "Mensaje.NoEliminarPropio", "No podes eliminarte a vos mismo.");
+            AgregarSeed("Ingles", "Mensaje.NoEliminarPropio", "You cannot delete yourself.");
+            AgregarSeed("Espanol", "Mensaje.ConfirmarEliminarUsuario", "Estas seguro de eliminar al usuario '{0}'?");
+            AgregarSeed("Ingles", "Mensaje.ConfirmarEliminarUsuario", "Are you sure you want to delete user '{0}'?");
+            AgregarSeed("Espanol", "Mensaje.UsuarioEliminado", "Usuario eliminado exitosamente.");
+            AgregarSeed("Ingles", "Mensaje.UsuarioEliminado", "User deleted successfully.");
+            AgregarSeed("Espanol", "Mensaje.ErrorEliminarUsuario", "Error al eliminar usuario: {0}");
+            AgregarSeed("Ingles", "Mensaje.ErrorEliminarUsuario", "Error deleting user: {0}");
+            AgregarSeed("Espanol", "Mensaje.ConfirmarEditarUsuario", "Estas seguro de editar al usuario '{0}'?");
+            AgregarSeed("Ingles", "Mensaje.ConfirmarEditarUsuario", "Are you sure you want to edit user '{0}'?");
+            AgregarSeed("Espanol", "Mensaje.UsuarioEditado", "Usuario editado exitosamente.");
+            AgregarSeed("Ingles", "Mensaje.UsuarioEditado", "User edited successfully.");
+            AgregarSeed("Espanol", "Mensaje.ErrorEditarUsuario", "Error al editar usuario: {0}");
+            AgregarSeed("Ingles", "Mensaje.ErrorEditarUsuario", "Error editing user: {0}");
+            AgregarSeed("Espanol", "Mensaje.TraduccionCreada", "Traduccion creada exitosamente.");
+            AgregarSeed("Ingles", "Mensaje.TraduccionCreada", "Translation created successfully.");
+            AgregarSeed("Espanol", "Mensaje.TraduccionEditada", "Traduccion editada exitosamente.");
+            AgregarSeed("Ingles", "Mensaje.TraduccionEditada", "Translation edited successfully.");
+            AgregarSeed("Espanol", "Mensaje.TraduccionEliminada", "Traduccion eliminada exitosamente.");
+            AgregarSeed("Ingles", "Mensaje.TraduccionEliminada", "Translation deleted successfully.");
+            AgregarSeed("Espanol", "Mensaje.IdiomaCreado", "Idioma creado exitosamente.");
+            AgregarSeed("Ingles", "Mensaje.IdiomaCreado", "Language created successfully.");
+            AgregarSeed("Espanol", "Mensaje.IdiomaEditado", "Idioma editado exitosamente.");
+            AgregarSeed("Ingles", "Mensaje.IdiomaEditado", "Language edited successfully.");
+            AgregarSeed("Espanol", "Mensaje.IdiomaEliminado", "Idioma eliminado exitosamente.");
+            AgregarSeed("Ingles", "Mensaje.IdiomaEliminado", "Language deleted successfully.");
+            AgregarSeed("Espanol", "Mensaje.SeleccioneTraduccion", "Seleccione una traduccion.");
+            AgregarSeed("Ingles", "Mensaje.SeleccioneTraduccion", "Select a translation.");
+            AgregarSeed("Espanol", "Mensaje.SeleccioneIdioma", "Seleccione un idioma.");
+            AgregarSeed("Ingles", "Mensaje.SeleccioneIdioma", "Select a language.");
+            AgregarSeed("Espanol", "Mensaje.NoEliminarUltimoIdioma", "No se puede eliminar el ultimo idioma.");
+            AgregarSeed("Ingles", "Mensaje.NoEliminarUltimoIdioma", "The last language cannot be deleted.");
+            AgregarSeed("Espanol", "Mensaje.ConfirmarEliminarTraduccion", "Estas seguro de eliminar la traduccion '{0}'?");
+            AgregarSeed("Ingles", "Mensaje.ConfirmarEliminarTraduccion", "Are you sure you want to delete translation '{0}'?");
+            AgregarSeed("Espanol", "Mensaje.ConfirmarEliminarIdioma", "Estas seguro de eliminar el idioma '{0}'? Tambien se eliminaran sus traducciones.");
+            AgregarSeed("Ingles", "Mensaje.ConfirmarEliminarIdioma", "Are you sure you want to delete language '{0}'? Its translations will also be deleted.");
+            AgregarSeed("Espanol", "Mensaje.ErrorOperacion", "Error al realizar la operacion: {0}");
+            AgregarSeed("Ingles", "Mensaje.ErrorOperacion", "Operation error: {0}");
+        }
+
+        private void AgregarSeed(string idioma, string clave, string texto)
+        {
+            string query = @"
+                DECLARE @IdIdioma int;
+                DECLARE @IdPalabra int;
+
+                SELECT @IdIdioma = id_idioma FROM Idiomas WHERE nombre=@Idioma;
+
+                IF @IdIdioma IS NULL
+                BEGIN
+                    INSERT INTO Idiomas (nombre) VALUES (@Idioma);
+                    SET @IdIdioma = CAST(SCOPE_IDENTITY() AS int);
+                END
+
+                SELECT @IdPalabra = id_palabra FROM Palabras WHERE texto=@Clave;
+
+                IF @IdPalabra IS NULL
+                BEGIN
+                    INSERT INTO Palabras (texto) VALUES (@Clave);
+                    SET @IdPalabra = CAST(SCOPE_IDENTITY() AS int);
+                END
+
+                IF NOT EXISTS (
+                    SELECT 1 FROM Traducciones WHERE id_idioma=@IdIdioma AND id_palabra=@IdPalabra
+                )
+                BEGIN
+                    INSERT INTO Traducciones (id_idioma, id_palabra, palabra_traducida)
+                    VALUES (@IdIdioma, @IdPalabra, @Texto);
+                END
+
+                SELECT 0;
+            ";
+
+            SqlParameter[] sqlParameters = new SqlParameter[]
+            {
+                new SqlParameter("@Idioma", idioma),
+                new SqlParameter("@Clave", clave),
+                new SqlParameter("@Texto", texto)
+            };
+
+            _db.ExecuteTransaction(query, sqlParameters);
+        }
+    }
+}

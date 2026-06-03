@@ -15,6 +15,7 @@ namespace UI
             Application.SetCompatibleTextRenderingDefault(false);
 
             IdiomaService idiomaService = new IdiomaService();
+            idiomaService.Inicializar();
             SesionIdioma.GetInstance().CambiarIdioma(idiomaService.ObtenerIdiomaPorDefecto());
 
             Application.Run(new FrmPrincipal());
