@@ -41,6 +41,7 @@
     <Compile Include="Features\Idiomas\IObservador.cs" />
     <Compile Include="Features\Idiomas\IPalabra.cs" />
     <Compile Include="Features\Idiomas\ITraduccion.cs" />
+    <Compile Include="Features\Idiomas\TraduccionEditable.cs" />
     <Compile Include="Features\Permisos\IPermisoComponent.cs" />
     <Compile Include="Features\Usuarios\IUsuario.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

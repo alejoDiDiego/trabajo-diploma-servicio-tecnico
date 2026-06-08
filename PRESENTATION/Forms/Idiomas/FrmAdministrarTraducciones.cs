@@ -15,7 +15,7 @@ namespace UI.Forms.Idiomas
     {
         private readonly IdiomaService _idiomaService;
         private readonly SesionIdioma _sesionIdioma;
-        private int _idTraduccionSeleccionada;
+        private int _idPalabraSeleccionada;
         private int _idIdiomaSeleccionado;
 
         public FrmAdministrarTraducciones()
@@ -37,9 +37,7 @@ namespace UI.Forms.Idiomas
             LBL_Clave.Text = idiomaObservado.BuscarTraduccion(LBL_Clave.Tag.ToString());
             LBL_IdiomaTraduccion.Text = idiomaObservado.BuscarTraduccion(LBL_IdiomaTraduccion.Tag.ToString());
             LBL_Texto.Text = idiomaObservado.BuscarTraduccion(LBL_Texto.Tag.ToString());
-            BTN_CrearTraduccion.Text = idiomaObservado.BuscarTraduccion(BTN_CrearTraduccion.Tag.ToString());
             BTN_EditarTraduccion.Text = idiomaObservado.BuscarTraduccion(BTN_EditarTraduccion.Tag.ToString());
-            BTN_EliminarTraduccion.Text = idiomaObservado.BuscarTraduccion(BTN_EliminarTraduccion.Tag.ToString());
             BTN_LimpiarTraduccion.Text = idiomaObservado.BuscarTraduccion(BTN_LimpiarTraduccion.Tag.ToString());
             LBL_NombreIdioma.Text = idiomaObservado.BuscarTraduccion(LBL_NombreIdioma.Tag.ToString());
             BTN_CrearIdioma.Text = idiomaObservado.BuscarTraduccion(BTN_CrearIdioma.Tag.ToString());
@@ -86,7 +84,16 @@ namespace UI.Forms.Idiomas
 
         private void CargarTraducciones()
         {
-            DGV_Traducciones.DataSource = new BindingList<TraduccionItem>(_idiomaService.ListarTraducciones());
+            int idIdioma = ObtenerIdIdiomaSeleccionado();
+
+            if (idIdioma == 0)
+            {
+                DGV_Traducciones.DataSource = new BindingList<TraduccionEditable>();
+                return;
+            }
+
+            // El combo de idiomas filtra las claves del catalogo para editar solo sus textos.
+            DGV_Traducciones.DataSource = new BindingList<TraduccionEditable>(_idiomaService.ListarTraduccionesPorIdioma(idIdioma));
             ConfigurarColumnasTraducciones();
         }
 
@@ -95,43 +102,12 @@ namespace UI.Forms.Idiomas
             if (DGV_Traducciones.SelectedRows.Count == 0)
                 return;
 
-            TraduccionItem traduccion = (TraduccionItem)DGV_Traducciones.SelectedRows[0].DataBoundItem;
+            TraduccionEditable traduccion = (TraduccionEditable)DGV_Traducciones.SelectedRows[0].DataBoundItem;
 
-            _idTraduccionSeleccionada = traduccion.IdTraduccion;
+            _idPalabraSeleccionada = traduccion.IdPalabra;
             TBX_Clave.Text = traduccion.Clave;
             TBX_Clave.ReadOnly = true;
-            CBX_Idiomas.SelectedValue = traduccion.IdIdioma;
             TBX_Texto.Text = traduccion.Texto;
-        }
-
-        private void BTN_CrearTraduccion_Click(object sender, EventArgs e)
-        {
-            if (!TienePermiso(CodigosPermiso.TraduccionesCrear))
-            {
-                MostrarAccesoDenegado();
-                return;
-            }
-
-            try
-            {
-                int idIdioma = ObtenerIdIdiomaSeleccionado();
-
-                if (idIdioma == 0)
-                {
-                    MostrarAdvertencia("Mensaje.SeleccioneIdioma");
-                    return;
-                }
-
-                _idiomaService.CrearTraduccion(idIdioma, TBX_Clave.Text, TBX_Texto.Text);
-                CargarTraducciones();
-                LimpiarTraduccion();
-                RefrescarIdiomaActual();
-                MostrarExito("Mensaje.TraduccionCreada");
-            }
-            catch (Exception ex)
-            {
-                MostrarError(ex);
-            }
         }
 
         private void BTN_EditarTraduccion_Click(object sender, EventArgs e)
@@ -144,7 +120,7 @@ namespace UI.Forms.Idiomas
 
             try
             {
-                if (_idTraduccionSeleccionada == 0)
+                if (_idPalabraSeleccionada == 0)
                 {
                     MostrarAdvertencia("Mensaje.SeleccioneTraduccion");
                     return;
@@ -158,7 +134,7 @@ namespace UI.Forms.Idiomas
                     return;
                 }
 
-                _idiomaService.ModificarTraduccion(_idTraduccionSeleccionada, idIdioma, TBX_Texto.Text);
+                _idiomaService.GuardarTraduccion(idIdioma, _idPalabraSeleccionada, TBX_Texto.Text);
                 CargarTraducciones();
                 LimpiarTraduccion();
                 RefrescarIdiomaActual();
@@ -170,45 +146,14 @@ namespace UI.Forms.Idiomas
             }
         }
 
-        private void BTN_EliminarTraduccion_Click(object sender, EventArgs e)
-        {
-            if (!TienePermiso(CodigosPermiso.TraduccionesEliminar))
-            {
-                MostrarAccesoDenegado();
-                return;
-            }
-
-            try
-            {
-                if (_idTraduccionSeleccionada == 0)
-                {
-                    MostrarAdvertencia("Mensaje.SeleccioneTraduccion");
-                    return;
-                }
-
-                DialogResult confirmacion = MessageBox.Show(
-                    _sesionIdioma.idioma.BuscarTraduccion("Mensaje.ConfirmarEliminarTraduccion").Replace("{0}", TBX_Clave.Text),
-                    _sesionIdioma.idioma.BuscarTraduccion("Titulo.ConfirmarEliminacion"),
-                    MessageBoxButtons.YesNo,
-                    MessageBoxIcon.Warning);
-
-                if (confirmacion == DialogResult.No)
-                    return;
-
-                _idiomaService.EliminarTraduccion(_idTraduccionSeleccionada);
-                CargarTraducciones();
-                LimpiarTraduccion();
-                RefrescarIdiomaActual();
-                MostrarExito("Mensaje.TraduccionEliminada");
-            }
-            catch (Exception ex)
-            {
-                MostrarError(ex);
-            }
-        }
-
         private void BTN_LimpiarTraduccion_Click(object sender, EventArgs e)
         {
+            LimpiarTraduccion();
+        }
+
+        private void CBX_Idiomas_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            CargarTraducciones();
             LimpiarTraduccion();
         }
 
@@ -325,9 +270,9 @@ namespace UI.Forms.Idiomas
 
         private void LimpiarTraduccion()
         {
-            _idTraduccionSeleccionada = 0;
+            _idPalabraSeleccionada = 0;
             TBX_Clave.Clear();
-            TBX_Clave.ReadOnly = false;
+            TBX_Clave.ReadOnly = true;
             TBX_Texto.Clear();
             DGV_Traducciones.ClearSelection();
         }
@@ -341,10 +286,15 @@ namespace UI.Forms.Idiomas
 
         private int ObtenerIdIdiomaSeleccionado()
         {
-            if (CBX_Idiomas.SelectedValue == null)
+            if (CBX_Idiomas.SelectedValue is int)
+                return (int)CBX_Idiomas.SelectedValue;
+
+            Idioma idioma = CBX_Idiomas.SelectedItem as Idioma;
+
+            if (idioma == null)
                 return 0;
 
-            return Convert.ToInt32(CBX_Idiomas.SelectedValue);
+            return idioma.Id;
         }
 
         private void RefrescarIdiomaActual()
@@ -399,16 +349,10 @@ namespace UI.Forms.Idiomas
 
         private void ConfigurarColumnasTraducciones()
         {
-            if (DGV_Traducciones.Columns.Contains("IdTraduccion"))
-                DGV_Traducciones.Columns["IdTraduccion"].HeaderText = _sesionIdioma.idioma.BuscarTraduccion("Columna.IdTraduccion");
             if (DGV_Traducciones.Columns.Contains("IdPalabra"))
                 DGV_Traducciones.Columns["IdPalabra"].Visible = false;
-            if (DGV_Traducciones.Columns.Contains("IdIdioma"))
-                DGV_Traducciones.Columns["IdIdioma"].Visible = false;
             if (DGV_Traducciones.Columns.Contains("Clave"))
                 DGV_Traducciones.Columns["Clave"].HeaderText = _sesionIdioma.idioma.BuscarTraduccion("Columna.Clave");
-            if (DGV_Traducciones.Columns.Contains("Idioma"))
-                DGV_Traducciones.Columns["Idioma"].HeaderText = _sesionIdioma.idioma.BuscarTraduccion("Columna.Idioma");
             if (DGV_Traducciones.Columns.Contains("Texto"))
                 DGV_Traducciones.Columns["Texto"].HeaderText = _sesionIdioma.idioma.BuscarTraduccion("Columna.Texto");
         }
@@ -426,25 +370,19 @@ namespace UI.Forms.Idiomas
         private void AplicarPermisos()
         {
             bool puedeVerTraducciones = TienePermiso(CodigosPermiso.TraduccionesVer);
-            bool puedeCrearTraducciones = TienePermiso(CodigosPermiso.TraduccionesCrear);
             bool puedeEditarTraducciones = TienePermiso(CodigosPermiso.TraduccionesEditar);
-            bool puedeEliminarTraducciones = TienePermiso(CodigosPermiso.TraduccionesEliminar);
             bool puedeVerIdiomas = TienePermiso(CodigosPermiso.IdiomasVer);
             bool puedeCrearIdiomas = TienePermiso(CodigosPermiso.IdiomasCrear);
             bool puedeEditarIdiomas = TienePermiso(CodigosPermiso.IdiomasEditar);
             bool puedeEliminarIdiomas = TienePermiso(CodigosPermiso.IdiomasEliminar);
 
-            GBX_Traducciones.Visible = puedeVerTraducciones || puedeCrearTraducciones || puedeEditarTraducciones || puedeEliminarTraducciones;
-            BTN_CrearTraduccion.Visible = puedeCrearTraducciones;
+            GBX_Traducciones.Visible = puedeVerTraducciones || puedeEditarTraducciones;
             BTN_EditarTraduccion.Visible = puedeEditarTraducciones;
-            BTN_EliminarTraduccion.Visible = puedeEliminarTraducciones;
-            BTN_LimpiarTraduccion.Visible = puedeCrearTraducciones || puedeEditarTraducciones || puedeEliminarTraducciones;
-            BTN_CrearTraduccion.Enabled = puedeCrearTraducciones;
+            BTN_LimpiarTraduccion.Visible = puedeEditarTraducciones;
             BTN_EditarTraduccion.Enabled = puedeEditarTraducciones;
-            BTN_EliminarTraduccion.Enabled = puedeEliminarTraducciones;
-            TBX_Clave.Enabled = puedeCrearTraducciones || puedeEditarTraducciones;
-            TBX_Texto.Enabled = puedeCrearTraducciones || puedeEditarTraducciones;
-            CBX_Idiomas.Enabled = puedeCrearTraducciones || puedeEditarTraducciones;
+            TBX_Clave.Enabled = puedeVerTraducciones || puedeEditarTraducciones;
+            TBX_Texto.Enabled = puedeEditarTraducciones;
+            CBX_Idiomas.Enabled = puedeVerTraducciones || puedeEditarTraducciones;
 
             GBX_Idiomas.Visible = puedeVerIdiomas || puedeCrearIdiomas || puedeEditarIdiomas || puedeEliminarIdiomas;
             BTN_CrearIdioma.Visible = puedeCrearIdiomas;

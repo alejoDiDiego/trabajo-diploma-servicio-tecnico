@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using ABSTRACTIONS.Features.Idiomas;
 using DOMAIN.Features.Idiomas;
 using REPOSITORY.Features.Idiomas;
 
@@ -44,9 +45,9 @@ namespace APPLICATION.Features.Idiomas
             return Listar().FirstOrDefault();
         }
 
-        public List<TraduccionItem> ListarTraducciones()
+        public List<TraduccionEditable> ListarTraduccionesPorIdioma(int idIdioma)
         {
-            return _idiomaRepository.ListarTraducciones();
+            return _idiomaRepository.ListarTraduccionesPorIdioma(idIdioma);
         }
 
         public Idioma CrearIdioma(string nombre)
@@ -64,19 +65,9 @@ namespace APPLICATION.Features.Idiomas
             _idiomaRepository.EliminarIdioma(id);
         }
 
-        public TraduccionItem CrearTraduccion(int idIdioma, string clave, string texto)
+        public void GuardarTraduccion(int idIdioma, int idPalabra, string texto)
         {
-            return _idiomaRepository.AgregarTraduccion(idIdioma, clave, texto);
-        }
-
-        public void ModificarTraduccion(int idTraduccion, int idIdioma, string texto)
-        {
-            _idiomaRepository.ModificarTraduccion(idTraduccion, idIdioma, texto);
-        }
-
-        public void EliminarTraduccion(int idTraduccion)
-        {
-            _idiomaRepository.EliminarTraduccion(idTraduccion);
+            _idiomaRepository.GuardarTraduccion(idIdioma, idPalabra, texto);
         }
     }
 }

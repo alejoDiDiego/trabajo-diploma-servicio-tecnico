@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
+using ABSTRACTIONS.Features.Idiomas;
+using DOMAIN.Exceptions;
 using DOMAIN.Features.Idiomas;
 
 namespace REPOSITORY.Features.Idiomas
@@ -100,35 +102,35 @@ namespace REPOSITORY.Features.Idiomas
             return null;
         }
 
-        public List<TraduccionItem> ListarTraducciones()
+        public List<TraduccionEditable> ListarTraduccionesPorIdioma(int idIdioma)
         {
             string query = @"
                 SELECT
-                    t.id_traduccion,
                     p.id_palabra,
-                    i.id_idioma,
                     p.texto AS clave,
-                    i.nombre AS idioma,
-                    t.palabra_traducida
-                FROM Traducciones t
-                INNER JOIN Palabras p ON p.id_palabra = t.id_palabra
-                INNER JOIN Idiomas i ON i.id_idioma = t.id_idioma
-                ORDER BY p.texto, i.nombre
+                    ISNULL(t.palabra_traducida, '') AS palabra_traducida
+                FROM Palabras p
+                LEFT JOIN Traducciones t ON t.id_palabra = p.id_palabra AND t.id_idioma = @IdIdioma
+                ORDER BY p.texto
             ";
 
-            DataTable dt = _db.ExecuteQuery(query);
-            List<TraduccionItem> traducciones = new List<TraduccionItem>();
+            SqlParameter[] sqlParameters = new SqlParameter[]
+            {
+                new SqlParameter("@IdIdioma", idIdioma)
+            };
+
+            DataTable dt = _db.ExecuteQuery(query, sqlParameters);
+            List<TraduccionEditable> traducciones = new List<TraduccionEditable>();
 
             foreach (DataRow fila in dt.Rows)
             {
-                traducciones.Add(TraduccionItem.Crear(
-                    Convert.ToInt32(fila["id_traduccion"]),
-                    Convert.ToInt32(fila["id_palabra"]),
-                    Convert.ToInt32(fila["id_idioma"]),
-                    fila["clave"].ToString(),
-                    fila["idioma"].ToString(),
-                    fila["palabra_traducida"].ToString()
-                ));
+                // Palabras es el catalogo de claves mantenido por desarrolladores.
+                traducciones.Add(new TraduccionEditable
+                {
+                    IdPalabra = Convert.ToInt32(fila["id_palabra"]),
+                    Clave = fila["clave"].ToString(),
+                    Texto = fila["palabra_traducida"].ToString()
+                });
             }
 
             return traducciones;
@@ -179,104 +181,38 @@ namespace REPOSITORY.Features.Idiomas
             _db.ExecuteTransaction(query, sqlParameters);
         }
 
-        public TraduccionItem AgregarTraduccion(int idIdioma, string clave, string texto)
+        public void GuardarTraduccion(int idIdioma, int idPalabra, string texto)
         {
+            if (string.IsNullOrEmpty(texto))
+                throw new ReglaNegocioException("La traduccion es obligatoria.");
+
             string query = @"
-                DECLARE @IdPalabra int;
-
-                SELECT @IdPalabra = id_palabra FROM Palabras WHERE texto=@Clave;
-
-                IF @IdPalabra IS NULL
+                IF EXISTS (
+                    SELECT 1 FROM Traducciones WHERE id_idioma=@IdIdioma AND id_palabra=@IdPalabra
+                )
                 BEGIN
-                    INSERT INTO Palabras (texto) VALUES (@Clave);
-                    SET @IdPalabra = CAST(SCOPE_IDENTITY() AS int);
+                    UPDATE Traducciones
+                    SET palabra_traducida=@Texto
+                    WHERE id_idioma=@IdIdioma AND id_palabra=@IdPalabra;
+                END
+                ELSE
+                BEGIN
+                    INSERT INTO Traducciones (id_idioma, id_palabra, palabra_traducida)
+                    VALUES (@IdIdioma, @IdPalabra, @Texto);
                 END
 
-                INSERT INTO Traducciones (id_idioma, id_palabra, palabra_traducida)
-                VALUES (@IdIdioma, @IdPalabra, @Texto);
-
-                SELECT CAST(SCOPE_IDENTITY() AS int);
+                SELECT 0;
             ";
 
             SqlParameter[] sqlParameters = new SqlParameter[]
             {
                 new SqlParameter("@IdIdioma", idIdioma),
-                new SqlParameter("@Clave", clave),
+                new SqlParameter("@IdPalabra", idPalabra),
                 new SqlParameter("@Texto", texto)
             };
 
-            int id = _db.ExecuteTransaction(query, sqlParameters);
-            return ObtenerTraduccionPorId(id);
-        }
-
-        public void ModificarTraduccion(int idTraduccion, int idIdioma, string texto)
-        {
-            string query = @"
-                UPDATE Traducciones
-                SET id_idioma=@IdIdioma, palabra_traducida=@Texto
-                WHERE id_traduccion=@IdTraduccion;
-            ";
-
-            SqlParameter[] sqlParameters = new SqlParameter[]
-            {
-                new SqlParameter("@IdTraduccion", idTraduccion),
-                new SqlParameter("@IdIdioma", idIdioma),
-                new SqlParameter("@Texto", texto)
-            };
-
+            // La UI solo guarda textos sobre claves existentes; nunca crea nuevas claves.
             _db.ExecuteTransaction(query, sqlParameters);
-        }
-
-        public void EliminarTraduccion(int idTraduccion)
-        {
-            string query = @"
-                DELETE FROM Traducciones WHERE id_traduccion=@IdTraduccion;
-            ";
-
-            SqlParameter[] sqlParameters = new SqlParameter[]
-            {
-                new SqlParameter("@IdTraduccion", idTraduccion)
-            };
-
-            _db.ExecuteTransaction(query, sqlParameters);
-        }
-
-        public TraduccionItem ObtenerTraduccionPorId(int idTraduccion)
-        {
-            string query = @"
-                SELECT
-                    t.id_traduccion,
-                    p.id_palabra,
-                    i.id_idioma,
-                    p.texto AS clave,
-                    i.nombre AS idioma,
-                    t.palabra_traducida
-                FROM Traducciones t
-                INNER JOIN Palabras p ON p.id_palabra = t.id_palabra
-                INNER JOIN Idiomas i ON i.id_idioma = t.id_idioma
-                WHERE t.id_traduccion=@IdTraduccion
-            ";
-
-            SqlParameter[] sqlParameters = new SqlParameter[]
-            {
-                new SqlParameter("@IdTraduccion", idTraduccion)
-            };
-
-            DataTable dt = _db.ExecuteQuery(query, sqlParameters);
-
-            if (dt.Rows.Count <= 0)
-                return null;
-
-            DataRow fila = dt.Rows[0];
-
-            return TraduccionItem.Crear(
-                Convert.ToInt32(fila["id_traduccion"]),
-                Convert.ToInt32(fila["id_palabra"]),
-                Convert.ToInt32(fila["id_idioma"]),
-                fila["clave"].ToString(),
-                fila["idioma"].ToString(),
-                fila["palabra_traducida"].ToString()
-            );
         }
 
         private void CrearTablas()

@@ -17,9 +17,7 @@ namespace UI.Forms.Idiomas
             this.LBL_Titulo = new System.Windows.Forms.Label();
             this.GBX_Traducciones = new System.Windows.Forms.GroupBox();
             this.BTN_LimpiarTraduccion = new System.Windows.Forms.Button();
-            this.BTN_EliminarTraduccion = new System.Windows.Forms.Button();
             this.BTN_EditarTraduccion = new System.Windows.Forms.Button();
-            this.BTN_CrearTraduccion = new System.Windows.Forms.Button();
             this.TBX_Texto = new System.Windows.Forms.TextBox();
             this.LBL_Texto = new System.Windows.Forms.Label();
             this.CBX_Idiomas = new System.Windows.Forms.ComboBox();
@@ -67,9 +65,7 @@ namespace UI.Forms.Idiomas
             // GBX_Traducciones
             // 
             this.GBX_Traducciones.Controls.Add(this.BTN_LimpiarTraduccion);
-            this.GBX_Traducciones.Controls.Add(this.BTN_EliminarTraduccion);
             this.GBX_Traducciones.Controls.Add(this.BTN_EditarTraduccion);
-            this.GBX_Traducciones.Controls.Add(this.BTN_CrearTraduccion);
             this.GBX_Traducciones.Controls.Add(this.TBX_Texto);
             this.GBX_Traducciones.Controls.Add(this.LBL_Texto);
             this.GBX_Traducciones.Controls.Add(this.CBX_Idiomas);
@@ -88,7 +84,7 @@ namespace UI.Forms.Idiomas
             // 
             // BTN_LimpiarTraduccion
             // 
-            this.BTN_LimpiarTraduccion.Location = new System.Drawing.Point(498, 512);
+            this.BTN_LimpiarTraduccion.Location = new System.Drawing.Point(186, 512);
             this.BTN_LimpiarTraduccion.Name = "BTN_LimpiarTraduccion";
             this.BTN_LimpiarTraduccion.Size = new System.Drawing.Size(130, 30);
             this.BTN_LimpiarTraduccion.TabIndex = 10;
@@ -97,28 +93,13 @@ namespace UI.Forms.Idiomas
             this.BTN_LimpiarTraduccion.UseVisualStyleBackColor = true;
             this.BTN_LimpiarTraduccion.Click += new System.EventHandler(this.BTN_LimpiarTraduccion_Click);
             // 
-            // BTN_EliminarTraduccion
-            // 
-            this.BTN_EliminarTraduccion.BackColor = System.Drawing.Color.Maroon;
-            this.BTN_EliminarTraduccion.FlatAppearance.BorderSize = 0;
-            this.BTN_EliminarTraduccion.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.BTN_EliminarTraduccion.ForeColor = System.Drawing.Color.White;
-            this.BTN_EliminarTraduccion.Location = new System.Drawing.Point(342, 512);
-            this.BTN_EliminarTraduccion.Name = "BTN_EliminarTraduccion";
-            this.BTN_EliminarTraduccion.Size = new System.Drawing.Size(150, 30);
-            this.BTN_EliminarTraduccion.TabIndex = 9;
-            this.BTN_EliminarTraduccion.Tag = "Traducciones.Eliminar";
-            this.BTN_EliminarTraduccion.Text = "Eliminar traduccion";
-            this.BTN_EliminarTraduccion.UseVisualStyleBackColor = false;
-            this.BTN_EliminarTraduccion.Click += new System.EventHandler(this.BTN_EliminarTraduccion_Click);
-            // 
             // BTN_EditarTraduccion
             // 
             this.BTN_EditarTraduccion.BackColor = System.Drawing.Color.FromArgb(0, 0, 192);
             this.BTN_EditarTraduccion.FlatAppearance.BorderSize = 0;
             this.BTN_EditarTraduccion.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.BTN_EditarTraduccion.ForeColor = System.Drawing.Color.White;
-            this.BTN_EditarTraduccion.Location = new System.Drawing.Point(186, 512);
+            this.BTN_EditarTraduccion.Location = new System.Drawing.Point(30, 512);
             this.BTN_EditarTraduccion.Name = "BTN_EditarTraduccion";
             this.BTN_EditarTraduccion.Size = new System.Drawing.Size(150, 30);
             this.BTN_EditarTraduccion.TabIndex = 8;
@@ -126,21 +107,6 @@ namespace UI.Forms.Idiomas
             this.BTN_EditarTraduccion.Text = "Editar traduccion";
             this.BTN_EditarTraduccion.UseVisualStyleBackColor = false;
             this.BTN_EditarTraduccion.Click += new System.EventHandler(this.BTN_EditarTraduccion_Click);
-            // 
-            // BTN_CrearTraduccion
-            // 
-            this.BTN_CrearTraduccion.BackColor = System.Drawing.Color.FromArgb(39, 174, 96);
-            this.BTN_CrearTraduccion.FlatAppearance.BorderSize = 0;
-            this.BTN_CrearTraduccion.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.BTN_CrearTraduccion.ForeColor = System.Drawing.Color.White;
-            this.BTN_CrearTraduccion.Location = new System.Drawing.Point(30, 512);
-            this.BTN_CrearTraduccion.Name = "BTN_CrearTraduccion";
-            this.BTN_CrearTraduccion.Size = new System.Drawing.Size(150, 30);
-            this.BTN_CrearTraduccion.TabIndex = 7;
-            this.BTN_CrearTraduccion.Tag = "Traducciones.Crear";
-            this.BTN_CrearTraduccion.Text = "Crear traduccion";
-            this.BTN_CrearTraduccion.UseVisualStyleBackColor = false;
-            this.BTN_CrearTraduccion.Click += new System.EventHandler(this.BTN_CrearTraduccion_Click);
             // 
             // TBX_Texto
             // 
@@ -171,6 +137,7 @@ namespace UI.Forms.Idiomas
             this.CBX_Idiomas.Name = "CBX_Idiomas";
             this.CBX_Idiomas.Size = new System.Drawing.Size(202, 23);
             this.CBX_Idiomas.TabIndex = 4;
+            this.CBX_Idiomas.SelectedIndexChanged += new System.EventHandler(this.CBX_Idiomas_SelectedIndexChanged);
             // 
             // LBL_IdiomaTraduccion
             // 
@@ -365,9 +332,7 @@ namespace UI.Forms.Idiomas
         private System.Windows.Forms.Label LBL_IdiomaTraduccion;
         private System.Windows.Forms.TextBox TBX_Texto;
         private System.Windows.Forms.Label LBL_Texto;
-        private System.Windows.Forms.Button BTN_CrearTraduccion;
         private System.Windows.Forms.Button BTN_EditarTraduccion;
-        private System.Windows.Forms.Button BTN_EliminarTraduccion;
         private System.Windows.Forms.Button BTN_LimpiarTraduccion;
         private System.Windows.Forms.GroupBox GBX_Idiomas;
         private System.Windows.Forms.DataGridView DGV_Idiomas;
