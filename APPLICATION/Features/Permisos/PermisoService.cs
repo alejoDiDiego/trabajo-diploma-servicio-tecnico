@@ -25,84 +25,124 @@ namespace APPLICATION.Features.Permisos
             return _permisoRepository.ListarArbol();
         }
 
-        public PermisoComponent CrearPermiso(string nombre, string codigo, string descripcion, int? idPadre)
+        public List<FamiliaPermiso> ListarFamilias()
         {
-            PermisoSimple.CrearNuevo(nombre, codigo, descripcion);
-            ValidarPadre(idPadre);
-
-            return _permisoRepository.Agregar(nombre.Trim(), codigo.Trim(), descripcion, false, idPadre);
+            return _permisoRepository.ListarFamilias();
         }
 
-        public FamiliaPermiso CrearFamilia(string nombre, string codigo, string descripcion, int? idPadre)
+        public List<PermisoSimple> ListarPermisosSimples()
         {
-            FamiliaPermiso.CrearNuevo(nombre, codigo, descripcion);
-            ValidarPadre(idPadre);
-
-            return (FamiliaPermiso)_permisoRepository.Agregar(nombre.Trim(), codigo.Trim(), descripcion, true, idPadre);
+            return _permisoRepository.ListarPermisosSimples();
         }
 
-        public void Modificar(int id, string nombre, string codigo, string descripcion, bool esFamilia)
+        public FamiliaPermiso CrearFamilia(string nombre)
         {
-            PermisoComponent permisoValidado;
+            string nombreNormalizado = NormalizarNombre(nombre);
 
-            ObtenerPermisoExistente(id);
-
-            if (esFamilia)
-                permisoValidado = FamiliaPermiso.CargarDesdeDB(id, nombre, codigo, descripcion);
-            else
-                permisoValidado = PermisoSimple.CargarDesdeDB(id, nombre, codigo, descripcion);
-
-            _permisoRepository.Modificar(
-                permisoValidado.Id,
-                permisoValidado.Nombre,
-                permisoValidado.Codigo,
-                permisoValidado.Descripcion,
-                permisoValidado.EsFamilia);
+            // La UI solo crea familias. Los permisos simples se siembran desde base/repositorio.
+            FamiliaPermiso.CrearNuevo(nombreNormalizado);
+            return _permisoRepository.AgregarFamilia(nombreNormalizado);
         }
 
-        public void Eliminar(int id)
+        public FamiliaPermiso EditarFamilia(int idFamilia, string nombre)
         {
-            ObtenerPermisoExistente(id);
-            _permisoRepository.Eliminar(id);
+            FamiliaPermiso familia = ObtenerFamiliaExistente(idFamilia);
+            string nombreNormalizado = NormalizarNombre(nombre);
+
+            FamiliaPermiso.CargarDesdeDB(familia.Id, nombreNormalizado);
+            _permisoRepository.ModificarFamilia(familia.Id, nombreNormalizado);
+
+            return FamiliaPermiso.CargarDesdeDB(familia.Id, nombreNormalizado);
         }
 
-        public void Mover(int idPermiso, int? idNuevoPadre)
+        public void EliminarFamilia(int idFamilia)
         {
-            List<PermisoComponent> arbol = _permisoRepository.ListarArbol();
-            PermisoComponent permiso = BuscarPorId(arbol, idPermiso);
+            ObtenerFamiliaExistente(idFamilia);
+            _permisoRepository.EliminarFamilia(idFamilia);
+        }
 
-            if (permiso == null)
-                throw new ReglaNegocioException("El permiso seleccionado no existe.");
+        public void AgregarComponente(int? idPadre, int idHijo)
+        {
+            PermisoComponent hijo = ObtenerPermisoExistente(idHijo);
 
-            if (!idNuevoPadre.HasValue)
+            // La raiz es virtual: no existe como fila en Permisos y solo puede contener familias.
+            if (!idPadre.HasValue && !hijo.EsFamilia)
+                throw new ReglaNegocioException("La raiz solo puede contener familias.");
+
+            if (!idPadre.HasValue)
             {
-                _permisoRepository.Mover(idPermiso, null);
+                ValidarDuplicadoDirecto(null, idHijo);
+                _permisoRepository.AgregarComponente(null, idHijo);
                 return;
             }
 
-            PermisoComponent nuevoPadre = BuscarPorId(arbol, idNuevoPadre.Value);
+            FamiliaPermiso padre = ObtenerFamiliaExistente(idPadre.Value);
 
-            if (nuevoPadre == null)
-                throw new ReglaNegocioException("La familia padre seleccionada no existe.");
-            if (!nuevoPadre.EsFamilia)
-                throw new ReglaNegocioException("El padre seleccionado debe ser una familia.");
-            if (permiso.Contiene(nuevoPadre))
-                throw new ReglaNegocioException("No se puede mover un permiso dentro de si mismo o de sus hijos.");
+            if (padre.Id == hijo.Id)
+                throw new ReglaNegocioException("Una familia no puede agregarse como hija de si misma.");
 
-            _permisoRepository.Mover(idPermiso, idNuevoPadre);
+            ValidarDuplicadoDirecto(padre.Id, hijo.Id);
+
+            // Solo las familias pueden generar ciclos, porque los permisos simples no tienen hijos.
+            if (hijo.EsFamilia && GeneraRelacionCircular(padre.Id, hijo.Id))
+                throw new ReglaNegocioException("No se puede crear una relacion circular de permisos.");
+
+            _permisoRepository.AgregarComponente(padre.Id, hijo.Id);
         }
 
-        private void ValidarPadre(int? idPadre)
+        public void QuitarComponente(int? idPadre, int idHijo)
         {
-            if (!idPadre.HasValue)
-                return;
+            if (idPadre.HasValue)
+                ObtenerFamiliaExistente(idPadre.Value);
 
-            PermisoComponent padre = _permisoRepository.ObtenerPorId(idPadre.Value);
+            ObtenerPermisoExistente(idHijo);
+            _permisoRepository.QuitarComponente(idPadre, idHijo);
+        }
 
-            if (padre == null)
-                throw new ReglaNegocioException("La familia padre seleccionada no existe.");
-            if (!padre.EsFamilia)
-                throw new ReglaNegocioException("El padre seleccionado debe ser una familia.");
+        private void ValidarDuplicadoDirecto(int? idPadre, int idHijo)
+        {
+            if (_permisoRepository.ExisteRelacion(idPadre, idHijo))
+                throw new ReglaNegocioException("El permiso ya forma parte del nivel seleccionado.");
+        }
+
+        private bool GeneraRelacionCircular(int idPadre, int idHijo)
+        {
+            // Para agregar idHijo dentro de idPadre, reviso si idPadre ya vive dentro del subarbol de idHijo.
+            // Si aparece, la nueva relacion cerraria un ciclo.
+            List<PermisoComponent> arbolHijo = _permisoRepository.ListarSubArbol(idHijo);
+
+            foreach (PermisoComponent permiso in arbolHijo)
+            {
+                if (ContienePermiso(permiso, idPadre))
+                    return true;
+            }
+
+            return false;
+        }
+
+        private bool ContienePermiso(PermisoComponent permiso, int idBuscado)
+        {
+            if (permiso.Id == idBuscado)
+                return true;
+
+            // Busqueda recursiva dentro del Composite: baja por cada familia hija.
+            foreach (PermisoComponent hijo in permiso.Hijos.OfType<PermisoComponent>())
+            {
+                if (ContienePermiso(hijo, idBuscado))
+                    return true;
+            }
+
+            return false;
+        }
+
+        private FamiliaPermiso ObtenerFamiliaExistente(int id)
+        {
+            PermisoComponent permiso = ObtenerPermisoExistente(id);
+
+            if (!permiso.EsFamilia)
+                throw new ReglaNegocioException("El permiso seleccionado debe ser una familia.");
+
+            return (FamiliaPermiso)permiso;
         }
 
         private PermisoComponent ObtenerPermisoExistente(int id)
@@ -115,20 +155,13 @@ namespace APPLICATION.Features.Permisos
             return permiso;
         }
 
-        private PermisoComponent BuscarPorId(IEnumerable<PermisoComponent> permisos, int id)
+        private string NormalizarNombre(string nombre)
         {
-            foreach (PermisoComponent permiso in permisos)
-            {
-                if (permiso.Id == id)
-                    return permiso;
+            if (string.IsNullOrWhiteSpace(nombre))
+                throw new ReglaNegocioException("El nombre de la familia es obligatorio.");
 
-                PermisoComponent permisoEncontrado = BuscarPorId(permiso.Hijos.OfType<PermisoComponent>(), id);
-
-                if (permisoEncontrado != null)
-                    return permisoEncontrado;
-            }
-
-            return null;
+            return nombre.Trim();
         }
+
     }
 }

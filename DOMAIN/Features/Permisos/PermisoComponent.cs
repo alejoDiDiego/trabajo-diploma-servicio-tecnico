@@ -9,10 +9,10 @@ namespace DOMAIN.Features.Permisos
     {
         private readonly IList<IPermisoComponent> _hijos;
 
+        // En el Composite, familias y permisos simples comparten identidad por id y nombre.
+        // No se usa codigo ni descripcion: el catalogo se administra por id y nombre unico.
         public int Id { get; protected set; }
         public string Nombre { get; protected set; }
-        public string Codigo { get; protected set; }
-        public string Descripcion { get; protected set; }
         public abstract bool EsFamilia { get; }
         public IList<IPermisoComponent> Hijos { get { return _hijos; } }
 
@@ -32,12 +32,10 @@ namespace DOMAIN.Features.Permisos
             return TieneMismoIdentificador(permiso);
         }
 
-        protected static void ValidarDatos(string nombre, string codigo)
+        protected static void ValidarDatos(string nombre)
         {
             if (string.IsNullOrWhiteSpace(nombre))
                 throw new ReglaNegocioException("El nombre del permiso es obligatorio.");
-            if (string.IsNullOrWhiteSpace(codigo))
-                throw new ReglaNegocioException("El codigo del permiso es obligatorio.");
         }
 
         protected bool TieneMismoIdentificador(IPermisoComponent permiso)
@@ -45,10 +43,12 @@ namespace DOMAIN.Features.Permisos
             if (permiso == null)
                 return false;
 
+            // Si ambos objetos vienen de base, el id es la identidad principal.
             if (Id > 0 && permiso.Id > 0)
                 return Id == permiso.Id;
 
-            return string.Equals(Codigo, permiso.Codigo, StringComparison.OrdinalIgnoreCase);
+            // Para objetos aun no persistidos, el nombre unico permite validar duplicados.
+            return string.Equals(Nombre, permiso.Nombre, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

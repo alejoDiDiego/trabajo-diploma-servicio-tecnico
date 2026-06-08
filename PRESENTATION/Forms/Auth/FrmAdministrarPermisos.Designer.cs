@@ -16,24 +16,28 @@ namespace UI.Forms.Auth
             this.LBL_Titulo = new System.Windows.Forms.Label();
             this.GBX_Arbol = new System.Windows.Forms.GroupBox();
             this.TVW_Permisos = new System.Windows.Forms.TreeView();
-            this.GBX_Detalle = new System.Windows.Forms.GroupBox();
+            this.GBX_Familia = new System.Windows.Forms.GroupBox();
+            this.BTN_EliminarFamilia = new System.Windows.Forms.Button();
+            this.BTN_EditarFamilia = new System.Windows.Forms.Button();
+            this.BTN_CrearFamilia = new System.Windows.Forms.Button();
+            this.TBX_NombreFamilia = new System.Windows.Forms.TextBox();
+            this.LBL_NombreFamilia = new System.Windows.Forms.Label();
+            this.GBX_Catalogo = new System.Windows.Forms.GroupBox();
+            this.BTN_AgregarPermiso = new System.Windows.Forms.Button();
+            this.LBX_PermisosSimples = new System.Windows.Forms.ListBox();
+            this.LBL_PermisosSimples = new System.Windows.Forms.Label();
+            this.BTN_AgregarFamilia = new System.Windows.Forms.Button();
+            this.LBX_Familias = new System.Windows.Forms.ListBox();
+            this.LBL_Familias = new System.Windows.Forms.Label();
+            this.GBX_Composicion = new System.Windows.Forms.GroupBox();
             this.BTN_Limpiar = new System.Windows.Forms.Button();
-            this.BTN_Mover = new System.Windows.Forms.Button();
-            this.BTN_Eliminar = new System.Windows.Forms.Button();
-            this.BTN_Editar = new System.Windows.Forms.Button();
-            this.BTN_Crear = new System.Windows.Forms.Button();
-            this.CBX_Padre = new System.Windows.Forms.ComboBox();
-            this.LBL_Padre = new System.Windows.Forms.Label();
-            this.CBX_Tipo = new System.Windows.Forms.ComboBox();
-            this.LBL_Tipo = new System.Windows.Forms.Label();
-            this.TBX_Descripcion = new System.Windows.Forms.TextBox();
-            this.LBL_Descripcion = new System.Windows.Forms.Label();
-            this.TBX_Codigo = new System.Windows.Forms.TextBox();
-            this.LBL_Codigo = new System.Windows.Forms.Label();
-            this.TBX_Nombre = new System.Windows.Forms.TextBox();
-            this.LBL_Nombre = new System.Windows.Forms.Label();
+            this.BTN_QuitarSeleccionado = new System.Windows.Forms.Button();
+            this.TBX_Destino = new System.Windows.Forms.TextBox();
+            this.LBL_Destino = new System.Windows.Forms.Label();
             this.GBX_Arbol.SuspendLayout();
-            this.GBX_Detalle.SuspendLayout();
+            this.GBX_Familia.SuspendLayout();
+            this.GBX_Catalogo.SuspendLayout();
+            this.GBX_Composicion.SuspendLayout();
             this.SuspendLayout();
             // 
             // LBL_Titulo
@@ -56,7 +60,7 @@ namespace UI.Forms.Auth
             this.GBX_Arbol.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.GBX_Arbol.Location = new System.Drawing.Point(24, 72);
             this.GBX_Arbol.Name = "GBX_Arbol";
-            this.GBX_Arbol.Size = new System.Drawing.Size(410, 505);
+            this.GBX_Arbol.Size = new System.Drawing.Size(365, 505);
             this.GBX_Arbol.TabIndex = 1;
             this.GBX_Arbol.TabStop = false;
             this.GBX_Arbol.Tag = "Permisos.Arbol";
@@ -74,239 +78,276 @@ namespace UI.Forms.Auth
             this.TVW_Permisos.ItemHeight = 23;
             this.TVW_Permisos.Location = new System.Drawing.Point(14, 26);
             this.TVW_Permisos.Name = "TVW_Permisos";
-            this.TVW_Permisos.Size = new System.Drawing.Size(382, 462);
+            this.TVW_Permisos.Size = new System.Drawing.Size(337, 462);
             this.TVW_Permisos.TabIndex = 0;
             this.TVW_Permisos.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.TVW_Permisos_AfterSelect);
             // 
-            // GBX_Detalle
+            // GBX_Familia
             // 
-            this.GBX_Detalle.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.GBX_Familia.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.GBX_Familia.Controls.Add(this.BTN_EliminarFamilia);
+            this.GBX_Familia.Controls.Add(this.BTN_EditarFamilia);
+            this.GBX_Familia.Controls.Add(this.BTN_CrearFamilia);
+            this.GBX_Familia.Controls.Add(this.TBX_NombreFamilia);
+            this.GBX_Familia.Controls.Add(this.LBL_NombreFamilia);
+            this.GBX_Familia.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.GBX_Familia.Location = new System.Drawing.Point(405, 72);
+            this.GBX_Familia.Name = "GBX_Familia";
+            this.GBX_Familia.Size = new System.Drawing.Size(375, 150);
+            this.GBX_Familia.TabIndex = 2;
+            this.GBX_Familia.TabStop = false;
+            this.GBX_Familia.Tag = "Permisos.Familia";
+            this.GBX_Familia.Text = "Familia";
+            // 
+            // BTN_EliminarFamilia
+            // 
+            this.BTN_EliminarFamilia.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.BTN_EliminarFamilia.Enabled = false;
+            this.BTN_EliminarFamilia.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BTN_EliminarFamilia.Location = new System.Drawing.Point(253, 96);
+            this.BTN_EliminarFamilia.Name = "BTN_EliminarFamilia";
+            this.BTN_EliminarFamilia.Size = new System.Drawing.Size(104, 32);
+            this.BTN_EliminarFamilia.TabIndex = 4;
+            this.BTN_EliminarFamilia.Tag = "Permisos.EliminarFamilia";
+            this.BTN_EliminarFamilia.Text = "Eliminar familia";
+            this.BTN_EliminarFamilia.UseVisualStyleBackColor = true;
+            this.BTN_EliminarFamilia.Click += new System.EventHandler(this.BTN_EliminarFamilia_Click);
+            // 
+            // BTN_EditarFamilia
+            // 
+            this.BTN_EditarFamilia.Enabled = false;
+            this.BTN_EditarFamilia.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BTN_EditarFamilia.Location = new System.Drawing.Point(137, 96);
+            this.BTN_EditarFamilia.Name = "BTN_EditarFamilia";
+            this.BTN_EditarFamilia.Size = new System.Drawing.Size(104, 32);
+            this.BTN_EditarFamilia.TabIndex = 3;
+            this.BTN_EditarFamilia.Tag = "Permisos.EditarFamilia";
+            this.BTN_EditarFamilia.Text = "Editar familia";
+            this.BTN_EditarFamilia.UseVisualStyleBackColor = true;
+            this.BTN_EditarFamilia.Click += new System.EventHandler(this.BTN_EditarFamilia_Click);
+            // 
+            // BTN_CrearFamilia
+            // 
+            this.BTN_CrearFamilia.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BTN_CrearFamilia.Location = new System.Drawing.Point(21, 96);
+            this.BTN_CrearFamilia.Name = "BTN_CrearFamilia";
+            this.BTN_CrearFamilia.Size = new System.Drawing.Size(104, 32);
+            this.BTN_CrearFamilia.TabIndex = 2;
+            this.BTN_CrearFamilia.Tag = "Permisos.CrearFamilia";
+            this.BTN_CrearFamilia.Text = "Crear familia";
+            this.BTN_CrearFamilia.UseVisualStyleBackColor = true;
+            this.BTN_CrearFamilia.Click += new System.EventHandler(this.BTN_CrearFamilia_Click);
+            // 
+            // TBX_NombreFamilia
+            // 
+            this.TBX_NombreFamilia.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.TBX_NombreFamilia.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.TBX_NombreFamilia.Location = new System.Drawing.Point(21, 57);
+            this.TBX_NombreFamilia.MaxLength = 100;
+            this.TBX_NombreFamilia.Name = "TBX_NombreFamilia";
+            this.TBX_NombreFamilia.Size = new System.Drawing.Size(336, 23);
+            this.TBX_NombreFamilia.TabIndex = 1;
+            // 
+            // LBL_NombreFamilia
+            // 
+            this.LBL_NombreFamilia.AutoSize = true;
+            this.LBL_NombreFamilia.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LBL_NombreFamilia.Location = new System.Drawing.Point(18, 31);
+            this.LBL_NombreFamilia.Name = "LBL_NombreFamilia";
+            this.LBL_NombreFamilia.Size = new System.Drawing.Size(88, 15);
+            this.LBL_NombreFamilia.TabIndex = 0;
+            this.LBL_NombreFamilia.Tag = "Permisos.NombreFamilia";
+            this.LBL_NombreFamilia.Text = "Nombre familia";
+            // 
+            // GBX_Catalogo
+            // 
+            this.GBX_Catalogo.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.GBX_Detalle.Controls.Add(this.BTN_Limpiar);
-            this.GBX_Detalle.Controls.Add(this.BTN_Mover);
-            this.GBX_Detalle.Controls.Add(this.BTN_Eliminar);
-            this.GBX_Detalle.Controls.Add(this.BTN_Editar);
-            this.GBX_Detalle.Controls.Add(this.BTN_Crear);
-            this.GBX_Detalle.Controls.Add(this.CBX_Padre);
-            this.GBX_Detalle.Controls.Add(this.LBL_Padre);
-            this.GBX_Detalle.Controls.Add(this.CBX_Tipo);
-            this.GBX_Detalle.Controls.Add(this.LBL_Tipo);
-            this.GBX_Detalle.Controls.Add(this.TBX_Descripcion);
-            this.GBX_Detalle.Controls.Add(this.LBL_Descripcion);
-            this.GBX_Detalle.Controls.Add(this.TBX_Codigo);
-            this.GBX_Detalle.Controls.Add(this.LBL_Codigo);
-            this.GBX_Detalle.Controls.Add(this.TBX_Nombre);
-            this.GBX_Detalle.Controls.Add(this.LBL_Nombre);
-            this.GBX_Detalle.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.GBX_Detalle.Location = new System.Drawing.Point(455, 72);
-            this.GBX_Detalle.Name = "GBX_Detalle";
-            this.GBX_Detalle.Size = new System.Drawing.Size(505, 505);
-            this.GBX_Detalle.TabIndex = 2;
-            this.GBX_Detalle.TabStop = false;
-            this.GBX_Detalle.Tag = "Permisos.Detalle";
-            this.GBX_Detalle.Text = "Detalle";
+            this.GBX_Catalogo.Controls.Add(this.BTN_AgregarPermiso);
+            this.GBX_Catalogo.Controls.Add(this.LBX_PermisosSimples);
+            this.GBX_Catalogo.Controls.Add(this.LBL_PermisosSimples);
+            this.GBX_Catalogo.Controls.Add(this.BTN_AgregarFamilia);
+            this.GBX_Catalogo.Controls.Add(this.LBX_Familias);
+            this.GBX_Catalogo.Controls.Add(this.LBL_Familias);
+            this.GBX_Catalogo.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.GBX_Catalogo.Location = new System.Drawing.Point(405, 238);
+            this.GBX_Catalogo.Name = "GBX_Catalogo";
+            this.GBX_Catalogo.Size = new System.Drawing.Size(375, 339);
+            this.GBX_Catalogo.TabIndex = 3;
+            this.GBX_Catalogo.TabStop = false;
+            this.GBX_Catalogo.Tag = "Permisos.Catalogo";
+            this.GBX_Catalogo.Text = "Catalogo";
+            // 
+            // BTN_AgregarPermiso
+            // 
+            this.BTN_AgregarPermiso.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.BTN_AgregarPermiso.Enabled = false;
+            this.BTN_AgregarPermiso.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BTN_AgregarPermiso.Location = new System.Drawing.Point(191, 292);
+            this.BTN_AgregarPermiso.Name = "BTN_AgregarPermiso";
+            this.BTN_AgregarPermiso.Size = new System.Drawing.Size(166, 31);
+            this.BTN_AgregarPermiso.TabIndex = 5;
+            this.BTN_AgregarPermiso.Tag = "Permisos.AgregarPermiso";
+            this.BTN_AgregarPermiso.Text = "Agregar permiso";
+            this.BTN_AgregarPermiso.UseVisualStyleBackColor = true;
+            this.BTN_AgregarPermiso.Click += new System.EventHandler(this.BTN_AgregarPermiso_Click);
+            // 
+            // LBX_PermisosSimples
+            // 
+            this.LBX_PermisosSimples.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.LBX_PermisosSimples.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LBX_PermisosSimples.FormattingEnabled = true;
+            this.LBX_PermisosSimples.ItemHeight = 15;
+            this.LBX_PermisosSimples.Location = new System.Drawing.Point(191, 52);
+            this.LBX_PermisosSimples.Name = "LBX_PermisosSimples";
+            this.LBX_PermisosSimples.Size = new System.Drawing.Size(166, 229);
+            this.LBX_PermisosSimples.TabIndex = 4;
+            this.LBX_PermisosSimples.SelectedIndexChanged += new System.EventHandler(this.LBX_PermisosSimples_SelectedIndexChanged);
+            // 
+            // LBL_PermisosSimples
+            // 
+            this.LBL_PermisosSimples.AutoSize = true;
+            this.LBL_PermisosSimples.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LBL_PermisosSimples.Location = new System.Drawing.Point(188, 27);
+            this.LBL_PermisosSimples.Name = "LBL_PermisosSimples";
+            this.LBL_PermisosSimples.Size = new System.Drawing.Size(99, 15);
+            this.LBL_PermisosSimples.TabIndex = 3;
+            this.LBL_PermisosSimples.Tag = "Permisos.PermisosSimples";
+            this.LBL_PermisosSimples.Text = "Permisos simples";
+            // 
+            // BTN_AgregarFamilia
+            // 
+            this.BTN_AgregarFamilia.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.BTN_AgregarFamilia.Enabled = false;
+            this.BTN_AgregarFamilia.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BTN_AgregarFamilia.Location = new System.Drawing.Point(21, 292);
+            this.BTN_AgregarFamilia.Name = "BTN_AgregarFamilia";
+            this.BTN_AgregarFamilia.Size = new System.Drawing.Size(154, 31);
+            this.BTN_AgregarFamilia.TabIndex = 2;
+            this.BTN_AgregarFamilia.Tag = "Permisos.AgregarFamilia";
+            this.BTN_AgregarFamilia.Text = "Agregar familia";
+            this.BTN_AgregarFamilia.UseVisualStyleBackColor = true;
+            this.BTN_AgregarFamilia.Click += new System.EventHandler(this.BTN_AgregarFamilia_Click);
+            // 
+            // LBX_Familias
+            // 
+            this.LBX_Familias.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
+            this.LBX_Familias.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LBX_Familias.FormattingEnabled = true;
+            this.LBX_Familias.ItemHeight = 15;
+            this.LBX_Familias.Location = new System.Drawing.Point(21, 52);
+            this.LBX_Familias.Name = "LBX_Familias";
+            this.LBX_Familias.Size = new System.Drawing.Size(154, 229);
+            this.LBX_Familias.TabIndex = 1;
+            this.LBX_Familias.SelectedIndexChanged += new System.EventHandler(this.LBX_Familias_SelectedIndexChanged);
+            // 
+            // LBL_Familias
+            // 
+            this.LBL_Familias.AutoSize = true;
+            this.LBL_Familias.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LBL_Familias.Location = new System.Drawing.Point(18, 27);
+            this.LBL_Familias.Name = "LBL_Familias";
+            this.LBL_Familias.Size = new System.Drawing.Size(51, 15);
+            this.LBL_Familias.TabIndex = 0;
+            this.LBL_Familias.Tag = "Permisos.Familias";
+            this.LBL_Familias.Text = "Familias";
+            // 
+            // GBX_Composicion
+            // 
+            this.GBX_Composicion.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.GBX_Composicion.Controls.Add(this.BTN_Limpiar);
+            this.GBX_Composicion.Controls.Add(this.BTN_QuitarSeleccionado);
+            this.GBX_Composicion.Controls.Add(this.TBX_Destino);
+            this.GBX_Composicion.Controls.Add(this.LBL_Destino);
+            this.GBX_Composicion.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.GBX_Composicion.Location = new System.Drawing.Point(800, 72);
+            this.GBX_Composicion.Name = "GBX_Composicion";
+            this.GBX_Composicion.Size = new System.Drawing.Size(260, 505);
+            this.GBX_Composicion.TabIndex = 4;
+            this.GBX_Composicion.TabStop = false;
+            this.GBX_Composicion.Tag = "Permisos.Composicion";
+            this.GBX_Composicion.Text = "Composicion";
             // 
             // BTN_Limpiar
             // 
-            this.BTN_Limpiar.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.BTN_Limpiar.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.BTN_Limpiar.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.BTN_Limpiar.Location = new System.Drawing.Point(348, 442);
+            this.BTN_Limpiar.Location = new System.Drawing.Point(20, 449);
             this.BTN_Limpiar.Name = "BTN_Limpiar";
-            this.BTN_Limpiar.Size = new System.Drawing.Size(130, 34);
-            this.BTN_Limpiar.TabIndex = 14;
+            this.BTN_Limpiar.Size = new System.Drawing.Size(220, 32);
+            this.BTN_Limpiar.TabIndex = 3;
             this.BTN_Limpiar.Tag = "Permisos.Limpiar";
             this.BTN_Limpiar.Text = "Limpiar";
             this.BTN_Limpiar.UseVisualStyleBackColor = true;
             this.BTN_Limpiar.Click += new System.EventHandler(this.BTN_Limpiar_Click);
             // 
-            // BTN_Mover
+            // BTN_QuitarSeleccionado
             // 
-            this.BTN_Mover.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.BTN_Mover.Enabled = false;
-            this.BTN_Mover.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.BTN_Mover.Location = new System.Drawing.Point(174, 442);
-            this.BTN_Mover.Name = "BTN_Mover";
-            this.BTN_Mover.Size = new System.Drawing.Size(130, 34);
-            this.BTN_Mover.TabIndex = 13;
-            this.BTN_Mover.Tag = "Permisos.Mover";
-            this.BTN_Mover.Text = "Mover";
-            this.BTN_Mover.UseVisualStyleBackColor = true;
-            this.BTN_Mover.Click += new System.EventHandler(this.BTN_Mover_Click);
+            this.BTN_QuitarSeleccionado.Enabled = false;
+            this.BTN_QuitarSeleccionado.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BTN_QuitarSeleccionado.Location = new System.Drawing.Point(20, 101);
+            this.BTN_QuitarSeleccionado.Name = "BTN_QuitarSeleccionado";
+            this.BTN_QuitarSeleccionado.Size = new System.Drawing.Size(220, 32);
+            this.BTN_QuitarSeleccionado.TabIndex = 2;
+            this.BTN_QuitarSeleccionado.Tag = "Permisos.QuitarSeleccionado";
+            this.BTN_QuitarSeleccionado.Text = "Quitar seleccionado";
+            this.BTN_QuitarSeleccionado.UseVisualStyleBackColor = true;
+            this.BTN_QuitarSeleccionado.Click += new System.EventHandler(this.BTN_QuitarSeleccionado_Click);
             // 
-            // BTN_Eliminar
+            // TBX_Destino
             // 
-            this.BTN_Eliminar.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.BTN_Eliminar.Enabled = false;
-            this.BTN_Eliminar.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.BTN_Eliminar.Location = new System.Drawing.Point(28, 442);
-            this.BTN_Eliminar.Name = "BTN_Eliminar";
-            this.BTN_Eliminar.Size = new System.Drawing.Size(130, 34);
-            this.BTN_Eliminar.TabIndex = 12;
-            this.BTN_Eliminar.Tag = "Permisos.Eliminar";
-            this.BTN_Eliminar.Text = "Eliminar";
-            this.BTN_Eliminar.UseVisualStyleBackColor = true;
-            this.BTN_Eliminar.Click += new System.EventHandler(this.BTN_Eliminar_Click);
-            // 
-            // BTN_Editar
-            // 
-            this.BTN_Editar.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.BTN_Editar.Enabled = false;
-            this.BTN_Editar.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.BTN_Editar.Location = new System.Drawing.Point(174, 392);
-            this.BTN_Editar.Name = "BTN_Editar";
-            this.BTN_Editar.Size = new System.Drawing.Size(130, 34);
-            this.BTN_Editar.TabIndex = 11;
-            this.BTN_Editar.Tag = "Permisos.Editar";
-            this.BTN_Editar.Text = "Editar";
-            this.BTN_Editar.UseVisualStyleBackColor = true;
-            this.BTN_Editar.Click += new System.EventHandler(this.BTN_Editar_Click);
-            // 
-            // BTN_Crear
-            // 
-            this.BTN_Crear.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.BTN_Crear.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.BTN_Crear.Location = new System.Drawing.Point(28, 392);
-            this.BTN_Crear.Name = "BTN_Crear";
-            this.BTN_Crear.Size = new System.Drawing.Size(130, 34);
-            this.BTN_Crear.TabIndex = 10;
-            this.BTN_Crear.Tag = "Permisos.Crear";
-            this.BTN_Crear.Text = "Crear";
-            this.BTN_Crear.UseVisualStyleBackColor = true;
-            this.BTN_Crear.Click += new System.EventHandler(this.BTN_Crear_Click);
-            // 
-            // CBX_Padre
-            // 
-            this.CBX_Padre.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.TBX_Destino.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.CBX_Padre.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.CBX_Padre.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.CBX_Padre.FormattingEnabled = true;
-            this.CBX_Padre.Location = new System.Drawing.Point(160, 326);
-            this.CBX_Padre.Name = "CBX_Padre";
-            this.CBX_Padre.Size = new System.Drawing.Size(318, 23);
-            this.CBX_Padre.TabIndex = 9;
+            this.TBX_Destino.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.TBX_Destino.Location = new System.Drawing.Point(20, 57);
+            this.TBX_Destino.Name = "TBX_Destino";
+            this.TBX_Destino.ReadOnly = true;
+            this.TBX_Destino.Size = new System.Drawing.Size(220, 23);
+            this.TBX_Destino.TabIndex = 1;
             // 
-            // LBL_Padre
+            // LBL_Destino
             // 
-            this.LBL_Padre.AutoSize = true;
-            this.LBL_Padre.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.LBL_Padre.Location = new System.Drawing.Point(25, 330);
-            this.LBL_Padre.Name = "LBL_Padre";
-            this.LBL_Padre.Size = new System.Drawing.Size(35, 13);
-            this.LBL_Padre.TabIndex = 8;
-            this.LBL_Padre.Tag = "Permisos.Padre";
-            this.LBL_Padre.Text = "Padre";
-            // 
-            // CBX_Tipo
-            // 
-            this.CBX_Tipo.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.CBX_Tipo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.CBX_Tipo.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.CBX_Tipo.FormattingEnabled = true;
-            this.CBX_Tipo.Location = new System.Drawing.Point(160, 282);
-            this.CBX_Tipo.Name = "CBX_Tipo";
-            this.CBX_Tipo.Size = new System.Drawing.Size(318, 23);
-            this.CBX_Tipo.TabIndex = 7;
-            // 
-            // LBL_Tipo
-            // 
-            this.LBL_Tipo.AutoSize = true;
-            this.LBL_Tipo.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.LBL_Tipo.Location = new System.Drawing.Point(25, 286);
-            this.LBL_Tipo.Name = "LBL_Tipo";
-            this.LBL_Tipo.Size = new System.Drawing.Size(28, 13);
-            this.LBL_Tipo.TabIndex = 6;
-            this.LBL_Tipo.Tag = "Permisos.Tipo";
-            this.LBL_Tipo.Text = "Tipo";
-            // 
-            // TBX_Descripcion
-            // 
-            this.TBX_Descripcion.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.TBX_Descripcion.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.TBX_Descripcion.Location = new System.Drawing.Point(160, 143);
-            this.TBX_Descripcion.MaxLength = 500;
-            this.TBX_Descripcion.Multiline = true;
-            this.TBX_Descripcion.Name = "TBX_Descripcion";
-            this.TBX_Descripcion.Size = new System.Drawing.Size(318, 108);
-            this.TBX_Descripcion.TabIndex = 5;
-            // 
-            // LBL_Descripcion
-            // 
-            this.LBL_Descripcion.AutoSize = true;
-            this.LBL_Descripcion.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.LBL_Descripcion.Location = new System.Drawing.Point(25, 146);
-            this.LBL_Descripcion.Name = "LBL_Descripcion";
-            this.LBL_Descripcion.Size = new System.Drawing.Size(63, 13);
-            this.LBL_Descripcion.TabIndex = 4;
-            this.LBL_Descripcion.Tag = "Permisos.Descripcion";
-            this.LBL_Descripcion.Text = "Descripcion";
-            // 
-            // TBX_Codigo
-            // 
-            this.TBX_Codigo.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.TBX_Codigo.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.TBX_Codigo.Location = new System.Drawing.Point(160, 94);
-            this.TBX_Codigo.MaxLength = 100;
-            this.TBX_Codigo.Name = "TBX_Codigo";
-            this.TBX_Codigo.Size = new System.Drawing.Size(318, 23);
-            this.TBX_Codigo.TabIndex = 3;
-            // 
-            // LBL_Codigo
-            // 
-            this.LBL_Codigo.AutoSize = true;
-            this.LBL_Codigo.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.LBL_Codigo.Location = new System.Drawing.Point(25, 98);
-            this.LBL_Codigo.Name = "LBL_Codigo";
-            this.LBL_Codigo.Size = new System.Drawing.Size(40, 13);
-            this.LBL_Codigo.TabIndex = 2;
-            this.LBL_Codigo.Tag = "Permisos.Codigo";
-            this.LBL_Codigo.Text = "Codigo";
-            // 
-            // TBX_Nombre
-            // 
-            this.TBX_Nombre.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.TBX_Nombre.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.TBX_Nombre.Location = new System.Drawing.Point(160, 46);
-            this.TBX_Nombre.MaxLength = 100;
-            this.TBX_Nombre.Name = "TBX_Nombre";
-            this.TBX_Nombre.Size = new System.Drawing.Size(318, 23);
-            this.TBX_Nombre.TabIndex = 1;
-            // 
-            // LBL_Nombre
-            // 
-            this.LBL_Nombre.AutoSize = true;
-            this.LBL_Nombre.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.LBL_Nombre.Location = new System.Drawing.Point(25, 50);
-            this.LBL_Nombre.Name = "LBL_Nombre";
-            this.LBL_Nombre.Size = new System.Drawing.Size(44, 13);
-            this.LBL_Nombre.TabIndex = 0;
-            this.LBL_Nombre.Tag = "Permisos.Nombre";
-            this.LBL_Nombre.Text = "Nombre";
+            this.LBL_Destino.AutoSize = true;
+            this.LBL_Destino.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LBL_Destino.Location = new System.Drawing.Point(17, 31);
+            this.LBL_Destino.Name = "LBL_Destino";
+            this.LBL_Destino.Size = new System.Drawing.Size(47, 15);
+            this.LBL_Destino.TabIndex = 0;
+            this.LBL_Destino.Tag = "Permisos.Destino";
+            this.LBL_Destino.Text = "Destino";
             // 
             // FrmAdministrarPermisos
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
-            this.ClientSize = new System.Drawing.Size(984, 601);
-            this.Controls.Add(this.GBX_Detalle);
+            this.ClientSize = new System.Drawing.Size(1084, 601);
+            this.Controls.Add(this.GBX_Composicion);
+            this.Controls.Add(this.GBX_Catalogo);
+            this.Controls.Add(this.GBX_Familia);
             this.Controls.Add(this.GBX_Arbol);
             this.Controls.Add(this.LBL_Titulo);
             this.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.MinimumSize = new System.Drawing.Size(1000, 640);
+            this.MinimumSize = new System.Drawing.Size(1100, 640);
             this.Name = "FrmAdministrarPermisos";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Tag = "FrmAdministrarPermisos.Text";
             this.Text = "Administracion de permisos";
             this.Load += new System.EventHandler(this.FrmAdministrarPermisos_Load);
             this.GBX_Arbol.ResumeLayout(false);
-            this.GBX_Detalle.ResumeLayout(false);
-            this.GBX_Detalle.PerformLayout();
+            this.GBX_Familia.ResumeLayout(false);
+            this.GBX_Familia.PerformLayout();
+            this.GBX_Catalogo.ResumeLayout(false);
+            this.GBX_Catalogo.PerformLayout();
+            this.GBX_Composicion.ResumeLayout(false);
+            this.GBX_Composicion.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -315,21 +356,23 @@ namespace UI.Forms.Auth
         private System.Windows.Forms.Label LBL_Titulo;
         private System.Windows.Forms.GroupBox GBX_Arbol;
         private System.Windows.Forms.TreeView TVW_Permisos;
-        private System.Windows.Forms.GroupBox GBX_Detalle;
-        private System.Windows.Forms.Label LBL_Nombre;
-        private System.Windows.Forms.TextBox TBX_Nombre;
-        private System.Windows.Forms.Label LBL_Codigo;
-        private System.Windows.Forms.TextBox TBX_Codigo;
-        private System.Windows.Forms.Label LBL_Descripcion;
-        private System.Windows.Forms.TextBox TBX_Descripcion;
-        private System.Windows.Forms.Label LBL_Tipo;
-        private System.Windows.Forms.ComboBox CBX_Tipo;
-        private System.Windows.Forms.Label LBL_Padre;
-        private System.Windows.Forms.ComboBox CBX_Padre;
-        private System.Windows.Forms.Button BTN_Crear;
-        private System.Windows.Forms.Button BTN_Editar;
-        private System.Windows.Forms.Button BTN_Eliminar;
-        private System.Windows.Forms.Button BTN_Mover;
+        private System.Windows.Forms.GroupBox GBX_Familia;
+        private System.Windows.Forms.Button BTN_EliminarFamilia;
+        private System.Windows.Forms.Button BTN_EditarFamilia;
+        private System.Windows.Forms.Button BTN_CrearFamilia;
+        private System.Windows.Forms.TextBox TBX_NombreFamilia;
+        private System.Windows.Forms.Label LBL_NombreFamilia;
+        private System.Windows.Forms.GroupBox GBX_Catalogo;
+        private System.Windows.Forms.Button BTN_AgregarPermiso;
+        private System.Windows.Forms.ListBox LBX_PermisosSimples;
+        private System.Windows.Forms.Label LBL_PermisosSimples;
+        private System.Windows.Forms.Button BTN_AgregarFamilia;
+        private System.Windows.Forms.ListBox LBX_Familias;
+        private System.Windows.Forms.Label LBL_Familias;
+        private System.Windows.Forms.GroupBox GBX_Composicion;
         private System.Windows.Forms.Button BTN_Limpiar;
+        private System.Windows.Forms.Button BTN_QuitarSeleccionado;
+        private System.Windows.Forms.TextBox TBX_Destino;
+        private System.Windows.Forms.Label LBL_Destino;
     }
 }
