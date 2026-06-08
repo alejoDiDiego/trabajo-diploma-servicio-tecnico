@@ -2,6 +2,7 @@ using System;
 using System.Windows.Forms;
 using ABSTRACTIONS.Features.Idiomas;
 using APPLICATION.Features.Idiomas;
+using DOMAIN.Features.Permisos;
 using DOMAIN.Features.Idiomas;
 using SERVICES.Auth;
 using SERVICES.Idiomas;
@@ -33,6 +34,7 @@ namespace UI.Forms
             TSMI_CerrarSesion.Text = idiomaObservado.BuscarTraduccion(TSMI_CerrarSesion.Tag.ToString());
             TSMI_AdministrarUsuarios.Text = idiomaObservado.BuscarTraduccion(TSMI_AdministrarUsuarios.Tag.ToString());
             TSMI_AdministrarPermisos.Text = idiomaObservado.BuscarTraduccion(TSMI_AdministrarPermisos.Tag.ToString());
+            TSMI_AsignarPermisosUsuarios.Text = idiomaObservado.BuscarTraduccion(TSMI_AsignarPermisosUsuarios.Tag.ToString());
             TSMI_Idioma.Text = idiomaObservado.BuscarTraduccion(TSMI_Idioma.Tag.ToString());
             TSMI_AdministrarTraducciones.Text = idiomaObservado.BuscarTraduccion(TSMI_AdministrarTraducciones.Tag.ToString());
 
@@ -82,13 +84,9 @@ namespace UI.Forms
 
         private void TSMI_AdministrarUsuarios_Click(object sender, EventArgs e)
         {
-            if (!SessionManager.HaySesionActiva())
+            if (!TienePermiso(CodigosPermiso.UsuariosVer))
             {
-                MessageBox.Show(
-                    _sesionIdioma.idioma.BuscarTraduccion("Mensaje.DebeIniciarSesion"),
-                    _sesionIdioma.idioma.BuscarTraduccion("Titulo.AccesoDenegado"),
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Warning);
+                MostrarAccesoDenegado();
                 ActualizarMenuUsuario();
                 return;
             }
@@ -111,18 +109,24 @@ namespace UI.Forms
         private void ActualizarMenuUsuario()
         {
             bool haySesionActiva = SessionManager.HaySesionActiva();
+            bool puedeVerUsuarios = TienePermiso(CodigosPermiso.UsuariosVer);
+            bool puedeVerPermisos = TienePermiso(CodigosPermiso.PermisosVer);
+            bool puedeAsignarPermisos = TienePermiso(CodigosPermiso.PermisosAsignarUsuarios);
+            bool puedeVerTraducciones = TieneAlgunPermiso(CodigosPermiso.TraduccionesVer, CodigosPermiso.IdiomasVer);
 
             TSMI_IniciarSesion.Visible = !haySesionActiva;
             TSMI_CerrarSesion.Visible = haySesionActiva;
-            TSMI_AdministrarUsuarios.Visible = haySesionActiva;
-            TSMI_AdministrarPermisos.Visible = haySesionActiva;
-            TSMI_AdministrarTraducciones.Visible = haySesionActiva;
+            TSMI_AdministrarUsuarios.Visible = haySesionActiva && puedeVerUsuarios;
+            TSMI_AdministrarPermisos.Visible = haySesionActiva && puedeVerPermisos;
+            TSMI_AsignarPermisosUsuarios.Visible = haySesionActiva && puedeAsignarPermisos;
+            TSMI_AdministrarTraducciones.Visible = haySesionActiva && puedeVerTraducciones;
 
             TSMI_IniciarSesion.Enabled = !haySesionActiva;
             TSMI_CerrarSesion.Enabled = haySesionActiva;
-            TSMI_AdministrarUsuarios.Enabled = haySesionActiva;
-            TSMI_AdministrarPermisos.Enabled = haySesionActiva;
-            TSMI_AdministrarTraducciones.Enabled = haySesionActiva;
+            TSMI_AdministrarUsuarios.Enabled = haySesionActiva && puedeVerUsuarios;
+            TSMI_AdministrarPermisos.Enabled = haySesionActiva && puedeVerPermisos;
+            TSMI_AsignarPermisosUsuarios.Enabled = haySesionActiva && puedeAsignarPermisos;
+            TSMI_AdministrarTraducciones.Enabled = haySesionActiva && puedeVerTraducciones;
 
             var usuario = SessionManager.ObtenerUsuarioActual();
             TSMI_Usuario.Text = haySesionActiva
@@ -142,6 +146,7 @@ namespace UI.Forms
                 itemIdioma.Name = "TSMI_Idioma_" + idioma.Id;
                 itemIdioma.Text = idioma.Nombre;
                 itemIdioma.Tag = idioma.Id;
+                itemIdioma.Enabled = PuedeCambiarIdioma();
                 itemIdioma.Click += TSMI_Idioma_Click;
                 TSMI_Idioma.DropDownItems.Add(itemIdioma);
             }
@@ -179,13 +184,9 @@ namespace UI.Forms
 
         private void TSMI_AdministrarTraducciones_Click(object sender, EventArgs e)
         {
-            if (!SessionManager.HaySesionActiva())
+            if (!TieneAlgunPermiso(CodigosPermiso.TraduccionesVer, CodigosPermiso.IdiomasVer))
             {
-                MessageBox.Show(
-                    _sesionIdioma.idioma.BuscarTraduccion("Mensaje.DebeIniciarSesion"),
-                    _sesionIdioma.idioma.BuscarTraduccion("Titulo.AccesoDenegado"),
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Warning);
+                MostrarAccesoDenegado();
                 ActualizarMenuUsuario();
                 return;
             }
@@ -207,13 +208,9 @@ namespace UI.Forms
 
         private void TSMI_AdministrarPermisos_Click(object sender, EventArgs e)
         {
-            if (!SessionManager.HaySesionActiva())
+            if (!TienePermiso(CodigosPermiso.PermisosVer))
             {
-                MessageBox.Show(
-                    _sesionIdioma.idioma.BuscarTraduccion("Mensaje.DebeIniciarSesion"),
-                    _sesionIdioma.idioma.BuscarTraduccion("Titulo.AccesoDenegado"),
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Warning);
+                MostrarAccesoDenegado();
                 ActualizarMenuUsuario();
                 return;
             }
@@ -233,10 +230,64 @@ namespace UI.Forms
             frmAdministrarPermisos.Show();
         }
 
+        private void TSMI_AsignarPermisosUsuarios_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.PermisosAsignarUsuarios))
+            {
+                MostrarAccesoDenegado();
+                ActualizarMenuUsuario();
+                return;
+            }
+
+            foreach (Form formulario in MdiChildren)
+            {
+                if (formulario is FrmAsignarPermisosUsuario)
+                {
+                    formulario.Activate();
+                    return;
+                }
+            }
+
+            FrmAsignarPermisosUsuario frmAsignarPermisosUsuario = new FrmAsignarPermisosUsuario();
+            frmAsignarPermisosUsuario.MdiParent = this;
+            frmAsignarPermisosUsuario.FormClosed += FormularioHijo_FormClosed;
+            frmAsignarPermisosUsuario.Show();
+        }
+
         private void CambiarIdioma(int idIdioma)
         {
+            if (!PuedeCambiarIdioma())
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
             IIdioma idioma = _idiomaService.ObtenerPorId(idIdioma);
             _sesionIdioma.CambiarIdioma(idioma);
+        }
+
+        private bool TienePermiso(string codigo)
+        {
+            return SessionManager.HaySesionActiva() && SessionManager.TienePermiso(codigo);
+        }
+
+        private bool TieneAlgunPermiso(params string[] codigos)
+        {
+            return SessionManager.HaySesionActiva() && SessionManager.TieneAlgunPermiso(codigos);
+        }
+
+        private bool PuedeCambiarIdioma()
+        {
+            return !SessionManager.HaySesionActiva() || SessionManager.TienePermiso(CodigosPermiso.IdiomasCambiar);
+        }
+
+        private void MostrarAccesoDenegado()
+        {
+            MessageBox.Show(
+                _sesionIdioma.idioma.BuscarTraduccion("Mensaje.SinPermisos"),
+                _sesionIdioma.idioma.BuscarTraduccion("Titulo.AccesoDenegado"),
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning);
         }
 
         private void CerrarFormulariosHijos()

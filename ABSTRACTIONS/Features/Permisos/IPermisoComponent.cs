@@ -6,6 +6,7 @@ namespace ABSTRACTIONS.Features.Permisos
     public interface IPermisoComponent : IEntity
     {
         string Nombre { get; }
+        string Codigo { get; }
         bool EsFamilia { get; }
         IList<IPermisoComponent> Hijos { get; }
 

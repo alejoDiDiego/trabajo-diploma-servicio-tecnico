@@ -2,6 +2,7 @@ using System;
 using System.Windows.Forms;
 using APPLICATION.Features.Idiomas;
 using APPLICATION.Features.Permisos;
+using APPLICATION.Features.Usuarios;
 using SERVICES.Idiomas;
 using UI.Forms;
 
@@ -20,6 +21,9 @@ namespace UI
 
             PermisoService permisoService = new PermisoService();
             permisoService.Inicializar();
+
+            UsuarioService usuarioService = new UsuarioService();
+            usuarioService.Inicializar();
 
             SesionIdioma.GetInstance().CambiarIdioma(idiomaService.ObtenerIdiomaPorDefecto());
 

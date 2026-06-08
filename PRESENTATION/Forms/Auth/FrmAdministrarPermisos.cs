@@ -65,7 +65,7 @@ namespace UI.Forms.Auth
             // El formulario queda escuchando cambios de idioma hasta cerrarse.
             _sesionIdioma.RegistrarObservador(this);
 
-            if (!SessionManager.HaySesionActiva())
+            if (!PuedeVerPermisos())
             {
                 MessageBox.Show(
                     T("Mensaje.SinPermisos"),
@@ -83,6 +83,12 @@ namespace UI.Forms.Auth
 
         private void BTN_CrearFamilia_Click(object sender, EventArgs e)
         {
+            if (!TienePermiso(CodigosPermiso.PermisosCrear))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
             try
             {
                 // Crear familia solo agrega una fila al catalogo Permisos.
@@ -100,6 +106,12 @@ namespace UI.Forms.Auth
 
         private void BTN_EditarFamilia_Click(object sender, EventArgs e)
         {
+            if (!TienePermiso(CodigosPermiso.PermisosEditar))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
             if (_idFamiliaSeleccionada == 0)
             {
                 MostrarAdvertencia("Mensaje.SeleccioneFamilia");
@@ -124,6 +136,12 @@ namespace UI.Forms.Auth
 
         private void BTN_EliminarFamilia_Click(object sender, EventArgs e)
         {
+            if (!TienePermiso(CodigosPermiso.PermisosEliminar))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
             FamiliaPermiso familia = ObtenerFamiliaSeleccionada();
 
             if (familia == null)
@@ -157,6 +175,12 @@ namespace UI.Forms.Auth
 
         private void BTN_AgregarFamilia_Click(object sender, EventArgs e)
         {
+            if (!TienePermiso(CodigosPermiso.PermisosComponer))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
             // Origen: familia elegida desde el catalogo.
             FamiliaPermiso familia = LBX_Familias.SelectedItem as FamiliaPermiso;
             // El destino puede ser raiz o una familia seleccionada en el arbol.
@@ -189,6 +213,12 @@ namespace UI.Forms.Auth
 
         private void BTN_AgregarPermiso_Click(object sender, EventArgs e)
         {
+            if (!TienePermiso(CodigosPermiso.PermisosComponer))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
             // Origen: permiso simple del catalogo precargado por desarrolladores.
             PermisoSimple permiso = LBX_PermisosSimples.SelectedItem as PermisoSimple;
             // Los permisos simples solo pueden agregarse dentro de familias, nunca debajo de raiz.
@@ -221,6 +251,12 @@ namespace UI.Forms.Auth
 
         private void BTN_QuitarSeleccionado_Click(object sender, EventArgs e)
         {
+            if (!TienePermiso(CodigosPermiso.PermisosComponer))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
             NodoPermiso nodo = ObtenerNodoSeleccionado();
 
             if (nodo == null || nodo.EsRaiz)
@@ -531,13 +567,27 @@ namespace UI.Forms.Auth
             bool hayFamiliaDisponible = LBX_Familias.SelectedItem as FamiliaPermiso != null;
             bool hayPermisoDisponible = LBX_PermisosSimples.SelectedItem as PermisoSimple != null;
             NodoPermiso seleccionado = ObtenerNodoSeleccionado();
+            bool puedeCrear = TienePermiso(CodigosPermiso.PermisosCrear);
+            bool puedeEditar = TienePermiso(CodigosPermiso.PermisosEditar);
+            bool puedeEliminar = TienePermiso(CodigosPermiso.PermisosEliminar);
+            bool puedeComponer = TienePermiso(CodigosPermiso.PermisosComponer);
 
             // Crear familia queda siempre disponible; estos botones dependen de seleccion valida.
-            BTN_EditarFamilia.Enabled = _idFamiliaSeleccionada > 0;
-            BTN_EliminarFamilia.Enabled = _idFamiliaSeleccionada > 0;
-            BTN_AgregarFamilia.Enabled = hayDestino && hayFamiliaDisponible;
-            BTN_AgregarPermiso.Enabled = destinoEsFamilia && hayPermisoDisponible;
-            BTN_QuitarSeleccionado.Enabled = seleccionado != null && !seleccionado.EsRaiz;
+            BTN_CrearFamilia.Visible = puedeCrear;
+            BTN_EditarFamilia.Visible = puedeEditar;
+            BTN_EliminarFamilia.Visible = puedeEliminar;
+            BTN_AgregarFamilia.Visible = puedeComponer;
+            BTN_AgregarPermiso.Visible = puedeComponer;
+            BTN_QuitarSeleccionado.Visible = puedeComponer;
+
+            BTN_CrearFamilia.Enabled = puedeCrear;
+            BTN_EditarFamilia.Enabled = puedeEditar && _idFamiliaSeleccionada > 0;
+            BTN_EliminarFamilia.Enabled = puedeEliminar && _idFamiliaSeleccionada > 0;
+            BTN_AgregarFamilia.Enabled = puedeComponer && hayDestino && hayFamiliaDisponible;
+            BTN_AgregarPermiso.Enabled = puedeComponer && destinoEsFamilia && hayPermisoDisponible;
+            BTN_QuitarSeleccionado.Enabled = puedeComponer && seleccionado != null && !seleccionado.EsRaiz;
+
+            TBX_NombreFamilia.Enabled = puedeCrear || puedeEditar;
         }
 
         private void MostrarAdvertencia(string claveMensaje)
@@ -556,6 +606,25 @@ namespace UI.Forms.Auth
                 T("Titulo.Error"),
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error);
+        }
+
+        private bool PuedeVerPermisos()
+        {
+            return TienePermiso(CodigosPermiso.PermisosVer);
+        }
+
+        private bool TienePermiso(string codigo)
+        {
+            return SessionManager.HaySesionActiva() && SessionManager.TienePermiso(codigo);
+        }
+
+        private void MostrarAccesoDenegado()
+        {
+            MessageBox.Show(
+                T("Mensaje.SinPermisos"),
+                T("Titulo.AccesoDenegado"),
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning);
         }
 
         private string T(string clave)

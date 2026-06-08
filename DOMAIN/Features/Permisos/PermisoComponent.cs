@@ -10,9 +10,10 @@ namespace DOMAIN.Features.Permisos
         private readonly IList<IPermisoComponent> _hijos;
 
         // En el Composite, familias y permisos simples comparten identidad por id y nombre.
-        // No se usa codigo ni descripcion: el catalogo se administra por id y nombre unico.
+        // Codigo identifica permisos simples desde codigo de aplicacion; las familias no lo usan.
         public int Id { get; protected set; }
         public string Nombre { get; protected set; }
+        public string Codigo { get; protected set; }
         public abstract bool EsFamilia { get; }
         public IList<IPermisoComponent> Hijos { get { return _hijos; } }
 

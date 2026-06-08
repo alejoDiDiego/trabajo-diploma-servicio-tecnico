@@ -13,22 +13,33 @@ namespace DOMAIN.Features.Permisos
 
         public static PermisoSimple CrearNuevo(string nombre)
         {
-            return Crear(0, nombre);
+            return Crear(0, nombre, null);
+        }
+
+        public static PermisoSimple CrearNuevo(string nombre, string codigo)
+        {
+            return Crear(0, nombre, codigo);
         }
 
         public static PermisoSimple CargarDesdeDB(int id, string nombre)
         {
-            return Crear(id, nombre);
+            return Crear(id, nombre, null);
         }
 
-        private static PermisoSimple Crear(int id, string nombre)
+        public static PermisoSimple CargarDesdeDB(int id, string nombre, string codigo)
+        {
+            return Crear(id, nombre, codigo);
+        }
+
+        private static PermisoSimple Crear(int id, string nombre, string codigo)
         {
             ValidarDatos(nombre);
 
             return new PermisoSimple
             {
                 Id = id,
-                Nombre = nombre.Trim()
+                Nombre = nombre.Trim(),
+                Codigo = string.IsNullOrWhiteSpace(codigo) ? null : codigo.Trim().ToUpperInvariant()
             };
         }
 

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows.Forms;
 using ABSTRACTIONS.Features.Idiomas;
 using APPLICATION.Features.Idiomas;
+using DOMAIN.Features.Permisos;
 using DOMAIN.Features.Idiomas;
 using SERVICES.Auth;
 using SERVICES.Idiomas;
@@ -48,13 +49,14 @@ namespace UI.Forms.Idiomas
 
             ConfigurarColumnasTraducciones();
             ConfigurarColumnasIdiomas();
+            AplicarPermisos();
         }
 
         private void FrmAdministrarTraducciones_Load(object sender, EventArgs e)
         {
             _sesionIdioma.RegistrarObservador(this);
 
-            if (!SessionManager.HaySesionActiva())
+            if (!PuedeVerPantalla())
             {
                 MessageBox.Show(
                     _sesionIdioma.idioma.BuscarTraduccion("Mensaje.SinPermisos"),
@@ -68,6 +70,7 @@ namespace UI.Forms.Idiomas
             CargarIdiomas();
             CargarTraducciones();
             Actualizar(_sesionIdioma.idioma);
+            AplicarPermisos();
         }
 
         private void CargarIdiomas()
@@ -103,6 +106,12 @@ namespace UI.Forms.Idiomas
 
         private void BTN_CrearTraduccion_Click(object sender, EventArgs e)
         {
+            if (!TienePermiso(CodigosPermiso.TraduccionesCrear))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
             try
             {
                 int idIdioma = ObtenerIdIdiomaSeleccionado();
@@ -127,6 +136,12 @@ namespace UI.Forms.Idiomas
 
         private void BTN_EditarTraduccion_Click(object sender, EventArgs e)
         {
+            if (!TienePermiso(CodigosPermiso.TraduccionesEditar))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
             try
             {
                 if (_idTraduccionSeleccionada == 0)
@@ -157,6 +172,12 @@ namespace UI.Forms.Idiomas
 
         private void BTN_EliminarTraduccion_Click(object sender, EventArgs e)
         {
+            if (!TienePermiso(CodigosPermiso.TraduccionesEliminar))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
             try
             {
                 if (_idTraduccionSeleccionada == 0)
@@ -204,6 +225,12 @@ namespace UI.Forms.Idiomas
 
         private void BTN_CrearIdioma_Click(object sender, EventArgs e)
         {
+            if (!TienePermiso(CodigosPermiso.IdiomasCrear))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
             try
             {
                 _idiomaService.CrearIdioma(TBX_NombreIdioma.Text);
@@ -220,6 +247,12 @@ namespace UI.Forms.Idiomas
 
         private void BTN_EditarIdioma_Click(object sender, EventArgs e)
         {
+            if (!TienePermiso(CodigosPermiso.IdiomasEditar))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
             try
             {
                 if (_idIdiomaSeleccionado == 0)
@@ -243,6 +276,12 @@ namespace UI.Forms.Idiomas
 
         private void BTN_EliminarIdioma_Click(object sender, EventArgs e)
         {
+            if (!TienePermiso(CodigosPermiso.IdiomasEliminar))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
             try
             {
                 if (_idIdiomaSeleccionado == 0)
@@ -340,6 +379,15 @@ namespace UI.Forms.Idiomas
                 MessageBoxIcon.Warning);
         }
 
+        private void MostrarAccesoDenegado()
+        {
+            MessageBox.Show(
+                _sesionIdioma.idioma.BuscarTraduccion("Mensaje.SinPermisos"),
+                _sesionIdioma.idioma.BuscarTraduccion("Titulo.AccesoDenegado"),
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning);
+        }
+
         private void MostrarError(Exception ex)
         {
             MessageBox.Show(
@@ -373,6 +421,51 @@ namespace UI.Forms.Idiomas
                 DGV_Idiomas.Columns["Nombre"].HeaderText = _sesionIdioma.idioma.BuscarTraduccion("Columna.Nombre");
             if (DGV_Idiomas.Columns.Contains("Traducciones"))
                 DGV_Idiomas.Columns["Traducciones"].Visible = false;
+        }
+
+        private void AplicarPermisos()
+        {
+            bool puedeVerTraducciones = TienePermiso(CodigosPermiso.TraduccionesVer);
+            bool puedeCrearTraducciones = TienePermiso(CodigosPermiso.TraduccionesCrear);
+            bool puedeEditarTraducciones = TienePermiso(CodigosPermiso.TraduccionesEditar);
+            bool puedeEliminarTraducciones = TienePermiso(CodigosPermiso.TraduccionesEliminar);
+            bool puedeVerIdiomas = TienePermiso(CodigosPermiso.IdiomasVer);
+            bool puedeCrearIdiomas = TienePermiso(CodigosPermiso.IdiomasCrear);
+            bool puedeEditarIdiomas = TienePermiso(CodigosPermiso.IdiomasEditar);
+            bool puedeEliminarIdiomas = TienePermiso(CodigosPermiso.IdiomasEliminar);
+
+            GBX_Traducciones.Visible = puedeVerTraducciones || puedeCrearTraducciones || puedeEditarTraducciones || puedeEliminarTraducciones;
+            BTN_CrearTraduccion.Visible = puedeCrearTraducciones;
+            BTN_EditarTraduccion.Visible = puedeEditarTraducciones;
+            BTN_EliminarTraduccion.Visible = puedeEliminarTraducciones;
+            BTN_LimpiarTraduccion.Visible = puedeCrearTraducciones || puedeEditarTraducciones || puedeEliminarTraducciones;
+            BTN_CrearTraduccion.Enabled = puedeCrearTraducciones;
+            BTN_EditarTraduccion.Enabled = puedeEditarTraducciones;
+            BTN_EliminarTraduccion.Enabled = puedeEliminarTraducciones;
+            TBX_Clave.Enabled = puedeCrearTraducciones || puedeEditarTraducciones;
+            TBX_Texto.Enabled = puedeCrearTraducciones || puedeEditarTraducciones;
+            CBX_Idiomas.Enabled = puedeCrearTraducciones || puedeEditarTraducciones;
+
+            GBX_Idiomas.Visible = puedeVerIdiomas || puedeCrearIdiomas || puedeEditarIdiomas || puedeEliminarIdiomas;
+            BTN_CrearIdioma.Visible = puedeCrearIdiomas;
+            BTN_EditarIdioma.Visible = puedeEditarIdiomas;
+            BTN_EliminarIdioma.Visible = puedeEliminarIdiomas;
+            BTN_LimpiarIdioma.Visible = puedeCrearIdiomas || puedeEditarIdiomas || puedeEliminarIdiomas;
+            BTN_CrearIdioma.Enabled = puedeCrearIdiomas;
+            BTN_EditarIdioma.Enabled = puedeEditarIdiomas;
+            BTN_EliminarIdioma.Enabled = puedeEliminarIdiomas;
+            TBX_NombreIdioma.Enabled = puedeCrearIdiomas || puedeEditarIdiomas;
+        }
+
+        private bool PuedeVerPantalla()
+        {
+            return TienePermiso(CodigosPermiso.TraduccionesVer) ||
+                TienePermiso(CodigosPermiso.IdiomasVer);
+        }
+
+        private bool TienePermiso(string codigo)
+        {
+            return SessionManager.HaySesionActiva() && SessionManager.TienePermiso(codigo);
         }
 
         protected override void OnFormClosed(FormClosedEventArgs e)

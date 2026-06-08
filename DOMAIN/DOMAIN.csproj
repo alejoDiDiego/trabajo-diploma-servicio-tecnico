@@ -46,6 +46,7 @@
     <Compile Include="Features\Idiomas\Palabra.cs" />
     <Compile Include="Features\Idiomas\Traduccion.cs" />
     <Compile Include="Features\Idiomas\TraduccionItem.cs" />
+    <Compile Include="Features\Permisos\CodigosPermiso.cs" />
     <Compile Include="Features\Permisos\FamiliaPermiso.cs" />
     <Compile Include="Features\Permisos\PermisoComponent.cs" />
     <Compile Include="Features\Permisos\PermisoSimple.cs" />

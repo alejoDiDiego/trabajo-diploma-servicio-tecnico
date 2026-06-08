@@ -22,6 +22,43 @@ namespace REPOSITORY.Features.Usuarios
             _db = new SqlHelper(cadenaConexion);
         }
 
+        public void Inicializar()
+        {
+            // Crea la tabla Usuarios para que el login tenga datos base.
+            string query = @"
+                IF OBJECT_ID('Usuarios', 'U') IS NULL
+                BEGIN
+                    CREATE TABLE Usuarios (
+                        id_usuario int IDENTITY(1,1) NOT NULL PRIMARY KEY,
+                        username nvarchar(100) NOT NULL,
+                        password nvarchar(max) NOT NULL
+                    );
+                END
+                ELSE
+                BEGIN
+                    IF COL_LENGTH('Usuarios', 'username') IS NULL
+                        ALTER TABLE Usuarios ADD username nvarchar(100) NULL;
+
+                    IF COL_LENGTH('Usuarios', 'password') IS NULL
+                        ALTER TABLE Usuarios ADD password nvarchar(max) NULL;
+                END
+
+                IF NOT EXISTS (
+                    SELECT 1 FROM sys.indexes
+                    WHERE name = 'UX_Usuarios_Username'
+                      AND object_id = OBJECT_ID('Usuarios')
+                )
+                BEGIN
+                    CREATE UNIQUE INDEX UX_Usuarios_Username
+                    ON Usuarios(username);
+                END
+
+                SELECT 0;
+            ";
+
+            _db.ExecuteTransaction(query);
+        }
+
         public Usuario Agregar(Usuario usuario)
         {
             string query = @"

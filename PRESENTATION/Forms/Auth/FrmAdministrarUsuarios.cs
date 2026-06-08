@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Windows.Forms;
 using ABSTRACTIONS.Features.Idiomas;
 using APPLICATION.Features.Usuarios;
+using DOMAIN.Features.Permisos;
 using DOMAIN.Features.Usuarios;
 using SERVICES.Auth;
 using SERVICES.Idiomas;
@@ -44,6 +45,7 @@ namespace UI.Forms.Auth
             _usuariosBindingList = new BindingList<Usuario>(usuarioService.Listar());
             DGV_Usuarios.DataSource = _usuariosBindingList;
             ConfigurarColumnasUsuarios();
+            AplicarPermisos();
         }
 
         private void FrmAdministrarCuentas_Load(object sender, EventArgs e)
@@ -53,7 +55,7 @@ namespace UI.Forms.Auth
 
             BTN_CerrarSesion.Visible = false;
 
-            if (!SessionManager.HaySesionActiva())
+            if (!PuedeVerUsuarios())
             {
                 PNL_Permisos.Visible = false;
                 MessageBox.Show(
@@ -72,10 +74,17 @@ namespace UI.Forms.Auth
             _usuariosBindingList = new BindingList<Usuario>(usuarioService.Listar());
             DGV_Usuarios.DataSource = _usuariosBindingList;
             ConfigurarColumnasUsuarios();
+            AplicarPermisos();
         }
 
         private void BTN_CrearUsuario_Click(object sender, EventArgs e)
         {
+            if (!TienePermiso(CodigosPermiso.UsuariosCrear))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
             try
             {
                 UsuarioService usuarioService = new UsuarioService();
@@ -122,10 +131,16 @@ namespace UI.Forms.Auth
             var usuarioSeleccionado = (Usuario)DGV_Usuarios.SelectedRows[0].DataBoundItem;
 
             TBX_Username.Text = usuarioSeleccionado.Username;
+            AplicarPermisos();
         }
 
         private void BTN_EliminarUsuario_Click(object sender, EventArgs e)
         {
+            if (!TienePermiso(CodigosPermiso.UsuariosEliminar))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
 
             SessionManager sesion = SessionManager.GetInstance();
             var usuarioSeleccionado = (Usuario)DGV_Usuarios.SelectedRows[0].DataBoundItem;
@@ -183,6 +198,12 @@ namespace UI.Forms.Auth
 
         private void BTN_EditarUsuario_Click(object sender, EventArgs e)
         {
+            if (!TienePermiso(CodigosPermiso.UsuariosEditar))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
             var usuarioSeleccionado = (Usuario)DGV_Usuarios.SelectedRows[0].DataBoundItem;
 
             var confirmResult = MessageBox.Show(
@@ -250,6 +271,44 @@ namespace UI.Forms.Auth
 
             DGV_Usuarios.Columns[nombreColumna].Tag = claveTraduccion;
             DGV_Usuarios.Columns[nombreColumna].HeaderText = _sesionIdioma.idioma.BuscarTraduccion(claveTraduccion);
+        }
+
+        private void AplicarPermisos()
+        {
+            bool puedeCrear = TienePermiso(CodigosPermiso.UsuariosCrear);
+            bool puedeEditar = TienePermiso(CodigosPermiso.UsuariosEditar);
+            bool puedeEliminar = TienePermiso(CodigosPermiso.UsuariosEliminar);
+            bool haySeleccion = DGV_Usuarios.SelectedRows.Count > 0;
+
+            BTN_CrearUsuario.Visible = puedeCrear;
+            BTN_EditarUsuario.Visible = puedeEditar;
+            BTN_EliminarUsuario.Visible = puedeEliminar;
+
+            BTN_CrearUsuario.Enabled = puedeCrear;
+            BTN_EditarUsuario.Enabled = puedeEditar && haySeleccion;
+            BTN_EliminarUsuario.Enabled = puedeEliminar && haySeleccion;
+
+            TBX_Username.Enabled = puedeCrear || puedeEditar;
+            TBX_Password.Enabled = puedeCrear || puedeEditar;
+        }
+
+        private bool PuedeVerUsuarios()
+        {
+            return TienePermiso(CodigosPermiso.UsuariosVer);
+        }
+
+        private bool TienePermiso(string codigo)
+        {
+            return SessionManager.HaySesionActiva() && SessionManager.TienePermiso(codigo);
+        }
+
+        private void MostrarAccesoDenegado()
+        {
+            MessageBox.Show(
+                _sesionIdioma.idioma.BuscarTraduccion("Mensaje.SinPermisos"),
+                _sesionIdioma.idioma.BuscarTraduccion("Titulo.AccesoDenegado"),
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning);
         }
 
         protected override void OnFormClosed(FormClosedEventArgs e)

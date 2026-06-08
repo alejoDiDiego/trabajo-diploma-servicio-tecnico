@@ -14,19 +14,6 @@ namespace UI.Forms.Auth
         {
             _sesionIdioma = SesionIdioma.GetInstance();
             InitializeComponent();
-
-            UsuarioService usuarioService = new UsuarioService();
-
-            if(usuarioService.Listar().Count == 0)
-            {
-                MessageBox.Show(
-                    _sesionIdioma.idioma.BuscarTraduccion("Mensaje.UsuarioDefectoCreado"),
-                    _sesionIdioma.idioma.BuscarTraduccion("Titulo.UsuarioDefectoCreado"),
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Information);
-                usuarioService.Crear("admin", "123");
-            }
-
         }
 
         public void Actualizar(IIdioma idiomaObservado)
