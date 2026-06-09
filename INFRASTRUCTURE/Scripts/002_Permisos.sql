@@ -210,21 +210,21 @@ BEGIN
         CREATE TABLE UsuarioPermisos (
             id_usuario_permiso int IDENTITY(1,1) NOT NULL PRIMARY KEY,
             id_usuario int NOT NULL,
-            id_permiso_familia int NOT NULL,
+            id_permiso int NOT NULL,
             CONSTRAINT FK_UsuarioPermisos_Usuarios FOREIGN KEY (id_usuario)
                 REFERENCES Usuarios(id_usuario) ON DELETE CASCADE,
-            CONSTRAINT FK_UsuarioPermisos_Permisos FOREIGN KEY (id_permiso_familia)
-                REFERENCES Permisos(id_permiso) ON DELETE CASCADE
+            CONSTRAINT FK_UsuarioPermisos_Permisos FOREIGN KEY (id_permiso)
+            REFERENCES Permisos(id_permiso) ON DELETE CASCADE
         );
     END
 
     IF NOT EXISTS (
         SELECT 1 FROM sys.indexes
-        WHERE name = 'UX_UsuarioPermisos_Usuario_Familia'
+        WHERE name = 'UX_UsuarioPermisos_Usuario_Permiso'
           AND object_id = OBJECT_ID('UsuarioPermisos')
     )
-        CREATE UNIQUE INDEX UX_UsuarioPermisos_Usuario_Familia
-        ON UsuarioPermisos(id_usuario, id_permiso_familia);
+        CREATE UNIQUE INDEX UX_UsuarioPermisos_Usuario_Permiso
+        ON UsuarioPermisos(id_usuario, id_permiso);
 END
 
 IF OBJECT_ID('Idiomas', 'U') IS NOT NULL
@@ -292,6 +292,10 @@ BEGIN
     ('Ingles', 'AsignarPermisos.FamiliasDisponibles', 'Available families'),
     ('Espanol', 'AsignarPermisos.FamiliasAsignadas', 'Familias asignadas'),
     ('Ingles', 'AsignarPermisos.FamiliasAsignadas', 'Assigned families'),
+    ('Espanol', 'AsignarPermisos.PermisosDisponibles', 'Permisos disponibles'),
+    ('Ingles', 'AsignarPermisos.PermisosDisponibles', 'Available permissions'),
+    ('Espanol', 'AsignarPermisos.PermisosAsignados', 'Permisos asignados'),
+    ('Ingles', 'AsignarPermisos.PermisosAsignados', 'Assigned permissions'),
     ('Espanol', 'Mensaje.FamiliaCreada', 'Familia creada exitosamente.'),
     ('Ingles', 'Mensaje.FamiliaCreada', 'Family created successfully.'),
     ('Espanol', 'Mensaje.FamiliaEditada', 'Familia editada exitosamente.'),
@@ -314,6 +318,12 @@ BEGIN
     ('Ingles', 'Mensaje.FamiliaAsignada', 'Family assigned successfully.'),
     ('Espanol', 'Mensaje.FamiliaQuitadaUsuario', 'Familia quitada exitosamente.'),
     ('Ingles', 'Mensaje.FamiliaQuitadaUsuario', 'Family removed successfully.'),
+    ('Espanol', 'Mensaje.SeleccionePermiso', 'Seleccione un permiso o familia.'),
+    ('Ingles', 'Mensaje.SeleccionePermiso', 'Select a permission or family.'),
+    ('Espanol', 'Mensaje.PermisoAsignado', 'Permiso asignado exitosamente.'),
+    ('Ingles', 'Mensaje.PermisoAsignado', 'Permission assigned successfully.'),
+    ('Espanol', 'Mensaje.PermisoQuitadoUsuario', 'Permiso quitado exitosamente.'),
+    ('Ingles', 'Mensaje.PermisoQuitadoUsuario', 'Permission removed successfully.'),
     ('Espanol', 'Mensaje.ConfirmarEliminarFamilia', 'Estas seguro de eliminar completamente la familia ''{0}''? Se quitaran todas sus apariciones.'),
     ('Ingles', 'Mensaje.ConfirmarEliminarFamilia', 'Are you sure you want to delete family ''{0}'' completely? All its appearances will be removed.'),
     ('Espanol', 'Mensaje.ConfirmarQuitarComponente', 'Estas seguro de quitar ''{0}'' del nivel seleccionado?'),

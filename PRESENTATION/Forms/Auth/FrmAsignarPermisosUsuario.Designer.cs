@@ -91,8 +91,8 @@ namespace UI.Forms.Auth
             this.GBX_Disponibles.Size = new System.Drawing.Size(230, 430);
             this.GBX_Disponibles.TabIndex = 2;
             this.GBX_Disponibles.TabStop = false;
-            this.GBX_Disponibles.Tag = "AsignarPermisos.FamiliasDisponibles";
-            this.GBX_Disponibles.Text = "Familias disponibles";
+            this.GBX_Disponibles.Tag = "AsignarPermisos.PermisosDisponibles";
+            this.GBX_Disponibles.Text = "Permisos disponibles";
             // 
             // LBX_Disponibles
             // 
@@ -103,6 +103,7 @@ namespace UI.Forms.Auth
             this.LBX_Disponibles.Name = "LBX_Disponibles";
             this.LBX_Disponibles.Size = new System.Drawing.Size(200, 394);
             this.LBX_Disponibles.TabIndex = 0;
+            this.LBX_Disponibles.Format += new System.Windows.Forms.ListControlConvertEventHandler(this.LBX_Permisos_Format);
             this.LBX_Disponibles.SelectedIndexChanged += new System.EventHandler(this.LBX_Disponibles_SelectedIndexChanged);
             // 
             // GBX_Asignadas
@@ -114,8 +115,8 @@ namespace UI.Forms.Auth
             this.GBX_Asignadas.Size = new System.Drawing.Size(230, 430);
             this.GBX_Asignadas.TabIndex = 3;
             this.GBX_Asignadas.TabStop = false;
-            this.GBX_Asignadas.Tag = "AsignarPermisos.FamiliasAsignadas";
-            this.GBX_Asignadas.Text = "Familias asignadas";
+            this.GBX_Asignadas.Tag = "AsignarPermisos.PermisosAsignados";
+            this.GBX_Asignadas.Text = "Permisos asignados";
             // 
             // LBX_Asignadas
             // 
@@ -126,6 +127,7 @@ namespace UI.Forms.Auth
             this.LBX_Asignadas.Name = "LBX_Asignadas";
             this.LBX_Asignadas.Size = new System.Drawing.Size(200, 394);
             this.LBX_Asignadas.TabIndex = 0;
+            this.LBX_Asignadas.Format += new System.Windows.Forms.ListControlConvertEventHandler(this.LBX_Permisos_Format);
             this.LBX_Asignadas.SelectedIndexChanged += new System.EventHandler(this.LBX_Asignadas_SelectedIndexChanged);
             // 
             // BTN_Asignar

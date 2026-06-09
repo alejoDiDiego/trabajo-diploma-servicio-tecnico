@@ -65,13 +65,13 @@ namespace UI.Forms.Auth
             if (usuario == null)
             {
                 _idUsuarioSeleccionado = 0;
-                LimpiarFamilias();
+                LimpiarPermisos();
                 ActualizarBotones();
                 return;
             }
 
             _idUsuarioSeleccionado = usuario.Id;
-            CargarFamiliasUsuario();
+            CargarPermisosUsuario();
             ActualizarBotones();
         }
 
@@ -87,7 +87,7 @@ namespace UI.Forms.Auth
 
         private void BTN_Asignar_Click(object sender, EventArgs e)
         {
-            // Asigna la familia elegida de la lista izquierda.
+            // Asigna el permiso o familia elegida de la lista izquierda.
             if (!PuedeAdministrarAsignaciones())
             {
                 MostrarAdvertencia("Mensaje.SinPermisos");
@@ -100,19 +100,19 @@ namespace UI.Forms.Auth
                 return;
             }
 
-            FamiliaPermiso familia = LBX_Disponibles.SelectedItem as FamiliaPermiso;
+            PermisoComponent permiso = LBX_Disponibles.SelectedItem as PermisoComponent;
 
-            if (familia == null)
+            if (permiso == null)
             {
-                MostrarAdvertencia("Mensaje.SeleccioneFamilia");
+                MostrarAdvertencia("Mensaje.SeleccionePermiso");
                 return;
             }
 
             try
             {
-                _usuarioPermisoService.AsignarFamilia(_idUsuarioSeleccionado, familia.Id);
-                CargarFamiliasUsuario();
-                MostrarExito("Mensaje.FamiliaAsignada");
+                _usuarioPermisoService.AsignarPermiso(_idUsuarioSeleccionado, permiso.Id);
+                CargarPermisosUsuario();
+                MostrarExito("Mensaje.PermisoAsignado");
             }
             catch (Exception ex)
             {
@@ -122,7 +122,7 @@ namespace UI.Forms.Auth
 
         private void BTN_Quitar_Click(object sender, EventArgs e)
         {
-            // Quita la familia elegida de la lista derecha.
+            // Quita la asignacion directa elegida de la lista derecha.
             if (!PuedeAdministrarAsignaciones())
             {
                 MostrarAdvertencia("Mensaje.SinPermisos");
@@ -135,19 +135,19 @@ namespace UI.Forms.Auth
                 return;
             }
 
-            FamiliaPermiso familia = LBX_Asignadas.SelectedItem as FamiliaPermiso;
+            PermisoComponent permiso = LBX_Asignadas.SelectedItem as PermisoComponent;
 
-            if (familia == null)
+            if (permiso == null)
             {
-                MostrarAdvertencia("Mensaje.SeleccioneFamilia");
+                MostrarAdvertencia("Mensaje.SeleccionePermiso");
                 return;
             }
 
             try
             {
-                _usuarioPermisoService.QuitarFamilia(_idUsuarioSeleccionado, familia.Id);
-                CargarFamiliasUsuario();
-                MostrarExito("Mensaje.FamiliaQuitadaUsuario");
+                _usuarioPermisoService.QuitarPermiso(_idUsuarioSeleccionado, permiso.Id);
+                CargarPermisosUsuario();
+                MostrarExito("Mensaje.PermisoQuitadoUsuario");
             }
             catch (Exception ex)
             {
@@ -162,29 +162,39 @@ namespace UI.Forms.Auth
             ConfigurarColumnasUsuarios();
             DGV_Usuarios.ClearSelection();
             _idUsuarioSeleccionado = 0;
-            LimpiarFamilias();
+            LimpiarPermisos();
         }
 
-        private void CargarFamiliasUsuario()
+        private void CargarPermisosUsuario()
         {
             // Refresca las dos listas luego de seleccionar/asignar/quitar.
             LBX_Disponibles.DataSource = null;
             LBX_Disponibles.DisplayMember = "Nombre";
-            LBX_Disponibles.DataSource = _usuarioPermisoService.ListarFamiliasDisponibles(_idUsuarioSeleccionado);
+            LBX_Disponibles.DataSource = _usuarioPermisoService.ListarPermisosDisponibles(_idUsuarioSeleccionado);
             LBX_Disponibles.SelectedIndex = -1;
 
             LBX_Asignadas.DataSource = null;
             LBX_Asignadas.DisplayMember = "Nombre";
-            LBX_Asignadas.DataSource = _usuarioPermisoService.ListarFamiliasAsignadas(_idUsuarioSeleccionado);
+            LBX_Asignadas.DataSource = _usuarioPermisoService.ListarPermisosAsignados(_idUsuarioSeleccionado);
             LBX_Asignadas.SelectedIndex = -1;
 
             ActualizarBotones();
         }
 
-        private void LimpiarFamilias()
+        private void LimpiarPermisos()
         {
             LBX_Disponibles.DataSource = null;
             LBX_Asignadas.DataSource = null;
+        }
+
+        private void LBX_Permisos_Format(object sender, ListControlConvertEventArgs e)
+        {
+            PermisoComponent permiso = e.ListItem as PermisoComponent;
+
+            if (permiso == null)
+                return;
+
+            e.Value = (permiso.EsFamilia ? "[F] " : "[P] ") + permiso.Nombre;
         }
 
         private Usuario ObtenerUsuarioSeleccionado()
@@ -197,10 +207,10 @@ namespace UI.Forms.Auth
 
         private void ActualizarBotones()
         {
-            // Los botones se habilitan solo con usuario y familia seleccionados.
+            // Los botones se habilitan solo con usuario y componente seleccionados.
             bool puedeAsignar = PuedeAdministrarAsignaciones();
-            BTN_Asignar.Enabled = puedeAsignar && _idUsuarioSeleccionado > 0 && LBX_Disponibles.SelectedItem is FamiliaPermiso;
-            BTN_Quitar.Enabled = puedeAsignar && _idUsuarioSeleccionado > 0 && LBX_Asignadas.SelectedItem is FamiliaPermiso;
+            BTN_Asignar.Enabled = puedeAsignar && _idUsuarioSeleccionado > 0 && LBX_Disponibles.SelectedItem is PermisoComponent;
+            BTN_Quitar.Enabled = puedeAsignar && _idUsuarioSeleccionado > 0 && LBX_Asignadas.SelectedItem is PermisoComponent;
         }
 
         private bool PuedeAdministrarAsignaciones()

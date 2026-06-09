@@ -21,47 +21,52 @@ namespace APPLICATION.Features.Usuarios
             _permisoRepository = new PermisoRepository();
         }
 
-        public List<FamiliaPermiso> ListarFamiliasAsignadas(int idUsuario)
+        public List<PermisoComponent> ListarPermisosAsignados(int idUsuario)
         {
-            // Familias que el usuario ya tiene asignadas.
+            // Componentes que el usuario ya tiene asignados directamente.
             ValidarUsuario(idUsuario);
-            return _usuarioPermisoRepository.ListarFamiliasAsignadas(idUsuario);
+            return _usuarioPermisoRepository.ListarPermisosAsignados(idUsuario);
         }
 
-        public List<FamiliaPermiso> ListarFamiliasDisponibles(int idUsuario)
+        public List<PermisoComponent> ListarPermisosDisponibles(int idUsuario)
         {
-            // Familias que aun pueden asignarse al usuario.
+            // Componentes que aun pueden asignarse directamente al usuario.
             ValidarUsuario(idUsuario);
-            return _usuarioPermisoRepository.ListarFamiliasDisponibles(idUsuario);
+            return _usuarioPermisoRepository.ListarPermisosDisponibles(idUsuario);
         }
 
-        public void AsignarFamilia(int idUsuario, int idFamilia)
+        public void AsignarPermiso(int idUsuario, int idPermiso)
         {
-            // Solo se asignan familias, no permisos simples sueltos.
             ValidarUsuario(idUsuario);
-            ValidarFamilia(idFamilia);
-            _usuarioPermisoRepository.AsignarFamilia(idUsuario, idFamilia);
+            ValidarPermiso(idPermiso);
+            _usuarioPermisoRepository.AsignarPermiso(idUsuario, idPermiso);
         }
 
-        public void QuitarFamilia(int idUsuario, int idFamilia)
+        public void QuitarPermiso(int idUsuario, int idPermiso)
         {
-            // Quita la relacion usuario-familia, sin borrar la familia del catalogo.
+            // Quita la relacion directa sin borrar el componente del catalogo.
             ValidarUsuario(idUsuario);
-            ValidarFamilia(idFamilia);
-            _usuarioPermisoRepository.QuitarFamilia(idUsuario, idFamilia);
+            ValidarPermiso(idPermiso);
+            _usuarioPermisoRepository.QuitarPermiso(idUsuario, idPermiso);
         }
 
         public List<string> ListarCodigosPermisosEfectivos(int idUsuario)
         {
             ValidarUsuario(idUsuario);
 
-            // Recorre las familias asignadas y obtiene los permisos simples finales.
+            // Expande familias y agrega directamente los permisos simples asignados.
             List<string> codigos = new List<string>();
-            List<FamiliaPermiso> familias = _usuarioPermisoRepository.ListarFamiliasAsignadas(idUsuario);
+            List<PermisoComponent> permisosAsignados = _usuarioPermisoRepository.ListarPermisosAsignados(idUsuario);
 
-            foreach (FamiliaPermiso familia in familias)
+            foreach (PermisoComponent permisoAsignado in permisosAsignados)
             {
-                foreach (PermisoComponent raiz in _permisoRepository.ListarSubArbol(familia.Id))
+                if (!permisoAsignado.EsFamilia)
+                {
+                    AgregarCodigos(permisoAsignado, codigos);
+                    continue;
+                }
+
+                foreach (PermisoComponent raiz in _permisoRepository.ListarSubArbol(permisoAsignado.Id))
                     AgregarCodigos(raiz, codigos);
             }
 
@@ -94,15 +99,14 @@ namespace APPLICATION.Features.Usuarios
                 throw new ReglaNegocioException("El usuario seleccionado no existe.");
         }
 
-        private FamiliaPermiso ValidarFamilia(int idFamilia)
+        private PermisoComponent ValidarPermiso(int idPermiso)
         {
-            // Las asignaciones trabajan solamente con familias.
-            PermisoComponent permiso = _permisoRepository.ObtenerPorId(idFamilia);
+            PermisoComponent permiso = _permisoRepository.ObtenerPorId(idPermiso);
 
-            if (permiso == null || !permiso.EsFamilia)
-                throw new ReglaNegocioException("El permiso seleccionado debe ser una familia.");
+            if (permiso == null)
+                throw new ReglaNegocioException("El permiso seleccionado no existe.");
 
-            return (FamiliaPermiso)permiso;
+            return permiso;
         }
     }
 }
