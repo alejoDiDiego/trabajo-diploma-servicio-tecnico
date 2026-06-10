@@ -138,6 +138,8 @@ namespace REPOSITORY.Features.Idiomas
 
         public Idioma AgregarIdioma(string nombre)
         {
+            Idioma idioma = Idioma.Crear(0, nombre);
+
             string query = @"
                 INSERT INTO Idiomas (nombre) VALUES (@Nombre);
                 SELECT CAST(SCOPE_IDENTITY() AS int);
@@ -145,23 +147,25 @@ namespace REPOSITORY.Features.Idiomas
 
             SqlParameter[] sqlParameters = new SqlParameter[]
             {
-                new SqlParameter("@Nombre", nombre)
+                new SqlParameter("@Nombre", idioma.Nombre)
             };
 
             int id = _db.ExecuteTransaction(query, sqlParameters);
-            return Idioma.Crear(id, nombre);
+            return Idioma.Crear(id, idioma.Nombre);
         }
 
         public void ModificarIdioma(int id, string nombre)
         {
+            Idioma idioma = Idioma.Crear(id, nombre);
+
             string query = @"
                 UPDATE Idiomas SET nombre=@Nombre WHERE id_idioma=@Id;
             ";
 
             SqlParameter[] sqlParameters = new SqlParameter[]
             {
-                new SqlParameter("@Id", id),
-                new SqlParameter("@Nombre", nombre)
+                new SqlParameter("@Id", idioma.Id),
+                new SqlParameter("@Nombre", idioma.Nombre)
             };
 
             _db.ExecuteTransaction(query, sqlParameters);
@@ -222,8 +226,21 @@ namespace REPOSITORY.Features.Idiomas
                 BEGIN
                     CREATE TABLE Idiomas (
                         id_idioma int IDENTITY(1,1) NOT NULL PRIMARY KEY,
-                        nombre nvarchar(100) NOT NULL UNIQUE
+                        nombre nvarchar(100) NOT NULL UNIQUE,
+                        CONSTRAINT CK_Idiomas_Nombre_NoVacio CHECK (LEN(LTRIM(RTRIM(nombre))) > 0)
                     );
+                END
+
+                IF NOT EXISTS (
+                    SELECT 1
+                    FROM sys.check_constraints
+                    WHERE name = 'CK_Idiomas_Nombre_NoVacio'
+                      AND parent_object_id = OBJECT_ID('Idiomas')
+                )
+                BEGIN
+                    ALTER TABLE Idiomas WITH CHECK
+                    ADD CONSTRAINT CK_Idiomas_Nombre_NoVacio
+                    CHECK (LEN(LTRIM(RTRIM(nombre))) > 0);
                 END
 
                 IF OBJECT_ID('Palabras', 'U') IS NULL
@@ -399,6 +416,8 @@ namespace REPOSITORY.Features.Idiomas
             AgregarSeed("Ingles", "Mensaje.TraduccionEliminada", "Translation deleted successfully.");
             AgregarSeed("Espanol", "Mensaje.IdiomaCreado", "Idioma creado exitosamente.");
             AgregarSeed("Ingles", "Mensaje.IdiomaCreado", "Language created successfully.");
+            AgregarSeed("Espanol", "Mensaje.NombreIdiomaObligatorio", "El nombre del idioma es obligatorio.");
+            AgregarSeed("Ingles", "Mensaje.NombreIdiomaObligatorio", "The language name is required.");
             AgregarSeed("Espanol", "Mensaje.IdiomaEditado", "Idioma editado exitosamente.");
             AgregarSeed("Ingles", "Mensaje.IdiomaEditado", "Language edited successfully.");
             AgregarSeed("Espanol", "Mensaje.IdiomaEliminado", "Idioma eliminado exitosamente.");

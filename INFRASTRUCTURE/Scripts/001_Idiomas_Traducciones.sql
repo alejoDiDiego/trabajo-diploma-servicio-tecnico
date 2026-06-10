@@ -2,8 +2,21 @@ IF OBJECT_ID('Idiomas', 'U') IS NULL
 BEGIN
     CREATE TABLE Idiomas (
         id_idioma int IDENTITY(1,1) NOT NULL PRIMARY KEY,
-        nombre nvarchar(100) NOT NULL UNIQUE
+        nombre nvarchar(100) NOT NULL UNIQUE,
+        CONSTRAINT CK_Idiomas_Nombre_NoVacio CHECK (LEN(LTRIM(RTRIM(nombre))) > 0)
     );
+END
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.check_constraints
+    WHERE name = 'CK_Idiomas_Nombre_NoVacio'
+      AND parent_object_id = OBJECT_ID('Idiomas')
+)
+BEGIN
+    ALTER TABLE Idiomas WITH CHECK
+    ADD CONSTRAINT CK_Idiomas_Nombre_NoVacio
+    CHECK (LEN(LTRIM(RTRIM(nombre))) > 0);
 END
 
 IF OBJECT_ID('Palabras', 'U') IS NULL
@@ -172,6 +185,8 @@ INSERT INTO @Seed (idioma, clave, texto) VALUES
 ('Ingles', 'Mensaje.TraduccionEliminada', 'Translation deleted successfully.'),
 ('Espanol', 'Mensaje.IdiomaCreado', 'Idioma creado exitosamente.'),
 ('Ingles', 'Mensaje.IdiomaCreado', 'Language created successfully.'),
+('Espanol', 'Mensaje.NombreIdiomaObligatorio', 'El nombre del idioma es obligatorio.'),
+('Ingles', 'Mensaje.NombreIdiomaObligatorio', 'The language name is required.'),
 ('Espanol', 'Mensaje.IdiomaEditado', 'Idioma editado exitosamente.'),
 ('Ingles', 'Mensaje.IdiomaEditado', 'Language edited successfully.'),
 ('Espanol', 'Mensaje.IdiomaEliminado', 'Idioma eliminado exitosamente.'),

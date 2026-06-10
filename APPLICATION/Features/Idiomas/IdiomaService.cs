@@ -52,12 +52,14 @@ namespace APPLICATION.Features.Idiomas
 
         public Idioma CrearIdioma(string nombre)
         {
-            return _idiomaRepository.AgregarIdioma(nombre);
+            Idioma idioma = Idioma.Crear(0, nombre);
+            return _idiomaRepository.AgregarIdioma(idioma.Nombre);
         }
 
         public void ModificarIdioma(int id, string nombre)
         {
-            _idiomaRepository.ModificarIdioma(id, nombre);
+            Idioma idioma = Idioma.Crear(id, nombre);
+            _idiomaRepository.ModificarIdioma(idioma.Id, idioma.Nombre);
         }
 
         public void EliminarIdioma(int id)

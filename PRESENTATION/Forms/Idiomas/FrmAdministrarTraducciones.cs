@@ -178,6 +178,9 @@ namespace UI.Forms.Idiomas
 
             try
             {
+                if (!NombreIdiomaValido())
+                    return;
+
                 _idiomaService.CrearIdioma(TBX_NombreIdioma.Text);
                 CargarIdiomas();
                 LimpiarIdioma();
@@ -205,6 +208,9 @@ namespace UI.Forms.Idiomas
                     MostrarAdvertencia("Mensaje.SeleccioneIdioma");
                     return;
                 }
+
+                if (!NombreIdiomaValido())
+                    return;
 
                 _idiomaService.ModificarIdioma(_idIdiomaSeleccionado, TBX_NombreIdioma.Text);
                 CargarIdiomas();
@@ -282,6 +288,16 @@ namespace UI.Forms.Idiomas
             _idIdiomaSeleccionado = 0;
             TBX_NombreIdioma.Clear();
             DGV_Idiomas.ClearSelection();
+        }
+
+        private bool NombreIdiomaValido()
+        {
+            if (!string.IsNullOrWhiteSpace(TBX_NombreIdioma.Text))
+                return true;
+
+            MostrarAdvertencia("Mensaje.NombreIdiomaObligatorio");
+            TBX_NombreIdioma.Focus();
+            return false;
         }
 
         private int ObtenerIdIdiomaSeleccionado()

@@ -19,13 +19,13 @@ namespace DOMAIN.Features.Idiomas
 
         public static Idioma Crear(int id, string nombre)
         {
-            if (string.IsNullOrEmpty(nombre))
+            if (string.IsNullOrWhiteSpace(nombre))
                 throw new ReglaNegocioException("El nombre del idioma es obligatorio.");
 
             return new Idioma
             {
                 Id = id,
-                Nombre = nombre
+                Nombre = nombre.Trim()
             };
         }
 
