@@ -11,7 +11,6 @@ namespace ABSTRACTIONS.Features.Permisos
         IList<IPermisoComponent> Hijos { get; }
 
         void AgregarHijo(IPermisoComponent permiso);
-        void QuitarHijo(IPermisoComponent permiso);
         bool Contiene(IPermisoComponent permiso);
     }
 }

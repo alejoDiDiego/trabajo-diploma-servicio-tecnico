@@ -114,17 +114,17 @@ namespace SERVICES.Auth
             }
         }
 
-        public static List<string> ListarPermisos()
-        {
-            lock (_lock)
-            {
-                if (_session == null)
-                    return new List<string>();
+        //public static List<string> ListarPermisos()
+        //{
+        //    lock (_lock)
+        //    {
+        //        if (_session == null)
+        //            return new List<string>();
 
-                // Devuelve una copia ordenada para no exponer la lista interna.
-                return _session._codigosPermisos.OrderBy(x => x).ToList();
-            }
-        }
+        //        // Devuelve una copia ordenada para no exponer la lista interna.
+        //        return _session._codigosPermisos.OrderBy(x => x).ToList();
+        //    }
+        //}
 
         public static void Logout()
         {

@@ -11,21 +11,6 @@ namespace DOMAIN.Features.Permisos
         {
         }
 
-        public static PermisoSimple CrearNuevo(string nombre)
-        {
-            return Crear(0, nombre, null);
-        }
-
-        public static PermisoSimple CrearNuevo(string nombre, string codigo)
-        {
-            return Crear(0, nombre, codigo);
-        }
-
-        public static PermisoSimple CargarDesdeDB(int id, string nombre)
-        {
-            return Crear(id, nombre, null);
-        }
-
         public static PermisoSimple CargarDesdeDB(int id, string nombre, string codigo)
         {
             return Crear(id, nombre, codigo);
@@ -46,11 +31,6 @@ namespace DOMAIN.Features.Permisos
         public override void AgregarHijo(IPermisoComponent permiso)
         {
             throw new ReglaNegocioException("Un permiso simple no puede tener permisos hijos.");
-        }
-
-        public override void QuitarHijo(IPermisoComponent permiso)
-        {
-            throw new ReglaNegocioException("Un permiso simple no tiene permisos hijos.");
         }
     }
 }

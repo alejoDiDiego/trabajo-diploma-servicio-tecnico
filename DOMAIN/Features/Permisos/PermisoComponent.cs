@@ -23,7 +23,6 @@ namespace DOMAIN.Features.Permisos
         }
 
         public abstract void AgregarHijo(IPermisoComponent permiso);
-        public abstract void QuitarHijo(IPermisoComponent permiso);
 
         public virtual bool Contiene(IPermisoComponent permiso)
         {

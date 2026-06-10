@@ -50,19 +50,6 @@ namespace DOMAIN.Features.Permisos
             Hijos.Add(permiso);
         }
 
-        public override void QuitarHijo(IPermisoComponent permiso)
-        {
-            if (permiso == null)
-                throw new ReglaNegocioException("El permiso hijo es obligatorio.");
-
-            IPermisoComponent permisoActual = Hijos.FirstOrDefault(x => MismoPermiso(x, permiso));
-
-            if (permisoActual == null)
-                throw new ReglaNegocioException("El permiso no forma parte de esta familia.");
-
-            Hijos.Remove(permisoActual);
-        }
-
         public override bool Contiene(IPermisoComponent permiso)
         {
             if (base.Contiene(permiso))
