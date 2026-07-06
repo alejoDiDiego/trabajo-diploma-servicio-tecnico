@@ -1,0 +1,104 @@
+@startuml
+title T04 - Diagrama de Clases - Gestión de Perfiles de Usuario (Composite)
+
+skinparam classAttributeIconSize 0
+
+interface IEntity {
+  + {abstract} int Id
+}
+
+interface IPermisoComponent {
+  + {abstract} int Id
+  + {abstract} string Nombre
+  + {abstract} string Codigo
+  + {abstract} bool EsFamilia
+  + {abstract} IList<IPermisoComponent> Hijos
+  + {abstract} void AgregarHijo(IPermisoComponent permiso)
+  + {abstract} void QuitarHijo(IPermisoComponent permiso)
+  + {abstract} bool Contiene(IPermisoComponent permiso)
+}
+
+abstract class PermisoComponent {
+  # int Id
+  # string Nombre
+  # string Codigo
+  # IList<IPermisoComponent> _hijos
+  + {abstract} bool EsFamilia
+  + IList<IPermisoComponent> Hijos
+  + {abstract} void AgregarHijo(IPermisoComponent permiso)
+  + {abstract} void QuitarHijo(IPermisoComponent permiso)
+  + bool Contiene(IPermisoComponent permiso)
+  # bool TieneMismoIdentificador(IPermisoComponent permiso)
+  # static void ValidarDatos(string nombre)
+}
+
+class PermisoSimple {
+  + override bool EsFamilia { false }
+  + static PermisoSimple CrearNuevo(string nombre)
+  + static PermisoSimple CrearNuevo(string nombre, string codigo)
+  + static PermisoSimple CargarDesdeDB(int id, string nombre)
+  + static PermisoSimple CargarDesdeDB(int id, string nombre, string codigo)
+  + override void AgregarHijo(IPermisoComponent permiso)
+  + override void QuitarHijo(IPermisoComponent permiso)
+}
+
+class FamiliaPermiso {
+  + override bool EsFamilia { true }
+  + static FamiliaPermiso CrearNuevo(string nombre)
+  + static FamiliaPermiso CargarDesdeDB(int id, string nombre)
+  + override void AgregarHijo(IPermisoComponent permiso)
+  + override void QuitarHijo(IPermisoComponent permiso)
+  + override bool Contiene(IPermisoComponent permiso)
+}
+
+class Usuario {
+  - int Id
+  - string Username
+  - string Password
+  + static Usuario CrearNuevo(string userName, string password)
+  + static Usuario CargarDesdeDB(int id, string userName, string password)
+}
+
+IEntity <|.. IPermisoComponent
+IEntity <|.. Usuario
+
+IPermisoComponent <|.. PermisoComponent
+
+PermisoComponent <|-- PermisoSimple
+PermisoComponent <|-- FamiliaPermiso
+
+note right of PermisoComponent: "Hoja" del composite\nPermiso atómico que representa\nuna funcionalidad del sistema
+note right of FamiliaPermiso: "Compuesto" del composite\nAgrupa permisos simples y\notras familias (perfiles)
+
+interface IUsuario {
+  + {abstract} int Id
+  + {abstract} string Username
+  + {abstract} string Password
+}
+
+IEntity <|.. IUsuario
+IUsuario <|.. Usuario
+
+class CodigosPermiso {
+  + const string UsuariosVer
+  + const string UsuariosCrear
+  + const string UsuariosEditar
+  + const string UsuariosEliminar
+  + const string PermisosVer
+  + const string PermisosCrear
+  + const string PermisosEditar
+  + const string PermisosEliminar
+  + const string PermisosComponer
+  + const string PermisosAsignarUsuarios
+  + const string IdiomasVer
+  + const string IdiomasCambiar
+  + const string IdiomasCrear
+  + const string IdiomasEditar
+  + const string IdiomasEliminar
+  + const string TraduccionesVer
+  + const string TraduccionesCrear
+  + const string TraduccionesEditar
+  + const string TraduccionesEliminar
+}
+
+@enduml

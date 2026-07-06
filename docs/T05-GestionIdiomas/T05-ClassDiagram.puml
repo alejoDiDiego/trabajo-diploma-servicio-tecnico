@@ -1,0 +1,100 @@
+@startuml
+title T05 - Diagrama de Clases - Gestión de Múltiples Idiomas (Observer)
+
+skinparam classAttributeIconSize 0
+
+interface IEntity {
+  + {abstract} int Id
+}
+
+interface IObservado {
+  + IList<IObservador> ObservadoresRegistrados
+  + void RegistrarObservador(IObservador observador)
+  + void DesregistrarObservador(IObservador observador)
+  + void ActualizarObservadores(IIdioma idioma)
+}
+
+interface IObservador {
+  + void Actualizar(IIdioma idiomaObservado)
+}
+
+interface IIdioma {
+  + {abstract} int Id
+  + string Nombre
+  + IList<ITraduccion> Traducciones
+  + void AgregarTraduccion(ITraduccion traduccion)
+  + string BuscarTraduccion(string texto)
+}
+
+interface ITraduccion {
+  + {abstract} int Id
+  + string PalabraTraducida
+  + IPalabra Palabra
+}
+
+interface IPalabra {
+  + {abstract} int Id
+  + string Texto
+}
+
+class Idioma {
+  - int Id
+  - string Nombre
+  - IList<ITraduccion> Traducciones
+  + static Idioma Crear(int id, string nombre)
+  + void AgregarTraduccion(ITraduccion traduccion)
+  + string BuscarTraduccion(string clave)
+}
+
+class Traduccion {
+  - int Id
+  - string PalabraTraducida
+  - IPalabra Palabra
+  + static Traduccion Crear(int id, IPalabra palabra, string palabraTraducida)
+}
+
+class Palabra {
+  - int Id
+  - string Texto
+  + static Palabra Crear(int id, string texto)
+}
+
+class TraduccionEditable {
+  + int IdPalabra
+  + string Clave
+  + string Texto
+}
+
+class SesionIdioma {
+  + IIdioma idioma
+  + IList<IObservador> ObservadoresRegistrados
+  - static SesionIdioma sesionIdioma
+  - SesionIdioma()
+  + static SesionIdioma GetInstance()
+  + void CambiarIdioma(IIdioma idiomaSeleccionado)
+  + void RegistrarObservador(IObservador observador)
+  + void DesregistrarObservador(IObservador observador)
+  + void ActualizarObservadores(IIdioma idioma)
+}
+
+note right of SesionIdioma : Singleton\nSujeto concreto del patrón Observer
+
+IEntity <|.. IIdioma
+IEntity <|.. ITraduccion
+IEntity <|.. IPalabra
+IEntity <|.. IObservado
+
+IIdioma <|.. Idioma
+ITraduccion <|.. Traduccion
+IPalabra <|.. Palabra
+
+IObservado <|.. SesionIdioma
+
+Idioma "1" *--> "traducciones *" ITraduccion : contiene
+Traduccion "1" *--> "1" IPalabra : traduce
+
+note "SesionIdioma es el sujeto (Observado).\nTodos los formularios que implementan\nIObservador se registran para recibir\nnotificaciones de cambio de idioma." as N1
+
+note "IObservador lo implementan:\n- FrmPrincipal\n- FrmLogin\n- FrmAdministrarPermisos\n- FrmAsignarPermisosUsuario\n- FrmAdministrarTraducciones\n- FrmAdministrarUsuarios" as N2
+
+@enduml
