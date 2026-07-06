@@ -1,0 +1,21 @@
+@startuml
+title Observer Traducciones - Administrar Traducciones MDI
+
+actor Usuario as U
+participant FrmPrincipal as FP
+participant SessionManager as SM
+participant FrmAdministrarTraducciones as FAT
+
+U -> FP : Click "Administrar Traducciones"
+FP -> SM : TieneAlgunPermiso("TraduccionesVer", "IdiomasVer")
+SM --> FP : true
+alt Ya abierto
+    FP -> FAT : Activate()
+else No abierto
+    FP -> FAT : new FrmAdministrarTraducciones()
+    FP -> FAT : MdiParent = this
+    FP -> FAT : Show()
+    FAT -> FAT : Load (evento)
+end
+
+@enduml

@@ -1,0 +1,31 @@
+@startuml
+title Permisos - Agregar Familia
+
+actor Usuario as U
+participant FrmAdministrarPermisos as FAP
+participant SessionManager as SM
+participant PermisoService as PS
+participant PermisoRepository as PR
+
+U -> FAP : Click "Agregar Familia"
+FAP -> SM : TienePermiso("PermisosComponer")
+SM --> FAP : true
+FAP -> FAP : ObtenerDestinoSeleccionado()
+note right: Raíz o familia del árbol
+FAP -> PS : AgregarComponente(idPadre, idHijo)
+PS -> PR : ExisteRelacion(idPadre, idHijo)
+PR --> PS : false
+alt Es familia y genera ciclo
+    PS -> PR : ListarSubArbol(idHijo)
+    PR --> PS : List<PermisoComponent>
+    PS -> PS : Verifica si idPadre está en subárbol
+end
+PS -> PR : AgregarComponente(idPadre, idHijo)
+PR --> PS : void
+PS --> FAP : void
+FAP -> FAP : CargarArbol(idDestino)
+FAP -> PS : ListarArbol()
+PS --> FAP : List<PermisoComponent>
+FAP -> FAP : MessageBox(Exito)
+
+@enduml

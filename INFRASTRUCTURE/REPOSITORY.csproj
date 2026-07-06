@@ -46,6 +46,7 @@
     <Compile Include="Features\Permisos\PermisoRepository.cs" />
     <Compile Include="Features\Usuarios\UsuarioPermisoRepository.cs" />
     <Compile Include="Features\Usuarios\UsuarioRepository.cs" />
+    <Compile Include="Features\Integridad\IntegridadRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SQLHelper.cs" />
   </ItemGroup>

@@ -1,0 +1,31 @@
+@startuml
+title Observer Traducciones - [Idioma] MDI (Cambiar Idioma)
+
+actor Usuario as U
+participant FrmPrincipal as FP
+participant IdiomaService as IS
+participant IdiomaRepository as IR
+participant SesionIdioma as SI
+participant FrmAdministrarPermisos as FAP
+participant FrmAdministrarTraducciones as FAT
+participant FrmLogin as FL
+participant FrmAsignarPermisosUsuario as FAPU
+participant FrmAdministrarUsuarios as FAU
+
+U -> FP : Click idioma en menú
+FP -> IS : ObtenerPorId(idIdioma)
+IS -> IR : ObtenerPorId(idIdioma)
+IR --> IS : Idioma
+IS --> FP : Idioma
+FP -> SI : CambiarIdioma(idioma)
+SI -> SI : idioma = idiomaSeleccionado
+SI -> FAP : Actualizar(idioma)
+note right: Traduce controles
+SI -> FAT : Actualizar(idioma)
+SI -> FL : Actualizar(idioma)
+SI -> FAPU : Actualizar(idioma)
+SI -> FAU : Actualizar(idioma)
+SI -> FP : Actualizar(idioma)
+note right: Traduce menús y títulos
+
+@enduml

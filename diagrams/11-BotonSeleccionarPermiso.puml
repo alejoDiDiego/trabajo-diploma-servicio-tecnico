@@ -1,0 +1,27 @@
+@startuml
+title Asignar Permisos - Boton ">" Seleccionar permiso
+
+actor Usuario as U
+participant FrmAsignarPermisosUsuario as FAPU
+participant SessionManager as SM
+participant UsuarioPermisoService as UPS
+participant UsuarioPermisoRepository as UPR
+
+U -> FAPU : Click ">" (Asignar)
+FAPU -> SM : TienePermiso("PermisosAsignarUsuarios")
+SM --> FAPU : true
+note right: Usuario seleccionado y\npermiso disponible elegido
+FAPU -> UPS : AsignarPermiso(idUsuario, idPermiso)
+UPS -> UPS : ValidarUsuario(idUsuario)
+UPS -> UPS : ValidarPermiso(idPermiso)
+UPS -> UPR : AsignarPermiso(idUsuario, idPermiso)
+UPR --> UPS : void
+UPS --> FAPU : void
+FAPU -> FAPU : CargarPermisosUsuario()
+FAPU -> UPS : ListarPermisosDisponibles(idUsuario)
+UPS --> FAPU : List<PermisoComponent>
+FAPU -> UPS : ListarPermisosAsignados(idUsuario)
+UPS --> FAPU : List<PermisoComponent>
+FAPU -> FAPU : MessageBox(Exito)
+
+@enduml

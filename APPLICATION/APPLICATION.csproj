@@ -46,6 +46,8 @@
     <Compile Include="Features\Usuarios\Exceptions\DatosUsuarioIncorrectosException.cs" />
     <Compile Include="Features\Usuarios\UsuarioPermisoService.cs" />
     <Compile Include="Features\Usuarios\UsuarioService.cs" />
+    <Compile Include="Features\Integridad\DigitoVerificadorHelper.cs" />
+    <Compile Include="Features\Integridad\IntegridadService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

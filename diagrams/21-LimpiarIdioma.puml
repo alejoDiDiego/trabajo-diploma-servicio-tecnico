@@ -1,0 +1,11 @@
+@startuml
+title Observer Traducciones - Limpiar Idioma
+
+actor Usuario as U
+participant FrmAdministrarTraducciones as FAT
+
+U -> FAT : Click "Limpiar Idioma"
+FAT -> FAT : LimpiarIdioma()
+note right: _idIdiomaSeleccionado = 0\nTBX_NombreIdioma.Clear()\nDGV_Idiomas.ClearSelection()
+
+@enduml
