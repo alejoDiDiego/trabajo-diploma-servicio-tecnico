@@ -13,13 +13,12 @@ namespace DOMAIN.Features.Usuarios
         public int Id { get; private set; }
         public string Username { get; private set; }
         public string Password { get; private set; }
+        public string DVH { get; private set; }
 
         private Usuario() { }
 
         public static Usuario CrearNuevo(string userName, string password)
         {
-            // Hago validación porque puede venir de una fuente no confiable (ej: un formulario o de un error de programación)
-
             if (string.IsNullOrEmpty(userName))
                 throw new ReglaNegocioException("El Nombre de Usuario es obligatorio.");
             if (string.IsNullOrEmpty(password))
@@ -31,15 +30,20 @@ namespace DOMAIN.Features.Usuarios
             };
         }
 
-        public static Usuario CargarDesdeDB(int id, string userName, string password)
+        public static Usuario CargarDesdeDB(int id, string userName, string password, string dvh = "")
         {
-
             return new Usuario
             {
                 Id = id,
                 Username = userName,
-                Password = password
+                Password = password,
+                DVH = dvh
             };
+        }
+
+        public void SetDVH(string dvh)
+        {
+            DVH = dvh;
         }
     }
 }

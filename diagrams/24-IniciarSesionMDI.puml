@@ -1,0 +1,19 @@
+@startuml
+title Faltante Entrega 1 - Iniciar Sesion MDI Button
+
+actor Usuario as U
+participant FrmPrincipal as FP
+participant FrmLogin as FL
+
+U -> FP : Click "Iniciar Sesión"
+alt Ya hay FrmLogin abierto
+    FP -> FL : Activate()
+else No abierto
+    FP -> FL : new FrmLogin()
+    FP -> FL : MdiParent = this
+    FP -> FL : Show()
+    FL -> FL : Load (evento)
+    note right: Registra observer, traduce controles
+end
+
+@enduml

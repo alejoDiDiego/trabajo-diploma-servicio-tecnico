@@ -1,0 +1,20 @@
+T01.4.1. Ensamblado de Dependencias
+La aplicación inicia en la capa de Presentación (Program.cs), que es el punto de entrada del sistema. Desde allí se instancian directamente los servicios de la capa Application y se invoca su método Inicializar() para preparar tablas y datos semilla. A su vez, cada servicio de Application crea sus propias dependencias internamente (repositorios de Infrastructure, servicios de Security) mediante instanciación directa con new. No existe un Composition Root centralizado; el ensamblaje de objetos se distribuye en cada capa según su responsabilidad.
+
+T01.4.2. Gestión y Encapsulamiento de Excepciones (Exception Wrapping)
+A fin de evitar que la capa de Presentación gestione excepciones ajenas a su nivel de abstracción (como excepciones SQL o reglas de negocio internas), se implementa el patrón de Traducción de Excepciones. La responsabilidad de capturar errores de Domain e Infrastructure recae exclusivamente en la capa de Application. Los servicios interceptan estos fallos en bloques try-catch y los encapsulan en excepciones propias de la funcionalidad (ej. DatosUsuarioIncorrectosException). De esta manera, la capa de Presentación solo atrapa errores de aplicación, garantizando que los mensajes mostrados al usuario sean seguros, amigables y libres de fugas de información técnica, mientras que el error técnico original (InnerException) se deriva a la bitácora.
+
+T01.4.3. Trazabilidad y Servicios Transversales
+La capa Services provee servicios que son consumidos por múltiples capas sin pertenecer a ninguna en particular:
+- SessionManager: gestiona el estado de autenticación de forma centralizada y thread-safe mediante el patrón Singleton. Cualquier parte del sistema puede consultar el usuario activo sin acoplarse a la lógica de autenticación.
+- SesionIdioma: gestiona el idioma activo de la aplicación mediante el patrón Observer, notificando a los formularios de la UI ante cambios de idioma en tiempo real.
+- PasswordHasher: encapsula el algoritmo criptográfico (PBKDF2/SHA256). Si en el futuro se decide cambiar el algoritmo de encriptación, el cambio se realiza en un único punto.
+
+T01.4.4. Preparación para Patrones de Diseño
+Esta estructura sienta las bases para la integración orgánica de los patrones requeridos para la cursada:
+- Singleton: Se implementa en la capa Services para gestionar la sesión de usuario activa (SessionManager) y el idioma actual (SesionIdioma).
+- Composite: Se integra en Domain y Application para la resolución jerárquica de permisos de usuario (FamiliaPermiso como composite, PermisoSimple como hoja).
+- Repository: Se implementa en la capa Infrastructure (UsuarioRepository, PermisoRepository, IdiomaRepository) para actuar como capa de abstracción entre la lógica de negocio y la capa de datos.
+- Observer: Se implementa en la capa Services (SesionIdioma como observado, formularios de la UI como observadores) para notificar cambios de idioma en tiempo real.
+- DTO: Se implementa en la capa Application para transferir datos entre capas sin exponer las entidades de dominio.
+- Factory Method: Se implementa en las entidades de Domain (Usuario.CrearNuevo, Idioma.Crear, Palabra.Crear) para centralizar la lógica de creación y validación.

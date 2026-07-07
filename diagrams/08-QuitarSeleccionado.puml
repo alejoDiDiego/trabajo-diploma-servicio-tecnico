@@ -1,0 +1,33 @@
+@startuml
+title Permisos - Quitar Seleccionado
+
+actor Usuario as U
+participant FrmAdministrarPermisos as FAP
+participant SessionManager as SM
+participant PermisoService as PS
+participant PermisoRepository as PR
+
+U -> FAP : Click "Quitar Seleccionado"
+FAP -> SM : TienePermiso("PermisosComponer")
+SM --> FAP : true
+FAP -> FAP : ObtenerNodoSeleccionado()
+note right: No debe ser raíz
+FAP -> FAP : MessageBox(Confirmar)
+alt No
+    FAP --> U : Cancela
+else Yes
+    FAP -> PS : QuitarComponente(idPadre, idPermiso)
+    PS -> PR : ObtenerPorId(idPadre)
+    PR --> PS : PermisoComponent
+    PS -> PR : ObtenerPorId(idPermiso)
+    PR --> PS : PermisoComponent
+    PS -> PR : QuitarComponente(idPadre, idPermiso)
+    PR --> PS : void
+    PS --> FAP : void
+    FAP -> FAP : CargarArbol(idPadre)
+    FAP -> PS : ListarArbol()
+    PS --> FAP : List<PermisoComponent>
+    FAP -> FAP : MessageBox(Exito)
+end
+
+@enduml

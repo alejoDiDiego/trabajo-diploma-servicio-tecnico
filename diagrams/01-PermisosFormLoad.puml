@@ -1,0 +1,31 @@
+@startuml
+title Permisos - Form Load
+
+actor Usuario as U
+participant FrmAdministrarPermisos as FAP
+participant SesionIdioma as SI
+participant SessionManager as SM
+participant PermisoService as PS
+participant PermisoRepository as PR
+
+U -> FAP : Abrir formulario
+FAP -> SI : RegistrarObservador(this)
+FAP -> SM : TienePermiso("PermisosVer")
+SM --> FAP : true
+FAP -> PS : ListarFamilias()
+PS -> PR : ListarFamilias()
+PR --> PS : List<FamiliaPermiso>
+PS --> FAP : List<FamiliaPermiso>
+FAP -> PS : ListarPermisosSimples()
+PS -> PR : ListarPermisosSimples()
+PR --> PS : List<PermisoSimple>
+PS --> FAP : List<PermisoSimple>
+FAP -> PS : ListarArbol()
+PS -> PR : ListarArbol()
+PR --> PS : List<PermisoComponent>
+PS --> FAP : List<PermisoComponent>
+FAP -> FAP : CargarTreeView()
+FAP -> FAP : Actualizar(idioma)
+note right: Traduce todos los controles
+
+@enduml

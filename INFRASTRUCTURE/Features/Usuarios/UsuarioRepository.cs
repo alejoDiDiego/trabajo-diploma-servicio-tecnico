@@ -53,6 +53,9 @@ namespace REPOSITORY.Features.Usuarios
                     ON Usuarios(username);
                 END
 
+                IF COL_LENGTH('Usuarios', 'dvh') IS NULL
+                    ALTER TABLE Usuarios ADD dvh nvarchar(100) NOT NULL DEFAULT '';
+
                 SELECT 0;
             ";
 
@@ -123,7 +126,8 @@ namespace REPOSITORY.Features.Usuarios
             return Usuario.CargarDesdeDB(
                 Convert.ToInt32(fila["id_usuario"]),
                 fila["username"].ToString(),
-                fila["password"].ToString()
+                fila["password"].ToString(),
+                fila["dvh"].ToString()
             );
         }
 
@@ -148,7 +152,8 @@ namespace REPOSITORY.Features.Usuarios
             return Usuario.CargarDesdeDB(
                 Convert.ToInt32(fila["id_usuario"]),
                 fila["username"].ToString(),
-                fila["password"].ToString()
+                fila["password"].ToString(),
+                fila["dvh"].ToString()
             );
         }
 
@@ -167,7 +172,8 @@ namespace REPOSITORY.Features.Usuarios
                 Usuario usuario = Usuario.CargarDesdeDB(
                     Convert.ToInt32(fila["id_usuario"]),
                     fila["username"].ToString(),
-                    fila["password"].ToString()
+                    fila["password"].ToString(),
+                    fila["dvh"].ToString()
                 );
 
                 usuarios.Add(usuario);
@@ -179,17 +185,50 @@ namespace REPOSITORY.Features.Usuarios
         public void Modificar(Usuario usuario)
         {
             string query = @"
-                UPDATE Usuarios SET username=@Username, password=@Password WHERE id_usuario=@Id;
+                UPDATE Usuarios SET username=@Username, password=@Password, dvh=@DVH WHERE id_usuario=@Id;
             ";
 
             SqlParameter[] sqlParameters = new SqlParameter[]
             {
                 new SqlParameter("@Id", usuario.Id),
                 new SqlParameter("@Username", usuario.Username),
-                new SqlParameter("@Password", usuario.Password)
+                new SqlParameter("@Password", usuario.Password),
+                new SqlParameter("@DVH", usuario.DVH ?? "")
             };
 
             _db.ExecuteTransaction(query, sqlParameters);
+        }
+
+        public List<UserDVH> ObtenerTodosDVH()
+        {
+            string query = "SELECT id_usuario, dvh FROM Usuarios ORDER BY id_usuario";
+
+            DataTable dt = _db.ExecuteQuery(query);
+
+            List<UserDVH> resultado = new List<UserDVH>();
+            foreach (DataRow fila in dt.Rows)
+            {
+                resultado.Add(new UserDVH
+                {
+                    Id = Convert.ToInt32(fila["id_usuario"]),
+                    DVH = fila["dvh"].ToString()
+                });
+            }
+
+            return resultado;
+        }
+
+        public void ActualizarDVH(int id, string dvh)
+        {
+            string query = "UPDATE Usuarios SET dvh = @DVH WHERE id_usuario = @Id";
+
+            SqlParameter[] parametros = new SqlParameter[]
+            {
+                new SqlParameter("@Id", id),
+                new SqlParameter("@DVH", dvh)
+            };
+
+            _db.ExecuteTransaction(query, parametros);
         }
     }
 }

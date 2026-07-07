@@ -1,0 +1,14 @@
+@startuml
+title Permisos - Limpiar
+
+actor Usuario as U
+participant FrmAdministrarPermisos as FAP
+
+U -> FAP : Click "Limpiar"
+FAP -> FAP : LimpiarSeleccionFamilia()
+note right: _idFamiliaSeleccionada = 0\nTBX_NombreFamilia.Clear()\nLBX_Familias.SelectedIndex = -1
+FAP -> FAP : SeleccionarRaiz()
+note right: TVW_Permisos.SelectedNode = raíz
+FAP -> FAP : ActualizarBotones()
+
+@enduml

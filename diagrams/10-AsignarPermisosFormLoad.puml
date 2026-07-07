@@ -1,0 +1,24 @@
+@startuml
+title Asignar Permisos - Form Load
+
+actor Usuario as U
+participant FrmAsignarPermisosUsuario as FAPU
+participant SesionIdioma as SI
+participant SessionManager as SM
+participant UsuarioService as US
+participant UsuarioRepository as UR
+
+U -> FAPU : Abrir formulario
+FAPU -> SI : RegistrarObservador(this)
+FAPU -> SM : TienePermiso("PermisosAsignarUsuarios")
+SM --> FAPU : true
+FAPU -> US : Listar()
+US -> UR : Listar()
+UR --> US : List<Usuario>
+US --> FAPU : List<Usuario>
+FAPU -> FAPU : ConfigurarColumnasUsuarios()
+FAPU -> FAPU : Actualizar(idioma)
+note right: Traduce todos los controles
+FAPU -> FAPU : ActualizarBotones()
+
+@enduml

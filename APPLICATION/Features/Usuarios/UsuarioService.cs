@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ABSTRACTIONS.Services;
+using APPLICATION.Features.Integridad;
 using APPLICATION.Features.Usuarios.Exceptions;
 using DOMAIN.Exceptions;
 using DOMAIN.Features.Usuarios;
@@ -37,6 +38,9 @@ namespace APPLICATION.Features.Usuarios
 
             UsuarioPermisoRepository usuarioPermisoRepository = new UsuarioPermisoRepository();
             usuarioPermisoRepository.Inicializar();
+
+            IntegridadService integridadService = new IntegridadService();
+            integridadService.RecalcularDVVUsuarios();
         }
 
         public void Login(string username, string password)
@@ -61,8 +65,12 @@ namespace APPLICATION.Features.Usuarios
                 UsuarioPermisoService usuarioPermisoService = new UsuarioPermisoService();
                 List<string> codigosPermisos = usuarioPermisoService.ListarCodigosPermisosEfectivos(usuarioDb.Id);
 
-                // La sesion conserva el usuario y sus permisos efectivos.
                 SessionManager.Login(usuarioDb, codigosPermisos);
+
+                IntegridadService integridadService = new IntegridadService();
+                bool integridadOK = integridadService.VerificarIntegridadUsuarios();
+
+                SessionManager.GetInstance().IntegridadComprometida = !integridadOK;
             }
 
             catch (ReglaNegocioException ex)
@@ -94,6 +102,16 @@ namespace APPLICATION.Features.Usuarios
                 );
 
                 Usuario usuarioDb = _usuarioRepository.Agregar(usuarioToSave);
+
+                if (string.IsNullOrEmpty(usuarioDb.DVH))
+                {
+                    string dvh = DigitoVerificadorHelper.CalcularDVH(usuarioDb);
+                    usuarioDb.SetDVH(dvh);
+                    _usuarioRepository.ActualizarDVH(usuarioDb.Id, dvh);
+                }
+
+                IntegridadService integridadService = new IntegridadService();
+                integridadService.RecalcularDVVUsuarios();
 
                 return usuarioDb;
             }
@@ -166,7 +184,13 @@ namespace APPLICATION.Features.Usuarios
                     passwordHashed
                 );
 
+                string dvh = DigitoVerificadorHelper.CalcularDVH(usuarioToUpdate);
+                usuarioToUpdate.SetDVH(dvh);
+
                 _usuarioRepository.Modificar(usuarioToUpdate);
+
+                IntegridadService integridadService = new IntegridadService();
+                integridadService.RecalcularDVVUsuarios();
 
                 return usuarioToUpdate;
             }
@@ -182,14 +206,20 @@ namespace APPLICATION.Features.Usuarios
 
         private void CrearUsuarioBase(string username, string password)
         {
-            // Evita recrear usuarios seed si ya existen en la base.
             if (_usuarioRepository.ObtenerPorUsername(username) != null)
                 return;
 
             string passwordHashed = _passwordHasher.HashPassword(password);
             Usuario usuario = Usuario.CrearNuevo(username, passwordHashed);
 
-            _usuarioRepository.Agregar(usuario);
+            Usuario usuarioDb = _usuarioRepository.Agregar(usuario);
+
+            if (string.IsNullOrEmpty(usuarioDb.DVH))
+            {
+                string dvh = DigitoVerificadorHelper.CalcularDVH(usuarioDb);
+                usuarioDb.SetDVH(dvh);
+                _usuarioRepository.ActualizarDVH(usuarioDb.Id, dvh);
+            }
         }
 
     }

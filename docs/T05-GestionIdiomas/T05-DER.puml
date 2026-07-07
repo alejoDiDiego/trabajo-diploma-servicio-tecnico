@@ -1,0 +1,45 @@
+@startuml
+title T05 - DER - Gestión de Múltiples Idiomas
+
+entity Idiomas {
+  * id_idioma : int <<PK>>
+  --
+  * nombre : nvarchar(100) <<UNIQUE>>
+}
+
+entity Palabras {
+  * id_palabra : int <<PK>>
+  --
+  * texto : nvarchar(200) <<UNIQUE>>
+}
+
+entity Traducciones {
+  * id_traduccion : int <<PK>>
+  --
+  * id_idioma : int <<FK>>
+  * id_palabra : int <<FK>>
+  * palabra_traducida : nvarchar(max)
+  + UNIQUE(id_idioma, id_palabra)
+}
+
+note right of Idiomas
+  Catálogo de idiomas disponibles.
+  Ej: "Espanol", "Ingles"
+end note
+
+note right of Palabras
+  Catálogo de claves de traducción.
+  Son mantenidas por desarrolladores.
+  Ej: "Menu.IniciarSesion", "FrmLogin.Text"
+end note
+
+note right of Traducciones
+  Tabla que relaciona un idioma
+  con una palabra, almacenando el
+  texto traducido.
+end note
+
+Idiomas ||--o{ Traducciones : "id_idioma"
+Palabras ||--o{ Traducciones : "id_palabra"
+
+@enduml

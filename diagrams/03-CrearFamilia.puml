@@ -1,0 +1,26 @@
+@startuml
+title Permisos - Crear Familia
+
+actor Usuario as U
+participant FrmAdministrarPermisos as FAP
+participant SessionManager as SM
+participant PermisoService as PS
+participant PermisoRepository as PR
+participant FamiliaPermiso as Fam
+
+U -> FAP : Click "Crear Familia"
+FAP -> SM : TienePermiso("PermisosCrear")
+SM --> FAP : true
+FAP -> PS : CrearFamilia(nombre)
+PS -> PS : NormalizarNombre(nombre)
+PS -> Fam : CrearNuevo(nombre)
+PS -> PR : AgregarFamilia(nombre)
+PR --> PS : FamiliaPermiso
+PS --> FAP : FamiliaPermiso
+FAP -> FAP : CargarCatalogos()
+FAP -> PS : ListarFamilias()
+PS --> FAP : List<FamiliaPermiso>
+FAP -> FAP : SeleccionarFamiliaEnLista(id)
+FAP -> FAP : MessageBox(Exito)
+
+@enduml
