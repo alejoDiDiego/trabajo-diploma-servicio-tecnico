@@ -5,6 +5,7 @@ using APPLICATION.Features.Bitacora;
 using APPLICATION.Features.Integridad;
 using APPLICATION.Features.Usuarios.Exceptions;
 using DOMAIN.Exceptions;
+using DOMAIN.Features.Permisos;
 using DOMAIN.Features.Usuarios;
 using DOMAIN.Features.Usuarios.Exceptions;
 using REPOSITORY.Features.Permisos;
@@ -64,9 +65,9 @@ namespace APPLICATION.Features.Usuarios
                     throw new DatosUsuarioIncorrectosException("Usuario o contrasena incorrectos");
 
                 UsuarioPermisoService usuarioPermisoService = new UsuarioPermisoService();
-                List<string> codigosPermisos = usuarioPermisoService.ListarCodigosPermisosEfectivos(usuarioDb.Id);
+                List<PermisoComponent> permisos = usuarioPermisoService.ListarPermisosEfectivos(usuarioDb.Id);
 
-                SessionManager.Login(usuarioDb, codigosPermisos);
+                SessionManager.Login(usuarioDb, permisos);
 
                 IntegridadService integridadService = new IntegridadService();
                 bool integridadOK = integridadService.VerificarIntegridadUsuarios();

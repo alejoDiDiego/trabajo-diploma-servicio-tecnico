@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ABSTRACTIONS.Features.Permisos;
 using ABSTRACTIONS.Features.Usuarios;
 
 namespace SERVICES.Auth
@@ -9,14 +10,14 @@ namespace SERVICES.Auth
     {
         private static readonly object _lock = new object();
         private static SessionManager _session;
-        private readonly List<string> _codigosPermisos;
+        private readonly List<IPermisoComponent> _permisos;
         public IUsuario Usuario;
         public DateTime FechaInicio { get; private set; }
         public bool IntegridadComprometida { get; set; }
 
         private SessionManager()
         {
-            _codigosPermisos = new List<string>();
+            _permisos = new List<IPermisoComponent>();
         }
 
         public static SessionManager GetInstance()
@@ -54,34 +55,31 @@ namespace SERVICES.Auth
 
         public static void Login(IUsuario usuario)
         {
-            Login(usuario, new List<string>());
+            Login(usuario, new List<IPermisoComponent>());
         }
 
-        public static void Login(IUsuario usuario, IEnumerable<string> codigosPermisos)
+        public static void Login(IUsuario usuario, IEnumerable<IPermisoComponent> permisos)
         {
             lock (_lock)
             {
-                if(_session != null)
+                if (_session != null)
                     throw new Exception("La sesion ya esta iniciada.");
 
-                // Guarda el usuario logueado y sus permisos efectivos en memoria.
+                // Guarda el usuario logueado y sus permisos efectivos como Composite.
                 _session = new SessionManager();
                 _session.Usuario = usuario;
                 _session.FechaInicio = DateTime.Now;
 
-                if (codigosPermisos == null)
+                if (permisos == null)
                     return;
 
-                foreach (string codigo in codigosPermisos)
+                foreach (IPermisoComponent permiso in permisos)
                 {
-                    if (string.IsNullOrWhiteSpace(codigo))
+                    if (permiso == null)
                         continue;
 
-                    string codigoNormalizado = codigo.Trim();
-
-                    // Evita permisos repetidos cuando vienen por mas de una familia.
-                    if (!_session._codigosPermisos.Any(x => string.Equals(x, codigoNormalizado, StringComparison.OrdinalIgnoreCase)))
-                        _session._codigosPermisos.Add(codigoNormalizado);
+                    if (!_session._permisos.Any(x => MismoPermiso(x, permiso)))
+                        _session._permisos.Add(permiso);
                 }
             }
         }
@@ -93,8 +91,8 @@ namespace SERVICES.Auth
                 if (_session == null || string.IsNullOrWhiteSpace(codigo))
                     return false;
 
-                // Consulta un permiso puntual de la sesion actual.
-                return _session._codigosPermisos.Any(x => string.Equals(x, codigo.Trim(), StringComparison.OrdinalIgnoreCase));
+                // Consulta un permiso puntual recorriendo el Composite guardado en sesion.
+                return _session._permisos.Any(permiso => ContieneCodigo(permiso, codigo.Trim()));
             }
         }
 
@@ -111,28 +109,57 @@ namespace SERVICES.Auth
                 // Sirve para pantallas que pueden abrirse con mas de un permiso.
                 return codigos.Any(codigo =>
                     !string.IsNullOrWhiteSpace(codigo) &&
-                    _session._codigosPermisos.Any(x => string.Equals(x, codigo.Trim(), StringComparison.OrdinalIgnoreCase)));
+                    _session._permisos.Any(permiso => ContieneCodigo(permiso, codigo.Trim())));
             }
         }
 
-        //public static List<string> ListarPermisos()
-        //{
-        //    lock (_lock)
-        //    {
-        //        if (_session == null)
-        //            return new List<string>();
+        public static List<IPermisoComponent> ListarPermisos()
+        {
+            lock (_lock)
+            {
+                if (_session == null)
+                    return new List<IPermisoComponent>();
 
-        //        // Devuelve una copia ordenada para no exponer la lista interna.
-        //        return _session._codigosPermisos.OrderBy(x => x).ToList();
-        //    }
-        //}
+                // Devuelve una copia para no exponer la lista interna.
+                return _session._permisos.ToList();
+            }
+        }
+
+        private static bool ContieneCodigo(IPermisoComponent permiso, string codigo)
+        {
+            if (permiso == null || string.IsNullOrWhiteSpace(codigo))
+                return false;
+
+            if (!permiso.EsFamilia && !string.IsNullOrWhiteSpace(permiso.Codigo) &&
+                string.Equals(permiso.Codigo, codigo, StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            foreach (IPermisoComponent hijo in permiso.Hijos)
+            {
+                if (ContieneCodigo(hijo, codigo))
+                    return true;
+            }
+
+            return false;
+        }
+
+        private static bool MismoPermiso(IPermisoComponent permisoA, IPermisoComponent permisoB)
+        {
+            if (permisoA == null || permisoB == null)
+                return false;
+
+            if (permisoA.Id > 0 && permisoB.Id > 0)
+                return permisoA.Id == permisoB.Id;
+
+            return string.Equals(permisoA.Nombre, permisoB.Nombre, StringComparison.OrdinalIgnoreCase);
+        }
 
         public static void Logout()
         {
             lock (_lock)
             {
                 // Limpia usuario y permisos guardados en memoria.
-                if(_session == null)
+                if (_session == null)
                     throw new Exception("No hay ninguna sesion iniciada.");
 
                 _session = null;

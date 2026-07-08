@@ -66,44 +66,47 @@ namespace APPLICATION.Features.Usuarios
             bitacoraService.Registrar("Desasignacion de permiso", detalle, "USUARIOS");
         }
 
-        public List<string> ListarCodigosPermisosEfectivos(int idUsuario)
+        public List<PermisoComponent> ListarPermisosEfectivos(int idUsuario)
         {
             ValidarUsuario(idUsuario);
 
-            // Expande familias y agrega directamente los permisos simples asignados.
-            List<string> codigos = new List<string>();
+            // Devuelve los componentes asignados al usuario; las familias se cargan con sus hijos reales.
+            List<PermisoComponent> permisosEfectivos = new List<PermisoComponent>();
             List<PermisoComponent> permisosAsignados = _usuarioPermisoRepository.ListarPermisosAsignados(idUsuario);
 
             foreach (PermisoComponent permisoAsignado in permisosAsignados)
             {
                 if (!permisoAsignado.EsFamilia)
                 {
-                    AgregarCodigos(permisoAsignado, codigos);
+                    AgregarPermisoEfectivo(permisoAsignado, permisosEfectivos);
                     continue;
                 }
 
                 foreach (PermisoComponent raiz in _permisoRepository.ListarSubArbol(permisoAsignado.Id))
-                    AgregarCodigos(raiz, codigos);
+                    AgregarPermisoEfectivo(raiz, permisosEfectivos);
             }
 
-            return codigos.OrderBy(x => x).ToList();
+            return permisosEfectivos.OrderBy(x => x.Nombre).ToList();
         }
 
-        private void AgregarCodigos(PermisoComponent permiso, List<string> codigos)
+        private void AgregarPermisoEfectivo(PermisoComponent permiso, List<PermisoComponent> permisos)
         {
             if (permiso == null)
                 return;
 
-            if (!permiso.EsFamilia && !string.IsNullOrWhiteSpace(permiso.Codigo))
-            {
-                // Evita repetir codigos cuando dos familias contienen el mismo permiso.
-                if (!codigos.Any(x => string.Equals(x, permiso.Codigo, System.StringComparison.OrdinalIgnoreCase)))
-                    codigos.Add(permiso.Codigo);
-            }
+            if (!permisos.Any(x => MismoPermiso(x, permiso)))
+                permisos.Add(permiso);
+        }
 
-            // Recursion sobre el Composite: baja por familias hijas hasta permisos simples.
-            foreach (PermisoComponent hijo in permiso.Hijos.OfType<PermisoComponent>())
-                AgregarCodigos(hijo, codigos);
+        private bool MismoPermiso(PermisoComponent permisoA, PermisoComponent permisoB)
+        {
+            if (permisoA == null || permisoB == null)
+                return false;
+
+            if (permisoA.Id > 0 && permisoB.Id > 0)
+                return permisoA.Id == permisoB.Id;
+
+            return string.Equals(permisoA.Nombre, permisoB.Nombre, System.StringComparison.OrdinalIgnoreCase);
         }
 
         private void ValidarUsuario(int idUsuario)
@@ -122,6 +125,7 @@ namespace APPLICATION.Features.Usuarios
             if (raiz != null && permiso != null && raiz.Id == permiso.Id)
                 throw new ReglaNegocioException("La raiz de permisos no se puede asignar a usuarios.");
         }
+
         private PermisoComponent ValidarPermiso(int idPermiso)
         {
             PermisoComponent permiso = _permisoRepository.ObtenerPorId(idPermiso);
