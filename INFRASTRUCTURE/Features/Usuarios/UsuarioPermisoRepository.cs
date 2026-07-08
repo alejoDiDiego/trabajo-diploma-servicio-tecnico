@@ -142,24 +142,14 @@ namespace REPOSITORY.Features.Usuarios
                 IF OBJECT_ID('UsuarioPermisos', 'U') IS NULL
                 BEGIN
                     CREATE TABLE UsuarioPermisos (
-                        id_usuario_permiso int IDENTITY(1,1) NOT NULL PRIMARY KEY,
                         id_usuario int NOT NULL,
                         id_permiso int NOT NULL,
+                        CONSTRAINT PK_UsuarioPermisos PRIMARY KEY (id_usuario, id_permiso),
                         CONSTRAINT FK_UsuarioPermisos_Usuarios FOREIGN KEY (id_usuario)
                             REFERENCES Usuarios(id_usuario) ON DELETE CASCADE,
                         CONSTRAINT FK_UsuarioPermisos_Permisos FOREIGN KEY (id_permiso)
                             REFERENCES Permisos(id_permiso) ON DELETE CASCADE
                     );
-                END
-
-                IF NOT EXISTS (
-                    SELECT 1 FROM sys.indexes
-                    WHERE name = 'UX_UsuarioPermisos_Usuario_Permiso'
-                      AND object_id = OBJECT_ID('UsuarioPermisos')
-                )
-                BEGIN
-                    CREATE UNIQUE INDEX UX_UsuarioPermisos_Usuario_Permiso
-                    ON UsuarioPermisos(id_usuario, id_permiso);
                 END
 
                 SELECT 0;

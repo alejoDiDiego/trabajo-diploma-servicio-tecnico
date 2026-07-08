@@ -382,27 +382,16 @@ namespace REPOSITORY.Features.Permisos
             string query = @"
                 IF OBJECT_ID('PermisoComposicion', 'U') IS NULL
                 BEGIN
-                    -- Relaciones del Composite. Permite que un mismo hijo aparezca en ramas distintas.
+                    -- Relaciones del Composite. PK compuesta evita duplicados bajo el mismo padre.
                     CREATE TABLE PermisoComposicion (
-                        id_permiso_composicion int IDENTITY(1,1) NOT NULL PRIMARY KEY,
                         id_permiso_padre int NOT NULL,
                         id_permiso_hijo int NOT NULL,
+                        CONSTRAINT PK_PermisoComposicion PRIMARY KEY (id_permiso_padre, id_permiso_hijo),
                         CONSTRAINT FK_PermisoComposicion_Padre FOREIGN KEY (id_permiso_padre)
                             REFERENCES Permisos(id_permiso),
                         CONSTRAINT FK_PermisoComposicion_Hijo FOREIGN KEY (id_permiso_hijo)
                             REFERENCES Permisos(id_permiso)
                     );
-                END
-
-                IF NOT EXISTS (
-                    SELECT 1 FROM sys.indexes
-                    WHERE name = 'UX_PermisoComposicion_Padre_Hijo'
-                      AND object_id = OBJECT_ID('PermisoComposicion')
-                )
-                BEGIN
-                    -- Evita repetir el mismo hijo bajo el mismo padre, pero no en otros padres.
-                    CREATE UNIQUE INDEX UX_PermisoComposicion_Padre_Hijo
-                    ON PermisoComposicion(id_permiso_padre, id_permiso_hijo);
                 END
 
                 SELECT 0;

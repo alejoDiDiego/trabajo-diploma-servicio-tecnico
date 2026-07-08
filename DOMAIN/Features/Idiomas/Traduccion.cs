@@ -1,3 +1,4 @@
+using ABSTRACTIONS.Entities;
 using ABSTRACTIONS.Features.Idiomas;
 using DOMAIN.Exceptions;
 
@@ -5,15 +6,18 @@ namespace DOMAIN.Features.Idiomas
 {
     public class Traduccion : ITraduccion
     {
-        public int Id { get; private set; }
+        public int IdIdioma { get; private set; }
+        public int IdPalabra { get; private set; }
         public string PalabraTraducida { get; private set; }
         public IPalabra Palabra { get; private set; }
+
+        int IEntity.Id => IdPalabra;
 
         private Traduccion()
         {
         }
 
-        public static Traduccion Crear(int id, IPalabra palabra, string palabraTraducida)
+        public static Traduccion Crear(int idIdioma, int idPalabra, IPalabra palabra, string palabraTraducida)
         {
             if (palabra == null)
                 throw new ReglaNegocioException("La palabra a traducir es obligatoria.");
@@ -22,7 +26,8 @@ namespace DOMAIN.Features.Idiomas
 
             return new Traduccion
             {
-                Id = id,
+                IdIdioma = idIdioma,
+                IdPalabra = idPalabra,
                 Palabra = palabra,
                 PalabraTraducida = palabraTraducida
             };

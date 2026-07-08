@@ -35,7 +35,7 @@ namespace REPOSITORY.Features.Idiomas
                 SELECT
                     i.id_idioma,
                     i.nombre,
-                    t.id_traduccion,
+                    t.id_idioma AS id_idioma_traduccion,
                     p.id_palabra,
                     p.texto AS clave,
                     t.palabra_traducida
@@ -60,7 +60,7 @@ namespace REPOSITORY.Features.Idiomas
                     );
                 }
 
-                if (fila["id_traduccion"] == DBNull.Value)
+                if (fila["id_idioma_traduccion"] == DBNull.Value)
                     continue;
 
                 Palabra palabra = Palabra.Crear(
@@ -69,7 +69,8 @@ namespace REPOSITORY.Features.Idiomas
                 );
 
                 Traduccion traduccion = Traduccion.Crear(
-                    Convert.ToInt32(fila["id_traduccion"]),
+                    idIdioma,
+                    Convert.ToInt32(fila["id_palabra"]),
                     palabra,
                     fila["palabra_traducida"].ToString()
                 );
@@ -318,15 +319,14 @@ namespace REPOSITORY.Features.Idiomas
                 IF OBJECT_ID('Traducciones', 'U') IS NULL
                 BEGIN
                     CREATE TABLE Traducciones (
-                        id_traduccion int IDENTITY(1,1) NOT NULL PRIMARY KEY,
                         id_idioma int NOT NULL,
                         id_palabra int NOT NULL,
                         palabra_traducida nvarchar(max) NOT NULL,
+                        CONSTRAINT PK_Traducciones PRIMARY KEY (id_idioma, id_palabra),
                         CONSTRAINT FK_Traducciones_Idiomas FOREIGN KEY (id_idioma)
                             REFERENCES Idiomas(id_idioma) ON DELETE CASCADE,
                         CONSTRAINT FK_Traducciones_Palabras FOREIGN KEY (id_palabra)
-                            REFERENCES Palabras(id_palabra) ON DELETE CASCADE,
-                        CONSTRAINT UQ_Traducciones_Idioma_Palabra UNIQUE (id_idioma, id_palabra)
+                            REFERENCES Palabras(id_palabra) ON DELETE CASCADE
                     );
                 END
 

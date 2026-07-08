@@ -36,22 +36,15 @@ IF NOT EXISTS (
 IF OBJECT_ID('PermisoComposicion', 'U') IS NULL
 BEGIN
     CREATE TABLE PermisoComposicion (
-        id_permiso_composicion int IDENTITY(1,1) NOT NULL PRIMARY KEY,
         id_permiso_padre int NOT NULL,
         id_permiso_hijo int NOT NULL,
+        CONSTRAINT PK_PermisoComposicion PRIMARY KEY (id_permiso_padre, id_permiso_hijo),
         CONSTRAINT FK_PermisoComposicion_Padre FOREIGN KEY (id_permiso_padre)
             REFERENCES Permisos(id_permiso),
         CONSTRAINT FK_PermisoComposicion_Hijo FOREIGN KEY (id_permiso_hijo)
             REFERENCES Permisos(id_permiso)
     );
 END
-IF NOT EXISTS (
-    SELECT 1 FROM sys.indexes
-    WHERE name = 'UX_PermisoComposicion_Padre_Hijo'
-      AND object_id = OBJECT_ID('PermisoComposicion')
-)
-    CREATE UNIQUE INDEX UX_PermisoComposicion_Padre_Hijo
-    ON PermisoComposicion(id_permiso_padre, id_permiso_hijo);
 
 CREATE TABLE #PermisosSimples (
     nombre nvarchar(100),
@@ -200,23 +193,15 @@ BEGIN
     IF OBJECT_ID('UsuarioPermisos', 'U') IS NULL
     BEGIN
         CREATE TABLE UsuarioPermisos (
-            id_usuario_permiso int IDENTITY(1,1) NOT NULL PRIMARY KEY,
             id_usuario int NOT NULL,
             id_permiso int NOT NULL,
+            CONSTRAINT PK_UsuarioPermisos PRIMARY KEY (id_usuario, id_permiso),
             CONSTRAINT FK_UsuarioPermisos_Usuarios FOREIGN KEY (id_usuario)
                 REFERENCES Usuarios(id_usuario) ON DELETE CASCADE,
             CONSTRAINT FK_UsuarioPermisos_Permisos FOREIGN KEY (id_permiso)
             REFERENCES Permisos(id_permiso) ON DELETE CASCADE
         );
     END
-
-    IF NOT EXISTS (
-        SELECT 1 FROM sys.indexes
-        WHERE name = 'UX_UsuarioPermisos_Usuario_Permiso'
-          AND object_id = OBJECT_ID('UsuarioPermisos')
-    )
-        CREATE UNIQUE INDEX UX_UsuarioPermisos_Usuario_Permiso
-        ON UsuarioPermisos(id_usuario, id_permiso);
 END
 
 IF OBJECT_ID('Idiomas', 'U') IS NOT NULL

@@ -30,15 +30,14 @@ END
 IF OBJECT_ID('Traducciones', 'U') IS NULL
 BEGIN
     CREATE TABLE Traducciones (
-        id_traduccion int IDENTITY(1,1) NOT NULL PRIMARY KEY,
         id_idioma int NOT NULL,
         id_palabra int NOT NULL,
         palabra_traducida nvarchar(max) NOT NULL,
+        CONSTRAINT PK_Traducciones PRIMARY KEY (id_idioma, id_palabra),
         CONSTRAINT FK_Traducciones_Idiomas FOREIGN KEY (id_idioma)
             REFERENCES Idiomas(id_idioma) ON DELETE CASCADE,
         CONSTRAINT FK_Traducciones_Palabras FOREIGN KEY (id_palabra)
-            REFERENCES Palabras(id_palabra) ON DELETE CASCADE,
-        CONSTRAINT UQ_Traducciones_Idioma_Palabra UNIQUE (id_idioma, id_palabra)
+            REFERENCES Palabras(id_palabra) ON DELETE CASCADE
     );
 END
 
