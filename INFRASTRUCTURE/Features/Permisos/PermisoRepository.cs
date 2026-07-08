@@ -438,7 +438,9 @@ namespace REPOSITORY.Features.Permisos
                 ('Ver traducciones', 'TRADUCCIONES_VER', 'Administrar traducciones', 'TRADUCCIONES_ADMINISTRAR'),
                 ('Crear traducciones', 'TRADUCCIONES_CREAR', NULL, NULL),
                 ('Editar traducciones', 'TRADUCCIONES_EDITAR', NULL, NULL),
-                ('Eliminar traducciones', 'TRADUCCIONES_ELIMINAR', NULL, NULL);
+                ('Eliminar traducciones', 'TRADUCCIONES_ELIMINAR', NULL, NULL),
+                ('Ver control cambios', 'CONTROL_CAMBIOS_VER', NULL, NULL),
+                ('Restaurar cambios', 'CONTROL_CAMBIOS_RESTAURAR', NULL, NULL);
 
                 UPDATE p
                 SET p.nombre = s.nombre,
@@ -559,6 +561,8 @@ namespace REPOSITORY.Features.Permisos
                 ('Gestion traducciones', 'TRADUCCIONES_CREAR', NULL),
                 ('Gestion traducciones', 'TRADUCCIONES_EDITAR', NULL),
                 ('Gestion traducciones', 'TRADUCCIONES_ELIMINAR', NULL),
+                ('Gestion traducciones', 'CONTROL_CAMBIOS_VER', NULL),
+                ('Gestion traducciones', 'CONTROL_CAMBIOS_RESTAURAR', NULL),
                 ('Lectura general', 'USUARIOS_VER', NULL),
                 ('Lectura general', 'PERMISOS_VER', NULL),
                 ('Lectura general', 'IDIOMAS_VER', NULL),
@@ -702,7 +706,39 @@ namespace REPOSITORY.Features.Permisos
                     ('Espanol', 'Mensaje.ErrorPermiso', 'Error al gestionar permisos: {0}'),
                     ('Ingles', 'Mensaje.ErrorPermiso', 'Permission management error: {0}'),
                     ('Espanol', 'Mensaje.ErrorAsignarPermisos', 'Error al asignar permisos: {0}'),
-                    ('Ingles', 'Mensaje.ErrorAsignarPermisos', 'Permission assignment error: {0}');
+                    ('Ingles', 'Mensaje.ErrorAsignarPermisos', 'Permission assignment error: {0}'),
+                    ('Espanol', 'Menu.ControlCambios', 'Control de cambios'),
+                    ('Ingles', 'Menu.ControlCambios', 'Change control'),
+                    ('Espanol', 'FrmControlCambios.Text', 'Control de cambios'),
+                    ('Ingles', 'FrmControlCambios.Text', 'Change control'),
+                    ('Espanol', 'ControlCambios.Titulo', 'Control de cambios - Traducciones'),
+                    ('Ingles', 'ControlCambios.Titulo', 'Change control - Translations'),
+                    ('Espanol', 'ControlCambios.Fecha', 'Fecha'),
+                    ('Ingles', 'ControlCambios.Fecha', 'Date'),
+                    ('Espanol', 'ControlCambios.Usuario', 'Usuario'),
+                    ('Ingles', 'ControlCambios.Usuario', 'User'),
+                    ('Espanol', 'ControlCambios.Tipo', 'Tipo'),
+                    ('Ingles', 'ControlCambios.Tipo', 'Type'),
+                    ('Espanol', 'ControlCambios.Clave', 'Clave'),
+                    ('Ingles', 'ControlCambios.Clave', 'Key'),
+                    ('Espanol', 'ControlCambios.ValorAnterior', 'Valor anterior'),
+                    ('Ingles', 'ControlCambios.ValorAnterior', 'Previous value'),
+                    ('Espanol', 'ControlCambios.ValorNuevo', 'Valor nuevo'),
+                    ('Ingles', 'ControlCambios.ValorNuevo', 'New value'),
+                    ('Espanol', 'ControlCambios.Restaurar', 'Restaurar'),
+                    ('Ingles', 'ControlCambios.Restaurar', 'Restore'),
+                    ('Espanol', 'ControlCambios.CambioRestaurado', 'Cambio restaurado exitosamente.'),
+                    ('Ingles', 'ControlCambios.CambioRestaurado', 'Change restored successfully.'),
+                    ('Espanol', 'ControlCambios.ErrorRestaurar', 'Error al restaurar: {0}'),
+                    ('Ingles', 'ControlCambios.ErrorRestaurar', 'Restore error: {0}'),
+                    ('Espanol', 'ControlCambios.SeleccioneCambio', 'Seleccione un cambio para restaurar.'),
+                    ('Ingles', 'ControlCambios.SeleccioneCambio', 'Select a change to restore.'),
+                    ('Espanol', 'Mensaje.ConfirmarRestaurar', 'Confirma que desea restaurar este cambio?'),
+                    ('Ingles', 'Mensaje.ConfirmarRestaurar', 'Are you sure you want to restore this change?'),
+                    ('Espanol', 'Titulo.ConfirmarRestauracion', 'Confirmar restauracion'),
+                    ('Ingles', 'Titulo.ConfirmarRestauracion', 'Confirm restore'),
+                    ('Espanol', 'Titulo.Atencion', 'Atencion'),
+                    ('Ingles', 'Titulo.Atencion', 'Notice');
 
                     INSERT INTO Idiomas (nombre)
                     SELECT DISTINCT s.idioma

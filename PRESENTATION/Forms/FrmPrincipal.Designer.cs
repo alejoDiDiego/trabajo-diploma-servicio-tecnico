@@ -20,6 +20,7 @@ namespace UI.Forms
             this.TSMI_AdministrarUsuarios = new System.Windows.Forms.ToolStripMenuItem();
             this.TSMI_AdministrarPermisos = new System.Windows.Forms.ToolStripMenuItem();
             this.TSMI_AsignarPermisosUsuarios = new System.Windows.Forms.ToolStripMenuItem();
+            this.TSMI_ControlCambios = new System.Windows.Forms.ToolStripMenuItem();
             this.TSMI_Idioma = new System.Windows.Forms.ToolStripMenuItem();
             this.TSMI_AdministrarTraducciones = new System.Windows.Forms.ToolStripMenuItem();
             this.MSP_Principal.SuspendLayout();
@@ -36,6 +37,15 @@ namespace UI.Forms
             this.MSP_Principal.TabIndex = 0;
             this.MSP_Principal.Text = "menuStrip1";
             // 
+            // TSMI_ControlCambios
+            // 
+            this.TSMI_ControlCambios = new System.Windows.Forms.ToolStripMenuItem();
+            this.TSMI_ControlCambios.Name = "TSMI_ControlCambios";
+            this.TSMI_ControlCambios.Size = new System.Drawing.Size(220, 22);
+            this.TSMI_ControlCambios.Tag = "Menu.ControlCambios";
+            this.TSMI_ControlCambios.Text = "Control de cambios";
+            this.TSMI_ControlCambios.Click += new System.EventHandler(this.TSMI_ControlCambios_Click);
+            // 
             // TSMI_Usuario
             // 
             this.TSMI_Usuario.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -43,7 +53,8 @@ namespace UI.Forms
             this.TSMI_CerrarSesion,
             this.TSMI_AdministrarUsuarios,
             this.TSMI_AdministrarPermisos,
-            this.TSMI_AsignarPermisosUsuarios});
+            this.TSMI_AsignarPermisosUsuarios,
+            this.TSMI_ControlCambios});
             this.TSMI_Usuario.Name = "TSMI_Usuario";
             this.TSMI_Usuario.Size = new System.Drawing.Size(59, 20);
             this.TSMI_Usuario.Tag = "Menu.Usuario";
@@ -134,6 +145,7 @@ namespace UI.Forms
         private System.Windows.Forms.ToolStripMenuItem TSMI_AdministrarUsuarios;
         private System.Windows.Forms.ToolStripMenuItem TSMI_AdministrarPermisos;
         private System.Windows.Forms.ToolStripMenuItem TSMI_AsignarPermisosUsuarios;
+        private System.Windows.Forms.ToolStripMenuItem TSMI_ControlCambios;
         private System.Windows.Forms.ToolStripMenuItem TSMI_Idioma;
         private System.Windows.Forms.ToolStripMenuItem TSMI_AdministrarTraducciones;
     }

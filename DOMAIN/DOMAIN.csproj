@@ -52,6 +52,7 @@
     <Compile Include="Features\Usuarios\Exceptions\UsuarioNoExisteException.cs" />
     <Compile Include="Features\Usuarios\Exceptions\UsuarioYaExisteException.cs" />
     <Compile Include="Features\Usuarios\Usuario.cs" />
+    <Compile Include="Features\ControlCambios\ControlCambio.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

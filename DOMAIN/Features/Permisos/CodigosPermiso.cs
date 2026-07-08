@@ -25,5 +25,8 @@ namespace DOMAIN.Features.Permisos
         public const string TraduccionesCrear = "TRADUCCIONES_CREAR";
         public const string TraduccionesEditar = "TRADUCCIONES_EDITAR";
         public const string TraduccionesEliminar = "TRADUCCIONES_ELIMINAR";
+
+        public const string ControlCambiosVer = "CONTROL_CAMBIOS_VER";
+        public const string ControlCambiosRestaurar = "CONTROL_CAMBIOS_RESTAURAR";
     }
 }

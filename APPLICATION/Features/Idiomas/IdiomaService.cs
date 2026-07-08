@@ -1,8 +1,11 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using ABSTRACTIONS.Features.Idiomas;
+using APPLICATION.Features.ControlCambios;
 using DOMAIN.Features.Idiomas;
 using REPOSITORY.Features.Idiomas;
+using SERVICES.Auth;
 
 namespace APPLICATION.Features.Idiomas
 {
@@ -67,9 +70,39 @@ namespace APPLICATION.Features.Idiomas
             _idiomaRepository.EliminarIdioma(id);
         }
 
-        public void GuardarTraduccion(int idIdioma, int idPalabra, string texto)
+        public void GuardarTraduccion(int idIdioma, int idPalabra, string texto, bool registrarCambio = true)
         {
+            string valorAnterior = "";
+            string clave = "";
+
+            if (registrarCambio)
+            {
+                var traducciones = _idiomaRepository.ListarTraduccionesPorIdioma(idIdioma);
+                var vieja = traducciones.FirstOrDefault(t => t.IdPalabra == idPalabra);
+                if (vieja != null)
+                {
+                    valorAnterior = vieja.Texto;
+                    clave = vieja.Clave;
+                }
+            }
+
             _idiomaRepository.GuardarTraduccion(idIdioma, idPalabra, texto);
+
+            if (registrarCambio && texto != valorAnterior)
+            {
+                string usuario = SessionManager.HaySesionActiva()
+                    ? SessionManager.ObtenerUsuarioActual().Username
+                    : "Sistema";
+
+                string tipo = string.IsNullOrEmpty(valorAnterior) ? "INSERT" : "UPDATE";
+
+                ControlCambioService controlCambioService = new ControlCambioService();
+                controlCambioService.RegistrarCambio(
+                    "Traducciones", idIdioma, idPalabra, clave,
+                    "palabra_traducida", valorAnterior, texto,
+                    usuario, tipo
+                );
+            }
         }
     }
 }
