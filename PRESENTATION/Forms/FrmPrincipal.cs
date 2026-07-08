@@ -8,6 +8,7 @@ using DOMAIN.Features.Idiomas;
 using SERVICES.Auth;
 using SERVICES.Idiomas;
 using UI.Forms.Auth;
+using UI.Forms.ControlCambios;
 using UI.Forms.Idiomas;
 
 namespace UI.Forms
@@ -36,6 +37,7 @@ namespace UI.Forms
             TSMI_AdministrarUsuarios.Text = idiomaObservado.BuscarTraduccion(TSMI_AdministrarUsuarios.Tag.ToString());
             TSMI_AdministrarPermisos.Text = idiomaObservado.BuscarTraduccion(TSMI_AdministrarPermisos.Tag.ToString());
             TSMI_AsignarPermisosUsuarios.Text = idiomaObservado.BuscarTraduccion(TSMI_AsignarPermisosUsuarios.Tag.ToString());
+            TSMI_ControlCambios.Text = idiomaObservado.BuscarTraduccion(TSMI_ControlCambios.Tag.ToString());
             TSMI_RecalcularDV.Text = idiomaObservado.BuscarTraduccion(TSMI_RecalcularDV.Tag.ToString());
             TSMI_Idioma.Text = idiomaObservado.BuscarTraduccion(TSMI_Idioma.Tag.ToString());
             TSMI_AdministrarTraducciones.Text = idiomaObservado.BuscarTraduccion(TSMI_AdministrarTraducciones.Tag.ToString());
@@ -116,12 +118,14 @@ namespace UI.Forms
             bool puedeAsignarPermisos = TienePermiso(CodigosPermiso.PermisosAsignarUsuarios);
             bool puedeRecalcularDV = TienePermiso(CodigosPermiso.IntegridadRecalcular);
             bool puedeVerTraducciones = TieneAlgunPermiso(CodigosPermiso.TraduccionesVer, CodigosPermiso.IdiomasVer);
+            bool puedeVerControlCambios = TienePermiso(CodigosPermiso.ControlCambiosVer);
 
             TSMI_IniciarSesion.Visible = !haySesionActiva;
             TSMI_CerrarSesion.Visible = haySesionActiva;
             TSMI_AdministrarUsuarios.Visible = haySesionActiva && puedeVerUsuarios;
             TSMI_AdministrarPermisos.Visible = haySesionActiva && puedeVerPermisos;
             TSMI_AsignarPermisosUsuarios.Visible = haySesionActiva && puedeAsignarPermisos;
+            TSMI_ControlCambios.Visible = haySesionActiva && puedeVerControlCambios;
             TSMI_RecalcularDV.Visible = haySesionActiva && puedeRecalcularDV;
             TSMI_AdministrarTraducciones.Visible = haySesionActiva && puedeVerTraducciones;
 
@@ -130,6 +134,7 @@ namespace UI.Forms
             TSMI_AdministrarUsuarios.Enabled = haySesionActiva && puedeVerUsuarios;
             TSMI_AdministrarPermisos.Enabled = haySesionActiva && puedeVerPermisos;
             TSMI_AsignarPermisosUsuarios.Enabled = haySesionActiva && puedeAsignarPermisos;
+            TSMI_ControlCambios.Enabled = haySesionActiva && puedeVerControlCambios;
             TSMI_RecalcularDV.Enabled = haySesionActiva && puedeRecalcularDV;
             TSMI_AdministrarTraducciones.Enabled = haySesionActiva && puedeVerTraducciones;
 
@@ -259,6 +264,30 @@ namespace UI.Forms
             frmAsignarPermisosUsuario.Show();
         }
 
+        private void TSMI_ControlCambios_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.ControlCambiosVer))
+            {
+                MostrarAccesoDenegado();
+                ActualizarMenuUsuario();
+                return;
+            }
+
+            foreach (Form formulario in MdiChildren)
+            {
+                if (formulario is FrmControlCambios)
+                {
+                    formulario.Activate();
+                    return;
+                }
+            }
+
+            FrmControlCambios frmControlCambios = new FrmControlCambios();
+            frmControlCambios.MdiParent = this;
+            frmControlCambios.FormClosed += FormularioHijo_FormClosed;
+            frmControlCambios.Show();
+        }
+        
         private void TSMI_RecalcularDV_Click(object sender, EventArgs e)
         {
             try

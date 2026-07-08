@@ -43,6 +43,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Features\Idiomas\IdiomaRepository.cs" />
+    <Compile Include="Features\ControlCambios\ControlCambioRepository.cs" />
     <Compile Include="Features\Permisos\PermisoRepository.cs" />
     <Compile Include="Features\Usuarios\UsuarioPermisoRepository.cs" />
     <Compile Include="Features\Usuarios\UsuarioRepository.cs" />

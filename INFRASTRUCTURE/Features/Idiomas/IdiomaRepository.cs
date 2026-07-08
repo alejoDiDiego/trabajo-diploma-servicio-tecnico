@@ -185,6 +185,70 @@ namespace REPOSITORY.Features.Idiomas
             _db.ExecuteTransaction(query, sqlParameters);
         }
 
+        public TraduccionEditable ObtenerTraduccionEditable(int idIdioma, int idPalabra)
+        {
+            string query = @"
+                SELECT
+                    p.id_palabra,
+                    p.texto AS clave,
+                    ISNULL(t.palabra_traducida, '') AS palabra_traducida
+                FROM Palabras p
+                LEFT JOIN Traducciones t ON t.id_palabra = p.id_palabra AND t.id_idioma = @IdIdioma
+                WHERE p.id_palabra = @IdPalabra
+            ";
+
+            SqlParameter[] sqlParameters = new SqlParameter[]
+            {
+                new SqlParameter("@IdIdioma", idIdioma),
+                new SqlParameter("@IdPalabra", idPalabra)
+            };
+
+            DataTable dt = _db.ExecuteQuery(query, sqlParameters);
+
+            if (dt.Rows.Count == 0)
+                return null;
+
+            DataRow fila = dt.Rows[0];
+            return new TraduccionEditable
+            {
+                IdPalabra = Convert.ToInt32(fila["id_palabra"]),
+                Clave = fila["clave"].ToString(),
+                Texto = fila["palabra_traducida"].ToString()
+            };
+        }
+
+        public void AgregarIdiomaConId(int id, string nombre)
+        {
+            string query = @"
+                SET IDENTITY_INSERT Idiomas ON;
+                INSERT INTO Idiomas (id_idioma, nombre) VALUES (@Id, @Nombre);
+                SET IDENTITY_INSERT Idiomas OFF;
+            ";
+
+            SqlParameter[] sqlParameters = new SqlParameter[]
+            {
+                new SqlParameter("@Id", id),
+                new SqlParameter("@Nombre", nombre)
+            };
+
+            _db.ExecuteTransaction(query, sqlParameters);
+        }
+
+        public void EliminarTraduccion(int idIdioma, int idPalabra)
+        {
+            string query = @"
+                DELETE FROM Traducciones WHERE id_idioma=@IdIdioma AND id_palabra=@IdPalabra;
+            ";
+
+            SqlParameter[] sqlParameters = new SqlParameter[]
+            {
+                new SqlParameter("@IdIdioma", idIdioma),
+                new SqlParameter("@IdPalabra", idPalabra)
+            };
+
+            _db.ExecuteTransaction(query, sqlParameters);
+        }
+
         public void GuardarTraduccion(int idIdioma, int idPalabra, string texto)
         {
             if (string.IsNullOrEmpty(texto))

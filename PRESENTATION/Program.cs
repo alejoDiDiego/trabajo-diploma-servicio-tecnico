@@ -1,5 +1,6 @@
 using System;
 using System.Windows.Forms;
+using APPLICATION.Features.ControlCambios;
 using APPLICATION.Features.Integridad;
 using APPLICATION.Features.Idiomas;
 using APPLICATION.Features.Permisos;
@@ -25,6 +26,9 @@ namespace UI
 
             PermisoService permisoService = new PermisoService();
             permisoService.Inicializar();
+
+            ControlCambioService controlCambioService = new ControlCambioService();
+            controlCambioService.Inicializar();
 
             UsuarioService usuarioService = new UsuarioService();
             usuarioService.Inicializar();
