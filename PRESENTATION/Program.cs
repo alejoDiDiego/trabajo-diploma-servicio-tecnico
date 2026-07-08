@@ -1,5 +1,6 @@
 using System;
 using System.Windows.Forms;
+using APPLICATION.Features.Bitacora;
 using APPLICATION.Features.ControlCambios;
 using APPLICATION.Features.Integridad;
 using APPLICATION.Features.Idiomas;
@@ -26,6 +27,9 @@ namespace UI
 
             PermisoService permisoService = new PermisoService();
             permisoService.Inicializar();
+
+            BitacoraService bitacoraService = new BitacoraService();
+            bitacoraService.Inicializar();
 
             ControlCambioService controlCambioService = new ControlCambioService();
             controlCambioService.Inicializar();

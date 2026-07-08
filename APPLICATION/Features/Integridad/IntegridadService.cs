@@ -4,6 +4,7 @@ using System.Linq;
 using DOMAIN.Features.Usuarios;
 using REPOSITORY.Features.Integridad;
 using REPOSITORY.Features.Usuarios;
+using APPLICATION.Features.Bitacora;
 
 namespace APPLICATION.Features.Integridad
 {
@@ -101,6 +102,9 @@ namespace APPLICATION.Features.Integridad
             }
 
             RecalcularDVVUsuarios();
+
+            BitacoraService bitacoraService = new BitacoraService();
+            bitacoraService.Registrar("Recalculo de digitos verificadores", "", "INTEGRIDAD");
         }
     }
 }

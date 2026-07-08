@@ -3,6 +3,7 @@ using System.Linq;
 using DOMAIN.Exceptions;
 using DOMAIN.Features.Permisos;
 using DOMAIN.Features.Usuarios;
+using APPLICATION.Features.Bitacora;
 using REPOSITORY.Features.Permisos;
 using REPOSITORY.Features.Usuarios;
 
@@ -40,6 +41,13 @@ namespace APPLICATION.Features.Usuarios
             ValidarUsuario(idUsuario);
             ValidarPermiso(idPermiso);
             _usuarioPermisoRepository.AsignarPermiso(idUsuario, idPermiso);
+
+            BitacoraService bitacoraService = new BitacoraService();
+            Usuario usuario = _usuarioRepository.ObtenerPorId(idUsuario);
+            PermisoComponent permiso = _permisoRepository.ObtenerPorId(idPermiso);
+            string detalle = "permiso=" + (permiso != null ? permiso.Nombre : "#" + idPermiso)
+                + " | usuario=" + (usuario != null ? usuario.Username : "#" + idUsuario);
+            bitacoraService.Registrar("Asignacion de permiso", detalle, "USUARIOS");
         }
 
         public void QuitarPermiso(int idUsuario, int idPermiso)
@@ -48,6 +56,13 @@ namespace APPLICATION.Features.Usuarios
             ValidarUsuario(idUsuario);
             ValidarPermiso(idPermiso);
             _usuarioPermisoRepository.QuitarPermiso(idUsuario, idPermiso);
+
+            BitacoraService bitacoraService = new BitacoraService();
+            Usuario usuario = _usuarioRepository.ObtenerPorId(idUsuario);
+            PermisoComponent permiso = _permisoRepository.ObtenerPorId(idPermiso);
+            string detalle = "permiso=" + (permiso != null ? permiso.Nombre : "#" + idPermiso)
+                + " | usuario=" + (usuario != null ? usuario.Username : "#" + idUsuario);
+            bitacoraService.Registrar("Desasignacion de permiso", detalle, "USUARIOS");
         }
 
         public List<string> ListarCodigosPermisosEfectivos(int idUsuario)
