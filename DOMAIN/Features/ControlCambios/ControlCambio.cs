@@ -15,12 +15,14 @@ namespace DOMAIN.Features.ControlCambios
         public string UsuarioModifico { get; private set; }
         public DateTime FechaCambio { get; private set; }
         public string TipoCambio { get; private set; }
+        public string NombreIdioma { get; private set; }
 
         private ControlCambio() { }
 
         public static ControlCambio Crear(int id, string tablaAfectada, int idIdioma, int idPalabra,
             string claveRegistro, string campoModificado, string valorAnterior, string valorNuevo,
-            string usuarioModifico, DateTime fechaCambio, string tipoCambio)
+            string usuarioModifico, DateTime fechaCambio, string tipoCambio,
+            string nombreIdioma = "")
         {
             return new ControlCambio
             {
@@ -34,7 +36,8 @@ namespace DOMAIN.Features.ControlCambios
                 ValorNuevo = valorNuevo,
                 UsuarioModifico = usuarioModifico,
                 FechaCambio = fechaCambio,
-                TipoCambio = tipoCambio
+                TipoCambio = tipoCambio,
+                NombreIdioma = nombreIdioma
             };
         }
     }

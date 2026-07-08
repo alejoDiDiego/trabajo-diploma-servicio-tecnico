@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using ABSTRACTIONS.Features.Idiomas;
 using APPLICATION.Features.ControlCambios;
 using DOMAIN.Features.Idiomas;
@@ -45,7 +44,8 @@ namespace APPLICATION.Features.Idiomas
             if (idioma != null)
                 return idioma;
 
-            return Listar().FirstOrDefault();
+            List<Idioma> lista = Listar();
+            return lista.Count > 0 ? lista[0] : null;
         }
 
         public List<TraduccionEditable> ListarTraduccionesPorIdioma(int idIdioma)
@@ -55,8 +55,20 @@ namespace APPLICATION.Features.Idiomas
 
         public Idioma CrearIdioma(string nombre)
         {
-            Idioma idioma = Idioma.Crear(0, nombre);
-            return _idiomaRepository.AgregarIdioma(idioma.Nombre);
+            Idioma idioma = _idiomaRepository.AgregarIdioma(nombre);
+
+            string usuario = SessionManager.HaySesionActiva()
+                ? SessionManager.ObtenerUsuarioActual().Username
+                : "Sistema";
+
+            ControlCambioService controlCambioService = new ControlCambioService();
+            controlCambioService.RegistrarCambio(
+                "Idiomas", idioma.Id, 0, nombre,
+                "nombre", "", nombre,
+                usuario, "INSERT"
+            );
+
+            return idioma;
         }
 
         public void ModificarIdioma(int id, string nombre)
@@ -67,6 +79,20 @@ namespace APPLICATION.Features.Idiomas
 
         public void EliminarIdioma(int id)
         {
+            Idioma idioma = _idiomaRepository.ObtenerPorId(id);
+            string nombre = idioma?.Nombre ?? "";
+
+            string usuario = SessionManager.HaySesionActiva()
+                ? SessionManager.ObtenerUsuarioActual().Username
+                : "Sistema";
+
+            ControlCambioService controlCambioService = new ControlCambioService();
+            controlCambioService.RegistrarCambio(
+                "Idiomas", id, 0, nombre,
+                "nombre", nombre, "",
+                usuario, "DELETE"
+            );
+
             _idiomaRepository.EliminarIdioma(id);
         }
 
@@ -77,12 +103,11 @@ namespace APPLICATION.Features.Idiomas
 
             if (registrarCambio)
             {
-                var traducciones = _idiomaRepository.ListarTraduccionesPorIdioma(idIdioma);
-                var vieja = traducciones.FirstOrDefault(t => t.IdPalabra == idPalabra);
-                if (vieja != null)
+                TraduccionEditable traduccion = _idiomaRepository.ObtenerTraduccionEditable(idIdioma, idPalabra);
+                if (traduccion != null)
                 {
-                    valorAnterior = vieja.Texto;
-                    clave = vieja.Clave;
+                    valorAnterior = traduccion.Texto;
+                    clave = traduccion.Clave;
                 }
             }
 

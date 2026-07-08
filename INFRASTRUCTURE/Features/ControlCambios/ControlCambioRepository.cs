@@ -78,10 +78,13 @@ namespace REPOSITORY.Features.ControlCambios
         public List<ControlCambio> Listar()
         {
             string query = @"
-                SELECT id_cambio, tabla_afectada, id_idioma, id_palabra, clave_registro,
-                    campo_modificado, valor_anterior, valor_nuevo, usuario_modifico, fecha_cambio, tipo_cambio
-                FROM ControlCambios
-                ORDER BY fecha_cambio DESC
+                SELECT cc.id_cambio, cc.tabla_afectada, cc.id_idioma, cc.id_palabra, cc.clave_registro,
+                    cc.campo_modificado, cc.valor_anterior, cc.valor_nuevo, cc.usuario_modifico,
+                    cc.fecha_cambio, cc.tipo_cambio,
+                    CASE WHEN i.id_idioma IS NULL THEN '(eliminado)' ELSE i.nombre END AS nombre_idioma
+                FROM ControlCambios cc
+                LEFT JOIN Idiomas i ON i.id_idioma = cc.id_idioma
+                ORDER BY cc.fecha_cambio DESC
             ";
 
             DataTable dt = _db.ExecuteQuery(query);
@@ -95,13 +98,46 @@ namespace REPOSITORY.Features.ControlCambios
             return resultado;
         }
 
+        public ControlCambio ObtenerPorTablaYRegistro(string tablaAfectada, int idIdioma, string tipoCambio)
+        {
+            string query = @"
+                SELECT TOP 1 cc.id_cambio, cc.tabla_afectada, cc.id_idioma, cc.id_palabra, cc.clave_registro,
+                    cc.campo_modificado, cc.valor_anterior, cc.valor_nuevo, cc.usuario_modifico,
+                    cc.fecha_cambio, cc.tipo_cambio,
+                    CASE WHEN i.id_idioma IS NULL THEN '(eliminado)' ELSE i.nombre END AS nombre_idioma
+                FROM ControlCambios cc
+                LEFT JOIN Idiomas i ON i.id_idioma = cc.id_idioma
+                WHERE cc.tabla_afectada = @TablaAfectada
+                  AND cc.id_idioma = @IdIdioma
+                  AND cc.tipo_cambio = @TipoCambio
+                ORDER BY cc.fecha_cambio DESC
+            ";
+
+            SqlParameter[] parametros = new SqlParameter[]
+            {
+                new SqlParameter("@TablaAfectada", tablaAfectada),
+                new SqlParameter("@IdIdioma", idIdioma),
+                new SqlParameter("@TipoCambio", tipoCambio)
+            };
+
+            DataTable dt = _db.ExecuteQuery(query, parametros);
+
+            if (dt.Rows.Count == 0)
+                return null;
+
+            return CargarDesdeDB(dt.Rows[0]);
+        }
+
         public ControlCambio ObtenerPorId(int id)
         {
             string query = @"
-                SELECT id_cambio, tabla_afectada, id_idioma, id_palabra, clave_registro,
-                    campo_modificado, valor_anterior, valor_nuevo, usuario_modifico, fecha_cambio, tipo_cambio
-                FROM ControlCambios
-                WHERE id_cambio = @Id
+                SELECT cc.id_cambio, cc.tabla_afectada, cc.id_idioma, cc.id_palabra, cc.clave_registro,
+                    cc.campo_modificado, cc.valor_anterior, cc.valor_nuevo, cc.usuario_modifico,
+                    cc.fecha_cambio, cc.tipo_cambio,
+                    CASE WHEN i.id_idioma IS NULL THEN '(eliminado)' ELSE i.nombre END AS nombre_idioma
+                FROM ControlCambios cc
+                LEFT JOIN Idiomas i ON i.id_idioma = cc.id_idioma
+                WHERE cc.id_cambio = @Id
             ";
 
             SqlParameter[] parametros = new SqlParameter[]
@@ -130,7 +166,8 @@ namespace REPOSITORY.Features.ControlCambios
                 fila["valor_nuevo"] == DBNull.Value ? null : fila["valor_nuevo"].ToString(),
                 fila["usuario_modifico"].ToString(),
                 Convert.ToDateTime(fila["fecha_cambio"]),
-                fila["tipo_cambio"].ToString()
+                fila["tipo_cambio"].ToString(),
+                fila["nombre_idioma"].ToString()
             );
         }
     }

@@ -68,6 +68,8 @@ namespace UI.Forms.ControlCambios
             if (DGV_Cambios.Columns.Count == 0)
                 return;
 
+            ConfigurarColumna("TablaAfectada", "ControlCambios.Tabla");
+            ConfigurarColumna("NombreIdioma", "ControlCambios.Idioma");
             ConfigurarColumna("FechaCambio", "ControlCambios.Fecha");
             ConfigurarColumna("UsuarioModifico", "ControlCambios.Usuario");
             ConfigurarColumna("TipoCambio", "ControlCambios.Tipo");
@@ -77,8 +79,6 @@ namespace UI.Forms.ControlCambios
 
             if (DGV_Cambios.Columns.Contains("Id"))
                 DGV_Cambios.Columns["Id"].Visible = false;
-            if (DGV_Cambios.Columns.Contains("TablaAfectada"))
-                DGV_Cambios.Columns["TablaAfectada"].Visible = false;
             if (DGV_Cambios.Columns.Contains("IdIdioma"))
                 DGV_Cambios.Columns["IdIdioma"].Visible = false;
             if (DGV_Cambios.Columns.Contains("IdPalabra"))
@@ -128,9 +128,13 @@ namespace UI.Forms.ControlCambios
 
             var cambio = (ControlCambio)DGV_Cambios.SelectedRows[0].DataBoundItem;
 
-            if (cambio.TipoCambio != "UPDATE")
+            if (cambio.TipoCambio == "INSERT" && cambio.TablaAfectada == "Idiomas")
             {
-                MostrarAccesoDenegado();
+                MessageBox.Show(
+                    _sesionIdioma.idioma.BuscarTraduccion("ControlCambios.NoRestaurarInsercion"),
+                    _sesionIdioma.idioma.BuscarTraduccion("Titulo.Atencion"),
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
                 return;
             }
 

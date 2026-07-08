@@ -713,6 +713,10 @@ namespace REPOSITORY.Features.Permisos
                     ('Ingles', 'FrmControlCambios.Text', 'Change control'),
                     ('Espanol', 'ControlCambios.Titulo', 'Control de cambios - Traducciones'),
                     ('Ingles', 'ControlCambios.Titulo', 'Change control - Translations'),
+                    ('Espanol', 'ControlCambios.Tabla', 'Tabla'),
+                    ('Ingles', 'ControlCambios.Tabla', 'Table'),
+                    ('Espanol', 'ControlCambios.Idioma', 'Idioma'),
+                    ('Ingles', 'ControlCambios.Idioma', 'Language'),
                     ('Espanol', 'ControlCambios.Fecha', 'Fecha'),
                     ('Ingles', 'ControlCambios.Fecha', 'Date'),
                     ('Espanol', 'ControlCambios.Usuario', 'Usuario'),
@@ -738,7 +742,9 @@ namespace REPOSITORY.Features.Permisos
                     ('Espanol', 'Titulo.ConfirmarRestauracion', 'Confirmar restauracion'),
                     ('Ingles', 'Titulo.ConfirmarRestauracion', 'Confirm restore'),
                     ('Espanol', 'Titulo.Atencion', 'Atencion'),
-                    ('Ingles', 'Titulo.Atencion', 'Notice');
+                    ('Ingles', 'Titulo.Atencion', 'Notice'),
+                    ('Espanol', 'ControlCambios.NoRestaurarInsercion', 'No se puede restaurar la creacion de un idioma. Elimine el idioma manualmente si desea deshacerlo.'),
+                    ('Ingles', 'ControlCambios.NoRestaurarInsercion', 'Cannot restore language creation. Delete the language manually if you want to undo it.');
 
                     INSERT INTO Idiomas (nombre)
                     SELECT DISTINCT s.idioma
