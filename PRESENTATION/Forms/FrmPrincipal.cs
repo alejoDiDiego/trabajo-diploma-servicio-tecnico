@@ -2,6 +2,7 @@ using System;
 using System.Windows.Forms;
 using ABSTRACTIONS.Features.Idiomas;
 using APPLICATION.Features.Idiomas;
+using APPLICATION.Features.Integridad;
 using DOMAIN.Features.Permisos;
 using DOMAIN.Features.Idiomas;
 using SERVICES.Auth;
@@ -37,6 +38,7 @@ namespace UI.Forms
             TSMI_AdministrarPermisos.Text = idiomaObservado.BuscarTraduccion(TSMI_AdministrarPermisos.Tag.ToString());
             TSMI_AsignarPermisosUsuarios.Text = idiomaObservado.BuscarTraduccion(TSMI_AsignarPermisosUsuarios.Tag.ToString());
             TSMI_ControlCambios.Text = idiomaObservado.BuscarTraduccion(TSMI_ControlCambios.Tag.ToString());
+            TSMI_RecalcularDV.Text = idiomaObservado.BuscarTraduccion(TSMI_RecalcularDV.Tag.ToString());
             TSMI_Idioma.Text = idiomaObservado.BuscarTraduccion(TSMI_Idioma.Tag.ToString());
             TSMI_AdministrarTraducciones.Text = idiomaObservado.BuscarTraduccion(TSMI_AdministrarTraducciones.Tag.ToString());
 
@@ -114,6 +116,7 @@ namespace UI.Forms
             bool puedeVerUsuarios = TienePermiso(CodigosPermiso.UsuariosVer);
             bool puedeVerPermisos = TienePermiso(CodigosPermiso.PermisosVer);
             bool puedeAsignarPermisos = TienePermiso(CodigosPermiso.PermisosAsignarUsuarios);
+            bool puedeRecalcularDV = TienePermiso(CodigosPermiso.IntegridadRecalcular);
             bool puedeVerTraducciones = TieneAlgunPermiso(CodigosPermiso.TraduccionesVer, CodigosPermiso.IdiomasVer);
             bool puedeVerControlCambios = TienePermiso(CodigosPermiso.ControlCambiosVer);
 
@@ -123,6 +126,7 @@ namespace UI.Forms
             TSMI_AdministrarPermisos.Visible = haySesionActiva && puedeVerPermisos;
             TSMI_AsignarPermisosUsuarios.Visible = haySesionActiva && puedeAsignarPermisos;
             TSMI_ControlCambios.Visible = haySesionActiva && puedeVerControlCambios;
+            TSMI_RecalcularDV.Visible = haySesionActiva && puedeRecalcularDV;
             TSMI_AdministrarTraducciones.Visible = haySesionActiva && puedeVerTraducciones;
 
             TSMI_IniciarSesion.Enabled = !haySesionActiva;
@@ -131,6 +135,7 @@ namespace UI.Forms
             TSMI_AdministrarPermisos.Enabled = haySesionActiva && puedeVerPermisos;
             TSMI_AsignarPermisosUsuarios.Enabled = haySesionActiva && puedeAsignarPermisos;
             TSMI_ControlCambios.Enabled = haySesionActiva && puedeVerControlCambios;
+            TSMI_RecalcularDV.Enabled = haySesionActiva && puedeRecalcularDV;
             TSMI_AdministrarTraducciones.Enabled = haySesionActiva && puedeVerTraducciones;
 
             var usuario = SessionManager.ObtenerUsuarioActual();
@@ -281,6 +286,41 @@ namespace UI.Forms
             frmControlCambios.MdiParent = this;
             frmControlCambios.FormClosed += FormularioHijo_FormClosed;
             frmControlCambios.Show();
+        }
+        
+        private void TSMI_RecalcularDV_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                DialogResult confirmacion = MessageBox.Show(
+                    "Se van a recalcular todos los digitos verificadores.\n" +
+                    "Esto sobrescribira los valores actuales. Continuar?",
+                    "Recalcular DV",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question);
+
+                if (confirmacion == DialogResult.No)
+                    return;
+
+                IntegridadService integridadService = new IntegridadService();
+                integridadService.RecalcularTodosDV();
+
+                SessionManager.GetInstance().IntegridadComprometida = false;
+
+                MessageBox.Show(
+                    "Digitos verificadores recalculados exitosamente.",
+                    "Recalcular DV",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Error al recalcular: " + ex.Message,
+                    "Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
         }
 
         private void CambiarIdioma(int idIdioma)

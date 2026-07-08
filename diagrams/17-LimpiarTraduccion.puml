@@ -1,0 +1,11 @@
+@startuml
+title Observer Traducciones - Limpiar Traduccion
+
+actor Usuario as U
+participant FrmAdministrarTraducciones as FAT
+
+U -> FAT : Click "Limpiar Traduccion"
+FAT -> FAT : LimpiarTraduccion()
+note right: _idPalabraSeleccionada = 0\nTBX_Clave.Clear()\nTBX_Texto.Clear()\nDGV_Traducciones.ClearSelection()
+
+@enduml

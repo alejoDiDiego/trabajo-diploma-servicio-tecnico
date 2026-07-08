@@ -1,0 +1,31 @@
+@startuml
+title Permisos - Eliminar Familia
+
+actor Usuario as U
+participant FrmAdministrarPermisos as FAP
+participant SessionManager as SM
+participant PermisoService as PS
+participant PermisoRepository as PR
+
+U -> FAP : Click "Eliminar Familia"
+FAP -> SM : TienePermiso("PermisosEliminar")
+SM --> FAP : true
+FAP -> FAP : ObtenerFamiliaSeleccionada()
+note right: Retorna la familia del catálogo
+FAP -> FAP : MessageBox(Confirmar)
+alt No
+    FAP --> U : Cancela
+else Yes
+    FAP -> PS : EliminarFamilia(id)
+    PS -> PR : EliminarFamilia(id)
+    PR --> PS : void
+    PS --> FAP : void
+    FAP -> FAP : LimpiarSeleccionFamilia()
+    FAP -> FAP : CargarDatos()
+    FAP -> PS : ListarFamilias()
+    FAP -> PS : ListarPermisosSimples()
+    FAP -> PS : ListarArbol()
+    FAP -> FAP : MessageBox(Exito)
+end
+
+@enduml

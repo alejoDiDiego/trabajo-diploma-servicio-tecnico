@@ -441,6 +441,7 @@ namespace REPOSITORY.Features.Permisos
                 ('Eliminar traducciones', 'TRADUCCIONES_ELIMINAR', NULL, NULL),
                 ('Ver control cambios', 'CONTROL_CAMBIOS_VER', NULL, NULL),
                 ('Restaurar cambios', 'CONTROL_CAMBIOS_RESTAURAR', NULL, NULL);
+                ('Recalcular digito verificador', 'INTEGRIDAD_RECALCULAR', NULL, NULL);
 
                 UPDATE p
                 SET p.nombre = s.nombre,
@@ -571,7 +572,8 @@ namespace REPOSITORY.Features.Permisos
                 ('Administrador', NULL, 'Gestion usuarios'),
                 ('Administrador', NULL, 'Gestion permisos'),
                 ('Administrador', NULL, 'Gestion idiomas'),
-                ('Administrador', NULL, 'Gestion traducciones');
+                ('Administrador', NULL, 'Gestion traducciones'),
+                ('Administrador', 'INTEGRIDAD_RECALCULAR', NULL);
 
                 INSERT INTO PermisoComposicion (id_permiso_padre, id_permiso_hijo)
                 SELECT padre.id_permiso, hijo.id_permiso
@@ -613,6 +615,8 @@ namespace REPOSITORY.Features.Permisos
                     ('Ingles', 'Menu.AdministrarPermisos', 'Manage permissions'),
                     ('Espanol', 'Menu.AsignarPermisosUsuarios', 'Asignar permisos a usuarios'),
                     ('Ingles', 'Menu.AsignarPermisosUsuarios', 'Assign user permissions'),
+                    ('Espanol', 'Menu.RecalcularDV', 'Recalcular DV'),
+                    ('Ingles', 'Menu.RecalcularDV', 'Recalculate DV'),
                     ('Espanol', 'FrmAdministrarPermisos.Text', 'Administracion de permisos'),
                     ('Ingles', 'FrmAdministrarPermisos.Text', 'Permission administration'),
                     ('Espanol', 'FrmAsignarPermisosUsuario.Text', 'Asignacion de permisos a usuarios'),

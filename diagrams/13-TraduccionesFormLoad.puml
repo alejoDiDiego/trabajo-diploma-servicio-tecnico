@@ -1,0 +1,29 @@
+@startuml
+title Observer Traducciones - Traducciones Form Load
+
+actor Usuario as U
+participant FrmAdministrarTraducciones as FAT
+participant SesionIdioma as SI
+participant SessionManager as SM
+participant IdiomaService as IS
+participant IdiomaRepository as IR
+
+U -> FAT : Abrir formulario
+FAT -> SI : RegistrarObservador(this)
+FAT -> SM : TienePermiso("TraduccionesVer") o "IdiomasVer"
+SM --> FAT : true
+FAT -> IS : Listar()
+IS -> IR : Listar()
+IR --> IS : List<Idioma>
+IS --> FAT : List<Idioma>
+FAT -> FAT : CargarTraducciones()
+FAT -> IS : ListarTraduccionesPorIdioma(idIdioma)
+IS -> IR : ListarTraduccionesPorIdioma(idIdioma)
+IR --> IS : List<TraduccionEditable>
+IS --> FAT : List<TraduccionEditable>
+FAT -> FAT : ConfigurarColumnas()
+FAT -> FAT : Actualizar(idioma)
+note right: Traduce todos los controles
+FAT -> FAT : AplicarPermisos()
+
+@enduml

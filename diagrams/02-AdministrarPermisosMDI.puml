@@ -1,0 +1,21 @@
+@startuml
+title Permisos - Administrar Permisos MDI
+
+actor Usuario as U
+participant FrmPrincipal as FP
+participant SessionManager as SM
+participant FrmAdministrarPermisos as FAP
+
+U -> FP : Click "Administrar Permisos"
+FP -> SM : TienePermiso("PermisosVer")
+SM --> FP : true
+alt Ya abierto
+    FP -> FAP : Activate()
+else No abierto
+    FP -> FAP : new FrmAdministrarPermisos()
+    FP -> FAP : MdiParent = this
+    FP -> FAP : Show()
+    FAP -> FAP : Load (evento)
+end
+
+@enduml

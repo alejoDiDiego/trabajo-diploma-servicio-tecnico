@@ -12,6 +12,7 @@ namespace SERVICES.Auth
         private readonly List<string> _codigosPermisos;
         public IUsuario Usuario;
         public DateTime FechaInicio { get; private set; }
+        public bool IntegridadComprometida { get; set; }
 
         private SessionManager()
         {

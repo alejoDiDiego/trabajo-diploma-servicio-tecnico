@@ -2,6 +2,7 @@ using System;
 using System.Windows.Forms;
 using ABSTRACTIONS.Features.Idiomas;
 using APPLICATION.Features.Usuarios;
+using SERVICES.Auth;
 using SERVICES.Idiomas;
 
 namespace UI.Forms.Auth
@@ -41,6 +42,16 @@ namespace UI.Forms.Auth
                 UsuarioService usuarioService = new UsuarioService();
 
                 usuarioService.Login(TBX_Username.Text, TBX_Password.Text);
+
+                if (SessionManager.GetInstance().IntegridadComprometida)
+                {
+                    MessageBox.Show(
+                        "La integridad de los datos ha sido comprometida.\n" +
+                        "Contacte al administrador para revisar los datos.",
+                        "Advertencia de Integridad",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+                }
 
                 DialogResult = DialogResult.OK;
                 Close();

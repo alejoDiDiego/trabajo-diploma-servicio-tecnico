@@ -1,6 +1,7 @@
 using System;
 using System.Windows.Forms;
 using APPLICATION.Features.ControlCambios;
+using APPLICATION.Features.Integridad;
 using APPLICATION.Features.Idiomas;
 using APPLICATION.Features.Permisos;
 using APPLICATION.Features.Usuarios;
@@ -16,6 +17,9 @@ namespace UI
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+
+            IntegridadService integridadService = new IntegridadService();
+            integridadService.Inicializar();
 
             IdiomaService idiomaService = new IdiomaService();
             idiomaService.Inicializar();
