@@ -29,5 +29,6 @@ namespace DOMAIN.Features.Permisos
         public const string ControlCambiosVer = "CONTROL_CAMBIOS_VER";
         public const string ControlCambiosRestaurar = "CONTROL_CAMBIOS_RESTAURAR";
         public const string IntegridadRecalcular = "INTEGRIDAD_RECALCULAR";
+        public const string BitacoraVer = "BITACORA_VER";
     }
 }

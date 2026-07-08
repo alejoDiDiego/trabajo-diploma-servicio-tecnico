@@ -440,7 +440,8 @@ namespace REPOSITORY.Features.Permisos
                 ('Editar traducciones', 'TRADUCCIONES_EDITAR', NULL, NULL),
                 ('Eliminar traducciones', 'TRADUCCIONES_ELIMINAR', NULL, NULL),
                 ('Ver control cambios', 'CONTROL_CAMBIOS_VER', NULL, NULL),
-                ('Restaurar cambios', 'CONTROL_CAMBIOS_RESTAURAR', NULL, NULL);
+                ('Restaurar cambios', 'CONTROL_CAMBIOS_RESTAURAR', NULL, NULL),
+                ('Ver bitacora', 'BITACORA_VER', NULL, NULL),
                 ('Recalcular digito verificador', 'INTEGRIDAD_RECALCULAR', NULL, NULL);
 
                 UPDATE p
@@ -573,7 +574,8 @@ namespace REPOSITORY.Features.Permisos
                 ('Administrador', NULL, 'Gestion permisos'),
                 ('Administrador', NULL, 'Gestion idiomas'),
                 ('Administrador', NULL, 'Gestion traducciones'),
-                ('Administrador', 'INTEGRIDAD_RECALCULAR', NULL);
+                ('Administrador', 'INTEGRIDAD_RECALCULAR', NULL),
+                ('Administrador', 'BITACORA_VER', NULL);
 
                 INSERT INTO PermisoComposicion (id_permiso_padre, id_permiso_hijo)
                 SELECT padre.id_permiso, hijo.id_permiso
@@ -748,7 +750,47 @@ namespace REPOSITORY.Features.Permisos
                     ('Espanol', 'Titulo.Atencion', 'Atencion'),
                     ('Ingles', 'Titulo.Atencion', 'Notice'),
                     ('Espanol', 'ControlCambios.NoRestaurarInsercion', 'No se puede restaurar la creacion de un idioma. Elimine el idioma manualmente si desea deshacerlo.'),
-                    ('Ingles', 'ControlCambios.NoRestaurarInsercion', 'Cannot restore language creation. Delete the language manually if you want to undo it.');
+                    ('Ingles', 'ControlCambios.NoRestaurarInsercion', 'Cannot restore language creation. Delete the language manually if you want to undo it.'),
+                    ('Espanol', 'Menu.Bitacora', 'Bitacora de actividades'),
+                    ('Ingles', 'Menu.Bitacora', 'Activity log'),
+                    ('Espanol', 'FrmBitacora.Text', 'Bitacora de actividades'),
+                    ('Ingles', 'FrmBitacora.Text', 'Activity log'),
+                    ('Espanol', 'Bitacora.Titulo', 'Bitacora de actividades'),
+                    ('Ingles', 'Bitacora.Titulo', 'Activity log'),
+                    ('Espanol', 'Bitacora.Fecha', 'Fecha'),
+                    ('Ingles', 'Bitacora.Fecha', 'Date'),
+                    ('Espanol', 'Bitacora.Usuario', 'Usuario'),
+                    ('Ingles', 'Bitacora.Usuario', 'User'),
+                    ('Espanol', 'Bitacora.Actividad', 'Actividad'),
+                    ('Ingles', 'Bitacora.Actividad', 'Activity'),
+                    ('Espanol', 'Bitacora.Detalle', 'Detalle'),
+                    ('Ingles', 'Bitacora.Detalle', 'Details'),
+                    ('Espanol', 'Bitacora.TipoActividad', 'Tipo'),
+                    ('Ingles', 'Bitacora.TipoActividad', 'Type'),
+                    ('Espanol', 'Bitacora.Buscar', 'Buscar'),
+                    ('Ingles', 'Bitacora.Buscar', 'Search'),
+                    ('Espanol', 'Bitacora.UsuarioFiltro', 'Usuario:'),
+                    ('Ingles', 'Bitacora.UsuarioFiltro', 'User:'),
+                    ('Espanol', 'Bitacora.Desde', 'Desde:'),
+                    ('Ingles', 'Bitacora.Desde', 'From:'),
+                    ('Espanol', 'Bitacora.Hasta', 'Hasta:'),
+                    ('Ingles', 'Bitacora.Hasta', 'To:'),
+                    ('Espanol', 'Bitacora.TipoFiltro', 'Tipo:'),
+                    ('Ingles', 'Bitacora.TipoFiltro', 'Type:'),
+                    ('Espanol', 'Bitacora.TipoTodas', 'Todas'),
+                    ('Ingles', 'Bitacora.TipoTodas', 'All'),
+                    ('Espanol', 'Bitacora.SESION', 'Sesion'),
+                    ('Ingles', 'Bitacora.SESION', 'Session'),
+                    ('Espanol', 'Bitacora.USUARIOS', 'Usuarios'),
+                    ('Ingles', 'Bitacora.USUARIOS', 'Users'),
+                    ('Espanol', 'Bitacora.PERMISOS', 'Permisos'),
+                    ('Ingles', 'Bitacora.PERMISOS', 'Permissions'),
+                    ('Espanol', 'Bitacora.IDIOMAS', 'Idiomas'),
+                    ('Ingles', 'Bitacora.IDIOMAS', 'Languages'),
+                    ('Espanol', 'Bitacora.CONTROL_CAMBIOS', 'Control cambios'),
+                    ('Ingles', 'Bitacora.CONTROL_CAMBIOS', 'Change control'),
+                    ('Espanol', 'Bitacora.INTEGRIDAD', 'Integridad'),
+                    ('Ingles', 'Bitacora.INTEGRIDAD', 'Integrity');
 
                     INSERT INTO Idiomas (nombre)
                     SELECT DISTINCT s.idioma

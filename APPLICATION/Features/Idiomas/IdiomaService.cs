@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ABSTRACTIONS.Features.Idiomas;
+using APPLICATION.Features.Bitacora;
 using APPLICATION.Features.ControlCambios;
 using DOMAIN.Features.Idiomas;
 using REPOSITORY.Features.Idiomas;
@@ -68,6 +69,9 @@ namespace APPLICATION.Features.Idiomas
                 usuario, "INSERT"
             );
 
+            BitacoraService bitacoraService = new BitacoraService();
+            bitacoraService.Registrar("Creacion de idioma", "nombre=" + nombre, "IDIOMAS");
+
             return idioma;
         }
 
@@ -75,6 +79,9 @@ namespace APPLICATION.Features.Idiomas
         {
             Idioma idioma = Idioma.Crear(id, nombre);
             _idiomaRepository.ModificarIdioma(idioma.Id, idioma.Nombre);
+
+            BitacoraService bitacoraService = new BitacoraService();
+                bitacoraService.Registrar("Modificacion de idioma", "id=" + id + " | nombre=" + nombre, "IDIOMAS");
         }
 
         public void EliminarIdioma(int id)
@@ -94,6 +101,9 @@ namespace APPLICATION.Features.Idiomas
             );
 
             _idiomaRepository.EliminarIdioma(id);
+
+            BitacoraService bitacoraService = new BitacoraService();
+            bitacoraService.Registrar("Eliminacion de idioma", "nombre=" + nombre, "IDIOMAS");
         }
 
         public void GuardarTraduccion(int idIdioma, int idPalabra, string texto, bool registrarCambio = true)
@@ -127,6 +137,11 @@ namespace APPLICATION.Features.Idiomas
                     "palabra_traducida", valorAnterior, texto,
                     usuario, tipo
                 );
+
+                BitacoraService bitacoraService = new BitacoraService();
+                string actividad = tipo == "INSERT" ? "Creacion de traduccion" : "Modificacion de traduccion";
+                string detalle = "id_idioma=" + idIdioma + " | id_palabra=" + idPalabra + " | clave=" + clave;
+                bitacoraService.Registrar(actividad, detalle, "IDIOMAS");
             }
         }
     }

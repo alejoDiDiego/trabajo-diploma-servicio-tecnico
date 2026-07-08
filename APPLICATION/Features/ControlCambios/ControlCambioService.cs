@@ -7,6 +7,7 @@ using REPOSITORY.Features.ControlCambios;
 using REPOSITORY.Features.Idiomas;
 using SERVICES.Auth;
 using SERVICES.Idiomas;
+using APPLICATION.Features.Bitacora;
 
 namespace APPLICATION.Features.ControlCambios
 {
@@ -64,6 +65,11 @@ namespace APPLICATION.Features.ControlCambios
                 AsegurarIdiomaExiste(cambio, usuario);
                 RestaurarTraduccion(cambio, usuario);
             }
+
+            BitacoraService bitacoraService = new BitacoraService();
+            string detalle = "tabla=" + cambio.TablaAfectada + " | tipo=" + cambio.TipoCambio
+                + " | id_idioma=" + cambio.IdIdioma;
+            bitacoraService.Registrar("Restauracion de cambio", detalle, "CONTROL_CAMBIOS");
         }
 
         private void RestaurarIdioma(ControlCambio cambio, string usuario)

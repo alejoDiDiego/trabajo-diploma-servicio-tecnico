@@ -21,6 +21,7 @@ namespace UI.Forms
             this.TSMI_AdministrarPermisos = new System.Windows.Forms.ToolStripMenuItem();
             this.TSMI_AsignarPermisosUsuarios = new System.Windows.Forms.ToolStripMenuItem();
             this.TSMI_ControlCambios = new System.Windows.Forms.ToolStripMenuItem();
+            this.TSMI_Bitacora = new System.Windows.Forms.ToolStripMenuItem();
             this.TSMI_RecalcularDV = new System.Windows.Forms.ToolStripMenuItem();
             this.TSMI_Idioma = new System.Windows.Forms.ToolStripMenuItem();
             this.TSMI_AdministrarTraducciones = new System.Windows.Forms.ToolStripMenuItem();
@@ -40,7 +41,6 @@ namespace UI.Forms
             // 
             // TSMI_ControlCambios
             // 
-            this.TSMI_ControlCambios = new System.Windows.Forms.ToolStripMenuItem();
             this.TSMI_ControlCambios.Name = "TSMI_ControlCambios";
             this.TSMI_ControlCambios.Size = new System.Drawing.Size(220, 22);
             this.TSMI_ControlCambios.Tag = "Menu.ControlCambios";
@@ -56,6 +56,7 @@ namespace UI.Forms
             this.TSMI_AdministrarPermisos,
             this.TSMI_AsignarPermisosUsuarios,
             this.TSMI_ControlCambios,
+            this.TSMI_Bitacora,
             this.TSMI_RecalcularDV});
             this.TSMI_Usuario.Name = "TSMI_Usuario";
             this.TSMI_Usuario.Size = new System.Drawing.Size(59, 20);
@@ -102,9 +103,16 @@ namespace UI.Forms
             this.TSMI_AsignarPermisosUsuarios.Text = "Asignar permisos a usuarios";
             this.TSMI_AsignarPermisosUsuarios.Click += new System.EventHandler(this.TSMI_AsignarPermisosUsuarios_Click);
             // 
+            // TSMI_Bitacora
+            // 
+            this.TSMI_Bitacora.Name = "TSMI_Bitacora";
+            this.TSMI_Bitacora.Size = new System.Drawing.Size(220, 22);
+            this.TSMI_Bitacora.Tag = "Menu.Bitacora";
+            this.TSMI_Bitacora.Text = "Bitacora de actividades";
+            this.TSMI_Bitacora.Click += new System.EventHandler(this.TSMI_Bitacora_Click);
+            // 
             // TSMI_RecalcularDV
             // 
-            this.TSMI_RecalcularDV.Name = "TSMI_RecalcularDV";
             this.TSMI_RecalcularDV.Size = new System.Drawing.Size(220, 22);
             this.TSMI_RecalcularDV.Tag = "Menu.RecalcularDV";
             this.TSMI_RecalcularDV.Text = "Recalcular DV";
@@ -156,6 +164,7 @@ namespace UI.Forms
         private System.Windows.Forms.ToolStripMenuItem TSMI_AdministrarPermisos;
         private System.Windows.Forms.ToolStripMenuItem TSMI_AsignarPermisosUsuarios;
         private System.Windows.Forms.ToolStripMenuItem TSMI_ControlCambios;
+        private System.Windows.Forms.ToolStripMenuItem TSMI_Bitacora;
         private System.Windows.Forms.ToolStripMenuItem TSMI_RecalcularDV;
         private System.Windows.Forms.ToolStripMenuItem TSMI_Idioma;
         private System.Windows.Forms.ToolStripMenuItem TSMI_AdministrarTraducciones;

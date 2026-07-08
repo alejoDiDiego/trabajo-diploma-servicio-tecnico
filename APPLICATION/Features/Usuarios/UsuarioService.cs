@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ABSTRACTIONS.Services;
+using APPLICATION.Features.Bitacora;
 using APPLICATION.Features.Integridad;
 using APPLICATION.Features.Usuarios.Exceptions;
 using DOMAIN.Exceptions;
@@ -71,6 +72,9 @@ namespace APPLICATION.Features.Usuarios
                 bool integridadOK = integridadService.VerificarIntegridadUsuarios();
 
                 SessionManager.GetInstance().IntegridadComprometida = !integridadOK;
+
+                BitacoraService bitacoraService = new BitacoraService();
+                bitacoraService.Registrar("Inicio de sesion", "username=" + username, "SESION");
             }
 
             catch (ReglaNegocioException ex)
@@ -79,6 +83,9 @@ namespace APPLICATION.Features.Usuarios
             }
             catch (DatosUsuarioIncorrectosException ex)
             {
+                BitacoraService bitacoraService = new BitacoraService();
+                bitacoraService.Registrar("Inicio de sesion fallido", "username=" + username, "SESION");
+
                 throw new Exception("Usuario o contrasena incorrectos", ex);
             }
             catch (Exception ex)
@@ -112,6 +119,9 @@ namespace APPLICATION.Features.Usuarios
 
                 IntegridadService integridadService = new IntegridadService();
                 integridadService.RecalcularDVVUsuarios();
+
+                BitacoraService bitacoraService = new BitacoraService();
+                bitacoraService.Registrar("Creacion de usuario", "username=" + username, "USUARIOS");
 
                 return usuarioDb;
             }
@@ -156,6 +166,9 @@ namespace APPLICATION.Features.Usuarios
                     throw new UsuarioNoExisteException();
 
                 _usuarioRepository.Eliminar(usuarioDb.Id);
+
+                BitacoraService bitacoraService = new BitacoraService();
+                bitacoraService.Registrar("Eliminacion de usuario", "username=" + username, "USUARIOS");
             }
             catch (UsuarioNoExisteException ex)
             {
@@ -191,6 +204,9 @@ namespace APPLICATION.Features.Usuarios
 
                 IntegridadService integridadService = new IntegridadService();
                 integridadService.RecalcularDVVUsuarios();
+
+                BitacoraService bitacoraService = new BitacoraService();
+                bitacoraService.Registrar("Modificacion de usuario", "id=" + id + " | username=" + username, "USUARIOS");
 
                 return usuarioToUpdate;
             }

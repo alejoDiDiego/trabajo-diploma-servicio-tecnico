@@ -54,6 +54,7 @@
     <Compile Include="Features\Usuarios\Usuario.cs" />
     <Compile Include="Features\ControlCambios\ControlCambio.cs" />
     <Compile Include="Features\Usuarios\UserDVH.cs" />
+    <Compile Include="Features\Bitacora\Bitacora.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

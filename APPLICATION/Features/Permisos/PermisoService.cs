@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using DOMAIN.Exceptions;
 using DOMAIN.Features.Permisos;
+using APPLICATION.Features.Bitacora;
 using REPOSITORY.Features.Permisos;
 
 namespace APPLICATION.Features.Permisos
@@ -41,7 +42,12 @@ namespace APPLICATION.Features.Permisos
 
             // La UI solo crea familias. Los permisos simples se siembran desde base/repositorio.
             FamiliaPermiso.CrearNuevo(nombreNormalizado);
-            return _permisoRepository.AgregarFamilia(nombreNormalizado);
+            FamiliaPermiso familia = _permisoRepository.AgregarFamilia(nombreNormalizado);
+
+            BitacoraService bitacoraService = new BitacoraService();
+            bitacoraService.Registrar("Creacion de familia", "nombre=" + nombreNormalizado, "PERMISOS");
+
+            return familia;
         }
 
         public FamiliaPermiso EditarFamilia(int idFamilia, string nombre)
@@ -52,13 +58,19 @@ namespace APPLICATION.Features.Permisos
             FamiliaPermiso.CargarDesdeDB(familia.Id, nombreNormalizado);
             _permisoRepository.ModificarFamilia(familia.Id, nombreNormalizado);
 
+            BitacoraService bitacoraService = new BitacoraService();
+            bitacoraService.Registrar("Modificacion de familia", "id=" + idFamilia + " | nombre=" + nombreNormalizado, "PERMISOS");
+
             return FamiliaPermiso.CargarDesdeDB(familia.Id, nombreNormalizado);
         }
 
         public void EliminarFamilia(int idFamilia)
         {
-            ObtenerFamiliaExistente(idFamilia);
+            PermisoComponent familia = ObtenerFamiliaExistente(idFamilia);
             _permisoRepository.EliminarFamilia(idFamilia);
+
+            BitacoraService bitacoraService = new BitacoraService();
+            bitacoraService.Registrar("Eliminacion de familia", "nombre=" + familia.Nombre, "PERMISOS");
         }
 
         public void AgregarComponente(int? idPadre, int idHijo)
@@ -69,10 +81,14 @@ namespace APPLICATION.Features.Permisos
             if (!idPadre.HasValue && !hijo.EsFamilia)
                 throw new ReglaNegocioException("La raiz solo puede contener familias.");
 
+            BitacoraService bitacoraService = new BitacoraService();
+
             if (!idPadre.HasValue)
             {
                 ValidarDuplicadoDirecto(null, idHijo);
                 _permisoRepository.AgregarComponente(null, idHijo);
+
+                bitacoraService.Registrar("Agregar componente a raiz", "hijo=" + hijo.Nombre, "PERMISOS");
                 return;
             }
 
@@ -88,6 +104,9 @@ namespace APPLICATION.Features.Permisos
                 throw new ReglaNegocioException("No se puede crear una relacion circular de permisos.");
 
             _permisoRepository.AgregarComponente(padre.Id, hijo.Id);
+
+            string detalle = "hijo=" + hijo.Nombre + " | padre=" + padre.Nombre;
+            bitacoraService.Registrar("Agregar componente a familia", detalle, "PERMISOS");
         }
 
         public void QuitarComponente(int? idPadre, int idHijo)
@@ -95,8 +114,15 @@ namespace APPLICATION.Features.Permisos
             if (idPadre.HasValue)
                 ObtenerFamiliaExistente(idPadre.Value);
 
-            ObtenerPermisoExistente(idHijo);
+            PermisoComponent hijo = ObtenerPermisoExistente(idHijo);
             _permisoRepository.QuitarComponente(idPadre, idHijo);
+
+            BitacoraService bitacoraService = new BitacoraService();
+            string padreNombre = idPadre.HasValue
+                ? _permisoRepository.ObtenerPorId(idPadre.Value)?.Nombre ?? "#" + idPadre.Value
+                : "Raiz";
+            string detalle = "hijo=" + hijo.Nombre + " | padre=" + padreNombre;
+            bitacoraService.Registrar("Quitar componente de familia", detalle, "PERMISOS");
         }
 
         private void ValidarDuplicadoDirecto(int? idPadre, int idHijo)

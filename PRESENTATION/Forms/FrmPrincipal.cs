@@ -2,12 +2,14 @@ using System;
 using System.Windows.Forms;
 using ABSTRACTIONS.Features.Idiomas;
 using APPLICATION.Features.Idiomas;
+using APPLICATION.Features.Bitacora;
 using APPLICATION.Features.Integridad;
 using DOMAIN.Features.Permisos;
 using DOMAIN.Features.Idiomas;
 using SERVICES.Auth;
 using SERVICES.Idiomas;
 using UI.Forms.Auth;
+using UI.Forms.Bitacora;
 using UI.Forms.ControlCambios;
 using UI.Forms.Idiomas;
 
@@ -38,6 +40,7 @@ namespace UI.Forms
             TSMI_AdministrarPermisos.Text = idiomaObservado.BuscarTraduccion(TSMI_AdministrarPermisos.Tag.ToString());
             TSMI_AsignarPermisosUsuarios.Text = idiomaObservado.BuscarTraduccion(TSMI_AsignarPermisosUsuarios.Tag.ToString());
             TSMI_ControlCambios.Text = idiomaObservado.BuscarTraduccion(TSMI_ControlCambios.Tag.ToString());
+            TSMI_Bitacora.Text = idiomaObservado.BuscarTraduccion(TSMI_Bitacora.Tag.ToString());
             TSMI_RecalcularDV.Text = idiomaObservado.BuscarTraduccion(TSMI_RecalcularDV.Tag.ToString());
             TSMI_Idioma.Text = idiomaObservado.BuscarTraduccion(TSMI_Idioma.Tag.ToString());
             TSMI_AdministrarTraducciones.Text = idiomaObservado.BuscarTraduccion(TSMI_AdministrarTraducciones.Tag.ToString());
@@ -81,8 +84,14 @@ namespace UI.Forms
                 return;
             }
 
+            string username = SessionManager.ObtenerUsuarioActual().Username;
+
             CerrarFormulariosHijos();
             SessionManager.Logout();
+
+            BitacoraService bitacoraService = new BitacoraService();
+            bitacoraService.Registrar("Cierre de sesion", "username=" + username, "SESION");
+
             ActualizarMenuUsuario();
         }
 
@@ -119,6 +128,7 @@ namespace UI.Forms
             bool puedeRecalcularDV = TienePermiso(CodigosPermiso.IntegridadRecalcular);
             bool puedeVerTraducciones = TieneAlgunPermiso(CodigosPermiso.TraduccionesVer, CodigosPermiso.IdiomasVer);
             bool puedeVerControlCambios = TienePermiso(CodigosPermiso.ControlCambiosVer);
+            bool puedeVerBitacora = TienePermiso(CodigosPermiso.BitacoraVer);
 
             TSMI_IniciarSesion.Visible = !haySesionActiva;
             TSMI_CerrarSesion.Visible = haySesionActiva;
@@ -126,6 +136,7 @@ namespace UI.Forms
             TSMI_AdministrarPermisos.Visible = haySesionActiva && puedeVerPermisos;
             TSMI_AsignarPermisosUsuarios.Visible = haySesionActiva && puedeAsignarPermisos;
             TSMI_ControlCambios.Visible = haySesionActiva && puedeVerControlCambios;
+            TSMI_Bitacora.Visible = haySesionActiva && puedeVerBitacora;
             TSMI_RecalcularDV.Visible = haySesionActiva && puedeRecalcularDV;
             TSMI_AdministrarTraducciones.Visible = haySesionActiva && puedeVerTraducciones;
 
@@ -135,6 +146,7 @@ namespace UI.Forms
             TSMI_AdministrarPermisos.Enabled = haySesionActiva && puedeVerPermisos;
             TSMI_AsignarPermisosUsuarios.Enabled = haySesionActiva && puedeAsignarPermisos;
             TSMI_ControlCambios.Enabled = haySesionActiva && puedeVerControlCambios;
+            TSMI_Bitacora.Enabled = haySesionActiva && puedeVerBitacora;
             TSMI_RecalcularDV.Enabled = haySesionActiva && puedeRecalcularDV;
             TSMI_AdministrarTraducciones.Enabled = haySesionActiva && puedeVerTraducciones;
 
@@ -264,6 +276,30 @@ namespace UI.Forms
             frmAsignarPermisosUsuario.Show();
         }
 
+        private void TSMI_Bitacora_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.BitacoraVer))
+            {
+                MostrarAccesoDenegado();
+                ActualizarMenuUsuario();
+                return;
+            }
+
+            foreach (Form formulario in MdiChildren)
+            {
+                if (formulario is FrmBitacora)
+                {
+                    formulario.Activate();
+                    return;
+                }
+            }
+
+            FrmBitacora frmBitacora = new FrmBitacora();
+            frmBitacora.MdiParent = this;
+            frmBitacora.FormClosed += FormularioHijo_FormClosed;
+            frmBitacora.Show();
+        }
+
         private void TSMI_ControlCambios_Click(object sender, EventArgs e)
         {
             if (!TienePermiso(CodigosPermiso.ControlCambiosVer))
@@ -332,6 +368,13 @@ namespace UI.Forms
             }
 
             IIdioma idioma = _idiomaService.ObtenerPorId(idIdioma);
+
+            if (SessionManager.HaySesionActiva())
+            {
+                BitacoraService bitacoraService = new BitacoraService();
+                bitacoraService.Registrar("Cambio de idioma", "idioma=" + idioma?.Nombre, "IDIOMAS");
+            }
+
             _sesionIdioma.CambiarIdioma(idioma);
         }
 
