@@ -37,12 +37,14 @@ namespace REPOSITORY.Features.Usuarios
                 FROM UsuarioPermisos up
                 INNER JOIN Permisos p ON p.id_permiso = up.id_permiso
                 WHERE up.id_usuario=@IdUsuario
+                  AND UPPER(p.nombre) <> UPPER(@NombreRaiz)
                 ORDER BY p.es_familia DESC, p.nombre;
             ";
 
             SqlParameter[] sqlParameters = new SqlParameter[]
             {
-                new SqlParameter("@IdUsuario", idUsuario)
+                new SqlParameter("@IdUsuario", idUsuario),
+                new SqlParameter("@NombreRaiz", REPOSITORY.Features.Permisos.PermisoRepository.NombreRaizSistema)
             };
 
             return CrearPermisos(_db.ExecuteQuery(query, sqlParameters));
@@ -54,7 +56,8 @@ namespace REPOSITORY.Features.Usuarios
             string query = @"
                 SELECT p.id_permiso, p.nombre, p.codigo, p.es_familia
                 FROM Permisos p
-                WHERE NOT EXISTS (
+                WHERE UPPER(p.nombre) <> UPPER(@NombreRaiz)
+                  AND NOT EXISTS (
                       SELECT 1
                       FROM UsuarioPermisos up
                       WHERE up.id_usuario=@IdUsuario
@@ -65,7 +68,8 @@ namespace REPOSITORY.Features.Usuarios
 
             SqlParameter[] sqlParameters = new SqlParameter[]
             {
-                new SqlParameter("@IdUsuario", idUsuario)
+                new SqlParameter("@IdUsuario", idUsuario),
+                new SqlParameter("@NombreRaiz", REPOSITORY.Features.Permisos.PermisoRepository.NombreRaizSistema)
             };
 
             return CrearPermisos(_db.ExecuteQuery(query, sqlParameters));
@@ -78,7 +82,7 @@ namespace REPOSITORY.Features.Usuarios
                 DECLARE @Filas int = 0;
 
                 IF EXISTS (SELECT 1 FROM Usuarios WHERE id_usuario=@IdUsuario)
-                   AND EXISTS (SELECT 1 FROM Permisos WHERE id_permiso=@IdPermiso)
+                   AND EXISTS (SELECT 1 FROM Permisos WHERE id_permiso=@IdPermiso AND UPPER(nombre) <> UPPER(@NombreRaiz))
                    AND NOT EXISTS (
                        SELECT 1
                        FROM UsuarioPermisos
@@ -98,7 +102,8 @@ namespace REPOSITORY.Features.Usuarios
             SqlParameter[] sqlParameters = new SqlParameter[]
             {
                 new SqlParameter("@IdUsuario", idUsuario),
-                new SqlParameter("@IdPermiso", idPermiso)
+                new SqlParameter("@IdPermiso", idPermiso),
+                new SqlParameter("@NombreRaiz", REPOSITORY.Features.Permisos.PermisoRepository.NombreRaizSistema)
             };
 
             int filas = _db.ExecuteTransaction(query, sqlParameters);

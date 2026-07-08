@@ -10,6 +10,7 @@ namespace REPOSITORY.Features.Permisos
 {
     public class PermisoRepository
     {
+        public const string NombreRaizSistema = "Raiz";
         private readonly SqlHelper _db;
 
         public PermisoRepository()
@@ -38,8 +39,14 @@ namespace REPOSITORY.Features.Permisos
             Dictionary<int, DataRow> permisos = ObtenerFilasPermisos();
             DataTable relaciones = ObtenerRelaciones();
 
-            // idPadre null representa la raiz virtual del TreeView.
-            return CrearHijos(null, permisos, relaciones, new List<int>());
+            PermisoComponent raiz = ObtenerRaizDesdeFilas(permisos);
+            List<int> idsEnRama = new List<int>();
+            idsEnRama.Add(raiz.Id);
+
+            foreach (PermisoComponent hijo in CrearHijos(raiz.Id, permisos, relaciones, idsEnRama))
+                raiz.AgregarHijo(hijo);
+
+            return new List<PermisoComponent> { raiz };
         }
 
         public List<PermisoComponent> ListarSubArbol(int idRaiz)
@@ -74,10 +81,16 @@ namespace REPOSITORY.Features.Permisos
                 , codigo
                 FROM Permisos
                 WHERE es_familia = 1
+                  AND UPPER(nombre) <> UPPER(@NombreRaiz)
                 ORDER BY nombre;
             ";
 
-            DataTable dt = _db.ExecuteQuery(query);
+            SqlParameter[] sqlParameters = new SqlParameter[]
+            {
+                new SqlParameter("@NombreRaiz", NombreRaizSistema)
+            };
+
+            DataTable dt = _db.ExecuteQuery(query, sqlParameters);
             List<FamiliaPermiso> familias = new List<FamiliaPermiso>();
 
             foreach (DataRow fila in dt.Rows)
@@ -180,10 +193,9 @@ namespace REPOSITORY.Features.Permisos
                 throw new ReglaNegocioException("La familia seleccionada no existe.");
         }
 
-        public void AgregarComponente(int? idPadre, int idHijo)
+        public void AgregarComponente(int idPadre, int idHijo)
         {
             string query = @"
-                -- id_permiso_padre NULL significa raiz virtual; con valor significa familia padre.
                 INSERT INTO PermisoComposicion (id_permiso_padre, id_permiso_hijo)
                 VALUES (@IdPadre, @IdHijo);
                 SELECT CAST(SCOPE_IDENTITY() AS int);
@@ -191,7 +203,7 @@ namespace REPOSITORY.Features.Permisos
 
             SqlParameter[] sqlParameters = new SqlParameter[]
             {
-                new SqlParameter("@IdPadre", idPadre.HasValue ? (object)idPadre.Value : DBNull.Value),
+                new SqlParameter("@IdPadre", idPadre),
                 new SqlParameter("@IdHijo", idHijo)
             };
 
@@ -205,30 +217,19 @@ namespace REPOSITORY.Features.Permisos
             }
         }
 
-        public void QuitarComponente(int? idPadre, int idHijo)
+        public void QuitarComponente(int idPadre, int idHijo)
         {
-            string query = idPadre.HasValue
-                ? @"
-                    DELETE FROM PermisoComposicion
-                    WHERE id_permiso_padre=@IdPadre AND id_permiso_hijo=@IdHijo;
-                    SELECT @@ROWCOUNT;
-                "
-                : @"
-                    DELETE FROM PermisoComposicion
-                    WHERE id_permiso_padre IS NULL AND id_permiso_hijo=@IdHijo;
-                    SELECT @@ROWCOUNT;
-                ";
+            string query = @"
+                DELETE FROM PermisoComposicion
+                WHERE id_permiso_padre=@IdPadre AND id_permiso_hijo=@IdHijo;
+                SELECT @@ROWCOUNT;
+            ";
 
-            SqlParameter[] sqlParameters = idPadre.HasValue
-                ? new SqlParameter[]
-                {
-                    new SqlParameter("@IdPadre", idPadre.Value),
-                    new SqlParameter("@IdHijo", idHijo)
-                }
-                : new SqlParameter[]
-                {
-                    new SqlParameter("@IdHijo", idHijo)
-                };
+            SqlParameter[] sqlParameters = new SqlParameter[]
+            {
+                new SqlParameter("@IdPadre", idPadre),
+                new SqlParameter("@IdHijo", idHijo)
+            };
 
             int filas = _db.ExecuteTransaction(query, sqlParameters);
 
@@ -236,34 +237,50 @@ namespace REPOSITORY.Features.Permisos
                 throw new ReglaNegocioException("El componente no forma parte del nivel seleccionado.");
         }
 
-        public bool ExisteRelacion(int? idPadre, int idHijo)
+        public bool ExisteRelacion(int idPadre, int idHijo)
         {
-            string query = idPadre.HasValue
-                ? @"
-                    SELECT COUNT(1)
-                    FROM PermisoComposicion
-                    WHERE id_permiso_padre=@IdPadre AND id_permiso_hijo=@IdHijo;
-                "
-                : @"
-                    SELECT COUNT(1)
-                    FROM PermisoComposicion
-                    WHERE id_permiso_padre IS NULL AND id_permiso_hijo=@IdHijo;
-                ";
+            string query = @"
+                SELECT COUNT(1)
+                FROM PermisoComposicion
+                WHERE id_permiso_padre=@IdPadre AND id_permiso_hijo=@IdHijo;
+            ";
 
-            SqlParameter[] sqlParameters = idPadre.HasValue
-                ? new SqlParameter[]
-                {
-                    new SqlParameter("@IdPadre", idPadre.Value),
-                    new SqlParameter("@IdHijo", idHijo)
-                }
-                : new SqlParameter[]
-                {
-                    new SqlParameter("@IdHijo", idHijo)
-                };
+            SqlParameter[] sqlParameters = new SqlParameter[]
+            {
+                new SqlParameter("@IdPadre", idPadre),
+                new SqlParameter("@IdHijo", idHijo)
+            };
 
             return _db.ExecuteTransaction(query, sqlParameters) > 0;
         }
 
+        public PermisoComponent ObtenerRaizSistema()
+        {
+            string query = @"
+                SELECT id_permiso, nombre, es_familia, codigo
+                FROM Permisos
+                WHERE UPPER(nombre)=UPPER(@NombreRaiz)
+                  AND es_familia=1;
+            ";
+
+            SqlParameter[] sqlParameters = new SqlParameter[]
+            {
+                new SqlParameter("@NombreRaiz", NombreRaizSistema)
+            };
+
+            DataTable dt = _db.ExecuteQuery(query, sqlParameters);
+
+            if (dt.Rows.Count <= 0)
+                return null;
+
+            return CrearComponente(dt.Rows[0]);
+        }
+
+        public bool EsRaizSistema(int idPermiso)
+        {
+            PermisoComponent raiz = ObtenerRaizSistema();
+            return raiz != null && raiz.Id == idPermiso;
+        }
         public PermisoComponent ObtenerPorId(int id)
         {
             string query = @"
@@ -368,7 +385,7 @@ namespace REPOSITORY.Features.Permisos
                     -- Relaciones del Composite. Permite que un mismo hijo aparezca en ramas distintas.
                     CREATE TABLE PermisoComposicion (
                         id_permiso_composicion int IDENTITY(1,1) NOT NULL PRIMARY KEY,
-                        id_permiso_padre int NULL,
+                        id_permiso_padre int NOT NULL,
                         id_permiso_hijo int NOT NULL,
                         CONSTRAINT FK_PermisoComposicion_Padre FOREIGN KEY (id_permiso_padre)
                             REFERENCES Permisos(id_permiso),
@@ -379,26 +396,13 @@ namespace REPOSITORY.Features.Permisos
 
                 IF NOT EXISTS (
                     SELECT 1 FROM sys.indexes
-                    WHERE name = 'UX_PermisoComposicion_Raiz_Hijo'
-                      AND object_id = OBJECT_ID('PermisoComposicion')
-                )
-                BEGIN
-                    -- Evita repetir el mismo componente directamente debajo de la raiz.
-                    CREATE UNIQUE INDEX UX_PermisoComposicion_Raiz_Hijo
-                    ON PermisoComposicion(id_permiso_hijo)
-                    WHERE id_permiso_padre IS NULL;
-                END
-
-                IF NOT EXISTS (
-                    SELECT 1 FROM sys.indexes
                     WHERE name = 'UX_PermisoComposicion_Padre_Hijo'
                       AND object_id = OBJECT_ID('PermisoComposicion')
                 )
                 BEGIN
                     -- Evita repetir el mismo hijo bajo el mismo padre, pero no en otros padres.
                     CREATE UNIQUE INDEX UX_PermisoComposicion_Padre_Hijo
-                    ON PermisoComposicion(id_permiso_padre, id_permiso_hijo)
-                    WHERE id_permiso_padre IS NOT NULL;
+                    ON PermisoComposicion(id_permiso_padre, id_permiso_hijo);
                 END
 
                 SELECT 0;
@@ -492,6 +496,7 @@ namespace REPOSITORY.Features.Permisos
                 );
 
                 INSERT INTO #Familias (nombre) VALUES
+                ('Raiz'),
                 ('Administrador'),
                 ('Gestion usuarios'),
                 ('Gestion permisos'),
@@ -527,13 +532,14 @@ namespace REPOSITORY.Features.Permisos
                 ('Lectura general');
 
                 INSERT INTO PermisoComposicion (id_permiso_padre, id_permiso_hijo)
-                SELECT NULL, p.id_permiso
+                SELECT raiz.id_permiso, p.id_permiso
                 FROM #FamiliasRaiz f
+                INNER JOIN Permisos raiz ON UPPER(raiz.nombre) = UPPER('Raiz') AND raiz.es_familia = 1
                 INNER JOIN Permisos p ON UPPER(p.nombre) = UPPER(f.nombre) AND p.es_familia = 1
                 WHERE NOT EXISTS (
                     SELECT 1
                     FROM PermisoComposicion pc
-                    WHERE pc.id_permiso_padre IS NULL
+                    WHERE pc.id_permiso_padre = raiz.id_permiso
                       AND pc.id_permiso_hijo = p.id_permiso
                 );
 
@@ -643,8 +649,8 @@ namespace REPOSITORY.Features.Permisos
                     ('Ingles', 'Permisos.Destino', 'Target'),
                     ('Espanol', 'Permisos.Raiz', 'Raiz'),
                     ('Ingles', 'Permisos.Raiz', 'Root'),
-                    ('Espanol', 'Permisos.SeleccioneDestino', 'Seleccione una familia o la raiz'),
-                    ('Ingles', 'Permisos.SeleccioneDestino', 'Select a family or root'),
+                    ('Espanol', 'Permisos.SeleccioneDestino', 'Seleccione una familia destino'),
+                    ('Ingles', 'Permisos.SeleccioneDestino', 'Select a target family'),
                     ('Espanol', 'Permisos.SeleccionPermisoSimple', 'Los permisos simples no pueden contener hijos'),
                     ('Ingles', 'Permisos.SeleccionPermisoSimple', 'Simple permissions cannot contain children'),
                     ('Espanol', 'Permisos.CrearFamilia', 'Crear familia'),
@@ -691,8 +697,8 @@ namespace REPOSITORY.Features.Permisos
                     ('Ingles', 'Mensaje.SeleccioneFamilia', 'Select a family.'),
                     ('Espanol', 'Mensaje.SeleccioneComponente', 'Seleccione un componente.'),
                     ('Ingles', 'Mensaje.SeleccioneComponente', 'Select a component.'),
-                    ('Espanol', 'Mensaje.SeleccioneDestino', 'Seleccione una familia destino o la raiz.'),
-                    ('Ingles', 'Mensaje.SeleccioneDestino', 'Select a target family or root.'),
+                    ('Espanol', 'Mensaje.SeleccioneDestino', 'Seleccione una familia destino.'),
+                    ('Ingles', 'Mensaje.SeleccioneDestino', 'Select a target family.'),
                     ('Espanol', 'Mensaje.SeleccioneUsuario', 'Seleccione un usuario.'),
                     ('Ingles', 'Mensaje.SeleccioneUsuario', 'Select a user.'),
                     ('Espanol', 'Mensaje.FamiliaAsignada', 'Familia asignada exitosamente.'),
@@ -866,7 +872,7 @@ namespace REPOSITORY.Features.Permisos
             return _db.ExecuteQuery(query);
         }
 
-        private List<PermisoComponent> CrearHijos(int? idPadre, Dictionary<int, DataRow> permisos, DataTable relaciones, List<int> idsEnRama)
+        private List<PermisoComponent> CrearHijos(int idPadre, Dictionary<int, DataRow> permisos, DataTable relaciones, List<int> idsEnRama)
         {
             List<PermisoComponent> hijos = new List<PermisoComponent>();
 
@@ -904,18 +910,25 @@ namespace REPOSITORY.Features.Permisos
             return hijos;
         }
 
-        private bool PerteneceAlPadre(DataRow relacion, int? idPadre)
+        private bool PerteneceAlPadre(DataRow relacion, int idPadre)
         {
-            // idPadre null representa raiz; en base se guarda como id_permiso_padre NULL.
-            if (!idPadre.HasValue)
-                return relacion["id_permiso_padre"] == DBNull.Value;
-
             if (relacion["id_permiso_padre"] == DBNull.Value)
                 return false;
 
-            return Convert.ToInt32(relacion["id_permiso_padre"]) == idPadre.Value;
+            return Convert.ToInt32(relacion["id_permiso_padre"]) == idPadre;
         }
 
+        private PermisoComponent ObtenerRaizDesdeFilas(Dictionary<int, DataRow> permisos)
+        {
+            foreach (DataRow fila in permisos.Values)
+            {
+                if (Convert.ToBoolean(fila["es_familia"]) &&
+                    string.Equals(fila["nombre"].ToString(), NombreRaizSistema, StringComparison.OrdinalIgnoreCase))
+                    return CrearComponente(fila);
+            }
+
+            throw new ReglaNegocioException("La raiz de permisos no existe.");
+        }
         private PermisoComponent CrearComponente(DataRow fila)
         {
             int id = Convert.ToInt32(fila["id_permiso"]);

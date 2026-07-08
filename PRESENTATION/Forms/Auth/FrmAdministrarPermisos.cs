@@ -201,7 +201,7 @@ namespace UI.Forms.Auth
             try
             {
                 // Agregar no duplica la familia en Permisos: crea un vinculo en PermisoComposicion.
-                _permisoService.AgregarComponente(destino.IdPermiso, familia.Id);
+                _permisoService.AgregarComponente(destino.IdPermiso.Value, familia.Id);
                 CargarArbol(destino.IdPermiso);
                 MessageBox.Show(T("Mensaje.ComponenteAgregado"), T("Titulo.Exito"), MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
@@ -239,7 +239,7 @@ namespace UI.Forms.Auth
             try
             {
                 // Se agrega una aparicion del permiso simple dentro de la familia destino.
-                _permisoService.AgregarComponente(destino.IdPermiso, permiso.Id);
+                _permisoService.AgregarComponente(destino.IdPermiso.Value, permiso.Id);
                 CargarArbol(destino.IdPermiso);
                 MessageBox.Show(T("Mensaje.ComponenteAgregado"), T("Titulo.Exito"), MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
@@ -277,7 +277,10 @@ namespace UI.Forms.Auth
             try
             {
                 // Quitar borra solo el vinculo de composicion, no el componente del catalogo.
-                _permisoService.QuitarComponente(nodo.IdPadre, nodo.Permiso.Id);
+                if (!nodo.IdPadre.HasValue)
+                    return;
+
+                _permisoService.QuitarComponente(nodo.IdPadre.Value, nodo.Permiso.Id);
                 CargarArbol(nodo.IdPadre);
                 MessageBox.Show(T("Mensaje.ComponenteQuitado"), T("Titulo.Exito"), MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
@@ -375,14 +378,9 @@ namespace UI.Forms.Auth
             TVW_Permisos.BeginUpdate();
             TVW_Permisos.Nodes.Clear();
 
-            // La raiz es solo visual: en base se representa con id_permiso_padre NULL.
-            TreeNode raiz = new TreeNode(T("Permisos.Raiz"));
-            raiz.Tag = NodoPermiso.CrearRaiz();
-
+            // La raiz ya es un componente persistido: se muestra como nodo real del Composite.
             foreach (PermisoComponent permiso in _permisos.OrderBy(x => x.Nombre))
-                raiz.Nodes.Add(CrearNodo(permiso, null));
-
-            TVW_Permisos.Nodes.Add(raiz);
+                TVW_Permisos.Nodes.Add(CrearNodo(permiso, null));
             TVW_Permisos.ExpandAll();
             TVW_Permisos.EndUpdate();
 
@@ -411,8 +409,16 @@ namespace UI.Forms.Auth
 
         private string FormatearNodo(PermisoComponent permiso)
         {
+            if (EsRaizSistema(permiso))
+                return T("Permisos.Raiz");
+
             string tipo = permiso.EsFamilia ? "[F]" : "[P]";
             return tipo + " " + permiso.Nombre;
+        }
+
+        private bool EsRaizSistema(PermisoComponent permiso)
+        {
+            return permiso != null && string.Equals(permiso.Nombre, "Raiz", StringComparison.OrdinalIgnoreCase);
         }
 
         private void ActualizarTextoRaiz()
@@ -643,7 +649,7 @@ namespace UI.Forms.Auth
 
         private class NodoPermiso
         {
-            // Wrapper de UI: permite diferenciar raiz virtual de componentes reales de Permisos.
+            // Wrapper de UI: conserva el componente real y su padre para operar sobre vinculos exactos.
             public PermisoComponent Permiso { get; private set; }
             public int? IdPadre { get; private set; }
             public int? IdPermiso
@@ -659,16 +665,11 @@ namespace UI.Forms.Auth
 
             public bool EsRaiz
             {
-                get { return Permiso == null; }
+                get { return Permiso != null && string.Equals(Permiso.Nombre, "Raiz", StringComparison.OrdinalIgnoreCase); }
             }
 
             private NodoPermiso()
             {
-            }
-
-            public static NodoPermiso CrearRaiz()
-            {
-                return new NodoPermiso();
             }
 
             public static NodoPermiso CrearPermiso(PermisoComponent permiso, int? idPadre)

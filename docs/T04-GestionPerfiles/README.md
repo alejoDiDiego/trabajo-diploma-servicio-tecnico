@@ -14,7 +14,7 @@ Administrar los permisos del sistema mediante una estructura jerárquica que per
 
 - **Permiso compuesto / Familia (FamiliaPermiso):** Agrupa permisos atómicos y/o subfamilias. Una familia actúa como un perfil reutilizable (ej: "Gestion usuarios", "Administrador").
 
-- **Raíz virtual:** Nodo raíz del `TreeView` que no existe como registro en la base de datos, pero sirve como contenedor visual de todas las familias de primer nivel.
+- **Raiz persistida:** Familia de sistema `Raiz` guardada en `Permisos`; es el inicio real del arbol y no se edita, elimina ni asigna a usuarios.
 
 ### Funcionamiento general
 
@@ -69,7 +69,7 @@ Clases de soporte:
 | Tabla | Descripción |
 |-------|-------------|
 | **Permisos** | Catálogo único de todos los componentes (familias y atómicos). `es_familia` distingue el tipo. |
-| **PermisoComposicion** | Relaciones padre-hijo. `id_permiso_padre` NULL indica raíz virtual. |
+| **PermisoComposicion** | Relaciones padre-hijo. `id_permiso_padre` apunta siempre a un permiso padre real; `Raiz` es el inicio del arbol. |
 | **Usuarios** | Usuarios del sistema. |
 | **UsuarioPermisos** | Asignación directa de componentes a usuarios. |
 

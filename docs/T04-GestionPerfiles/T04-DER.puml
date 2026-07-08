@@ -12,7 +12,7 @@ entity Permisos {
 entity PermisoComposicion {
   * id_permiso_composicion : int <<PK>>
   --
-  o id_permiso_padre : int <<FK>>
+  * id_permiso_padre : int <<FK>>
   * id_permiso_hijo : int <<FK>>
 }
 
@@ -31,7 +31,7 @@ entity UsuarioPermisos {
 }
 
 note right of PermisoComposicion::id_permiso_padre
-  NULL indica raíz virtual
+  Raiz persistida indica el inicio del arbol
   FK -> Permisos(id_permiso)
 end note
 

@@ -37,7 +37,7 @@ IF OBJECT_ID('PermisoComposicion', 'U') IS NULL
 BEGIN
     CREATE TABLE PermisoComposicion (
         id_permiso_composicion int IDENTITY(1,1) NOT NULL PRIMARY KEY,
-        id_permiso_padre int NULL,
+        id_permiso_padre int NOT NULL,
         id_permiso_hijo int NOT NULL,
         CONSTRAINT FK_PermisoComposicion_Padre FOREIGN KEY (id_permiso_padre)
             REFERENCES Permisos(id_permiso),
@@ -45,24 +45,13 @@ BEGIN
             REFERENCES Permisos(id_permiso)
     );
 END
-
-IF NOT EXISTS (
-    SELECT 1 FROM sys.indexes
-    WHERE name = 'UX_PermisoComposicion_Raiz_Hijo'
-      AND object_id = OBJECT_ID('PermisoComposicion')
-)
-    CREATE UNIQUE INDEX UX_PermisoComposicion_Raiz_Hijo
-    ON PermisoComposicion(id_permiso_hijo)
-    WHERE id_permiso_padre IS NULL;
-
 IF NOT EXISTS (
     SELECT 1 FROM sys.indexes
     WHERE name = 'UX_PermisoComposicion_Padre_Hijo'
       AND object_id = OBJECT_ID('PermisoComposicion')
 )
     CREATE UNIQUE INDEX UX_PermisoComposicion_Padre_Hijo
-    ON PermisoComposicion(id_permiso_padre, id_permiso_hijo)
-    WHERE id_permiso_padre IS NOT NULL;
+    ON PermisoComposicion(id_permiso_padre, id_permiso_hijo);
 
 CREATE TABLE #PermisosSimples (
     nombre nvarchar(100),
@@ -128,6 +117,7 @@ WHERE NOT EXISTS (SELECT 1 FROM Permisos p WHERE p.codigo = s.codigo)
 CREATE TABLE #Familias (nombre nvarchar(100));
 
 INSERT INTO #Familias (nombre) VALUES
+('Raiz'),
 ('Administrador'),
 ('Gestion usuarios'),
 ('Gestion permisos'),
@@ -141,13 +131,15 @@ FROM #Familias f
 WHERE NOT EXISTS (SELECT 1 FROM Permisos p WHERE UPPER(p.nombre) = UPPER(f.nombre));
 
 INSERT INTO PermisoComposicion (id_permiso_padre, id_permiso_hijo)
-SELECT NULL, p.id_permiso
+SELECT raiz.id_permiso, p.id_permiso
 FROM #Familias f
+INNER JOIN Permisos raiz ON UPPER(raiz.nombre) = UPPER('Raiz') AND raiz.es_familia = 1
 INNER JOIN Permisos p ON UPPER(p.nombre) = UPPER(f.nombre) AND p.es_familia = 1
-WHERE NOT EXISTS (
+WHERE UPPER(p.nombre) <> UPPER('Raiz')
+  AND NOT EXISTS (
     SELECT 1
     FROM PermisoComposicion pc
-    WHERE pc.id_permiso_padre IS NULL
+    WHERE pc.id_permiso_padre = raiz.id_permiso
       AND pc.id_permiso_hijo = p.id_permiso
 );
 
@@ -266,8 +258,8 @@ BEGIN
     ('Ingles', 'Permisos.Destino', 'Target'),
     ('Espanol', 'Permisos.Raiz', 'Raiz'),
     ('Ingles', 'Permisos.Raiz', 'Root'),
-    ('Espanol', 'Permisos.SeleccioneDestino', 'Seleccione una familia o la raiz'),
-    ('Ingles', 'Permisos.SeleccioneDestino', 'Select a family or root'),
+    ('Espanol', 'Permisos.SeleccioneDestino', 'Seleccione una familia destino'),
+    ('Ingles', 'Permisos.SeleccioneDestino', 'Select a target family'),
     ('Espanol', 'Permisos.SeleccionPermisoSimple', 'Los permisos simples no pueden contener hijos'),
     ('Ingles', 'Permisos.SeleccionPermisoSimple', 'Simple permissions cannot contain children'),
     ('Espanol', 'Permisos.CrearFamilia', 'Crear familia'),
@@ -310,8 +302,8 @@ BEGIN
     ('Ingles', 'Mensaje.SeleccioneFamilia', 'Select a family.'),
     ('Espanol', 'Mensaje.SeleccioneComponente', 'Seleccione un componente.'),
     ('Ingles', 'Mensaje.SeleccioneComponente', 'Select a component.'),
-    ('Espanol', 'Mensaje.SeleccioneDestino', 'Seleccione una familia destino o la raiz.'),
-    ('Ingles', 'Mensaje.SeleccioneDestino', 'Select a target family or root.'),
+    ('Espanol', 'Mensaje.SeleccioneDestino', 'Seleccione una familia destino.'),
+    ('Ingles', 'Mensaje.SeleccioneDestino', 'Select a target family.'),
     ('Espanol', 'Mensaje.SeleccioneUsuario', 'Seleccione un usuario.'),
     ('Ingles', 'Mensaje.SeleccioneUsuario', 'Select a user.'),
     ('Espanol', 'Mensaje.FamiliaAsignada', 'Familia asignada exitosamente.'),

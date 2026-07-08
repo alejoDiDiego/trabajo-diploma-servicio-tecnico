@@ -39,7 +39,8 @@ namespace APPLICATION.Features.Usuarios
         public void AsignarPermiso(int idUsuario, int idPermiso)
         {
             ValidarUsuario(idUsuario);
-            ValidarPermiso(idPermiso);
+            PermisoComponent permisoValidado = ValidarPermiso(idPermiso);
+            ValidarNoEsRaiz(permisoValidado);
             _usuarioPermisoRepository.AsignarPermiso(idUsuario, idPermiso);
 
             BitacoraService bitacoraService = new BitacoraService();
@@ -114,6 +115,13 @@ namespace APPLICATION.Features.Usuarios
                 throw new ReglaNegocioException("El usuario seleccionado no existe.");
         }
 
+        private void ValidarNoEsRaiz(PermisoComponent permiso)
+        {
+            PermisoComponent raiz = _permisoRepository.ObtenerRaizSistema();
+
+            if (raiz != null && permiso != null && raiz.Id == permiso.Id)
+                throw new ReglaNegocioException("La raiz de permisos no se puede asignar a usuarios.");
+        }
         private PermisoComponent ValidarPermiso(int idPermiso)
         {
             PermisoComponent permiso = _permisoRepository.ObtenerPorId(idPermiso);

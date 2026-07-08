@@ -53,6 +53,7 @@ namespace APPLICATION.Features.Permisos
         public FamiliaPermiso EditarFamilia(int idFamilia, string nombre)
         {
             FamiliaPermiso familia = ObtenerFamiliaExistente(idFamilia);
+            ValidarNoEsRaiz(familia.Id);
             string nombreNormalizado = NormalizarNombre(nombre);
 
             FamiliaPermiso.CargarDesdeDB(familia.Id, nombreNormalizado);
@@ -67,32 +68,25 @@ namespace APPLICATION.Features.Permisos
         public void EliminarFamilia(int idFamilia)
         {
             PermisoComponent familia = ObtenerFamiliaExistente(idFamilia);
+            ValidarNoEsRaiz(familia.Id);
             _permisoRepository.EliminarFamilia(idFamilia);
 
             BitacoraService bitacoraService = new BitacoraService();
             bitacoraService.Registrar("Eliminacion de familia", "nombre=" + familia.Nombre, "PERMISOS");
         }
 
-        public void AgregarComponente(int? idPadre, int idHijo)
+        public void AgregarComponente(int idPadre, int idHijo)
         {
             PermisoComponent hijo = ObtenerPermisoExistente(idHijo);
+            FamiliaPermiso padre = ObtenerFamiliaExistente(idPadre);
 
-            // La raiz es virtual: no existe como fila en Permisos y solo puede contener familias.
-            if (!idPadre.HasValue && !hijo.EsFamilia)
+            if (EsRaiz(hijo.Id))
+                throw new ReglaNegocioException("La raiz no puede agregarse como hija de otra familia.");
+
+            if (EsRaiz(padre.Id) && !hijo.EsFamilia)
                 throw new ReglaNegocioException("La raiz solo puede contener familias.");
 
             BitacoraService bitacoraService = new BitacoraService();
-
-            if (!idPadre.HasValue)
-            {
-                ValidarDuplicadoDirecto(null, idHijo);
-                _permisoRepository.AgregarComponente(null, idHijo);
-
-                bitacoraService.Registrar("Agregar componente a raiz", "hijo=" + hijo.Nombre, "PERMISOS");
-                return;
-            }
-
-            FamiliaPermiso padre = ObtenerFamiliaExistente(idPadre.Value);
 
             if (padre.Id == hijo.Id)
                 throw new ReglaNegocioException("Una familia no puede agregarse como hija de si misma.");
@@ -109,23 +103,23 @@ namespace APPLICATION.Features.Permisos
             bitacoraService.Registrar("Agregar componente a familia", detalle, "PERMISOS");
         }
 
-        public void QuitarComponente(int? idPadre, int idHijo)
+        public void QuitarComponente(int idPadre, int idHijo)
         {
-            if (idPadre.HasValue)
-                ObtenerFamiliaExistente(idPadre.Value);
-
+            FamiliaPermiso padre = ObtenerFamiliaExistente(idPadre);
             PermisoComponent hijo = ObtenerPermisoExistente(idHijo);
+
+            if (EsRaiz(hijo.Id))
+                throw new ReglaNegocioException("La raiz no puede quitarse del arbol.");
+
             _permisoRepository.QuitarComponente(idPadre, idHijo);
 
             BitacoraService bitacoraService = new BitacoraService();
-            string padreNombre = idPadre.HasValue
-                ? _permisoRepository.ObtenerPorId(idPadre.Value)?.Nombre ?? "#" + idPadre.Value
-                : "Raiz";
+            string padreNombre = padre.Nombre;
             string detalle = "hijo=" + hijo.Nombre + " | padre=" + padreNombre;
             bitacoraService.Registrar("Quitar componente de familia", detalle, "PERMISOS");
         }
 
-        private void ValidarDuplicadoDirecto(int? idPadre, int idHijo)
+        private void ValidarDuplicadoDirecto(int idPadre, int idHijo)
         {
             if (_permisoRepository.ExisteRelacion(idPadre, idHijo))
                 throw new ReglaNegocioException("El permiso ya forma parte del nivel seleccionado.");
@@ -161,6 +155,16 @@ namespace APPLICATION.Features.Permisos
             return false;
         }
 
+        private bool EsRaiz(int idPermiso)
+        {
+            return _permisoRepository.EsRaizSistema(idPermiso);
+        }
+
+        private void ValidarNoEsRaiz(int idPermiso)
+        {
+            if (EsRaiz(idPermiso))
+                throw new ReglaNegocioException("La raiz de permisos no se puede modificar.");
+        }
         private FamiliaPermiso ObtenerFamiliaExistente(int id)
         {
             PermisoComponent permiso = ObtenerPermisoExistente(id);
