@@ -168,6 +168,9 @@ namespace APPLICATION.Features.Usuarios
 
                 _usuarioRepository.Eliminar(usuarioDb.Id);
 
+                IntegridadService integridadService = new IntegridadService();
+                integridadService.RecalcularDVVUsuarios();
+
                 BitacoraService bitacoraService = new BitacoraService();
                 bitacoraService.Registrar("Eliminacion de usuario", "username=" + username, "USUARIOS");
             }

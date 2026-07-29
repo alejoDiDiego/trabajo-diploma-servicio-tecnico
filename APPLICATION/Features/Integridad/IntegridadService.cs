@@ -24,31 +24,6 @@ namespace APPLICATION.Features.Integridad
             _integridadRepository.Inicializar();
         }
 
-        private void CalcularDVHsPendientes()
-        {
-            try
-            {
-                List<Usuario> usuarios = _usuarioRepository.Listar();
-                bool huboCambios = false;
-
-                foreach (Usuario usuario in usuarios)
-                {
-                    if (string.IsNullOrEmpty(usuario.DVH))
-                    {
-                        string dvh = DigitoVerificadorHelper.CalcularDVH(usuario);
-                        _usuarioRepository.ActualizarDVH(usuario.Id, dvh);
-                        huboCambios = true;
-                    }
-                }
-
-                if (huboCambios)
-                    RecalcularDVVUsuarios();
-            }
-            catch
-            {
-            }
-        }
-
         public bool VerificarIntegridadUsuarios()
         {
             try
