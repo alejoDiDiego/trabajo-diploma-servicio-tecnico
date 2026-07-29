@@ -4,16 +4,20 @@ using DOMAIN.Exceptions;
 using DOMAIN.Features.Permisos;
 using APPLICATION.Features.Bitacora;
 using REPOSITORY.Features.Permisos;
+using REPOSITORY.Features.Usuarios;
+using SERVICES.Auth;
 
 namespace APPLICATION.Features.Permisos
 {
     public class PermisoService
     {
         private readonly PermisoRepository _permisoRepository;
+        private readonly UsuarioPermisoRepository _usuarioPermisoRepository;
 
         public PermisoService()
         {
             _permisoRepository = new PermisoRepository();
+            _usuarioPermisoRepository = new UsuarioPermisoRepository();
         }
 
         public void Inicializar()
@@ -67,12 +71,19 @@ namespace APPLICATION.Features.Permisos
 
         public void EliminarFamilia(int idFamilia)
         {
-            PermisoComponent familia = ObtenerFamiliaExistente(idFamilia);
+            FamiliaPermiso familia = ObtenerFamiliaExistente(idFamilia);
             ValidarNoEsRaiz(familia.Id);
+            ValidarNoEsFamiliaDelUsuarioActual(familia.Id);
             _permisoRepository.EliminarFamilia(idFamilia);
 
             BitacoraService bitacoraService = new BitacoraService();
             bitacoraService.Registrar("Eliminacion de familia", "nombre=" + familia.Nombre, "PERMISOS");
+        }
+
+        public bool EsFamiliaAsignadaAlUsuarioActual(int idFamilia)
+        {
+            // Solo considera filas directas de UsuarioPermisos, no el arbol efectivo del Composite.
+            return TieneFamiliaAsignadaElUsuarioActual(idFamilia);
         }
 
         public void AgregarComponente(int idPadre, int idHijo)
@@ -165,6 +176,21 @@ namespace APPLICATION.Features.Permisos
             if (EsRaiz(idPermiso))
                 throw new ReglaNegocioException("La raiz de permisos no se puede modificar.");
         }
+
+        private void ValidarNoEsFamiliaDelUsuarioActual(int idFamilia)
+        {
+            if (TieneFamiliaAsignadaElUsuarioActual(idFamilia))
+                throw new ReglaNegocioException("No se puede eliminar una familia de permisos asignada al usuario actual.");
+        }
+
+        private bool TieneFamiliaAsignadaElUsuarioActual(int idFamilia)
+        {
+            var usuarioActual = SessionManager.ObtenerUsuarioActual();
+
+            return usuarioActual != null &&
+                _usuarioPermisoRepository.TienePermisoAsignado(usuarioActual.Id, idFamilia);
+        }
+
         private FamiliaPermiso ObtenerFamiliaExistente(int id)
         {
             PermisoComponent permiso = ObtenerPermisoExistente(id);

@@ -577,6 +577,8 @@ namespace UI.Forms.Auth
             bool puedeEditar = TienePermiso(CodigosPermiso.PermisosEditar);
             bool puedeEliminar = TienePermiso(CodigosPermiso.PermisosEliminar);
             bool puedeComponer = TienePermiso(CodigosPermiso.PermisosComponer);
+            bool familiaAsignadaAlUsuarioActual = _idFamiliaSeleccionada > 0 &&
+                _permisoService.EsFamiliaAsignadaAlUsuarioActual(_idFamiliaSeleccionada);
 
             // Crear familia queda siempre disponible; estos botones dependen de seleccion valida.
             BTN_CrearFamilia.Visible = puedeCrear;
@@ -588,7 +590,7 @@ namespace UI.Forms.Auth
 
             BTN_CrearFamilia.Enabled = puedeCrear;
             BTN_EditarFamilia.Enabled = puedeEditar && _idFamiliaSeleccionada > 0;
-            BTN_EliminarFamilia.Enabled = puedeEliminar && _idFamiliaSeleccionada > 0;
+            BTN_EliminarFamilia.Enabled = puedeEliminar && _idFamiliaSeleccionada > 0 && !familiaAsignadaAlUsuarioActual;
             BTN_AgregarFamilia.Enabled = puedeComponer && hayDestino && hayFamiliaDisponible;
             BTN_AgregarPermiso.Enabled = puedeComponer && destinoEsFamilia && hayPermisoDisponible;
             BTN_QuitarSeleccionado.Enabled = puedeComponer && seleccionado != null && !seleccionado.EsRaiz;

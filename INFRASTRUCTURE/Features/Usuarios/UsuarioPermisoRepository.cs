@@ -75,6 +75,25 @@ namespace REPOSITORY.Features.Usuarios
             return CrearPermisos(_db.ExecuteQuery(query, sqlParameters));
         }
 
+        public bool TienePermisoAsignado(int idUsuario, int idPermiso)
+        {
+            // Consulta la relacion directa; no expande familias ni permisos efectivos.
+            string query = @"
+                SELECT 1
+                FROM UsuarioPermisos
+                WHERE id_usuario=@IdUsuario
+                  AND id_permiso=@IdPermiso;
+            ";
+
+            SqlParameter[] sqlParameters = new SqlParameter[]
+            {
+                new SqlParameter("@IdUsuario", idUsuario),
+                new SqlParameter("@IdPermiso", idPermiso)
+            };
+
+            return _db.ExecuteQuery(query, sqlParameters).Rows.Count > 0;
+        }
+
         public void AsignarPermiso(int idUsuario, int idPermiso)
         {
             // Inserta la relacion usuario-permiso si ambos existen y no esta repetida.
