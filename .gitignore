@@ -46,3 +46,10 @@ project.lock.json
 # Build results
 [Bb]in/
 [Oo]bj/
+
+# Windows folder metadata
+*.ini
+
+# Local AI/automation metadata
+.atl/
+.agents/
