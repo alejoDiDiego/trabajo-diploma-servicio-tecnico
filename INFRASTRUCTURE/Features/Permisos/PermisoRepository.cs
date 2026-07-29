@@ -198,7 +198,6 @@ namespace REPOSITORY.Features.Permisos
             string query = @"
                 INSERT INTO PermisoComposicion (id_permiso_padre, id_permiso_hijo)
                 VALUES (@IdPadre, @IdHijo);
-                SELECT CAST(SCOPE_IDENTITY() AS int);
             ";
 
             SqlParameter[] sqlParameters = new SqlParameter[]

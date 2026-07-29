@@ -43,8 +43,15 @@ namespace REPOSITORY
                     }
                     catch (Exception)
                     {
-                        // Si algo falla, el Rollback deshace los cambios
-                        trans.Rollback();
+                        try
+                        {
+                            // Una falla despues del Commit no permite hacer Rollback.
+                            trans.Rollback();
+                        }
+                        catch (Exception)
+                        {
+                            // Conservamos la excepcion original.
+                        }
                         throw; 
                     }
                 }
