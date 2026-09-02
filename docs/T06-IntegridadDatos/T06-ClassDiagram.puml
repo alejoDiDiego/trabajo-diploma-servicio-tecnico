@@ -1,0 +1,53 @@
+@startuml
+title T06 - Diagrama de Clases - Integridad de Datos
+
+skinparam classAttributeIconSize 0
+
+class DigitoVerificadorHelper {
+  + {static} string CalcularDVH(Usuario usuario)
+  + {static} string CalcularDVV(List<UserDVH> filas)
+  - {static} string CalcularSHA256(string input)
+}
+
+class UserDVH {
+  + int Id
+  + string DVH
+}
+
+class IntegridadService {
+  - UsuarioRepository _usuarioRepository
+  - IntegridadRepository _integridadRepository
+  + void Inicializar()
+  + bool VerificarIntegridadUsuarios()
+  + void RecalcularDVVUsuarios()
+  + void RecalcularTodosDV()
+}
+
+class IntegridadRepository {
+  - SqlHelper _db
+  + void Inicializar()
+  + void GuardarDVV(string nombreTabla, string dvv)
+  + string ObtenerDVV(string nombreTabla)
+}
+
+class Usuario {
+  + int Id
+  + string Username
+  + string Password
+  + string DVH
+  + static Usuario CrearNuevo(string userName, string password)
+  + static Usuario CargarDesdeDB(int id, string userName, string password)
+  + void SetDVH(string dvh)
+}
+
+IntegridadService --> DigitoVerificadorHelper : <<usa>>
+IntegridadService --> IntegridadRepository : <<usa>>
+IntegridadService --> UserDVH : <<usa>>
+Usuario --> UserDVH : <<deriva>>
+
+note right of DigitoVerificadorHelper
+  DVH: SHA256("campo|pos|campo|pos|...")
+  DVV: SHA256("dvh1|id1|dvh2|id2|...")
+end note
+
+@enduml

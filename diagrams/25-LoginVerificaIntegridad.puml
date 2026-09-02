@@ -1,0 +1,47 @@
+@startuml
+title DS25 - Secuencia - Login con Verificacion de Integridad
+
+actor Usuario as U
+participant FrmLogin as FL
+participant UsuarioService as US
+participant PasswordHasher as PH
+participant UsuarioRepository as UR
+participant IntegridadService as IS
+participant IntegridadRepository as IR
+participant BitacoraService as BS
+participant SessionManager as SM
+
+U -> FL : Ingresa usuario/password y presiona Iniciar Sesion
+FL -> US : Login(username, password)
+US -> UR : ObtenerPorUsername(username)
+UR --> US : Usuario
+US -> PH : VerifyHashedPassword(dbHash, formHash)
+PH --> US : bool
+alt Credenciales correctas
+    US -> SM : Login(usuario, listaPermisos)
+    US -> IS : VerificarIntegridadUsuarios()
+    IS -> UR : ObtenerTodosDVH()
+    UR --> IS : List<UserDVH>
+    loop por cada usuario
+        IS -> IS : CalcularDVH(usuario)
+    end
+    IS -> IS : CalcularDVV(filas)
+    IS -> IR : ObtenerDVV("Usuarios")
+    IR --> IS : string dvv
+    IS -> IS : Comparar DVV calculado vs almacenado
+    IS --> US : bool integridadOK
+    US -> SM : IntegridadComprometida = !integridadOK
+    US -> BS : Registrar("Inicio de sesion", ..., "SESION")
+    US --> FL : void
+    FL -> SM : IntegridadComprometida?
+    alt Comprometida
+        FL -> FL : Mostrar advertencia
+    end
+    FL -> FL : DialogResult = OK, Cerrar formulario
+else Credenciales incorrectas
+    US -> BS : Registrar("Inicio de sesion fallido", ..., "SESION")
+    US --> FL : Lanzar excepcion
+    FL -> FL : Mostrar error
+end
+
+@enduml

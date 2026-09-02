@@ -1,0 +1,28 @@
+@startuml
+title T08 - DER - Bitacora de Actividades
+
+entity Bitacora {
+  * id_entrada : int <<PK>>
+  --
+  * usuario : nvarchar(100)
+  * fecha : datetime
+  * tipo_actividad : nvarchar(50)
+  * descripcion : nvarchar(max)
+  * detalle : nvarchar(max)
+}
+
+note right of Bitacora::tipo_actividad
+  Valores posibles:
+  SESION, USUARIO, PERMISO,
+  IDIOMA, TRADUCCION,
+  CONTROL_CAMBIOS, INTEGRIDAD
+end note
+
+note right of Bitacora
+  Solo lectura desde la UI.
+  Las entradas se insertan
+  automaticamente desde cada
+  service del sistema.
+end note
+
+@enduml

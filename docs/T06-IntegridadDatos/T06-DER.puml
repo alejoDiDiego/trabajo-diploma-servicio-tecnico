@@ -1,0 +1,32 @@
+@startuml
+title T06 - DER - Integridad de Datos (DVH/DVV)
+
+entity Usuarios {
+  * id_usuario : int <<PK>>
+  --
+  * username : nvarchar(100) <<UNIQUE>>
+  * password : nvarchar(max)
+  * dvh : nvarchar(100)
+}
+
+entity DigitosVerticales {
+  * id_dvv : int <<PK>>
+  --
+  * nombre_tabla : nvarchar(100) <<UNIQUE>>
+  * dvv : nvarchar(100)
+  * fecha_calculo : datetime
+}
+
+note right of Usuarios::dvh
+  DVH = SHA256(concatenacion
+  de atributos con posicion)
+  Se calcula al crear/modificar
+end note
+
+note right of DigitosVerticales
+  DVV = SHA256(concatenacion
+  de todos los DVH ordenados
+  por id_usuario)
+end note
+
+@enduml

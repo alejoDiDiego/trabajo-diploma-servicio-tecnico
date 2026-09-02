@@ -1,0 +1,44 @@
+@startuml
+title T08 - Diagrama de Clases - Bitacora de Actividades
+
+skinparam classAttributeIconSize 0
+
+class EntradaBitacora {
+  + int Id
+  + string Usuario
+  + DateTime Fecha
+  + string TipoActividad
+  + string Descripcion
+  + string Detalle
+  + static EntradaBitacora Crear(string usuario, ...)
+}
+
+class BitacoraService {
+  - BitacoraRepository _repository
+  + void Inicializar()
+  + void Registrar(string descripcion, string usuario, string detalle, string tipoActividad)
+  + void Registrar(string descripcion, string detalle, string tipoActividad)
+  + List<EntradaBitacora> Listar()
+  + List<EntradaBitacora> Buscar(string usuario, DateTime? desde, DateTime? hasta, string tipoActividad)
+  + List<string> ObtenerTiposActividad()
+}
+
+class BitacoraRepository {
+  - SqlHelper _db
+  + void Inicializar()
+  + void Insertar(EntradaBitacora entrada)
+  + List<EntradaBitacora> Listar()
+  + DataTable Buscar(string usuario, DateTime? desde, DateTime? hasta, string tipoActividad)
+}
+
+BitacoraService --> BitacoraRepository
+
+note right of BitacoraService
+  Sobrecarga Registrar() sin usuario:
+  obtiene usuario de SessionManager.
+  Buscar() construye WHERE con
+  parametros opcionales combinados
+  con AND.
+end note
+
+@enduml

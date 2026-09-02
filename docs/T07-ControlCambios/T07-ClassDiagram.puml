@@ -1,0 +1,53 @@
+@startuml
+title T07 - Diagrama de Clases - Control de Cambios
+
+skinparam classAttributeIconSize 0
+
+class ControlCambio {
+  + int Id
+  + string TablaAfectada
+  + int IdIdioma
+  + int IdPalabra
+  + string ClaveRegistro
+  + string CampoModificado
+  + string ValorAnterior
+  + string ValorNuevo
+  + string UsuarioModifico
+  + DateTime FechaCambio
+  + string TipoCambio
+  + string NombreIdioma
+  + static ControlCambio Crear(...)
+}
+
+class ControlCambioService {
+  - ControlCambioRepository _repository
+  - IdiomaRepository _idiomaRepository
+  + void Inicializar()
+  + List<ControlCambio> Listar()
+  + void RegistrarCambio(...)
+  + void Restaurar(int idCambio)
+  - void RestaurarIdioma(...)
+  - void RestaurarTraduccion(...)
+  - void AsegurarIdiomaExiste(...)
+}
+
+class ControlCambioRepository {
+  - SqlHelper _db
+  + void Inicializar()
+  + void Insertar(ControlCambio cambio)
+  + List<ControlCambio> Listar()
+  + ControlCambio ObtenerPorId(int id)
+  + ControlCambio ObtenerPorTablaYRegistro(...)
+}
+
+ControlCambioService --> ControlCambioRepository
+ControlCambioService --> IdiomaRepository : <<usa>>
+
+note right of ControlCambioService
+  Restaura con cascada:
+  Si la traduccion referencia
+  un idioma eliminado, primero
+  restaura el idioma.
+end note
+
+@enduml

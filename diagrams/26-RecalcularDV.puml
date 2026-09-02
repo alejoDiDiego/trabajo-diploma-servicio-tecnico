@@ -1,0 +1,31 @@
+@startuml
+title DS26 - Secuencia - Recalculo Manual de DV
+
+actor Usuario as U
+participant FrmPrincipal as FP
+participant IntegridadService as IS
+participant UsuarioRepository as UR
+participant IntegridadRepository as IR
+participant BitacoraService as BS
+participant SessionManager as SM
+
+U -> FP : Clic en "Recalcular DV"
+FP -> FP : Verificar permiso INTEGRIDAD_RECALCULAR
+FP -> FP : Confirmar con MessageBox
+FP -> IS : RecalcularTodosDV()
+loop para cada usuario en BD
+    IS -> UR : ObtenerTodos()
+    UR --> IS : List<Usuario>
+    IS -> IS : CalcularDVH(usuario)
+    IS -> UR : ActualizarDVH(id, dvh)
+end
+IS -> UR : ObtenerTodosDVH()
+UR --> IS : List<UserDVH>
+IS -> IS : CalcularDVV(filas)
+IS -> IR : GuardarDVV("Usuarios", dvv)
+IS --> FP : void
+IS -> BS : Registrar("Recalculo de DV", ..., "INTEGRIDAD")
+FP -> SM : IntegridadComprometida = false
+FP -> FP : MessageBox "Digitos verificadores recalculados"
+
+@enduml

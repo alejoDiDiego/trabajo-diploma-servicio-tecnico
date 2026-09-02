@@ -1,0 +1,20 @@
+@startuml
+title DS27 - Secuencia - Carga del Formulario de Control de Cambios
+
+actor Usuario as U
+participant FrmPrincipal as FP
+participant FrmControlCambios as FCC
+participant ControlCambioService as CCS
+participant ControlCambioRepository as CR
+
+U -> FP : Clic en "Control de Cambios"
+FP -> FP : Verificar permiso CONTROL_CAMBIOS_VER
+FP -> FCC : ShowDialog()
+FCC -> CCS : Listar()
+CCS -> CR : Listar()
+CR --> CCS : List<ControlCambio>
+CCS --> FCC : List<ControlCambio>
+FCC -> FCC : Bind DataGridView
+FCC -> FCC : Mostrar formulario modal
+
+@enduml

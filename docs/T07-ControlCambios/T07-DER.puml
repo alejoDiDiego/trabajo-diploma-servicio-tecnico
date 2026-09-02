@@ -1,0 +1,44 @@
+@startuml
+title T07 - DER - Control de Cambios
+
+entity ControlCambios {
+  * id_control_cambio : int <<PK>>
+  --
+  * tabla_afectada : nvarchar(50)
+  * id_idioma : int
+  * id_palabra : int
+  * clave_registro : nvarchar(200)
+  * campo_modificado : nvarchar(100)
+  * valor_anterior : nvarchar(max)
+  * valor_nuevo : nvarchar(max)
+  * usuario_modifico : nvarchar(100)
+  * fecha_cambio : datetime
+  * tipo_cambio : nvarchar(10)
+}
+
+entity Idiomas {
+  * id_idioma : int <<PK>>
+  --
+  * nombre : nvarchar(100) <<UNIQUE>>
+}
+
+entity Traducciones {
+  * id_idioma : int <<FK>>
+  * id_palabra : int <<FK>>
+  --
+  * palabra_traducida : nvarchar(max)
+}
+
+ControlCambios ||--o{ Idiomas : "LEFT JOIN para nombre"
+Idiomas ||--o{ Traducciones : "id_idioma"
+
+note right of ControlCambios
+  Registra INSERT, UPDATE y DELETE
+  sobre Idiomas y Traducciones.
+  tipo_cambio: INSERT | UPDATE | DELETE
+  tabla_afectada: Idiomas | Traducciones
+  clave_registro: nombre del idioma
+  o clave de traduccion
+end note
+
+@enduml

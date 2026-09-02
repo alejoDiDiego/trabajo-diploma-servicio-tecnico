@@ -1,0 +1,20 @@
+@startuml
+title DS29 - Secuencia - Carga del Formulario de Bitacora
+
+actor Usuario as U
+participant FrmPrincipal as FP
+participant FrmBitacora as FB
+participant BitacoraService as BS
+participant BitacoraRepository as BR
+
+U -> FP : Clic en "Bitacora"
+FP -> FP : Verificar permiso BITACORA_VER
+FP -> FB : ShowDialog()
+FB -> BS : Listar()
+BS -> BR : Listar()
+BR --> BS : List<EntradaBitacora>
+BS --> FB : List<EntradaBitacora>
+FB -> FB : Bind DataGridView
+FB -> FB : Mostrar formulario modal
+
+@enduml
