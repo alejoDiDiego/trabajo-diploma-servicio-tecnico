@@ -1,0 +1,28 @@
+@startuml
+title Faltante Entrega 1 - FrmPrincipal Load
+
+actor Usuario as U
+participant FrmPrincipal as FP
+participant SesionIdioma as SI
+participant IdiomaService as IS
+participant IdiomaRepository as IR
+participant SessionManager as SM
+
+U -> FP : Inicia aplicación (Load)
+FP -> SI : RegistrarObservador(this)
+FP -> IS : Listar()
+IS -> IR : Listar()
+IR --> IS : List<Idioma>
+IS --> FP : List<Idioma>
+FP -> FP : CargarMenuIdiomas()
+note right: Agrega items de idioma al menú
+FP -> SI : Actualizar(idioma)
+note right: Traduce menús y título
+FP -> FP : ActualizarMenuUsuario()
+FP -> SM : HaySesionActiva()
+SM --> FP : false
+note right: Muestra solo "Iniciar Sesión"\nOculta opciones de admin
+FP -> FP : ActualizarMenuIdioma()
+note right: Marca idioma actual con check
+
+@enduml

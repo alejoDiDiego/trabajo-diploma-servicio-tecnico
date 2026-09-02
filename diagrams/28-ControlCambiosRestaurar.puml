@@ -1,0 +1,47 @@
+@startuml
+title DS28 - Secuencia - Restauracion de Cambio con Cascada
+
+actor Usuario as U
+participant FrmControlCambios as FCC
+participant ControlCambioService as CCS
+participant ControlCambioRepository as CR
+participant IdiomaRepository as IR
+participant BitacoraService as BS
+participant SesionIdioma as SI
+
+U -> FCC : Selecciona cambio\nPresiona "Restaurar"
+FCC -> FCC : Verificar permiso CONTROL_CAMBIOS_RESTAURAR
+FCC -> FCC : Confirmar con MessageBox
+
+FCC -> CCS : Restaurar(idCambio)
+CCS -> CR : ObtenerPorId(id)
+CR --> CCS : ControlCambio
+
+alt Tipo = UPDATE
+    CCS -> IR : ActualizarTraduccion(idTraduccion, valorAnterior)
+    CCS -> CR : Insertar(nuevoCambio)
+else Tipo = INSERT (Traducciones)
+    CCS --> FCC : Lanzar excepcion "No permitido"
+else Tipo = DELETE (Traducciones)
+    CCS -> IR : ExisteIdioma(idIdioma)
+    alt Idioma eliminado
+        CCS -> CR : ObtenerPorTablaYRegistro("Idiomas", idIdioma, "DELETE")
+        CR --> CCS : ControlCambio deleteIdioma
+        CCS -> CCS : RestaurarIdioma(deleteIdioma)
+        CCS -> IR : InsertarIdiomaConIdentidad(idioma)
+        SI -> SI : ActualizarObservadores()
+    end
+    CCS -> IR : InsertarTraduccion(traduccion)
+    CCS -> CR : Insertar(nuevoCambio)
+else Tipo = DELETE (Idiomas)
+    CCS -> IR : InsertarIdiomaConIdentidad(idioma)
+    CCS -> CR : Insertar(nuevoCambio)
+    SI -> SI : ActualizarObservadores()
+end
+
+CCS -> BS : Registrar("Cambio restaurado: ...", "CONTROL_CAMBIOS")
+CCS --> FCC : void
+FCC -> FCC : MessageBox "Cambio restaurado"
+FCC -> FCC : Refrescar grilla
+
+@enduml

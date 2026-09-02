@@ -1,0 +1,22 @@
+@startuml
+title DS30 - Secuencia - Busqueda en Bitacora por Filtros
+
+actor Usuario as U
+participant FrmBitacora as FB
+participant BitacoraService as BS
+participant BitacoraRepository as BR
+
+U -> FB : Ingresa filtros:\nUsuario, Fecha Desde,\nFecha Hasta, Tipo Actividad
+U -> FB : Clic en "Buscar"
+FB -> FB : Validar filtros
+FB -> BS : Buscar(usuario, desde, hasta, tipoActividad)
+BS -> BR : Buscar(usuario, desde, hasta, tipoActividad)
+note right
+  WHERE combinado con AND
+  segun parametros provistos
+end note
+BR --> BS : DataTable
+BS --> FB : DataTable
+FB -> FB : Refrescar DataGridView
+
+@enduml

@@ -1,0 +1,39 @@
+@startuml
+title Observer Traducciones - Crear Idioma
+
+actor Usuario as U
+participant FrmAdministrarTraducciones as FAT
+participant SessionManager as SM
+participant IdiomaService as IS
+participant IdiomaRepository as IR
+participant SesionIdioma as SI
+participant FrmAdministrarPermisos as FAP
+participant FrmAdministrarTraducciones as FAT2
+participant FrmLogin as FL
+participant FrmAsignarPermisosUsuario as FAPU
+participant FrmAdministrarUsuarios as FAU
+
+U -> FAT : Click "Crear Idioma"
+FAT -> SM : TienePermiso("IdiomasCrear")
+SM --> FAT : true
+FAT -> IS : CrearIdioma(nombre)
+IS -> IR : AgregarIdioma(nombre)
+IR --> IS : Idioma
+IS --> FAT : Idioma
+FAT -> FAT : CargarIdiomas()
+FAT -> IS : Listar()
+IS --> FAT : List<Idioma>
+FAT -> FAT : LimpiarIdioma()
+FAT -> FAT : RefrescarIdiomaActual()
+FAT -> IS : ObtenerPorId(idIdiomaActual)
+IS --> FAT : Idioma
+FAT -> SI : CambiarIdioma(idioma)
+SI -> SI : idioma = idiomaSeleccionado
+SI -> FAP : Actualizar(idioma)
+SI -> FAT2 : Actualizar(idioma)
+SI -> FL : Actualizar(idioma)
+SI -> FAPU : Actualizar(idioma)
+SI -> FAU : Actualizar(idioma)
+FAT -> FAT : MessageBox(Exito)
+
+@enduml

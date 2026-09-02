@@ -42,3 +42,14 @@ _ReSharper*/
 *.*~
 project.lock.json
 .DS_Store
+
+# Build results
+[Bb]in/
+[Oo]bj/
+
+# Windows folder metadata
+*.ini
+
+# Local AI/automation metadata
+.atl/
+.agents/

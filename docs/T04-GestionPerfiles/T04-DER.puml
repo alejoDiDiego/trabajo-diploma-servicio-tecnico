@@ -1,0 +1,71 @@
+@startuml
+title T04 - DER - Gestión de Perfiles de Usuario
+
+entity Permisos {
+  * id_permiso : int <<PK>>
+  --
+  * nombre : nvarchar(100) <<UNIQUE>>
+  o codigo : nvarchar(100) <<UNIQUE>>
+  * es_familia : bit
+}
+
+entity PermisoComposicion {
+  * id_permiso_composicion : int <<PK>>
+  --
+  * id_permiso_padre : int <<FK>>
+  * id_permiso_hijo : int <<FK>>
+}
+
+entity Usuarios {
+  * id_usuario : int <<PK>>
+  --
+  * username : nvarchar(100) <<UNIQUE>>
+  * password : nvarchar(max)
+}
+
+entity UsuarioPermisos {
+  * id_usuario_permiso : int <<PK>>
+  --
+  * id_usuario : int <<FK>>
+  * id_permiso : int <<FK>>
+}
+
+note right of PermisoComposicion::id_permiso_padre
+  Raiz persistida indica el inicio del arbol
+  FK -> Permisos(id_permiso)
+end note
+
+note right of PermisoComposicion::id_permiso_hijo
+  FK -> Permisos(id_permiso)
+end note
+
+Permisos ||--o{ PermisoComposicion : "id_permiso_padre"
+Permisos ||--o{ PermisoComposicion : "id_permiso_hijo"
+
+Usuarios ||--o{ UsuarioPermisos : "id_usuario"
+Permisos ||--o{ UsuarioPermisos : "id_permiso"
+
+note right of Permisos
+  Tabla catálogo que almacena todos los
+  componentes del Composite:
+  - es_familia = 1: FamiliaPermiso
+  - es_familia = 0: PermisoSimple
+  El codigo identifica permisos atómicos
+  desde el código de aplicación.
+end note
+
+note right of PermisoComposicion
+  Tabla que registra las relaciones
+  padre-hijo del árbol de permisos.
+  Implementa el patrón Composite en BD.
+end note
+
+note right of UsuarioPermisos
+  Tabla puente que asigna familias o
+  permisos atómicos directamente a
+  un usuario. 
+  Cada usuario puede tener múltiples
+  asignaciones.
+end note
+
+@enduml

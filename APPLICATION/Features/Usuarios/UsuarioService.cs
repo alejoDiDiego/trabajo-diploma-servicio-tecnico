@@ -1,14 +1,17 @@
 using System;
 using System.Collections.Generic;
 using ABSTRACTIONS.Services;
+using APPLICATION.Features.Bitacora;
+using APPLICATION.Features.Integridad;
 using APPLICATION.Features.Usuarios.Exceptions;
 using DOMAIN.Exceptions;
+using DOMAIN.Features.Permisos;
 using DOMAIN.Features.Usuarios;
 using DOMAIN.Features.Usuarios.Exceptions;
+using REPOSITORY.Features.Permisos;
 using REPOSITORY.Features.Usuarios;
 using SERVICES.Auth;
 using SERVICES.Security;
-using static System.Collections.Specialized.BitVector32;
 
 namespace APPLICATION.Features.Usuarios
 {
@@ -21,6 +24,25 @@ namespace APPLICATION.Features.Usuarios
         {
             _passwordHasher = new PasswordHasher();
             _usuarioRepository = new UsuarioRepository();
+        }
+
+        public void Inicializar()
+        {
+            // Prepara Usuarios y crea cuentas iniciales de prueba.
+            _usuarioRepository.Inicializar();
+
+            // Usuarios de prueba iniciales. Password para todos: 123.
+            CrearUsuarioBase("admin", "123");
+            CrearUsuarioBase("usuarios", "123");
+            CrearUsuarioBase("permisos", "123");
+            CrearUsuarioBase("idiomas", "123");
+            CrearUsuarioBase("lector", "123");
+
+            UsuarioPermisoRepository usuarioPermisoRepository = new UsuarioPermisoRepository();
+            usuarioPermisoRepository.Inicializar();
+
+            IntegridadService integridadService = new IntegridadService();
+            integridadService.RecalcularDVVUsuarios();
         }
 
         public void Login(string username, string password)
@@ -41,8 +63,19 @@ namespace APPLICATION.Features.Usuarios
 
                 if (passwordMatch == false)
                     throw new DatosUsuarioIncorrectosException("Usuario o contrasena incorrectos");
-                
-                SessionManager.Login(usuarioDb);
+
+                UsuarioPermisoService usuarioPermisoService = new UsuarioPermisoService();
+                List<PermisoComponent> permisos = usuarioPermisoService.ListarPermisosEfectivos(usuarioDb.Id);
+
+                SessionManager.Login(usuarioDb, permisos);
+
+                IntegridadService integridadService = new IntegridadService();
+                bool integridadOK = integridadService.VerificarIntegridadUsuarios();
+
+                SessionManager.GetInstance().IntegridadComprometida = !integridadOK;
+
+                BitacoraService bitacoraService = new BitacoraService();
+                bitacoraService.Registrar("Inicio de sesion", "username=" + username, "SESION");
             }
 
             catch (ReglaNegocioException ex)
@@ -51,6 +84,9 @@ namespace APPLICATION.Features.Usuarios
             }
             catch (DatosUsuarioIncorrectosException ex)
             {
+                BitacoraService bitacoraService = new BitacoraService();
+                bitacoraService.Registrar("Inicio de sesion fallido", "username=" + username, "SESION");
+
                 throw new Exception("Usuario o contrasena incorrectos", ex);
             }
             catch (Exception ex)
@@ -74,6 +110,19 @@ namespace APPLICATION.Features.Usuarios
                 );
 
                 Usuario usuarioDb = _usuarioRepository.Agregar(usuarioToSave);
+
+                if (string.IsNullOrEmpty(usuarioDb.DVH))
+                {
+                    string dvh = DigitoVerificadorHelper.CalcularDVH(usuarioDb);
+                    usuarioDb.SetDVH(dvh);
+                    _usuarioRepository.ActualizarDVH(usuarioDb.Id, dvh);
+                }
+
+                IntegridadService integridadService = new IntegridadService();
+                integridadService.RecalcularDVVUsuarios();
+
+                BitacoraService bitacoraService = new BitacoraService();
+                bitacoraService.Registrar("Creacion de usuario", "username=" + username, "USUARIOS");
 
                 return usuarioDb;
             }
@@ -118,6 +167,12 @@ namespace APPLICATION.Features.Usuarios
                     throw new UsuarioNoExisteException();
 
                 _usuarioRepository.Eliminar(usuarioDb.Id);
+
+                IntegridadService integridadService = new IntegridadService();
+                integridadService.RecalcularDVVUsuarios();
+
+                BitacoraService bitacoraService = new BitacoraService();
+                bitacoraService.Registrar("Eliminacion de usuario", "username=" + username, "USUARIOS");
             }
             catch (UsuarioNoExisteException ex)
             {
@@ -146,7 +201,16 @@ namespace APPLICATION.Features.Usuarios
                     passwordHashed
                 );
 
+                string dvh = DigitoVerificadorHelper.CalcularDVH(usuarioToUpdate);
+                usuarioToUpdate.SetDVH(dvh);
+
                 _usuarioRepository.Modificar(usuarioToUpdate);
+
+                IntegridadService integridadService = new IntegridadService();
+                integridadService.RecalcularDVVUsuarios();
+
+                BitacoraService bitacoraService = new BitacoraService();
+                bitacoraService.Registrar("Modificacion de usuario", "id=" + id + " | username=" + username, "USUARIOS");
 
                 return usuarioToUpdate;
             }
@@ -157,6 +221,24 @@ namespace APPLICATION.Features.Usuarios
             catch (Exception ex)
             {
                 throw new Exception("Error al modificar usuario", ex);
+            }
+        }
+
+        private void CrearUsuarioBase(string username, string password)
+        {
+            if (_usuarioRepository.ObtenerPorUsername(username) != null)
+                return;
+
+            string passwordHashed = _passwordHasher.HashPassword(password);
+            Usuario usuario = Usuario.CrearNuevo(username, passwordHashed);
+
+            Usuario usuarioDb = _usuarioRepository.Agregar(usuario);
+
+            if (string.IsNullOrEmpty(usuarioDb.DVH))
+            {
+                string dvh = DigitoVerificadorHelper.CalcularDVH(usuarioDb);
+                usuarioDb.SetDVH(dvh);
+                _usuarioRepository.ActualizarDVH(usuarioDb.Id, dvh);
             }
         }
 

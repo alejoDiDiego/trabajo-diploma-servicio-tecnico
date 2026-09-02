@@ -1,0 +1,32 @@
+@startuml
+title Faltante Entrega 1 - FrmLogin Load y Botón Iniciar Sesión
+
+actor Usuario as U
+participant FrmLogin as FL
+participant SesionIdioma as SI
+participant UsuarioService as US
+participant UsuarioRepository as UR
+participant SessionManager as SM
+
+== Load del Formulario ==
+U -> FL : Abrir FrmLogin
+FL -> SI : RegistrarObservador(this)
+FL -> SI : Actualizar(idioma)
+note right: Traduce título, labels y botón
+
+== Click "Iniciar Sesión" ==
+U -> FL : Click "Iniciar Sesión"
+FL -> US : Login(username, password)
+US -> UR : ObtenerPorUsername(username)
+UR --> US : Usuario
+note right: Valida password con PasswordHasher
+US -> US : ObtenerPermisosEfectivos(idUsuario)
+US --> US : List<string> codigos
+US -> SM : Login(usuario, codigosPermisos)
+SM -> SM : Crea sesión en memoria
+SM --> US : void
+US --> FL : void
+FL -> FL : DialogResult = OK
+FL -> FL : Close()
+
+@enduml

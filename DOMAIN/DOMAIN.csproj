@@ -42,9 +42,19 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Exceptions\ReglaNegocioException.cs" />
+    <Compile Include="Features\Idiomas\Idioma.cs" />
+    <Compile Include="Features\Idiomas\Palabra.cs" />
+    <Compile Include="Features\Idiomas\Traduccion.cs" />
+    <Compile Include="Features\Permisos\CodigosPermiso.cs" />
+    <Compile Include="Features\Permisos\FamiliaPermiso.cs" />
+    <Compile Include="Features\Permisos\PermisoComponent.cs" />
+    <Compile Include="Features\Permisos\PermisoSimple.cs" />
     <Compile Include="Features\Usuarios\Exceptions\UsuarioNoExisteException.cs" />
     <Compile Include="Features\Usuarios\Exceptions\UsuarioYaExisteException.cs" />
     <Compile Include="Features\Usuarios\Usuario.cs" />
+    <Compile Include="Features\ControlCambios\ControlCambio.cs" />
+    <Compile Include="Features\Usuarios\UserDVH.cs" />
+    <Compile Include="Features\Bitacora\Bitacora.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

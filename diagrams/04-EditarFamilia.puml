@@ -1,0 +1,28 @@
+@startuml
+title Permisos - Editar Familia
+
+actor Usuario as U
+participant FrmAdministrarPermisos as FAP
+participant SessionManager as SM
+participant PermisoService as PS
+participant PermisoRepository as PR
+
+U -> FAP : Click "Editar Familia"
+FAP -> SM : TienePermiso("PermisosEditar")
+SM --> FAP : true
+note right: _idFamiliaSeleccionada > 0
+FAP -> PS : EditarFamilia(id, nombre)
+PS -> PR : ObtenerPorId(id)
+PR --> PS : PermisoComponent
+PS -> PS : NormalizarNombre(nombre)
+PS -> PR : ModificarFamilia(id, nombre)
+PR --> PS : void
+PS --> FAP : FamiliaPermiso
+FAP -> FAP : CargarArbol(id)
+FAP -> PS : ListarArbol()
+PS --> FAP : List<PermisoComponent>
+FAP -> FAP : CargarCatalogos()
+FAP -> FAP : SeleccionarFamiliaEnLista(id)
+FAP -> FAP : MessageBox(Exito)
+
+@enduml
