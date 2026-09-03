@@ -48,10 +48,10 @@ namespace UI.Forms.Clientes
             Tag = claveTitulo;
             Text = idiomaObservado.BuscarTraduccion(Tag.ToString());
             LBL_Titulo.Text = idiomaObservado.BuscarTraduccion(LBL_Titulo.Tag.ToString());
-            LBL_Nombre.Text = idiomaObservado.BuscarTraduccion(LBL_Nombre.Tag.ToString());
-            LBL_Apellido.Text = idiomaObservado.BuscarTraduccion(LBL_Apellido.Tag.ToString());
-            LBL_Documento.Text = idiomaObservado.BuscarTraduccion(LBL_Documento.Tag.ToString());
-            LBL_Telefono.Text = idiomaObservado.BuscarTraduccion(LBL_Telefono.Tag.ToString());
+            LBL_Nombre.Text = idiomaObservado.BuscarTraduccion(LBL_Nombre.Tag.ToString()) + " *";
+            LBL_Apellido.Text = idiomaObservado.BuscarTraduccion(LBL_Apellido.Tag.ToString()) + " *";
+            LBL_Documento.Text = idiomaObservado.BuscarTraduccion(LBL_Documento.Tag.ToString()) + " *";
+            LBL_Telefono.Text = idiomaObservado.BuscarTraduccion(LBL_Telefono.Tag.ToString()) + " *";
             LBL_Email.Text = idiomaObservado.BuscarTraduccion(LBL_Email.Tag.ToString());
             LBL_Direccion.Text = idiomaObservado.BuscarTraduccion(LBL_Direccion.Tag.ToString());
             LBL_Observaciones.Text = idiomaObservado.BuscarTraduccion(LBL_Observaciones.Tag.ToString());
@@ -71,7 +71,8 @@ namespace UI.Forms.Clientes
             {
                 if (string.IsNullOrWhiteSpace(TXT_Nombre.Text) ||
                     string.IsNullOrWhiteSpace(TXT_Apellido.Text) ||
-                    string.IsNullOrWhiteSpace(TXT_Documento.Text))
+                    string.IsNullOrWhiteSpace(TXT_Documento.Text) ||
+                    string.IsNullOrWhiteSpace(TXT_Telefono.Text))
                 {
                     MessageBox.Show(
                         _sesionIdioma.idioma.BuscarTraduccion("Mensaje.ClienteCamposObligatorios"),

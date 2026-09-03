@@ -165,6 +165,33 @@ acciones Aceptar/Cancelar y tipos de bitacora
   negocio de administracion.
 - Paquetes: ninguno nuevo.
 
+### Ajuste: baja logica independiente + validaciones
+
+- Baja logica independiente (verificado, sin cambios): `Cliente.Activo` y
+  `Equipo.Activo` son independientes, sin cascada. `ClienteService.Desactivar` /
+  `Reactivar` solo tocan `Clientes`; los repositories solo hacen
+  `UPDATE Clientes`; las FKs de `Equipos` son `NO ACTION`. Las grillas muestran
+  historia (no se filtra) y los combos ya excluyen inactivos. No se agrego
+  badge/columna nueva ni se cambio `Modificar`/`Reactivar` de Equipo.
+- Telefono obligatorio: `Cliente.CrearNuevo` valida
+  `string.IsNullOrWhiteSpace(telefono)` con `ReglaNegocioException`
+  ("El telefono es obligatorio.") y persiste `telefono.Trim()`; `Email` /
+  `Direccion` / `Observaciones` siguen opcionales (`""`). `FrmClienteEditar`
+  valida `TXT_Telefono` en `OnFormClosing` con
+  `Mensaje.ClienteCamposObligatorios` (ES: "Nombre, apellido, documento y
+  telefono son obligatorios." / EN: "First name, last name, document and phone
+  are required."; `UPDATE` idempotente en `IdiomaRepository` porque
+  `AgregarSeed` es `IF NOT EXISTS`).
+- Asteriscos de obligatorios (solo en `Actualizar()`, concatenando `" *"` al
+  texto traducido; sin tocar `Designer.Text` ni seeds; guard null-idioma
+  existente respetado): `FrmClienteEditar` (Nombre/Apellido/Documento/
+  Telefono), `FrmEquipoEditar` (Cliente/Tipo/Marca), `FrmCatalogoEditar`
+  (Nombre). Opcionales sin asterisco. Sin claves nuevas (fallback a clave si
+  falta traduccion).
+- REGLA FUTURA (no implementar ahora, sin codigo especulativo): cuando exista
+  `OrdenServicio`, no se podra desactivar un `Cliente` con ordenes abiertas
+  (`Estado != Entregado`).
+
 ### Delegaciones
 
 - A-E exploracion del repo y esquema: base para el disenio (OK).

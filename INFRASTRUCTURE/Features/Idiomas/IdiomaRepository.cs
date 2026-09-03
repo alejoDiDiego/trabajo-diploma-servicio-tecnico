@@ -506,8 +506,12 @@ namespace REPOSITORY.Features.Idiomas
             AgregarSeed("Ingles", "Mensaje.ConfirmarDesactivar", "Are you sure you want to deactivate the selected record?");
             AgregarSeed("Espanol", "Mensaje.ConfirmarReactivar", "Confirma que desea reactivar el registro seleccionado?");
             AgregarSeed("Ingles", "Mensaje.ConfirmarReactivar", "Are you sure you want to reactivate the selected record?");
-            AgregarSeed("Espanol", "Mensaje.ClienteCamposObligatorios", "Nombre, apellido y documento son obligatorios.");
-            AgregarSeed("Ingles", "Mensaje.ClienteCamposObligatorios", "First name, last name and document are required.");
+            AgregarSeed("Espanol", "Mensaje.ClienteCamposObligatorios", "Nombre, apellido, documento y telefono son obligatorios.");
+            AgregarSeed("Ingles", "Mensaje.ClienteCamposObligatorios", "First name, last name, document and phone are required.");
+            // UPDATE idempotente: AgregarSeed es IF NOT EXISTS y no corrige el texto
+            // en BD ya creadas; este UPDATE migra las filas existentes sin duplicar.
+            ActualizarTraduccion("Espanol", "Mensaje.ClienteCamposObligatorios", "Nombre, apellido, documento y telefono son obligatorios.");
+            ActualizarTraduccion("Ingles", "Mensaje.ClienteCamposObligatorios", "First name, last name, document and phone are required.");
             AgregarSeed("Espanol", "Mensaje.EquipoCamposObligatorios", "Cliente, tipo y marca son obligatorios.");
             AgregarSeed("Ingles", "Mensaje.EquipoCamposObligatorios", "Customer, type and brand are required.");
             AgregarSeed("Espanol", "Mensaje.NombreObligatorio", "El nombre es obligatorio.");
@@ -699,6 +703,39 @@ namespace REPOSITORY.Features.Idiomas
                     INSERT INTO Traducciones (id_idioma, id_palabra, palabra_traducida)
                     VALUES (@IdIdioma, @IdPalabra, @Texto);
                 END
+
+                SELECT 0;
+            ";
+
+            SqlParameter[] sqlParameters = new SqlParameter[]
+            {
+                new SqlParameter("@Idioma", idioma),
+                new SqlParameter("@Clave", clave),
+                new SqlParameter("@Texto", texto)
+            };
+
+            _db.ExecuteTransaction(query, sqlParameters);
+        }
+
+        // UPDATE idempotente de una traduccion existente (no crea filas).
+        // Tablas: Idiomas(id_idioma, nombre), Palabras(id_palabra, texto),
+        // Traducciones(id_idioma, id_palabra, palabra_traducida).
+        // Se usa junto a AgregarSeed (fallback IF NOT EXISTS): el seed crea la
+        // fila si falta y este UPDATE corrige el texto si ya existia.
+        private void ActualizarTraduccion(string idioma, string clave, string texto)
+        {
+            string query = @"
+                UPDATE t
+                SET palabra_traducida=@Texto
+                FROM Traducciones t
+                WHERE EXISTS (
+                    SELECT 1 FROM Idiomas i
+                    WHERE i.id_idioma = t.id_idioma AND i.nombre = @Idioma
+                )
+                AND EXISTS (
+                    SELECT 1 FROM Palabras p
+                    WHERE p.id_palabra = t.id_palabra AND p.texto = @Clave
+                );
 
                 SELECT 0;
             ";

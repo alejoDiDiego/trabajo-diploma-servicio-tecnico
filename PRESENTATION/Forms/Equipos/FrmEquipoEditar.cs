@@ -115,9 +115,9 @@ namespace UI.Forms.Equipos
             Tag = claveTitulo;
             Text = idiomaObservado.BuscarTraduccion(Tag.ToString());
             LBL_Titulo.Text = idiomaObservado.BuscarTraduccion(LBL_Titulo.Tag.ToString());
-            LBL_Cliente.Text = idiomaObservado.BuscarTraduccion(LBL_Cliente.Tag.ToString());
-            LBL_Tipo.Text = idiomaObservado.BuscarTraduccion(LBL_Tipo.Tag.ToString());
-            LBL_Marca.Text = idiomaObservado.BuscarTraduccion(LBL_Marca.Tag.ToString());
+            LBL_Cliente.Text = idiomaObservado.BuscarTraduccion(LBL_Cliente.Tag.ToString()) + " *";
+            LBL_Tipo.Text = idiomaObservado.BuscarTraduccion(LBL_Tipo.Tag.ToString()) + " *";
+            LBL_Marca.Text = idiomaObservado.BuscarTraduccion(LBL_Marca.Tag.ToString()) + " *";
             LBL_Modelo.Text = idiomaObservado.BuscarTraduccion(LBL_Modelo.Tag.ToString());
             LBL_NumeroSerie.Text = idiomaObservado.BuscarTraduccion(LBL_NumeroSerie.Tag.ToString());
             LBL_Imei.Text = idiomaObservado.BuscarTraduccion(LBL_Imei.Tag.ToString());

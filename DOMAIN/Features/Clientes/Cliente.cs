@@ -27,13 +27,15 @@ namespace DOMAIN.Features.Clientes
                 throw new ReglaNegocioException("El apellido del cliente es obligatorio.");
             if (string.IsNullOrWhiteSpace(documento))
                 throw new ReglaNegocioException("El documento del cliente es obligatorio.");
+            if (string.IsNullOrWhiteSpace(telefono))
+                throw new ReglaNegocioException("El telefono es obligatorio.");
 
             return new Cliente
             {
                 Nombre = nombre.Trim(),
                 Apellido = apellido.Trim(),
                 Documento = documento.Trim(),
-                Telefono = telefono == null ? "" : telefono.Trim(),
+                Telefono = telefono.Trim(),
                 Email = email == null ? "" : email.Trim(),
                 Direccion = direccion == null ? "" : direccion.Trim(),
                 Observaciones = observaciones == null ? "" : observaciones.Trim(),
