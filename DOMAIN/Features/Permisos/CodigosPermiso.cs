@@ -30,5 +30,25 @@ namespace DOMAIN.Features.Permisos
         public const string ControlCambiosRestaurar = "CONTROL_CAMBIOS_RESTAURAR";
         public const string IntegridadRecalcular = "INTEGRIDAD_RECALCULAR";
         public const string BitacoraVer = "BITACORA_VER";
+
+        public const string ClientesVer = "CLIENTES_VER";
+        public const string ClientesCrear = "CLIENTES_CREAR";
+        public const string ClientesEditar = "CLIENTES_EDITAR";
+        public const string ClientesDesactivar = "CLIENTES_DESACTIVAR";
+
+        public const string EquiposVer = "EQUIPOS_VER";
+        public const string EquiposCrear = "EQUIPOS_CREAR";
+        public const string EquiposEditar = "EQUIPOS_EDITAR";
+        public const string EquiposDesactivar = "EQUIPOS_DESACTIVAR";
+
+        public const string TiposEquipoVer = "TIPOS_EQUIPO_VER";
+        public const string TiposEquipoCrear = "TIPOS_EQUIPO_CREAR";
+        public const string TiposEquipoEditar = "TIPOS_EQUIPO_EDITAR";
+        public const string TiposEquipoDesactivar = "TIPOS_EQUIPO_DESACTIVAR";
+
+        public const string MarcasVer = "MARCAS_VER";
+        public const string MarcasCrear = "MARCAS_CREAR";
+        public const string MarcasEditar = "MARCAS_EDITAR";
+        public const string MarcasDesactivar = "MARCAS_DESACTIVAR";
     }
 }

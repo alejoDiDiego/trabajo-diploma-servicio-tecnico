@@ -434,7 +434,23 @@ namespace REPOSITORY.Features.Permisos
                 ('Ver control cambios', 'CONTROL_CAMBIOS_VER', NULL, NULL),
                 ('Restaurar cambios', 'CONTROL_CAMBIOS_RESTAURAR', NULL, NULL),
                 ('Ver bitacora', 'BITACORA_VER', NULL, NULL),
-                ('Recalcular digito verificador', 'INTEGRIDAD_RECALCULAR', NULL, NULL);
+                ('Recalcular digito verificador', 'INTEGRIDAD_RECALCULAR', NULL, NULL),
+                ('Ver clientes', 'CLIENTES_VER', NULL, NULL),
+                ('Crear clientes', 'CLIENTES_CREAR', NULL, NULL),
+                ('Editar clientes', 'CLIENTES_EDITAR', NULL, NULL),
+                ('Desactivar clientes', 'CLIENTES_DESACTIVAR', NULL, NULL),
+                ('Ver equipos', 'EQUIPOS_VER', NULL, NULL),
+                ('Crear equipos', 'EQUIPOS_CREAR', NULL, NULL),
+                ('Editar equipos', 'EQUIPOS_EDITAR', NULL, NULL),
+                ('Desactivar equipos', 'EQUIPOS_DESACTIVAR', NULL, NULL),
+                ('Ver tipos de equipo', 'TIPOS_EQUIPO_VER', NULL, NULL),
+                ('Crear tipos de equipo', 'TIPOS_EQUIPO_CREAR', NULL, NULL),
+                ('Editar tipos de equipo', 'TIPOS_EQUIPO_EDITAR', NULL, NULL),
+                ('Desactivar tipos de equipo', 'TIPOS_EQUIPO_DESACTIVAR', NULL, NULL),
+                ('Ver marcas', 'MARCAS_VER', NULL, NULL),
+                ('Crear marcas', 'MARCAS_CREAR', NULL, NULL),
+                ('Editar marcas', 'MARCAS_EDITAR', NULL, NULL),
+                ('Desactivar marcas', 'MARCAS_DESACTIVAR', NULL, NULL);
 
                 UPDATE p
                 SET p.nombre = s.nombre,
@@ -490,6 +506,9 @@ namespace REPOSITORY.Features.Permisos
                 ('Gestion permisos'),
                 ('Gestion idiomas'),
                 ('Gestion traducciones'),
+                ('Gestion clientes'),
+                ('Gestion equipos'),
+                ('Gestion catalogos'),
                 ('Lectura general');
 
                 INSERT INTO Permisos (nombre, codigo, es_familia)
@@ -517,6 +536,9 @@ namespace REPOSITORY.Features.Permisos
                 ('Gestion permisos'),
                 ('Gestion idiomas'),
                 ('Gestion traducciones'),
+                ('Gestion clientes'),
+                ('Gestion equipos'),
+                ('Gestion catalogos'),
                 ('Lectura general');
 
                 INSERT INTO PermisoComposicion (id_permiso_padre, id_permiso_hijo)
@@ -559,15 +581,38 @@ namespace REPOSITORY.Features.Permisos
                 ('Gestion traducciones', 'TRADUCCIONES_ELIMINAR', NULL),
                 ('Gestion traducciones', 'CONTROL_CAMBIOS_VER', NULL),
                 ('Gestion traducciones', 'CONTROL_CAMBIOS_RESTAURAR', NULL),
+                ('Gestion clientes', 'CLIENTES_VER', NULL),
+                ('Gestion clientes', 'CLIENTES_CREAR', NULL),
+                ('Gestion clientes', 'CLIENTES_EDITAR', NULL),
+                ('Gestion clientes', 'CLIENTES_DESACTIVAR', NULL),
+                ('Gestion equipos', 'EQUIPOS_VER', NULL),
+                ('Gestion equipos', 'EQUIPOS_CREAR', NULL),
+                ('Gestion equipos', 'EQUIPOS_EDITAR', NULL),
+                ('Gestion equipos', 'EQUIPOS_DESACTIVAR', NULL),
+                ('Gestion catalogos', 'TIPOS_EQUIPO_VER', NULL),
+                ('Gestion catalogos', 'TIPOS_EQUIPO_CREAR', NULL),
+                ('Gestion catalogos', 'TIPOS_EQUIPO_EDITAR', NULL),
+                ('Gestion catalogos', 'TIPOS_EQUIPO_DESACTIVAR', NULL),
+                ('Gestion catalogos', 'MARCAS_VER', NULL),
+                ('Gestion catalogos', 'MARCAS_CREAR', NULL),
+                ('Gestion catalogos', 'MARCAS_EDITAR', NULL),
+                ('Gestion catalogos', 'MARCAS_DESACTIVAR', NULL),
                 ('Lectura general', 'USUARIOS_VER', NULL),
                 ('Lectura general', 'PERMISOS_VER', NULL),
                 ('Lectura general', 'IDIOMAS_VER', NULL),
                 ('Lectura general', 'IDIOMAS_CAMBIAR', NULL),
                 ('Lectura general', 'TRADUCCIONES_VER', NULL),
+                ('Lectura general', 'CLIENTES_VER', NULL),
+                ('Lectura general', 'EQUIPOS_VER', NULL),
+                ('Lectura general', 'TIPOS_EQUIPO_VER', NULL),
+                ('Lectura general', 'MARCAS_VER', NULL),
                 ('Administrador', NULL, 'Gestion usuarios'),
                 ('Administrador', NULL, 'Gestion permisos'),
                 ('Administrador', NULL, 'Gestion idiomas'),
                 ('Administrador', NULL, 'Gestion traducciones'),
+                ('Administrador', NULL, 'Gestion clientes'),
+                ('Administrador', NULL, 'Gestion equipos'),
+                ('Administrador', NULL, 'Gestion catalogos'),
                 ('Administrador', 'INTEGRIDAD_RECALCULAR', NULL),
                 ('Administrador', 'BITACORA_VER', NULL);
 
@@ -784,7 +829,15 @@ namespace REPOSITORY.Features.Permisos
                     ('Espanol', 'Bitacora.CONTROL_CAMBIOS', 'Control cambios'),
                     ('Ingles', 'Bitacora.CONTROL_CAMBIOS', 'Change control'),
                     ('Espanol', 'Bitacora.INTEGRIDAD', 'Integridad'),
-                    ('Ingles', 'Bitacora.INTEGRIDAD', 'Integrity');
+                    ('Ingles', 'Bitacora.INTEGRIDAD', 'Integrity'),
+                    ('Espanol', 'Bitacora.CLIENTES', 'Clientes'),
+                    ('Ingles', 'Bitacora.CLIENTES', 'Customers'),
+                    ('Espanol', 'Bitacora.EQUIPOS', 'Equipos'),
+                    ('Ingles', 'Bitacora.EQUIPOS', 'Devices'),
+                    ('Espanol', 'Bitacora.TIPOS_EQUIPO', 'Tipos de equipo'),
+                    ('Ingles', 'Bitacora.TIPOS_EQUIPO', 'Device types'),
+                    ('Espanol', 'Bitacora.MARCAS', 'Marcas'),
+                    ('Ingles', 'Bitacora.MARCAS', 'Brands');
 
                     INSERT INTO Idiomas (nombre)
                     SELECT DISTINCT s.idioma

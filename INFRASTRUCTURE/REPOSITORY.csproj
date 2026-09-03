@@ -45,6 +45,10 @@
     <Compile Include="Features\Idiomas\IdiomaRepository.cs" />
     <Compile Include="Features\ControlCambios\ControlCambioRepository.cs" />
     <Compile Include="Features\Permisos\PermisoRepository.cs" />
+    <Compile Include="Features\Clientes\ClienteRepository.cs" />
+    <Compile Include="Features\TiposEquipo\TipoEquipoRepository.cs" />
+    <Compile Include="Features\Marcas\MarcaRepository.cs" />
+    <Compile Include="Features\Equipos\EquipoRepository.cs" />
     <Compile Include="Features\Usuarios\UsuarioPermisoRepository.cs" />
     <Compile Include="Features\Usuarios\UsuarioRepository.cs" />
     <Compile Include="Features\Integridad\IntegridadRepository.cs" />
