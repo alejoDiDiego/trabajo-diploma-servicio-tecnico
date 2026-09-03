@@ -49,6 +49,10 @@
     <Compile Include="Features\Permisos\FamiliaPermiso.cs" />
     <Compile Include="Features\Permisos\PermisoComponent.cs" />
     <Compile Include="Features\Permisos\PermisoSimple.cs" />
+    <Compile Include="Features\Clientes\Cliente.cs" />
+    <Compile Include="Features\TiposEquipo\TipoEquipo.cs" />
+    <Compile Include="Features\Marcas\Marca.cs" />
+    <Compile Include="Features\Equipos\Equipo.cs" />
     <Compile Include="Features\Usuarios\Exceptions\UsuarioNoExisteException.cs" />
     <Compile Include="Features\Usuarios\Exceptions\UsuarioYaExisteException.cs" />
     <Compile Include="Features\Usuarios\Usuario.cs" />

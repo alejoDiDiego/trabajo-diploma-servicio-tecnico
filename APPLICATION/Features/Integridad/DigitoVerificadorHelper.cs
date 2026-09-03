@@ -11,7 +11,9 @@ namespace APPLICATION.Features.Integridad
     {
         public static string CalcularDVH(Usuario usuario)
         {
-            string raw = $"{usuario.Username}|1|{usuario.Password}|2|{usuario.Id}|3";
+            // Formato canonico: Activo como "1"/"0" (nunca "True/False") para que el DVH sea estable en SQL y C#.
+            string activo = usuario.Activo ? "1" : "0";
+            string raw = $"{usuario.Username}|1|{usuario.Password}|2|{usuario.Id}|3|{activo}|4";
 
             using (SHA256 sha = SHA256.Create())
             {

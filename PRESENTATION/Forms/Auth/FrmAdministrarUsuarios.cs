@@ -14,6 +14,8 @@ namespace UI.Forms.Auth
     {
         private BindingList<Usuario> _usuariosBindingList = null;
         private readonly SesionIdioma _sesionIdioma;
+        // T1: boton creado por codigo para no tocar el Designer. No usa claves i18n nuevas.
+        private Button _btnReactivar;
 
         public FrmAdministrarUsuarios()
         {
@@ -38,9 +40,10 @@ namespace UI.Forms.Auth
 
             ActualizarDatosSesion();
             ConfigurarColumnasUsuarios();
+            ActualizarBotonReactivar();
         }
 
-        private void ActualizarLista() { 
+        private void ActualizarLista() {
             UsuarioService usuarioService = new UsuarioService();
             _usuariosBindingList = new BindingList<Usuario>(usuarioService.Listar());
             DGV_Usuarios.DataSource = _usuariosBindingList;
@@ -51,6 +54,7 @@ namespace UI.Forms.Auth
         private void FrmAdministrarCuentas_Load(object sender, EventArgs e)
         {
             _sesionIdioma.RegistrarObservador(this);
+            AsegurarBotonReactivar();
             Actualizar(_sesionIdioma.idioma);
 
             BTN_CerrarSesion.Visible = false;
@@ -122,6 +126,8 @@ namespace UI.Forms.Auth
             {
                 BTN_EliminarUsuario.Enabled = false;
                 BTN_EditarUsuario.Enabled = false;
+                if (_btnReactivar != null)
+                    _btnReactivar.Enabled = false;
                 return;
             }
 
@@ -169,9 +175,10 @@ namespace UI.Forms.Auth
             {
                 UsuarioService usuarioService = new UsuarioService();
 
+                // T1: baja logica, la fila sigue existiendo con activo=0.
                 usuarioService.Eliminar(usuarioSeleccionado.Username);
 
-                _usuariosBindingList.Remove(usuarioSeleccionado);
+                ActualizarLista();
 
                 TBX_Username.Clear();
                 TBX_Password.Clear();
@@ -179,6 +186,7 @@ namespace UI.Forms.Auth
                 DGV_Usuarios.ClearSelection();
                 BTN_EliminarUsuario.Enabled = false;
                 BTN_EditarUsuario.Enabled = false;
+                AplicarPermisos();
 
                 MessageBox.Show(
                     _sesionIdioma.idioma.BuscarTraduccion("Mensaje.UsuarioEliminado"),
@@ -190,6 +198,46 @@ namespace UI.Forms.Auth
             {
                 MessageBox.Show(
                     _sesionIdioma.idioma.BuscarTraduccion("Mensaje.ErrorEliminarUsuario").Replace("{0}", ex.Message),
+                    _sesionIdioma.idioma.BuscarTraduccion("Titulo.Error"),
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+        }
+
+        private void BTN_ReactivarUsuario_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.UsuariosEliminar))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
+            if (DGV_Usuarios.SelectedRows.Count == 0)
+                return;
+
+            var usuarioSeleccionado = (Usuario)DGV_Usuarios.SelectedRows[0].DataBoundItem;
+
+            try
+            {
+                UsuarioService usuarioService = new UsuarioService();
+
+                usuarioService.Reactivar(usuarioSeleccionado.Username);
+
+                ActualizarLista();
+
+                bool esIngles = EsIngles();
+                MessageBox.Show(
+                    esIngles ? "User reactivated successfully." : "Usuario reactivado exitosamente.",
+                    _sesionIdioma.idioma.BuscarTraduccion("Titulo.Exito"),
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                bool esIngles = EsIngles();
+                string detalle = esIngles ? "Error reactivating user: {0}" : "Error al reactivar usuario: {0}";
+                MessageBox.Show(
+                    detalle.Replace("{0}", ex.Message),
                     _sesionIdioma.idioma.BuscarTraduccion("Titulo.Error"),
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
@@ -259,9 +307,28 @@ namespace UI.Forms.Auth
 
         private void ConfigurarColumnasUsuarios()
         {
+            // T1: Password es el hash, se oculta siempre sin romper el binding.
+            if (DGV_Usuarios.Columns.Contains("Password"))
+                DGV_Usuarios.Columns["Password"].Visible = false;
+
             ConfigurarColumna("Id", "Columna.Id");
             ConfigurarColumna("Username", "Columna.Username");
-            ConfigurarColumna("Password", "Columna.Password");
+
+            // T1: columna Activo visible. "Columna.Activo" no tiene seed (prohibido agregar),
+            // BuscarTraduccion devuelve la clave si falta, por eso hay fallback por codigo.
+            if (DGV_Usuarios.Columns.Contains("Activo"))
+            {
+                DGV_Usuarios.Columns["Activo"].Visible = true;
+                string header = _sesionIdioma.idioma.BuscarTraduccion("Columna.Activo");
+                if (string.Equals(header, "Columna.Activo", StringComparison.OrdinalIgnoreCase))
+                    header = EsIngles() ? "Active" : "Activo";
+                DGV_Usuarios.Columns["Activo"].Tag = "Columna.Activo";
+                DGV_Usuarios.Columns["Activo"].HeaderText = header;
+            }
+
+            // DVH interno: no se muestra al operador.
+            if (DGV_Usuarios.Columns.Contains("DVH"))
+                DGV_Usuarios.Columns["DVH"].Visible = false;
         }
 
         private void ConfigurarColumna(string nombreColumna, string claveTraduccion)
@@ -271,6 +338,66 @@ namespace UI.Forms.Auth
 
             DGV_Usuarios.Columns[nombreColumna].Tag = claveTraduccion;
             DGV_Usuarios.Columns[nombreColumna].HeaderText = _sesionIdioma.idioma.BuscarTraduccion(claveTraduccion);
+        }
+
+        private void AsegurarBotonReactivar()
+        {
+            // T1: boton creado por codigo para no tocar el Designer. Reutiliza Tag existente.
+            if (_btnReactivar != null)
+                return;
+
+            _btnReactivar = new Button();
+            _btnReactivar.Name = "BTN_ReactivarUsuario";
+            _btnReactivar.Size = BTN_EliminarUsuario.Size;
+            // T1: misma fila que Eliminar, a su izquierda (594,383): no solapa con Editar (661,438) ni Crear (495,439).
+            _btnReactivar.Location = new System.Drawing.Point(594, 383);
+            _btnReactivar.FlatStyle = BTN_EliminarUsuario.FlatStyle;
+            _btnReactivar.FlatAppearance.BorderSize = 0;
+            _btnReactivar.Font = BTN_EliminarUsuario.Font;
+            _btnReactivar.ForeColor = BTN_EliminarUsuario.ForeColor;
+            _btnReactivar.BackColor = System.Drawing.Color.FromArgb(41, 128, 185);
+            _btnReactivar.Tag = BTN_EliminarUsuario.Tag;
+            _btnReactivar.UseVisualStyleBackColor = false;
+            _btnReactivar.Click += new EventHandler(BTN_ReactivarUsuario_Click);
+            PNL_Permisos.Controls.Add(_btnReactivar);
+            ActualizarBotonReactivar();
+        }
+
+        private void ActualizarBotonReactivar()
+        {
+            if (_btnReactivar == null)
+                return;
+
+            Usuario seleccionado = UsuarioSeleccionado();
+
+            bool puedeCambiar = TienePermiso(CodigosPermiso.UsuariosEliminar);
+            _btnReactivar.Visible = puedeCambiar;
+
+            if (seleccionado == null)
+            {
+                _btnReactivar.Enabled = false;
+                _btnReactivar.Text = EsIngles() ? "Reactivate user" : "Reactivar usuario";
+                return;
+            }
+
+            bool esPropio = SessionManager.HaySesionActiva()
+                && SessionManager.GetInstance().Usuario.Id == seleccionado.Id;
+            _btnReactivar.Enabled = puedeCambiar && !esPropio && seleccionado.Activo == false;
+            _btnReactivar.Text = EsIngles() ? "Reactivate user" : "Reactivar usuario";
+        }
+
+        private Usuario UsuarioSeleccionado()
+        {
+            if (DGV_Usuarios.SelectedRows.Count == 0)
+                return null;
+
+            return DGV_Usuarios.SelectedRows[0].DataBoundItem as Usuario;
+        }
+
+        private bool EsIngles()
+        {
+            return _sesionIdioma.idioma != null
+                && string.Equals(_sesionIdioma.idioma.Nombre, "Ingles", StringComparison.OrdinalIgnoreCase);
         }
 
         private void AplicarPermisos()
@@ -290,6 +417,8 @@ namespace UI.Forms.Auth
 
             TBX_Username.Enabled = puedeCrear || puedeEditar;
             TBX_Password.Enabled = puedeCrear || puedeEditar;
+
+            ActualizarBotonReactivar();
         }
 
         private bool PuedeVerUsuarios()

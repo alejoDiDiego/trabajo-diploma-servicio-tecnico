@@ -6,5 +6,6 @@ namespace ABSTRACTIONS.Features.Usuarios
     {
         string Username { get; }
         string Password { get; }
+        bool Activo { get; }
     }
 }

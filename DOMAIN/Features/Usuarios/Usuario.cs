@@ -13,6 +13,7 @@ namespace DOMAIN.Features.Usuarios
         public int Id { get; private set; }
         public string Username { get; private set; }
         public string Password { get; private set; }
+        public bool Activo { get; private set; }
         public string DVH { get; private set; }
 
         private Usuario() { }
@@ -26,19 +27,31 @@ namespace DOMAIN.Features.Usuarios
             return new Usuario
             {
                 Username = userName,
-                Password = password
+                Password = password,
+                Activo = true
             };
         }
 
-        public static Usuario CargarDesdeDB(int id, string userName, string password, string dvh = "")
+        public static Usuario CargarDesdeDB(int id, string userName, string password, string dvh = "", bool activo = true)
         {
             return new Usuario
             {
                 Id = id,
                 Username = userName,
                 Password = password,
-                DVH = dvh
+                DVH = dvh,
+                Activo = activo
             };
+        }
+
+        public void Desactivar()
+        {
+            Activo = false;
+        }
+
+        public void Reactivar()
+        {
+            Activo = true;
         }
 
         public void SetDVH(string dvh)

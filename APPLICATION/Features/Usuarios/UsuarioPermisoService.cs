@@ -38,7 +38,7 @@ namespace APPLICATION.Features.Usuarios
 
         public void AsignarPermiso(int idUsuario, int idPermiso)
         {
-            ValidarUsuario(idUsuario);
+            ValidarUsuarioActivo(idUsuario);
             PermisoComponent permisoValidado = ValidarPermiso(idPermiso);
             ValidarNoEsRaiz(permisoValidado);
             _usuarioPermisoRepository.AsignarPermiso(idUsuario, idPermiso);
@@ -54,7 +54,7 @@ namespace APPLICATION.Features.Usuarios
         public void QuitarPermiso(int idUsuario, int idPermiso)
         {
             // Quita la relacion directa sin borrar el componente del catalogo.
-            ValidarUsuario(idUsuario);
+            ValidarUsuarioActivo(idUsuario);
             ValidarPermiso(idPermiso);
             _usuarioPermisoRepository.QuitarPermiso(idUsuario, idPermiso);
 
@@ -116,6 +116,18 @@ namespace APPLICATION.Features.Usuarios
 
             if (usuario == null)
                 throw new ReglaNegocioException("El usuario seleccionado no existe.");
+        }
+
+        private void ValidarUsuarioActivo(int idUsuario)
+        {
+            // T1: no se asignan ni se quitan permisos a usuarios dados de baja.
+            Usuario usuario = _usuarioRepository.ObtenerPorId(idUsuario);
+
+            if (usuario == null)
+                throw new ReglaNegocioException("El usuario seleccionado no existe.");
+
+            if (usuario.Activo == false)
+                throw new ReglaNegocioException("No se pueden modificar permisos de un usuario inactivo.");
         }
 
         private void ValidarNoEsRaiz(PermisoComponent permiso)

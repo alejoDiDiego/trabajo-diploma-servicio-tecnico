@@ -42,7 +42,8 @@ namespace APPLICATION.Features.Usuarios
             usuarioPermisoRepository.Inicializar();
 
             IntegridadService integridadService = new IntegridadService();
-            integridadService.RecalcularDVVUsuarios();
+            // T1: tras agregar activo al DVH, los DVH viejos quedan invalidos. Recalcular todos mantiene DVH/DVV consistente.
+            integridadService.RecalcularTodosDV();
         }
 
         public void Login(string username, string password)
@@ -57,6 +58,9 @@ namespace APPLICATION.Features.Usuarios
                 Usuario usuarioDb = _usuarioRepository.ObtenerPorUsername(usuarioForm.Username);
 
                 if (usuarioDb == null)
+                    throw new DatosUsuarioIncorrectosException("Usuario o contrasena incorrectos");
+
+                if (usuarioDb.Activo == false)
                     throw new DatosUsuarioIncorrectosException("Usuario o contrasena incorrectos");
 
                 bool passwordMatch = _passwordHasher.VerifyHashedPassword(usuarioDb.Password, usuarioForm.Password);
@@ -166,13 +170,19 @@ namespace APPLICATION.Features.Usuarios
                 if (usuarioDb == null)
                     throw new UsuarioNoExisteException();
 
-                _usuarioRepository.Eliminar(usuarioDb.Id);
+                // Baja logica: la fila sigue existiendo con activo=0 y se conserva UsuarioPermisos.
+                _usuarioRepository.CambiarEstado(usuarioDb.Id, false);
+
+                Usuario usuarioBaja = _usuarioRepository.ObtenerPorId(usuarioDb.Id);
+                string dvh = DigitoVerificadorHelper.CalcularDVH(usuarioBaja);
+                usuarioBaja.SetDVH(dvh);
+                _usuarioRepository.ActualizarDVH(usuarioBaja.Id, dvh);
 
                 IntegridadService integridadService = new IntegridadService();
                 integridadService.RecalcularDVVUsuarios();
 
                 BitacoraService bitacoraService = new BitacoraService();
-                bitacoraService.Registrar("Eliminacion de usuario", "username=" + username, "USUARIOS");
+                bitacoraService.Registrar("Baja logica de usuario", "username=" + username, "USUARIOS");
             }
             catch (UsuarioNoExisteException ex)
             {
@@ -181,6 +191,38 @@ namespace APPLICATION.Features.Usuarios
             catch (Exception ex)
             {
                 throw new Exception("Error al eliminar usuario", ex);
+            }
+        }
+
+        public void Reactivar(string username)
+        {
+            try
+            {
+                Usuario usuarioDb = _usuarioRepository.ObtenerPorUsername(username);
+
+                if (usuarioDb == null)
+                    throw new UsuarioNoExisteException();
+
+                _usuarioRepository.CambiarEstado(usuarioDb.Id, true);
+
+                Usuario usuarioAlta = _usuarioRepository.ObtenerPorId(usuarioDb.Id);
+                string dvh = DigitoVerificadorHelper.CalcularDVH(usuarioAlta);
+                usuarioAlta.SetDVH(dvh);
+                _usuarioRepository.ActualizarDVH(usuarioAlta.Id, dvh);
+
+                IntegridadService integridadService = new IntegridadService();
+                integridadService.RecalcularDVVUsuarios();
+
+                BitacoraService bitacoraService = new BitacoraService();
+                bitacoraService.Registrar("Alta de usuario", "username=" + username, "USUARIOS");
+            }
+            catch (UsuarioNoExisteException ex)
+            {
+                throw new Exception(ex.Message, ex);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al reactivar usuario", ex);
             }
         }
 
@@ -198,7 +240,9 @@ namespace APPLICATION.Features.Usuarios
                 Usuario usuarioToUpdate = Usuario.CargarDesdeDB(
                     usuarioDb.Id,
                     username,
-                    passwordHashed
+                    passwordHashed,
+                    "",
+                    usuarioDb.Activo
                 );
 
                 string dvh = DigitoVerificadorHelper.CalcularDVH(usuarioToUpdate);

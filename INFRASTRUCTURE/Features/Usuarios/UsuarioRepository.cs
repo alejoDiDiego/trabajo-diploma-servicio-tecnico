@@ -31,7 +31,8 @@ namespace REPOSITORY.Features.Usuarios
                     CREATE TABLE Usuarios (
                         id_usuario int IDENTITY(1,1) NOT NULL PRIMARY KEY,
                         username nvarchar(100) NOT NULL,
-                        password nvarchar(max) NOT NULL
+                        password nvarchar(max) NOT NULL,
+                        activo BIT NOT NULL DEFAULT 1
                     );
                 END
                 ELSE
@@ -56,6 +57,9 @@ namespace REPOSITORY.Features.Usuarios
                 IF COL_LENGTH('Usuarios', 'dvh') IS NULL
                     ALTER TABLE Usuarios ADD dvh nvarchar(100) NOT NULL DEFAULT '';
 
+                IF COL_LENGTH('Usuarios', 'activo') IS NULL
+                    ALTER TABLE Usuarios ADD activo BIT NOT NULL DEFAULT 1;
+
                 SELECT 0;
             ";
 
@@ -65,14 +69,15 @@ namespace REPOSITORY.Features.Usuarios
         public Usuario Agregar(Usuario usuario)
         {
             string query = @"
-                INSERT INTO Usuarios (username, password) VALUES (@Username, @Password);
+                INSERT INTO Usuarios (username, password, activo) VALUES (@Username, @Password, @Activo);
                 SELECT CAST(SCOPE_IDENTITY() AS int);
             ";
 
             SqlParameter[] sqlParameters = new SqlParameter[]
             {
                 new SqlParameter("@Username", usuario.Username),
-                new SqlParameter("@Password", usuario.Password)
+                new SqlParameter("@Password", usuario.Password),
+                new SqlParameter("@Activo", usuario.Activo)
             };
 
             try
@@ -82,7 +87,9 @@ namespace REPOSITORY.Features.Usuarios
                 return Usuario.CargarDesdeDB(
                     id,
                     usuario.Username,
-                    usuario.Password
+                    usuario.Password,
+                    "",
+                    usuario.Activo
                 );
             }
             catch (SqlException ex) when (ex.Number == 2601 || ex.Number == 2627)
@@ -93,13 +100,20 @@ namespace REPOSITORY.Features.Usuarios
 
         public void Eliminar(int id)
         {
+            // Baja logica: nunca borra fisicamente, solo desactiva. El service recalcula DVH/DVV.
+            CambiarEstado(id, false);
+        }
+
+        public void CambiarEstado(int id, bool activo)
+        {
             string query = @"
-                DELETE FROM Usuarios WHERE id_usuario=@Id;
+                UPDATE Usuarios SET activo=@Activo WHERE id_usuario=@Id;
             ";
 
             SqlParameter[] sqlParameters = new SqlParameter[]
             {
-                new SqlParameter("@Id", id)
+                new SqlParameter("@Id", id),
+                new SqlParameter("@Activo", activo)
             };
 
             _db.ExecuteTransaction(query, sqlParameters);
@@ -127,7 +141,8 @@ namespace REPOSITORY.Features.Usuarios
                 Convert.ToInt32(fila["id_usuario"]),
                 fila["username"].ToString(),
                 fila["password"].ToString(),
-                fila["dvh"].ToString()
+                fila["dvh"].ToString(),
+                LeerActivo(fila)
             );
         }
 
@@ -153,7 +168,8 @@ namespace REPOSITORY.Features.Usuarios
                 Convert.ToInt32(fila["id_usuario"]),
                 fila["username"].ToString(),
                 fila["password"].ToString(),
-                fila["dvh"].ToString()
+                fila["dvh"].ToString(),
+                LeerActivo(fila)
             );
         }
 
@@ -173,7 +189,8 @@ namespace REPOSITORY.Features.Usuarios
                     Convert.ToInt32(fila["id_usuario"]),
                     fila["username"].ToString(),
                     fila["password"].ToString(),
-                    fila["dvh"].ToString()
+                    fila["dvh"].ToString(),
+                    LeerActivo(fila)
                 );
 
                 usuarios.Add(usuario);
@@ -185,7 +202,7 @@ namespace REPOSITORY.Features.Usuarios
         public void Modificar(Usuario usuario)
         {
             string query = @"
-                UPDATE Usuarios SET username=@Username, password=@Password, dvh=@DVH WHERE id_usuario=@Id;
+                UPDATE Usuarios SET username=@Username, password=@Password, dvh=@DVH, activo=@Activo WHERE id_usuario=@Id;
             ";
 
             SqlParameter[] sqlParameters = new SqlParameter[]
@@ -193,7 +210,8 @@ namespace REPOSITORY.Features.Usuarios
                 new SqlParameter("@Id", usuario.Id),
                 new SqlParameter("@Username", usuario.Username),
                 new SqlParameter("@Password", usuario.Password),
-                new SqlParameter("@DVH", usuario.DVH ?? "")
+                new SqlParameter("@DVH", usuario.DVH ?? ""),
+                new SqlParameter("@Activo", usuario.Activo)
             };
 
             _db.ExecuteTransaction(query, sqlParameters);
@@ -229,6 +247,24 @@ namespace REPOSITORY.Features.Usuarios
             };
 
             _db.ExecuteTransaction(query, parametros);
+        }
+
+        private static bool LeerActivo(DataRow fila)
+        {
+            // T1: tras el ALTER defensivo la columna siempre existe; si falta en algun SELECT legacy, asumir activo.
+            if (!fila.Table.Columns.Contains("activo") || fila["activo"] == DBNull.Value)
+                return true;
+
+            object valor = fila["activo"];
+
+            if (valor is bool)
+                return (bool)valor;
+
+            bool parsed;
+            if (bool.TryParse(valor.ToString(), out parsed))
+                return parsed;
+
+            return valor.ToString() == "1";
         }
     }
 }
