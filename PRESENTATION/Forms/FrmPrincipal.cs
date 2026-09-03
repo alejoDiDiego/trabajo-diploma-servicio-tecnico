@@ -10,7 +10,10 @@ using SERVICES.Auth;
 using SERVICES.Idiomas;
 using UI.Forms.Auth;
 using UI.Forms.Bitacora;
+using UI.Forms.Catalogos;
+using UI.Forms.Clientes;
 using UI.Forms.ControlCambios;
+using UI.Forms.Equipos;
 using UI.Forms.Idiomas;
 
 namespace UI.Forms
@@ -44,6 +47,12 @@ namespace UI.Forms
             TSMI_RecalcularDV.Text = idiomaObservado.BuscarTraduccion(TSMI_RecalcularDV.Tag.ToString());
             TSMI_Idioma.Text = idiomaObservado.BuscarTraduccion(TSMI_Idioma.Tag.ToString());
             TSMI_AdministrarTraducciones.Text = idiomaObservado.BuscarTraduccion(TSMI_AdministrarTraducciones.Tag.ToString());
+            TSMI_Gestion.Text = idiomaObservado.BuscarTraduccion(TSMI_Gestion.Tag.ToString());
+            TSMI_Clientes.Text = idiomaObservado.BuscarTraduccion(TSMI_Clientes.Tag.ToString());
+            TSMI_Equipos.Text = idiomaObservado.BuscarTraduccion(TSMI_Equipos.Tag.ToString());
+            TSMI_Catalogos.Text = idiomaObservado.BuscarTraduccion(TSMI_Catalogos.Tag.ToString());
+            TSMI_TiposEquipo.Text = idiomaObservado.BuscarTraduccion(TSMI_TiposEquipo.Tag.ToString());
+            TSMI_Marcas.Text = idiomaObservado.BuscarTraduccion(TSMI_Marcas.Tag.ToString());
 
             ActualizarMenuUsuario();
             CargarMenuIdiomas();
@@ -129,6 +138,10 @@ namespace UI.Forms
             bool puedeVerTraducciones = TieneAlgunPermiso(CodigosPermiso.TraduccionesVer, CodigosPermiso.IdiomasVer);
             bool puedeVerControlCambios = TienePermiso(CodigosPermiso.ControlCambiosVer);
             bool puedeVerBitacora = TienePermiso(CodigosPermiso.BitacoraVer);
+            bool puedeVerClientes = TienePermiso(CodigosPermiso.ClientesVer);
+            bool puedeVerEquipos = TienePermiso(CodigosPermiso.EquiposVer);
+            bool puedeVerTipos = TienePermiso(CodigosPermiso.TiposEquipoVer);
+            bool puedeVerMarcas = TienePermiso(CodigosPermiso.MarcasVer);
 
             TSMI_IniciarSesion.Visible = !haySesionActiva;
             TSMI_CerrarSesion.Visible = haySesionActiva;
@@ -139,6 +152,12 @@ namespace UI.Forms
             TSMI_Bitacora.Visible = haySesionActiva && puedeVerBitacora;
             TSMI_RecalcularDV.Visible = haySesionActiva && puedeRecalcularDV;
             TSMI_AdministrarTraducciones.Visible = haySesionActiva && puedeVerTraducciones;
+            TSMI_Gestion.Visible = haySesionActiva && (puedeVerClientes || puedeVerEquipos || puedeVerTipos || puedeVerMarcas);
+            TSMI_Clientes.Visible = haySesionActiva && puedeVerClientes;
+            TSMI_Equipos.Visible = haySesionActiva && puedeVerEquipos;
+            TSMI_Catalogos.Visible = haySesionActiva && (puedeVerTipos || puedeVerMarcas);
+            TSMI_TiposEquipo.Visible = haySesionActiva && puedeVerTipos;
+            TSMI_Marcas.Visible = haySesionActiva && puedeVerMarcas;
 
             TSMI_IniciarSesion.Enabled = !haySesionActiva;
             TSMI_CerrarSesion.Enabled = haySesionActiva;
@@ -149,6 +168,12 @@ namespace UI.Forms
             TSMI_Bitacora.Enabled = haySesionActiva && puedeVerBitacora;
             TSMI_RecalcularDV.Enabled = haySesionActiva && puedeRecalcularDV;
             TSMI_AdministrarTraducciones.Enabled = haySesionActiva && puedeVerTraducciones;
+            TSMI_Gestion.Enabled = haySesionActiva && (puedeVerClientes || puedeVerEquipos || puedeVerTipos || puedeVerMarcas);
+            TSMI_Clientes.Enabled = haySesionActiva && puedeVerClientes;
+            TSMI_Equipos.Enabled = haySesionActiva && puedeVerEquipos;
+            TSMI_Catalogos.Enabled = haySesionActiva && (puedeVerTipos || puedeVerMarcas);
+            TSMI_TiposEquipo.Enabled = haySesionActiva && puedeVerTipos;
+            TSMI_Marcas.Enabled = haySesionActiva && puedeVerMarcas;
 
             var usuario = SessionManager.ObtenerUsuarioActual();
             TSMI_Usuario.Text = haySesionActiva
@@ -298,6 +323,102 @@ namespace UI.Forms
             frmBitacora.MdiParent = this;
             frmBitacora.FormClosed += FormularioHijo_FormClosed;
             frmBitacora.Show();
+        }
+
+        private void TSMI_Clientes_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.ClientesVer))
+            {
+                MostrarAccesoDenegado();
+                ActualizarMenuUsuario();
+                return;
+            }
+
+            foreach (Form formulario in MdiChildren)
+            {
+                if (formulario is FrmClientes)
+                {
+                    formulario.Activate();
+                    return;
+                }
+            }
+
+            FrmClientes frmClientes = new FrmClientes();
+            frmClientes.MdiParent = this;
+            frmClientes.FormClosed += FormularioHijo_FormClosed;
+            frmClientes.Show();
+        }
+
+        private void TSMI_Equipos_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.EquiposVer))
+            {
+                MostrarAccesoDenegado();
+                ActualizarMenuUsuario();
+                return;
+            }
+
+            foreach (Form formulario in MdiChildren)
+            {
+                if (formulario is FrmEquipos)
+                {
+                    formulario.Activate();
+                    return;
+                }
+            }
+
+            FrmEquipos frmEquipos = new FrmEquipos();
+            frmEquipos.MdiParent = this;
+            frmEquipos.FormClosed += FormularioHijo_FormClosed;
+            frmEquipos.Show();
+        }
+
+        private void TSMI_TiposEquipo_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.TiposEquipoVer))
+            {
+                MostrarAccesoDenegado();
+                ActualizarMenuUsuario();
+                return;
+            }
+
+            foreach (Form formulario in MdiChildren)
+            {
+                if (formulario is FrmTiposEquipo)
+                {
+                    formulario.Activate();
+                    return;
+                }
+            }
+
+            FrmTiposEquipo frmTiposEquipo = new FrmTiposEquipo();
+            frmTiposEquipo.MdiParent = this;
+            frmTiposEquipo.FormClosed += FormularioHijo_FormClosed;
+            frmTiposEquipo.Show();
+        }
+
+        private void TSMI_Marcas_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.MarcasVer))
+            {
+                MostrarAccesoDenegado();
+                ActualizarMenuUsuario();
+                return;
+            }
+
+            foreach (Form formulario in MdiChildren)
+            {
+                if (formulario is FrmMarcas)
+                {
+                    formulario.Activate();
+                    return;
+                }
+            }
+
+            FrmMarcas frmMarcas = new FrmMarcas();
+            frmMarcas.MdiParent = this;
+            frmMarcas.FormClosed += FormularioHijo_FormClosed;
+            frmMarcas.Show();
         }
 
         private void TSMI_ControlCambios_Click(object sender, EventArgs e)

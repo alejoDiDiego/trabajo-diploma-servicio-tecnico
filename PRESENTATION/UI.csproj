@@ -94,6 +94,48 @@
     <Compile Include="Forms\Idiomas\FrmAdministrarTraducciones.Designer.cs">
       <DependentUpon>FrmAdministrarTraducciones.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\Clientes\FrmClientes.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\Clientes\FrmClientes.Designer.cs">
+      <DependentUpon>FrmClientes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\Clientes\FrmClienteEditar.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\Clientes\FrmClienteEditar.Designer.cs">
+      <DependentUpon>FrmClienteEditar.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\Equipos\FrmEquipos.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\Equipos\FrmEquipos.Designer.cs">
+      <DependentUpon>FrmEquipos.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\Equipos\FrmEquipoEditar.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\Equipos\FrmEquipoEditar.Designer.cs">
+      <DependentUpon>FrmEquipoEditar.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\Catalogos\FrmTiposEquipo.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\Catalogos\FrmTiposEquipo.Designer.cs">
+      <DependentUpon>FrmTiposEquipo.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\Catalogos\FrmMarcas.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\Catalogos\FrmMarcas.Designer.cs">
+      <DependentUpon>FrmMarcas.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\Catalogos\FrmCatalogoEditar.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\Catalogos\FrmCatalogoEditar.Designer.cs">
+      <DependentUpon>FrmCatalogoEditar.cs</DependentUpon>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Forms\Auth\FrmAdministrarUsuarios.resx">
