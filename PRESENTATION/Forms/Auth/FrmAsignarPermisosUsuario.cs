@@ -265,6 +265,9 @@ namespace UI.Forms.Auth
                 DGV_Usuarios.Columns["Username"].HeaderText = T("Columna.Username");
             if (DGV_Usuarios.Columns.Contains("Password"))
                 DGV_Usuarios.Columns["Password"].Visible = false;
+            // DVH interno: no se muestra al operador.
+            if (DGV_Usuarios.Columns.Contains("DVH"))
+                DGV_Usuarios.Columns["DVH"].Visible = false;
         }
 
         protected override void OnFormClosed(FormClosedEventArgs e)
