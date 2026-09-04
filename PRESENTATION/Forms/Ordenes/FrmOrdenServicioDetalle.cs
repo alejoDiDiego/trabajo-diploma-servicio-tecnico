@@ -7,10 +7,13 @@ using ABSTRACTIONS.Features.Idiomas;
 using APPLICATION.Features.Clientes;
 using APPLICATION.Features.Equipos;
 using APPLICATION.Features.Ordenes;
+using APPLICATION.Features.Repuestos;
 using DOMAIN.Features.Clientes;
 using DOMAIN.Features.Equipos;
 using DOMAIN.Features.Ordenes;
 using DOMAIN.Features.Permisos;
+using DOMAIN.Features.Reparaciones;
+using DOMAIN.Features.Repuestos;
 using DOMAIN.Features.Usuarios;
 using SERVICES.Auth;
 using SERVICES.Idiomas;
@@ -57,6 +60,45 @@ namespace UI.Forms.Ordenes
             public string Observacion { get; set; }
         }
 
+        private class ItemRepuestoConsumo
+        {
+            public int Id { get; set; }
+            public string Nombre { get; set; }
+        }
+
+        private class ItemIntervencion
+        {
+            public int Id { get; set; }
+            public string Nombre { get; set; }
+        }
+
+        private class FilaReparacion
+        {
+            public int Id { get; set; }
+            public int Numero { get; set; }
+            public string Tecnico { get; set; }
+            public DateTime Inicio { get; set; }
+            public string Fin { get; set; }
+            public string Estado { get; set; }
+        }
+
+        private class FilaConsumido
+        {
+            public string Repuesto { get; set; }
+            public int Cantidad { get; set; }
+            public decimal Costo { get; set; }
+            public decimal Subtotal { get; set; }
+        }
+
+        private class FilaPrueba
+        {
+            public DateTime Fecha { get; set; }
+            public string Intervencion { get; set; }
+            public string Descripcion { get; set; }
+            public string Resultado { get; set; }
+            public string Usuario { get; set; }
+        }
+
         private readonly SesionIdioma _sesionIdioma;
         private readonly OrdenServicioService _service;
         private readonly ClienteService _clienteService;
@@ -73,6 +115,8 @@ namespace UI.Forms.Ordenes
         private List<Equipo> _equipos = new List<Equipo>();
         private List<Usuario> _tecnicos = new List<Usuario>();
         private List<DetallePresupuesto> _itemsNuevo = new List<DetallePresupuesto>();
+        private List<Reparacion> _reparaciones = new List<Reparacion>();
+        private Dictionary<int, string> _nombresRepuestos = new Dictionary<int, string>();
 
         public FrmOrdenServicioDetalle()
             : this(0, null)
@@ -147,6 +191,8 @@ namespace UI.Forms.Ordenes
             TAB_Recepcion.Text = idioma.BuscarTraduccion(TAB_Recepcion.Tag.ToString());
             TAB_Diagnostico.Text = idioma.BuscarTraduccion(TAB_Diagnostico.Tag.ToString());
             TAB_Presupuesto.Text = idioma.BuscarTraduccion(TAB_Presupuesto.Tag.ToString());
+            TAB_Reparaciones.Text = idioma.BuscarTraduccion(TAB_Reparaciones.Tag.ToString());
+            TAB_Pruebas.Text = idioma.BuscarTraduccion(TAB_Pruebas.Tag.ToString());
             TAB_Historial.Text = idioma.BuscarTraduccion(TAB_Historial.Tag.ToString());
             TAB_Entrega.Text = idioma.BuscarTraduccion(TAB_Entrega.Tag.ToString());
 
@@ -188,6 +234,22 @@ namespace UI.Forms.Ordenes
             LBL_EDocumento.Text = idioma.BuscarTraduccion(LBL_EDocumento.Tag.ToString());
             LBL_EObs.Text = idioma.BuscarTraduccion(LBL_EObs.Tag.ToString());
             BTN_Entregar.Text = idioma.BuscarTraduccion(BTN_Entregar.Tag.ToString());
+            BTN_Cerrar.Text = idioma.BuscarTraduccion(BTN_Cerrar.Tag.ToString());
+
+            BTN_IniciarReparacion.Text = idioma.BuscarTraduccion(BTN_IniciarReparacion.Tag.ToString());
+            LBL_CRepuesto.Text = idioma.BuscarTraduccion(LBL_CRepuesto.Tag.ToString());
+            LBL_CCantidad.Text = idioma.BuscarTraduccion(LBL_CCantidad.Tag.ToString());
+            BTN_Consumir.Text = idioma.BuscarTraduccion(BTN_Consumir.Tag.ToString());
+            LBL_Consumidos.Text = idioma.BuscarTraduccion(LBL_Consumidos.Tag.ToString());
+            LBL_FTrabajo.Text = idioma.BuscarTraduccion(LBL_FTrabajo.Tag.ToString()) + " *";
+            LBL_FObs.Text = idioma.BuscarTraduccion(LBL_FObs.Tag.ToString());
+            BTN_FinalizarReparacion.Text = idioma.BuscarTraduccion(BTN_FinalizarReparacion.Tag.ToString());
+            LBL_PIntervencion.Text = idioma.BuscarTraduccion(LBL_PIntervencion.Tag.ToString());
+            LBL_PDDesc.Text = idioma.BuscarTraduccion(LBL_PDDesc.Tag.ToString()) + " *";
+            RDO_Aprobada.Text = idioma.BuscarTraduccion(RDO_Aprobada.Tag.ToString());
+            RDO_Fallida.Text = idioma.BuscarTraduccion(RDO_Fallida.Tag.ToString());
+            LBL_PDObs.Text = idioma.BuscarTraduccion(LBL_PDObs.Tag.ToString());
+            BTN_RegistrarPrueba.Text = idioma.BuscarTraduccion(BTN_RegistrarPrueba.Tag.ToString());
             BTN_Cerrar.Text = idioma.BuscarTraduccion(BTN_Cerrar.Tag.ToString());
         }
 
@@ -394,10 +456,15 @@ namespace UI.Forms.Ordenes
 
             CargarTabDiagnostico();
             CargarTabPresupuesto();
+            CargarTabReparaciones();
+            CargarTabPruebas();
             CargarTabHistorial();
             CargarTabEntrega();
             AplicarPermisosDetalle();
             ConfigurarColumnasDetalle();
+            ConfigurarColumnasReparaciones();
+            ConfigurarColumnasConsumidos();
+            ConfigurarColumnasPruebas();
             ConfigurarColumnasHistorial();
         }
 
@@ -424,6 +491,8 @@ namespace UI.Forms.Ordenes
 
             TAB_Diagnostico.Enabled = false;
             TAB_Presupuesto.Enabled = false;
+            TAB_Reparaciones.Enabled = false;
+            TAB_Pruebas.Enabled = false;
             TAB_Historial.Enabled = false;
             TAB_Entrega.Enabled = false;
             TAB_Detalle.SelectedTab = TAB_Recepcion;
@@ -511,6 +580,340 @@ namespace UI.Forms.Ordenes
             {
                 MostrarError(ex);
             }
+        }
+
+        private void CargarTabReparaciones()
+        {
+            try
+            {
+                RepuestoService repuestoService = new RepuestoService();
+                _nombresRepuestos.Clear();
+
+                try
+                {
+                    foreach (Repuesto r in repuestoService.Listar(true))
+                        _nombresRepuestos[r.Id] = r.Codigo + " - " + r.Descripcion;
+                }
+                catch
+                {
+                }
+
+                _reparaciones = _service.ListarReparaciones(_idOrden);
+                _reparaciones.Sort((a, b) => a.NumeroIntervencion.CompareTo(b.NumeroIntervencion));
+
+                List<FilaReparacion> filas = new List<FilaReparacion>();
+
+                foreach (Reparacion r in _reparaciones)
+                {
+                    filas.Add(new FilaReparacion
+                    {
+                        Id = r.Id,
+                        Numero = r.NumeroIntervencion,
+                        Tecnico = ResolverTecnico(r.IdUsuarioTecnico),
+                        Inicio = r.FechaInicio,
+                        Fin = r.FechaFin.HasValue ? r.FechaFin.Value.ToString("g") : T("Resultado.SinResultado"),
+                        Estado = r.FechaFin.HasValue ? T("OrdenDetalle.Finalizada") : T("OrdenDetalle.Abierta")
+                    });
+                }
+
+                DGV_Reparaciones.DataSource = new BindingList<FilaReparacion>(filas);
+
+                SeleccionarReparacionPorDefecto();
+                CargarComboConsumo();
+                CargarConsumidosDeSeleccion();
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+        }
+
+        private void SeleccionarReparacionPorDefecto()
+        {
+            if (_reparaciones.Count == 0 || DGV_Reparaciones.Rows.Count == 0)
+                return;
+
+            int idSeleccion = 0;
+            Reparacion abierta = null;
+
+            foreach (Reparacion r in _reparaciones)
+            {
+                if (!r.FechaFin.HasValue && (abierta == null || r.NumeroIntervencion < abierta.NumeroIntervencion))
+                    abierta = r;
+            }
+
+            if (abierta != null)
+                idSeleccion = abierta.Id;
+            else
+                idSeleccion = _reparaciones[_reparaciones.Count - 1].Id;
+
+            foreach (DataGridViewRow fila in DGV_Reparaciones.Rows)
+            {
+                FilaReparacion dato = fila.DataBoundItem as FilaReparacion;
+
+                if (dato != null && dato.Id == idSeleccion)
+                {
+                    fila.Selected = true;
+                    break;
+                }
+            }
+        }
+
+        private void CargarComboConsumo()
+        {
+            _cargandoCombos = true;
+
+            try
+            {
+                List<ItemRepuestoConsumo> items = new List<ItemRepuestoConsumo>();
+
+                try
+                {
+                    RepuestoService repuestoService = new RepuestoService();
+
+                    foreach (Repuesto r in repuestoService.Listar(false))
+                    {
+                        if (r.StockActual <= 0)
+                            continue;
+
+                        items.Add(new ItemRepuestoConsumo
+                        {
+                            Id = r.Id,
+                            Nombre = r.Codigo + " - " + r.Descripcion + " (" + T("Columna.Stock") + " " + r.StockActual + ")"
+                        });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MostrarError(ex);
+                }
+
+                CBO_ConsumoRepuesto.DataSource = null;
+                CBO_ConsumoRepuesto.DisplayMember = "Nombre";
+                CBO_ConsumoRepuesto.ValueMember = "Id";
+                CBO_ConsumoRepuesto.DataSource = items;
+            }
+            finally
+            {
+                _cargandoCombos = false;
+            }
+        }
+
+        private Reparacion ReparacionSeleccionada()
+        {
+            if (_reparaciones == null || DGV_Reparaciones.SelectedRows.Count == 0)
+                return null;
+
+            FilaReparacion fila = DGV_Reparaciones.SelectedRows[0].DataBoundItem as FilaReparacion;
+
+            if (fila == null)
+                return null;
+
+            foreach (Reparacion r in _reparaciones)
+            {
+                if (r.Id == fila.Id)
+                    return r;
+            }
+
+            return null;
+        }
+
+        private string ResolverRepuesto(int idRepuesto)
+        {
+            if (_nombresRepuestos.ContainsKey(idRepuesto))
+                return _nombresRepuestos[idRepuesto];
+
+            return "#" + idRepuesto;
+        }
+
+        private void CargarConsumidosDeSeleccion()
+        {
+            Reparacion seleccionada = ReparacionSeleccionada();
+
+            if (seleccionada == null)
+            {
+                DGV_Consumidos.DataSource = new BindingList<FilaConsumido>(new List<FilaConsumido>());
+                LBL_CostoTotal.Text = T("OrdenDetalle.CostoTotal").Replace("{0}", "0.00");
+                return;
+            }
+
+            try
+            {
+                List<ReparacionRepuesto> consumidos = _service.ListarConsumidos(seleccionada.Id);
+                List<FilaConsumido> filas = new List<FilaConsumido>();
+                decimal total = 0;
+
+                foreach (ReparacionRepuesto c in consumidos)
+                {
+                    decimal subtotal = c.Cantidad * c.CostoUnitario;
+                    total += subtotal;
+
+                    filas.Add(new FilaConsumido
+                    {
+                        Repuesto = ResolverRepuesto(c.IdRepuesto),
+                        Cantidad = c.Cantidad,
+                        Costo = c.CostoUnitario,
+                        Subtotal = subtotal
+                    });
+                }
+
+                DGV_Consumidos.DataSource = new BindingList<FilaConsumido>(filas);
+                ConfigurarColumnasConsumidos();
+                LBL_CostoTotal.Text = T("OrdenDetalle.CostoTotal").Replace("{0}", total.ToString("F2"));
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+        }
+
+        private void CargarTabPruebas()
+        {
+            _cargandoCombos = true;
+
+            try
+            {
+                List<ItemIntervencion> items = new List<ItemIntervencion>();
+                int idUltima = 0;
+
+                if (_reparaciones != null)
+                {
+                    foreach (Reparacion r in _reparaciones)
+                    {
+                        items.Add(new ItemIntervencion
+                        {
+                            Id = r.Id,
+                            Nombre = "N° " + r.NumeroIntervencion + " (" + r.FechaInicio.ToString("g") + ")"
+                        });
+                        idUltima = r.Id;
+                    }
+                }
+
+                CBO_PruebaReparacion.DataSource = null;
+                CBO_PruebaReparacion.DisplayMember = "Nombre";
+                CBO_PruebaReparacion.ValueMember = "Id";
+                CBO_PruebaReparacion.DataSource = items;
+
+                if (idUltima > 0)
+                    CBO_PruebaReparacion.SelectedValue = idUltima;
+            }
+            finally
+            {
+                _cargandoCombos = false;
+            }
+
+            CargarPruebasDeCombo();
+        }
+
+        private void CargarPruebasDeCombo()
+        {
+            if (CBO_PruebaReparacion.DataSource == null)
+                return;
+
+            int idReparacion = 0;
+
+            if (CBO_PruebaReparacion.SelectedValue is int)
+                idReparacion = (int)CBO_PruebaReparacion.SelectedValue;
+
+            if (idReparacion <= 0)
+            {
+                DGV_Pruebas.DataSource = new BindingList<FilaPrueba>(new List<FilaPrueba>());
+                return;
+            }
+
+            try
+            {
+                string intervencion = "";
+
+                if (_reparaciones != null)
+                {
+                    foreach (Reparacion r in _reparaciones)
+                    {
+                        if (r.Id == idReparacion)
+                        {
+                            intervencion = "N° " + r.NumeroIntervencion;
+                            break;
+                        }
+                    }
+                }
+
+                List<Prueba> pruebas = _service.ListarPruebas(idReparacion);
+                List<FilaPrueba> filas = new List<FilaPrueba>();
+
+                foreach (Prueba p in pruebas)
+                {
+                    filas.Add(new FilaPrueba
+                    {
+                        Fecha = p.Fecha,
+                        Intervencion = intervencion,
+                        Descripcion = p.Descripcion,
+                        Resultado = p.Resultado == ResultadoPrueba.Aprobada ? T("OrdenDetalle.Aprobada") : T("OrdenDetalle.Fallida"),
+                        Usuario = ResolverTecnico(p.IdUsuarioTecnico)
+                    });
+                }
+
+                DGV_Pruebas.DataSource = new BindingList<FilaPrueba>(filas);
+                ConfigurarColumnasPruebas();
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+        }
+
+        private void ConfigurarColumnasReparaciones()
+        {
+            if (DGV_Reparaciones.Columns.Count == 0)
+                return;
+
+            if (DGV_Reparaciones.Columns.Contains("Id"))
+                DGV_Reparaciones.Columns["Id"].Visible = false;
+            ConfigurarColumnaGrid(DGV_Reparaciones, "Numero", "Columna.Numero");
+            ConfigurarColumnaGrid(DGV_Reparaciones, "Tecnico", "Columna.Tecnico");
+            ConfigurarColumnaGrid(DGV_Reparaciones, "Inicio", "Columna.Inicio");
+            ConfigurarColumnaGrid(DGV_Reparaciones, "Fin", "Columna.Fin");
+            ConfigurarColumnaGrid(DGV_Reparaciones, "Estado", "Columna.Estado");
+
+            DGV_Reparaciones.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells);
+        }
+
+        private void ConfigurarColumnasConsumidos()
+        {
+            if (DGV_Consumidos.Columns.Count == 0)
+                return;
+
+            ConfigurarColumnaGrid(DGV_Consumidos, "Repuesto", "Columna.Repuesto");
+            ConfigurarColumnaGrid(DGV_Consumidos, "Cantidad", "Columna.Cantidad");
+            ConfigurarColumnaGrid(DGV_Consumidos, "Costo", "Columna.Costo");
+            ConfigurarColumnaGrid(DGV_Consumidos, "Subtotal", "Columna.Subtotal");
+
+            DGV_Consumidos.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells);
+        }
+
+        private void ConfigurarColumnasPruebas()
+        {
+            if (DGV_Pruebas.Columns.Count == 0)
+                return;
+
+            ConfigurarColumnaGrid(DGV_Pruebas, "Fecha", "Columna.Fecha");
+            ConfigurarColumnaGrid(DGV_Pruebas, "Intervencion", "Columna.Intervencion");
+            ConfigurarColumnaGrid(DGV_Pruebas, "Descripcion", "Columna.Descripcion");
+            ConfigurarColumnaGrid(DGV_Pruebas, "Resultado", "Columna.Resultado");
+            ConfigurarColumnaGrid(DGV_Pruebas, "Usuario", "Columna.Usuario");
+
+            DGV_Pruebas.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells);
+        }
+
+        private void ConfigurarColumnaGrid(DataGridView grilla, string nombreColumna, string claveTraduccion)
+        {
+            if (!grilla.Columns.Contains(nombreColumna))
+                return;
+
+            if (string.IsNullOrEmpty(claveTraduccion))
+                return;
+
+            grilla.Columns[nombreColumna].Tag = claveTraduccion;
+            grilla.Columns[nombreColumna].HeaderText = _sesionIdioma.idioma == null ? claveTraduccion : _sesionIdioma.idioma.BuscarTraduccion(claveTraduccion);
         }
 
         private void CargarTabEntrega()
@@ -802,6 +1205,8 @@ namespace UI.Forms.Ordenes
                 _esNuevo = false;
                 TAB_Diagnostico.Enabled = true;
                 TAB_Presupuesto.Enabled = true;
+                TAB_Reparaciones.Enabled = true;
+                TAB_Pruebas.Enabled = true;
                 TAB_Historial.Enabled = true;
                 TAB_Entrega.Enabled = true;
                 CargarOrden();
@@ -1099,6 +1504,165 @@ namespace UI.Forms.Ordenes
             }
         }
 
+        private void DGV_Reparaciones_SelectionChanged(object sender, EventArgs e)
+        {
+            if (_esNuevo || _reparaciones == null)
+                return;
+
+            CargarConsumidosDeSeleccion();
+            AplicarPermisosDetalle();
+        }
+
+        private void CBO_PruebaReparacion_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (_cargandoCombos)
+                return;
+
+            if (CBO_PruebaReparacion.DataSource == null)
+                return;
+
+            if (_esNuevo)
+                return;
+
+            CargarPruebasDeCombo();
+        }
+
+        private void BTN_IniciarReparacion_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.OrdenesEditar))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
+            try
+            {
+                _service.IniciarReparacion(_idOrden);
+                CargarOrden();
+                MostrarExito("Mensaje.OperacionExitosa");
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+        }
+
+        private void BTN_Consumir_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.OrdenesEditar))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
+            Reparacion seleccionada = ReparacionSeleccionada();
+
+            if (seleccionada == null)
+            {
+                MostrarAdvertencia("Mensaje.SeleccioneRegistro");
+                return;
+            }
+
+            int idRepuesto = 0;
+
+            if (CBO_ConsumoRepuesto.SelectedValue is int)
+                idRepuesto = (int)CBO_ConsumoRepuesto.SelectedValue;
+
+            if (idRepuesto <= 0)
+            {
+                MostrarAdvertencia("Mensaje.OrdenCamposObligatorios");
+                return;
+            }
+
+            try
+            {
+                _service.ConsumirRepuesto(seleccionada.Id, idRepuesto, (int)NUM_ConsumoCantidad.Value);
+                CargarOrden();
+                MostrarExito("Mensaje.OperacionExitosa");
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+        }
+
+        private void BTN_FinalizarReparacion_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.OrdenesEditar))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
+            Reparacion seleccionada = ReparacionSeleccionada();
+
+            if (seleccionada == null)
+            {
+                MostrarAdvertencia("Mensaje.SeleccioneRegistro");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(TXT_FTrabajo.Text))
+            {
+                MostrarAdvertencia("Mensaje.OrdenCamposObligatorios");
+                return;
+            }
+
+            try
+            {
+                _service.FinalizarReparacion(seleccionada.Id, TXT_FTrabajo.Text.Trim(), TXT_FObs.Text.Trim());
+                TXT_FTrabajo.Text = "";
+                TXT_FObs.Text = "";
+                CargarOrden();
+                MostrarExito("Mensaje.OperacionExitosa");
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+        }
+
+        private void BTN_RegistrarPrueba_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.OrdenesEditar))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
+            int idReparacion = 0;
+
+            if (CBO_PruebaReparacion.SelectedValue is int)
+                idReparacion = (int)CBO_PruebaReparacion.SelectedValue;
+
+            if (idReparacion <= 0)
+            {
+                MostrarAdvertencia("Mensaje.SeleccioneRegistro");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(TXT_PruebaDesc.Text))
+            {
+                MostrarAdvertencia("Mensaje.PruebaCamposObligatorios");
+                return;
+            }
+
+            try
+            {
+                _service.RegistrarPrueba(idReparacion, TXT_PruebaDesc.Text.Trim(),
+                    RDO_Aprobada.Checked, TXT_PruebaObs.Text.Trim());
+                TXT_PruebaDesc.Text = "";
+                TXT_PruebaObs.Text = "";
+                RDO_Aprobada.Checked = true;
+                CargarOrden();
+                MostrarExito("Mensaje.OperacionExitosa");
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+        }
+
         private void AplicarPermisosDetalle()
         {
             bool puedeCrear = TienePermiso(CodigosPermiso.OrdenesCrear);
@@ -1179,6 +1743,36 @@ namespace UI.Forms.Ordenes
             TXT_EObs.Enabled = puedeEntregarAhora;
             BTN_Entregar.Visible = !_esNuevo && puedeEntregar;
             BTN_Entregar.Enabled = puedeEntregarAhora;
+
+            Reparacion reparacionSeleccionada = ReparacionSeleccionada();
+            bool hayAbiertaSeleccionada = reparacionSeleccionada != null && !reparacionSeleccionada.FechaFin.HasValue;
+
+            bool puedeIniciarReparacion = editable && _orden != null
+                && (_orden.Estado == EstadoOrdenServicio.AutorizadoReparacion
+                    || _orden.Estado == EstadoOrdenServicio.EnReparacion);
+            bool habilitaConsumo = editable && _orden != null
+                && _orden.Estado == EstadoOrdenServicio.EnReparacion
+                && hayAbiertaSeleccionada;
+            bool habilitaPrueba = editable && _orden != null
+                && _orden.Estado == EstadoOrdenServicio.EnPruebas;
+
+            BTN_IniciarReparacion.Visible = !_esNuevo && puedeEditar;
+            BTN_IniciarReparacion.Enabled = puedeIniciarReparacion;
+            CBO_ConsumoRepuesto.Enabled = habilitaConsumo;
+            NUM_ConsumoCantidad.Enabled = habilitaConsumo;
+            BTN_Consumir.Visible = !_esNuevo && puedeEditar;
+            BTN_Consumir.Enabled = habilitaConsumo;
+            TXT_FTrabajo.Enabled = habilitaConsumo;
+            TXT_FObs.Enabled = habilitaConsumo;
+            BTN_FinalizarReparacion.Visible = !_esNuevo && puedeEditar;
+            BTN_FinalizarReparacion.Enabled = habilitaConsumo;
+            CBO_PruebaReparacion.Enabled = habilitaPrueba;
+            TXT_PruebaDesc.Enabled = habilitaPrueba;
+            RDO_Aprobada.Enabled = habilitaPrueba;
+            RDO_Fallida.Enabled = habilitaPrueba;
+            TXT_PruebaObs.Enabled = habilitaPrueba;
+            BTN_RegistrarPrueba.Visible = !_esNuevo && puedeEditar;
+            BTN_RegistrarPrueba.Enabled = habilitaPrueba;
         }
 
         private bool TienePermiso(string codigo)

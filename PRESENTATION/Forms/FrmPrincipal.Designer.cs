@@ -29,6 +29,9 @@ namespace UI.Forms
             this.TSMI_Catalogos = new System.Windows.Forms.ToolStripMenuItem();
             this.TSMI_TiposEquipo = new System.Windows.Forms.ToolStripMenuItem();
             this.TSMI_Marcas = new System.Windows.Forms.ToolStripMenuItem();
+            this.TSMI_Inventario = new System.Windows.Forms.ToolStripMenuItem();
+            this.TSMI_Repuestos = new System.Windows.Forms.ToolStripMenuItem();
+            this.TSMI_Movimientos = new System.Windows.Forms.ToolStripMenuItem();
             this.TSMI_Idioma = new System.Windows.Forms.ToolStripMenuItem();
             this.TSMI_AdministrarTraducciones = new System.Windows.Forms.ToolStripMenuItem();
             this.TSMI_Gestion = new System.Windows.Forms.ToolStripMenuItem();
@@ -132,7 +135,8 @@ namespace UI.Forms
             this.TSMI_Clientes,
             this.TSMI_Equipos,
             this.TSMI_Ordenes,
-            this.TSMI_Catalogos});
+            this.TSMI_Catalogos,
+            this.TSMI_Inventario});
             this.TSMI_Gestion.Name = "TSMI_Gestion";
             this.TSMI_Gestion.Size = new System.Drawing.Size(59, 20);
             this.TSMI_Gestion.Tag = "Menu.Gestion";
@@ -187,9 +191,35 @@ namespace UI.Forms
             this.TSMI_Marcas.Tag = "Menu.Marcas";
             this.TSMI_Marcas.Text = "Marcas";
             this.TSMI_Marcas.Click += new System.EventHandler(this.TSMI_Marcas_Click);
-            // 
+            //
+            // TSMI_Inventario
+            //
+            this.TSMI_Inventario.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.TSMI_Repuestos,
+            this.TSMI_Movimientos});
+            this.TSMI_Inventario.Name = "TSMI_Inventario";
+            this.TSMI_Inventario.Size = new System.Drawing.Size(180, 22);
+            this.TSMI_Inventario.Tag = "Menu.Inventario";
+            this.TSMI_Inventario.Text = "Inventario";
+            //
+            // TSMI_Repuestos
+            //
+            this.TSMI_Repuestos.Name = "TSMI_Repuestos";
+            this.TSMI_Repuestos.Size = new System.Drawing.Size(180, 22);
+            this.TSMI_Repuestos.Tag = "Menu.Repuestos";
+            this.TSMI_Repuestos.Text = "Repuestos";
+            this.TSMI_Repuestos.Click += new System.EventHandler(this.TSMI_Repuestos_Click);
+            //
+            // TSMI_Movimientos
+            //
+            this.TSMI_Movimientos.Name = "TSMI_Movimientos";
+            this.TSMI_Movimientos.Size = new System.Drawing.Size(180, 22);
+            this.TSMI_Movimientos.Tag = "Menu.MovimientosStock";
+            this.TSMI_Movimientos.Text = "Movimientos de stock";
+            this.TSMI_Movimientos.Click += new System.EventHandler(this.TSMI_Movimientos_Click);
+            //
             // TSMI_Idioma
-            // 
+            //
             this.TSMI_Idioma.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.TSMI_AdministrarTraducciones});
             this.TSMI_Idioma.Name = "TSMI_Idioma";
@@ -243,6 +273,9 @@ namespace UI.Forms
         private System.Windows.Forms.ToolStripMenuItem TSMI_Catalogos;
         private System.Windows.Forms.ToolStripMenuItem TSMI_TiposEquipo;
         private System.Windows.Forms.ToolStripMenuItem TSMI_Marcas;
+        private System.Windows.Forms.ToolStripMenuItem TSMI_Inventario;
+        private System.Windows.Forms.ToolStripMenuItem TSMI_Repuestos;
+        private System.Windows.Forms.ToolStripMenuItem TSMI_Movimientos;
         private System.Windows.Forms.ToolStripMenuItem TSMI_Idioma;
         private System.Windows.Forms.ToolStripMenuItem TSMI_AdministrarTraducciones;
     }

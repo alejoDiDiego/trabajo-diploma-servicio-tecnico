@@ -16,6 +16,7 @@ using UI.Forms.ControlCambios;
 using UI.Forms.Equipos;
 using UI.Forms.Idiomas;
 using UI.Forms.Ordenes;
+using UI.Forms.Repuestos;
 
 namespace UI.Forms
 {
@@ -55,6 +56,9 @@ namespace UI.Forms
             TSMI_Catalogos.Text = idiomaObservado.BuscarTraduccion(TSMI_Catalogos.Tag.ToString());
             TSMI_TiposEquipo.Text = idiomaObservado.BuscarTraduccion(TSMI_TiposEquipo.Tag.ToString());
             TSMI_Marcas.Text = idiomaObservado.BuscarTraduccion(TSMI_Marcas.Tag.ToString());
+            TSMI_Inventario.Text = idiomaObservado.BuscarTraduccion(TSMI_Inventario.Tag.ToString());
+            TSMI_Repuestos.Text = idiomaObservado.BuscarTraduccion(TSMI_Repuestos.Tag.ToString());
+            TSMI_Movimientos.Text = idiomaObservado.BuscarTraduccion(TSMI_Movimientos.Tag.ToString());
 
             ActualizarMenuUsuario();
             CargarMenuIdiomas();
@@ -145,6 +149,7 @@ namespace UI.Forms
             bool puedeVerOrdenes = TienePermiso(CodigosPermiso.OrdenesVer);
             bool puedeVerTipos = TienePermiso(CodigosPermiso.TiposEquipoVer);
             bool puedeVerMarcas = TienePermiso(CodigosPermiso.MarcasVer);
+            bool puedeVerRepuestos = TienePermiso(CodigosPermiso.RepuestosVer);
 
             TSMI_IniciarSesion.Visible = !haySesionActiva;
             TSMI_CerrarSesion.Visible = haySesionActiva;
@@ -155,13 +160,16 @@ namespace UI.Forms
             TSMI_Bitacora.Visible = haySesionActiva && puedeVerBitacora;
             TSMI_RecalcularDV.Visible = haySesionActiva && puedeRecalcularDV;
             TSMI_AdministrarTraducciones.Visible = haySesionActiva && puedeVerTraducciones;
-            TSMI_Gestion.Visible = haySesionActiva && (puedeVerClientes || puedeVerEquipos || puedeVerOrdenes || puedeVerTipos || puedeVerMarcas);
+            TSMI_Gestion.Visible = haySesionActiva && (puedeVerClientes || puedeVerEquipos || puedeVerOrdenes || puedeVerTipos || puedeVerMarcas || puedeVerRepuestos);
             TSMI_Clientes.Visible = haySesionActiva && puedeVerClientes;
             TSMI_Equipos.Visible = haySesionActiva && puedeVerEquipos;
             TSMI_Ordenes.Visible = haySesionActiva && puedeVerOrdenes;
             TSMI_Catalogos.Visible = haySesionActiva && (puedeVerTipos || puedeVerMarcas);
             TSMI_TiposEquipo.Visible = haySesionActiva && puedeVerTipos;
             TSMI_Marcas.Visible = haySesionActiva && puedeVerMarcas;
+            TSMI_Inventario.Visible = haySesionActiva && puedeVerRepuestos;
+            TSMI_Repuestos.Visible = haySesionActiva && puedeVerRepuestos;
+            TSMI_Movimientos.Visible = haySesionActiva && puedeVerRepuestos;
 
             TSMI_IniciarSesion.Enabled = !haySesionActiva;
             TSMI_CerrarSesion.Enabled = haySesionActiva;
@@ -172,13 +180,16 @@ namespace UI.Forms
             TSMI_Bitacora.Enabled = haySesionActiva && puedeVerBitacora;
             TSMI_RecalcularDV.Enabled = haySesionActiva && puedeRecalcularDV;
             TSMI_AdministrarTraducciones.Enabled = haySesionActiva && puedeVerTraducciones;
-            TSMI_Gestion.Enabled = haySesionActiva && (puedeVerClientes || puedeVerEquipos || puedeVerOrdenes || puedeVerTipos || puedeVerMarcas);
+            TSMI_Gestion.Enabled = haySesionActiva && (puedeVerClientes || puedeVerEquipos || puedeVerOrdenes || puedeVerTipos || puedeVerMarcas || puedeVerRepuestos);
             TSMI_Clientes.Enabled = haySesionActiva && puedeVerClientes;
             TSMI_Equipos.Enabled = haySesionActiva && puedeVerEquipos;
             TSMI_Ordenes.Enabled = haySesionActiva && puedeVerOrdenes;
             TSMI_Catalogos.Enabled = haySesionActiva && (puedeVerTipos || puedeVerMarcas);
             TSMI_TiposEquipo.Enabled = haySesionActiva && puedeVerTipos;
             TSMI_Marcas.Enabled = haySesionActiva && puedeVerMarcas;
+            TSMI_Inventario.Enabled = haySesionActiva && puedeVerRepuestos;
+            TSMI_Repuestos.Enabled = haySesionActiva && puedeVerRepuestos;
+            TSMI_Movimientos.Enabled = haySesionActiva && puedeVerRepuestos;
 
             var usuario = SessionManager.ObtenerUsuarioActual();
             TSMI_Usuario.Text = haySesionActiva
@@ -448,6 +459,54 @@ namespace UI.Forms
             frmMarcas.MdiParent = this;
             frmMarcas.FormClosed += FormularioHijo_FormClosed;
             frmMarcas.Show();
+        }
+
+        private void TSMI_Repuestos_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.RepuestosVer))
+            {
+                MostrarAccesoDenegado();
+                ActualizarMenuUsuario();
+                return;
+            }
+
+            foreach (Form formulario in MdiChildren)
+            {
+                if (formulario is FrmRepuestos)
+                {
+                    formulario.Activate();
+                    return;
+                }
+            }
+
+            FrmRepuestos frmRepuestos = new FrmRepuestos();
+            frmRepuestos.MdiParent = this;
+            frmRepuestos.FormClosed += FormularioHijo_FormClosed;
+            frmRepuestos.Show();
+        }
+
+        private void TSMI_Movimientos_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.RepuestosVer))
+            {
+                MostrarAccesoDenegado();
+                ActualizarMenuUsuario();
+                return;
+            }
+
+            foreach (Form formulario in MdiChildren)
+            {
+                if (formulario is FrmMovimientosStock)
+                {
+                    formulario.Activate();
+                    return;
+                }
+            }
+
+            FrmMovimientosStock frmMovimientos = new FrmMovimientosStock();
+            frmMovimientos.MdiParent = this;
+            frmMovimientos.FormClosed += FormularioHijo_FormClosed;
+            frmMovimientos.Show();
         }
 
         private void TSMI_ControlCambios_Click(object sender, EventArgs e)

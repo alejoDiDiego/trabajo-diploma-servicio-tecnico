@@ -148,6 +148,30 @@
     <Compile Include="Forms\Catalogos\FrmCatalogoEditar.Designer.cs">
       <DependentUpon>FrmCatalogoEditar.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\Repuestos\FrmRepuestos.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\Repuestos\FrmRepuestos.Designer.cs">
+      <DependentUpon>FrmRepuestos.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\Repuestos\FrmRepuestoEditar.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\Repuestos\FrmRepuestoEditar.Designer.cs">
+      <DependentUpon>FrmRepuestoEditar.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\Repuestos\FrmAjusteStock.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\Repuestos\FrmAjusteStock.Designer.cs">
+      <DependentUpon>FrmAjusteStock.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\Repuestos\FrmMovimientosStock.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\Repuestos\FrmMovimientosStock.Designer.cs">
+      <DependentUpon>FrmMovimientosStock.cs</DependentUpon>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Forms\Auth\FrmAdministrarUsuarios.resx">

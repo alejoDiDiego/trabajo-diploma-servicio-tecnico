@@ -81,6 +81,33 @@ namespace UI.Forms.Ordenes
             this.BTN_Rechazar = new System.Windows.Forms.Button();
             this.TAB_Historial = new System.Windows.Forms.TabPage();
             this.DGV_Historial = new System.Windows.Forms.DataGridView();
+            this.TAB_Reparaciones = new System.Windows.Forms.TabPage();
+            this.DGV_Reparaciones = new System.Windows.Forms.DataGridView();
+            this.BTN_IniciarReparacion = new System.Windows.Forms.Button();
+            this.LBL_CRepuesto = new System.Windows.Forms.Label();
+            this.CBO_ConsumoRepuesto = new System.Windows.Forms.ComboBox();
+            this.LBL_CCantidad = new System.Windows.Forms.Label();
+            this.NUM_ConsumoCantidad = new System.Windows.Forms.NumericUpDown();
+            this.BTN_Consumir = new System.Windows.Forms.Button();
+            this.LBL_Consumidos = new System.Windows.Forms.Label();
+            this.DGV_Consumidos = new System.Windows.Forms.DataGridView();
+            this.LBL_CostoTotal = new System.Windows.Forms.Label();
+            this.LBL_FTrabajo = new System.Windows.Forms.Label();
+            this.TXT_FTrabajo = new System.Windows.Forms.TextBox();
+            this.LBL_FObs = new System.Windows.Forms.Label();
+            this.TXT_FObs = new System.Windows.Forms.TextBox();
+            this.BTN_FinalizarReparacion = new System.Windows.Forms.Button();
+            this.TAB_Pruebas = new System.Windows.Forms.TabPage();
+            this.LBL_PIntervencion = new System.Windows.Forms.Label();
+            this.CBO_PruebaReparacion = new System.Windows.Forms.ComboBox();
+            this.DGV_Pruebas = new System.Windows.Forms.DataGridView();
+            this.LBL_PDDesc = new System.Windows.Forms.Label();
+            this.TXT_PruebaDesc = new System.Windows.Forms.TextBox();
+            this.RDO_Aprobada = new System.Windows.Forms.RadioButton();
+            this.RDO_Fallida = new System.Windows.Forms.RadioButton();
+            this.LBL_PDObs = new System.Windows.Forms.Label();
+            this.TXT_PruebaObs = new System.Windows.Forms.TextBox();
+            this.BTN_RegistrarPrueba = new System.Windows.Forms.Button();
             this.TAB_Entrega = new System.Windows.Forms.TabPage();
             this.LBL_EEntregadoA = new System.Windows.Forms.Label();
             this.TXT_EEntregadoA = new System.Windows.Forms.TextBox();
@@ -104,6 +131,12 @@ namespace UI.Forms.Ordenes
             ((System.ComponentModel.ISupportInitialize)(this.NUM_PGarantia)).BeginInit();
             this.TAB_Historial.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.DGV_Historial)).BeginInit();
+            this.TAB_Reparaciones.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.DGV_Reparaciones)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.NUM_ConsumoCantidad)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.DGV_Consumidos)).BeginInit();
+            this.TAB_Pruebas.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.DGV_Pruebas)).BeginInit();
             this.TAB_Entrega.SuspendLayout();
             this.SuspendLayout();
             //
@@ -222,6 +255,8 @@ namespace UI.Forms.Ordenes
             this.TAB_Detalle.Controls.Add(this.TAB_Recepcion);
             this.TAB_Detalle.Controls.Add(this.TAB_Diagnostico);
             this.TAB_Detalle.Controls.Add(this.TAB_Presupuesto);
+            this.TAB_Detalle.Controls.Add(this.TAB_Reparaciones);
+            this.TAB_Detalle.Controls.Add(this.TAB_Pruebas);
             this.TAB_Detalle.Controls.Add(this.TAB_Historial);
             this.TAB_Detalle.Controls.Add(this.TAB_Entrega);
             this.TAB_Detalle.Location = new System.Drawing.Point(12, 112);
@@ -936,7 +971,7 @@ namespace UI.Forms.Ordenes
             this.TAB_Historial.Location = new System.Drawing.Point(4, 22);
             this.TAB_Historial.Name = "TAB_Historial";
             this.TAB_Historial.Size = new System.Drawing.Size(888, 454);
-            this.TAB_Historial.TabIndex = 3;
+            this.TAB_Historial.TabIndex = 5;
             this.TAB_Historial.Tag = "OrdenDetalle.TabHistorial";
             this.TAB_Historial.Text = "Historial";
             this.TAB_Historial.UseVisualStyleBackColor = true;
@@ -959,6 +994,368 @@ namespace UI.Forms.Ordenes
             this.DGV_Historial.Size = new System.Drawing.Size(888, 454);
             this.DGV_Historial.TabIndex = 0;
             //
+            // TAB_Reparaciones
+            //
+            this.TAB_Reparaciones.Controls.Add(this.DGV_Reparaciones);
+            this.TAB_Reparaciones.Controls.Add(this.BTN_IniciarReparacion);
+            this.TAB_Reparaciones.Controls.Add(this.LBL_CRepuesto);
+            this.TAB_Reparaciones.Controls.Add(this.CBO_ConsumoRepuesto);
+            this.TAB_Reparaciones.Controls.Add(this.LBL_CCantidad);
+            this.TAB_Reparaciones.Controls.Add(this.NUM_ConsumoCantidad);
+            this.TAB_Reparaciones.Controls.Add(this.BTN_Consumir);
+            this.TAB_Reparaciones.Controls.Add(this.LBL_Consumidos);
+            this.TAB_Reparaciones.Controls.Add(this.DGV_Consumidos);
+            this.TAB_Reparaciones.Controls.Add(this.LBL_CostoTotal);
+            this.TAB_Reparaciones.Controls.Add(this.LBL_FTrabajo);
+            this.TAB_Reparaciones.Controls.Add(this.TXT_FTrabajo);
+            this.TAB_Reparaciones.Controls.Add(this.LBL_FObs);
+            this.TAB_Reparaciones.Controls.Add(this.TXT_FObs);
+            this.TAB_Reparaciones.Controls.Add(this.BTN_FinalizarReparacion);
+            this.TAB_Reparaciones.Location = new System.Drawing.Point(4, 22);
+            this.TAB_Reparaciones.Name = "TAB_Reparaciones";
+            this.TAB_Reparaciones.Size = new System.Drawing.Size(888, 454);
+            this.TAB_Reparaciones.TabIndex = 3;
+            this.TAB_Reparaciones.Tag = "OrdenDetalle.TabReparaciones";
+            this.TAB_Reparaciones.Text = "Reparaciones";
+            this.TAB_Reparaciones.UseVisualStyleBackColor = true;
+            //
+            // DGV_Reparaciones
+            //
+            this.DGV_Reparaciones.AllowUserToAddRows = false;
+            this.DGV_Reparaciones.AllowUserToDeleteRows = false;
+            this.DGV_Reparaciones.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.DGV_Reparaciones.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.DGV_Reparaciones.BackgroundColor = System.Drawing.Color.White;
+            this.DGV_Reparaciones.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.DGV_Reparaciones.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.DGV_Reparaciones.Location = new System.Drawing.Point(12, 8);
+            this.DGV_Reparaciones.MultiSelect = false;
+            this.DGV_Reparaciones.Name = "DGV_Reparaciones";
+            this.DGV_Reparaciones.ReadOnly = true;
+            this.DGV_Reparaciones.RowHeadersVisible = false;
+            this.DGV_Reparaciones.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.DGV_Reparaciones.Size = new System.Drawing.Size(864, 120);
+            this.DGV_Reparaciones.TabIndex = 0;
+            this.DGV_Reparaciones.SelectionChanged += new System.EventHandler(this.DGV_Reparaciones_SelectionChanged);
+            //
+            // BTN_IniciarReparacion
+            //
+            this.BTN_IniciarReparacion.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(39)))), ((int)(((byte)(174)))), ((int)(((byte)(96)))));
+            this.BTN_IniciarReparacion.FlatAppearance.BorderSize = 0;
+            this.BTN_IniciarReparacion.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.BTN_IniciarReparacion.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.BTN_IniciarReparacion.ForeColor = System.Drawing.Color.White;
+            this.BTN_IniciarReparacion.Location = new System.Drawing.Point(12, 136);
+            this.BTN_IniciarReparacion.Name = "BTN_IniciarReparacion";
+            this.BTN_IniciarReparacion.Size = new System.Drawing.Size(160, 28);
+            this.BTN_IniciarReparacion.TabIndex = 1;
+            this.BTN_IniciarReparacion.Tag = "OrdenDetalle.IniciarReparacion";
+            this.BTN_IniciarReparacion.Text = "Iniciar reparacion";
+            this.BTN_IniciarReparacion.UseVisualStyleBackColor = false;
+            this.BTN_IniciarReparacion.Click += new System.EventHandler(this.BTN_IniciarReparacion_Click);
+            //
+            // LBL_CRepuesto
+            //
+            this.LBL_CRepuesto.AutoSize = true;
+            this.LBL_CRepuesto.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.LBL_CRepuesto.Location = new System.Drawing.Point(185, 143);
+            this.LBL_CRepuesto.Name = "LBL_CRepuesto";
+            this.LBL_CRepuesto.Size = new System.Drawing.Size(61, 15);
+            this.LBL_CRepuesto.TabIndex = 2;
+            this.LBL_CRepuesto.Tag = "OrdenDetalle.Repuesto";
+            this.LBL_CRepuesto.Text = "Repuesto:";
+            //
+            // CBO_ConsumoRepuesto
+            //
+            this.CBO_ConsumoRepuesto.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.CBO_ConsumoRepuesto.Location = new System.Drawing.Point(252, 140);
+            this.CBO_ConsumoRepuesto.Name = "CBO_ConsumoRepuesto";
+            this.CBO_ConsumoRepuesto.Size = new System.Drawing.Size(230, 21);
+            this.CBO_ConsumoRepuesto.TabIndex = 3;
+            //
+            // LBL_CCantidad
+            //
+            this.LBL_CCantidad.AutoSize = true;
+            this.LBL_CCantidad.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.LBL_CCantidad.Location = new System.Drawing.Point(492, 143);
+            this.LBL_CCantidad.Name = "LBL_CCantidad";
+            this.LBL_CCantidad.Size = new System.Drawing.Size(58, 15);
+            this.LBL_CCantidad.TabIndex = 4;
+            this.LBL_CCantidad.Tag = "OrdenDetalle.Cantidad";
+            this.LBL_CCantidad.Text = "Cantidad:";
+            //
+            // NUM_ConsumoCantidad
+            //
+            this.NUM_ConsumoCantidad.Location = new System.Drawing.Point(556, 140);
+            this.NUM_ConsumoCantidad.Maximum = new decimal(new int[] {
+            1000000,
+            0,
+            0,
+            0});
+            this.NUM_ConsumoCantidad.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.NUM_ConsumoCantidad.Name = "NUM_ConsumoCantidad";
+            this.NUM_ConsumoCantidad.Size = new System.Drawing.Size(60, 22);
+            this.NUM_ConsumoCantidad.TabIndex = 5;
+            this.NUM_ConsumoCantidad.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            //
+            // BTN_Consumir
+            //
+            this.BTN_Consumir.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(152)))), ((int)(((byte)(219)))));
+            this.BTN_Consumir.FlatAppearance.BorderSize = 0;
+            this.BTN_Consumir.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.BTN_Consumir.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.BTN_Consumir.ForeColor = System.Drawing.Color.White;
+            this.BTN_Consumir.Location = new System.Drawing.Point(626, 136);
+            this.BTN_Consumir.Name = "BTN_Consumir";
+            this.BTN_Consumir.Size = new System.Drawing.Size(110, 28);
+            this.BTN_Consumir.TabIndex = 6;
+            this.BTN_Consumir.Tag = "OrdenDetalle.Consumir";
+            this.BTN_Consumir.Text = "Consumir";
+            this.BTN_Consumir.UseVisualStyleBackColor = false;
+            this.BTN_Consumir.Click += new System.EventHandler(this.BTN_Consumir_Click);
+            //
+            // LBL_Consumidos
+            //
+            this.LBL_Consumidos.AutoSize = true;
+            this.LBL_Consumidos.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.LBL_Consumidos.Location = new System.Drawing.Point(12, 174);
+            this.LBL_Consumidos.Name = "LBL_Consumidos";
+            this.LBL_Consumidos.Size = new System.Drawing.Size(80, 15);
+            this.LBL_Consumidos.TabIndex = 7;
+            this.LBL_Consumidos.Tag = "OrdenDetalle.Consumidos";
+            this.LBL_Consumidos.Text = "Consumidos";
+            //
+            // DGV_Consumidos
+            //
+            this.DGV_Consumidos.AllowUserToAddRows = false;
+            this.DGV_Consumidos.AllowUserToDeleteRows = false;
+            this.DGV_Consumidos.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.DGV_Consumidos.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.DGV_Consumidos.BackgroundColor = System.Drawing.Color.White;
+            this.DGV_Consumidos.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.DGV_Consumidos.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.DGV_Consumidos.Location = new System.Drawing.Point(12, 194);
+            this.DGV_Consumidos.MultiSelect = false;
+            this.DGV_Consumidos.Name = "DGV_Consumidos";
+            this.DGV_Consumidos.ReadOnly = true;
+            this.DGV_Consumidos.RowHeadersVisible = false;
+            this.DGV_Consumidos.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.DGV_Consumidos.Size = new System.Drawing.Size(864, 105);
+            this.DGV_Consumidos.TabIndex = 8;
+            //
+            // LBL_CostoTotal
+            //
+            this.LBL_CostoTotal.AutoSize = true;
+            this.LBL_CostoTotal.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.LBL_CostoTotal.Location = new System.Drawing.Point(12, 306);
+            this.LBL_CostoTotal.Name = "LBL_CostoTotal";
+            this.LBL_CostoTotal.Size = new System.Drawing.Size(90, 15);
+            this.LBL_CostoTotal.TabIndex = 9;
+            this.LBL_CostoTotal.Text = "Costo total: 0";
+            //
+            // LBL_FTrabajo
+            //
+            this.LBL_FTrabajo.AutoSize = true;
+            this.LBL_FTrabajo.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.LBL_FTrabajo.Location = new System.Drawing.Point(12, 332);
+            this.LBL_FTrabajo.Name = "LBL_FTrabajo";
+            this.LBL_FTrabajo.Size = new System.Drawing.Size(110, 15);
+            this.LBL_FTrabajo.TabIndex = 10;
+            this.LBL_FTrabajo.Tag = "OrdenDetalle.Trabajo";
+            this.LBL_FTrabajo.Text = "Trabajo realizado:";
+            //
+            // TXT_FTrabajo
+            //
+            this.TXT_FTrabajo.Location = new System.Drawing.Point(130, 329);
+            this.TXT_FTrabajo.Multiline = true;
+            this.TXT_FTrabajo.Name = "TXT_FTrabajo";
+            this.TXT_FTrabajo.Size = new System.Drawing.Size(380, 45);
+            this.TXT_FTrabajo.TabIndex = 11;
+            //
+            // LBL_FObs
+            //
+            this.LBL_FObs.AutoSize = true;
+            this.LBL_FObs.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.LBL_FObs.Location = new System.Drawing.Point(520, 332);
+            this.LBL_FObs.Name = "LBL_FObs";
+            this.LBL_FObs.Size = new System.Drawing.Size(87, 15);
+            this.LBL_FObs.TabIndex = 12;
+            this.LBL_FObs.Tag = "OrdenDetalle.ObsReparacion";
+            this.LBL_FObs.Text = "Observaciones:";
+            //
+            // TXT_FObs
+            //
+            this.TXT_FObs.Location = new System.Drawing.Point(613, 329);
+            this.TXT_FObs.Multiline = true;
+            this.TXT_FObs.Name = "TXT_FObs";
+            this.TXT_FObs.Size = new System.Drawing.Size(263, 45);
+            this.TXT_FObs.TabIndex = 13;
+            //
+            // BTN_FinalizarReparacion
+            //
+            this.BTN_FinalizarReparacion.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(142)))), ((int)(((byte)(68)))), ((int)(((byte)(173)))));
+            this.BTN_FinalizarReparacion.FlatAppearance.BorderSize = 0;
+            this.BTN_FinalizarReparacion.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.BTN_FinalizarReparacion.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.BTN_FinalizarReparacion.ForeColor = System.Drawing.Color.White;
+            this.BTN_FinalizarReparacion.Location = new System.Drawing.Point(12, 384);
+            this.BTN_FinalizarReparacion.Name = "BTN_FinalizarReparacion";
+            this.BTN_FinalizarReparacion.Size = new System.Drawing.Size(160, 30);
+            this.BTN_FinalizarReparacion.TabIndex = 14;
+            this.BTN_FinalizarReparacion.Tag = "OrdenDetalle.FinalizarReparacion";
+            this.BTN_FinalizarReparacion.Text = "Finalizar reparacion";
+            this.BTN_FinalizarReparacion.UseVisualStyleBackColor = false;
+            this.BTN_FinalizarReparacion.Click += new System.EventHandler(this.BTN_FinalizarReparacion_Click);
+            //
+            // TAB_Pruebas
+            //
+            this.TAB_Pruebas.Controls.Add(this.LBL_PIntervencion);
+            this.TAB_Pruebas.Controls.Add(this.CBO_PruebaReparacion);
+            this.TAB_Pruebas.Controls.Add(this.DGV_Pruebas);
+            this.TAB_Pruebas.Controls.Add(this.LBL_PDDesc);
+            this.TAB_Pruebas.Controls.Add(this.TXT_PruebaDesc);
+            this.TAB_Pruebas.Controls.Add(this.RDO_Aprobada);
+            this.TAB_Pruebas.Controls.Add(this.RDO_Fallida);
+            this.TAB_Pruebas.Controls.Add(this.LBL_PDObs);
+            this.TAB_Pruebas.Controls.Add(this.TXT_PruebaObs);
+            this.TAB_Pruebas.Controls.Add(this.BTN_RegistrarPrueba);
+            this.TAB_Pruebas.Location = new System.Drawing.Point(4, 22);
+            this.TAB_Pruebas.Name = "TAB_Pruebas";
+            this.TAB_Pruebas.Size = new System.Drawing.Size(888, 454);
+            this.TAB_Pruebas.TabIndex = 4;
+            this.TAB_Pruebas.Tag = "OrdenDetalle.TabPruebas";
+            this.TAB_Pruebas.Text = "Pruebas";
+            this.TAB_Pruebas.UseVisualStyleBackColor = true;
+            //
+            // LBL_PIntervencion
+            //
+            this.LBL_PIntervencion.AutoSize = true;
+            this.LBL_PIntervencion.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.LBL_PIntervencion.Location = new System.Drawing.Point(12, 14);
+            this.LBL_PIntervencion.Name = "LBL_PIntervencion";
+            this.LBL_PIntervencion.Size = new System.Drawing.Size(76, 15);
+            this.LBL_PIntervencion.TabIndex = 0;
+            this.LBL_PIntervencion.Tag = "OrdenDetalle.Intervencion";
+            this.LBL_PIntervencion.Text = "Intervencion:";
+            //
+            // CBO_PruebaReparacion
+            //
+            this.CBO_PruebaReparacion.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.CBO_PruebaReparacion.Location = new System.Drawing.Point(150, 11);
+            this.CBO_PruebaReparacion.Name = "CBO_PruebaReparacion";
+            this.CBO_PruebaReparacion.Size = new System.Drawing.Size(250, 21);
+            this.CBO_PruebaReparacion.TabIndex = 1;
+            this.CBO_PruebaReparacion.SelectedIndexChanged += new System.EventHandler(this.CBO_PruebaReparacion_SelectedIndexChanged);
+            //
+            // DGV_Pruebas
+            //
+            this.DGV_Pruebas.AllowUserToAddRows = false;
+            this.DGV_Pruebas.AllowUserToDeleteRows = false;
+            this.DGV_Pruebas.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.DGV_Pruebas.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.DGV_Pruebas.BackgroundColor = System.Drawing.Color.White;
+            this.DGV_Pruebas.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.DGV_Pruebas.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.DGV_Pruebas.Location = new System.Drawing.Point(12, 42);
+            this.DGV_Pruebas.MultiSelect = false;
+            this.DGV_Pruebas.Name = "DGV_Pruebas";
+            this.DGV_Pruebas.ReadOnly = true;
+            this.DGV_Pruebas.RowHeadersVisible = false;
+            this.DGV_Pruebas.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.DGV_Pruebas.Size = new System.Drawing.Size(864, 180);
+            this.DGV_Pruebas.TabIndex = 2;
+            //
+            // LBL_PDDesc
+            //
+            this.LBL_PDDesc.AutoSize = true;
+            this.LBL_PDDesc.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.LBL_PDDesc.Location = new System.Drawing.Point(12, 234);
+            this.LBL_PDDesc.Name = "LBL_PDDesc";
+            this.LBL_PDDesc.Size = new System.Drawing.Size(72, 15);
+            this.LBL_PDDesc.TabIndex = 3;
+            this.LBL_PDDesc.Tag = "OrdenDetalle.DescripcionItem";
+            this.LBL_PDDesc.Text = "Descripcion:";
+            //
+            // TXT_PruebaDesc
+            //
+            this.TXT_PruebaDesc.Location = new System.Drawing.Point(150, 231);
+            this.TXT_PruebaDesc.Multiline = true;
+            this.TXT_PruebaDesc.Name = "TXT_PruebaDesc";
+            this.TXT_PruebaDesc.Size = new System.Drawing.Size(726, 44);
+            this.TXT_PruebaDesc.TabIndex = 4;
+            //
+            // RDO_Aprobada
+            //
+            this.RDO_Aprobada.AutoSize = true;
+            this.RDO_Aprobada.Checked = true;
+            this.RDO_Aprobada.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.RDO_Aprobada.Location = new System.Drawing.Point(150, 284);
+            this.RDO_Aprobada.Name = "RDO_Aprobada";
+            this.RDO_Aprobada.Size = new System.Drawing.Size(80, 19);
+            this.RDO_Aprobada.TabIndex = 5;
+            this.RDO_Aprobada.TabStop = true;
+            this.RDO_Aprobada.Tag = "OrdenDetalle.Aprobada";
+            this.RDO_Aprobada.Text = "Aprobada";
+            this.RDO_Aprobada.UseVisualStyleBackColor = true;
+            //
+            // RDO_Fallida
+            //
+            this.RDO_Fallida.AutoSize = true;
+            this.RDO_Fallida.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.RDO_Fallida.Location = new System.Drawing.Point(270, 284);
+            this.RDO_Fallida.Name = "RDO_Fallida";
+            this.RDO_Fallida.Size = new System.Drawing.Size(120, 19);
+            this.RDO_Fallida.TabIndex = 6;
+            this.RDO_Fallida.Tag = "OrdenDetalle.Fallida";
+            this.RDO_Fallida.Text = "Requiere revision";
+            this.RDO_Fallida.UseVisualStyleBackColor = true;
+            //
+            // LBL_PDObs
+            //
+            this.LBL_PDObs.AutoSize = true;
+            this.LBL_PDObs.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.LBL_PDObs.Location = new System.Drawing.Point(12, 314);
+            this.LBL_PDObs.Name = "LBL_PDObs";
+            this.LBL_PDObs.Size = new System.Drawing.Size(87, 15);
+            this.LBL_PDObs.TabIndex = 7;
+            this.LBL_PDObs.Tag = "OrdenDetalle.ObsPrueba";
+            this.LBL_PDObs.Text = "Observaciones:";
+            //
+            // TXT_PruebaObs
+            //
+            this.TXT_PruebaObs.Location = new System.Drawing.Point(150, 311);
+            this.TXT_PruebaObs.Multiline = true;
+            this.TXT_PruebaObs.Name = "TXT_PruebaObs";
+            this.TXT_PruebaObs.Size = new System.Drawing.Size(726, 60);
+            this.TXT_PruebaObs.TabIndex = 8;
+            //
+            // BTN_RegistrarPrueba
+            //
+            this.BTN_RegistrarPrueba.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(39)))), ((int)(((byte)(174)))), ((int)(((byte)(96)))));
+            this.BTN_RegistrarPrueba.FlatAppearance.BorderSize = 0;
+            this.BTN_RegistrarPrueba.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.BTN_RegistrarPrueba.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.BTN_RegistrarPrueba.ForeColor = System.Drawing.Color.White;
+            this.BTN_RegistrarPrueba.Location = new System.Drawing.Point(150, 382);
+            this.BTN_RegistrarPrueba.Name = "BTN_RegistrarPrueba";
+            this.BTN_RegistrarPrueba.Size = new System.Drawing.Size(160, 30);
+            this.BTN_RegistrarPrueba.TabIndex = 9;
+            this.BTN_RegistrarPrueba.Tag = "OrdenDetalle.RegistrarPrueba";
+            this.BTN_RegistrarPrueba.Text = "Registrar prueba";
+            this.BTN_RegistrarPrueba.UseVisualStyleBackColor = false;
+            this.BTN_RegistrarPrueba.Click += new System.EventHandler(this.BTN_RegistrarPrueba_Click);
+            //
             // TAB_Entrega
             //
             this.TAB_Entrega.Controls.Add(this.LBL_EEntregadoA);
@@ -972,7 +1369,7 @@ namespace UI.Forms.Ordenes
             this.TAB_Entrega.Location = new System.Drawing.Point(4, 22);
             this.TAB_Entrega.Name = "TAB_Entrega";
             this.TAB_Entrega.Size = new System.Drawing.Size(888, 454);
-            this.TAB_Entrega.TabIndex = 4;
+            this.TAB_Entrega.TabIndex = 6;
             this.TAB_Entrega.Tag = "OrdenDetalle.TabEntrega";
             this.TAB_Entrega.Text = "Entrega";
             this.TAB_Entrega.UseVisualStyleBackColor = true;
@@ -1111,6 +1508,14 @@ namespace UI.Forms.Ordenes
             ((System.ComponentModel.ISupportInitialize)(this.NUM_PGarantia)).EndInit();
             this.TAB_Historial.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.DGV_Historial)).EndInit();
+            this.TAB_Reparaciones.ResumeLayout(false);
+            this.TAB_Reparaciones.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.DGV_Reparaciones)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.NUM_ConsumoCantidad)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.DGV_Consumidos)).EndInit();
+            this.TAB_Pruebas.ResumeLayout(false);
+            this.TAB_Pruebas.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.DGV_Pruebas)).EndInit();
             this.TAB_Entrega.ResumeLayout(false);
             this.TAB_Entrega.PerformLayout();
             this.ResumeLayout(false);
@@ -1184,6 +1589,33 @@ namespace UI.Forms.Ordenes
         private System.Windows.Forms.Button BTN_Rechazar;
         private System.Windows.Forms.TabPage TAB_Historial;
         private System.Windows.Forms.DataGridView DGV_Historial;
+        private System.Windows.Forms.TabPage TAB_Reparaciones;
+        private System.Windows.Forms.DataGridView DGV_Reparaciones;
+        private System.Windows.Forms.Button BTN_IniciarReparacion;
+        private System.Windows.Forms.Label LBL_CRepuesto;
+        private System.Windows.Forms.ComboBox CBO_ConsumoRepuesto;
+        private System.Windows.Forms.Label LBL_CCantidad;
+        private System.Windows.Forms.NumericUpDown NUM_ConsumoCantidad;
+        private System.Windows.Forms.Button BTN_Consumir;
+        private System.Windows.Forms.Label LBL_Consumidos;
+        private System.Windows.Forms.DataGridView DGV_Consumidos;
+        private System.Windows.Forms.Label LBL_CostoTotal;
+        private System.Windows.Forms.Label LBL_FTrabajo;
+        private System.Windows.Forms.TextBox TXT_FTrabajo;
+        private System.Windows.Forms.Label LBL_FObs;
+        private System.Windows.Forms.TextBox TXT_FObs;
+        private System.Windows.Forms.Button BTN_FinalizarReparacion;
+        private System.Windows.Forms.TabPage TAB_Pruebas;
+        private System.Windows.Forms.Label LBL_PIntervencion;
+        private System.Windows.Forms.ComboBox CBO_PruebaReparacion;
+        private System.Windows.Forms.DataGridView DGV_Pruebas;
+        private System.Windows.Forms.Label LBL_PDDesc;
+        private System.Windows.Forms.TextBox TXT_PruebaDesc;
+        private System.Windows.Forms.RadioButton RDO_Aprobada;
+        private System.Windows.Forms.RadioButton RDO_Fallida;
+        private System.Windows.Forms.Label LBL_PDObs;
+        private System.Windows.Forms.TextBox TXT_PruebaObs;
+        private System.Windows.Forms.Button BTN_RegistrarPrueba;
         private System.Windows.Forms.TabPage TAB_Entrega;
         private System.Windows.Forms.Label LBL_EEntregadoA;
         private System.Windows.Forms.TextBox TXT_EEntregadoA;

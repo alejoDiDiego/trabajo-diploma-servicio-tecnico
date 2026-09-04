@@ -9,6 +9,7 @@ using APPLICATION.Features.Idiomas;
 using APPLICATION.Features.Marcas;
 using APPLICATION.Features.Ordenes;
 using APPLICATION.Features.Permisos;
+using APPLICATION.Features.Repuestos;
 using APPLICATION.Features.TiposEquipo;
 using APPLICATION.Features.Usuarios;
 using SERVICES.Idiomas;
@@ -56,6 +57,11 @@ namespace UI
 
             OrdenServicioService ordenServicioService = new OrdenServicioService();
             ordenServicioService.Inicializar();
+
+            RepuestoService repuestoService = new RepuestoService();
+            repuestoService.Inicializar();
+
+            ordenServicioService.InicializarReparaciones();
 
             SesionIdioma.GetInstance().CambiarIdioma(idiomaService.ObtenerIdiomaPorDefecto());
 
