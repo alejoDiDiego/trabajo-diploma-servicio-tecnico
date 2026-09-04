@@ -692,3 +692,378 @@ trazabilidad).
 - Verificacion: build 0 errores; matriz efectiva comprobada por SQL con expansion de familias (encargado 23, recepcionista 12, tecnico 6); login 123 OK x3; idempotencia (doble Inicializar sin duplicados); tecnico en ListarTecnicosElegibles; VerificarIntegridadUsuarios()=true. Sin commit (lo hace el orquestador).
 
 Familias de rol base 'Rol recepcionista' (12 simples), 'Rol tecnico' (6 simples) y 'Rol encargado' (anidada: Gestion clientes/equipos/catalogos/ordenes + BITACORA_VER), colgadas de Raiz, expandibles en futuros checkpoints; usuarios migrados a su rol con limpieza idempotente de asignaciones directas redundantes; matriz efectiva sin cambios (23/12/6); verificado build 0 errores, login x3, doble init sin duplicados, integridad true.
+
+## Checkpoint 3
+
+### Objetivo
+
+Incorporar stock de repuestos con movimientos auditados e intervenciones de
+reparacion con consumo de repuestos y pruebas de funcionamiento sobre ordenes
+autorizadas, con bitacora tipo `REPUESTOS`, 4 permisos nuevos y submenu
+`Inventario` visible segun permisos.
+
+### Branch y origen
+
+- Branch: `checkpoint-3-reparaciones` (trabajo local, sin upstream).
+- Origen: `checkpoint-2-ordenes` en `a7d0755`
+  ("feat(checkpoint-2): familias de rol recepcionista, tecnico y encargado en
+  seed").
+- Commits del checkpoint (locales, sin push):
+  - `16c208c feat(reparaciones): backend de repuestos, stock, intervenciones
+    y pruebas`
+  - `bdad0a4 feat(ui): gestion de repuestos y pestanas de reparaciones y
+    pruebas`
+  - `592723c fix(i18n): semillas ES/EN de repuestos, reparaciones y estados
+    EnReparacion/EnPruebas`
+  - `docs(checkpoint-3): informe de implementacion de repuestos y
+    reparaciones` (este commit).
+- Working tree: limpio tras el commit (ver seccion GIT).
+- Estado local/remoto: `origin` no tiene la rama
+  `checkpoint-3-reparaciones`; la rama solo existe en local. NO se hizo push
+  por decision del usuario.
+
+### Tablas nuevas
+
+Nuevas (creacion idempotente con `IF OBJECT_ID` + `ALTER`/`UX` defensivos;
+FKs sin accion en cascada para conservar historia):
+
+- `Repuestos` (`id_repuesto` PK identity, `codigo` unico
+  `UX_Repuestos_Codigo`, `descripcion`, `stock_actual` int,
+  `stock_minimo` int, `costo_actual` decimal(18,2),
+  `precio_referencia` decimal(18,2), `activo` bit default 1).
+- `MovimientosStock` (`id_movimiento` PK identity, `id_repuesto` FK a
+  Repuestos, `fecha` default `GETDATE()`, `tipo`
+  (`Compra`/`ConsumoReparacion`/`AjustePositivo`/`AjusteNegativo`),
+  `cantidad`, `stock_anterior`, `stock_posterior`, `id_usuario` FK a
+  Usuarios, `id_compra` nullable, `id_reparacion` FK nullable a
+  Reparaciones, `observacion`).
+- `Reparaciones` (`id_reparacion` PK identity, `id_orden` FK a
+  OrdenesServicio, `numero_intervencion` int (secuencial por orden, ver
+  Reglas), `id_usuario_tecnico` FK a Usuarios, `fecha_inicio` default
+  `GETDATE()`, `fecha_fin` nullable, `trabajo_realizado` nullable,
+  `observaciones` nullable; indice unico
+  `UX_Reparaciones_Orden_Nro` (`id_orden`, `numero_intervencion`)).
+- `ReparacionRepuesto` (PK compuesta (`id_reparacion`, `id_repuesto`),
+  `cantidad`, `costo_unitario` decimal(18,2); costo historico por consumo,
+  ver Reglas).
+- `Pruebas` (`id_prueba` PK identity, `id_reparacion` FK a Reparaciones,
+  `id_usuario_tecnico` FK a Usuarios, `fecha` default `GETDATE()`,
+  `descripcion`, `resultado` (`Aprobada`/`RequiereRevision`),
+  `observaciones` nullable).
+
+Sin cambios en tablas existentes (Clientes/Equipos/Ordenes intactas;
+presupuesto intacto, sin `TipoItem` Repuesto).
+
+### Esquema resumido
+
+```text
+Repuestos 1 ----< * MovimientosStock >---- 0..1 Reparaciones
+Repuestos * ----< * ReparacionRepuesto * >---- 1 Reparaciones
+OrdenesServicio 1 ----< * Reparaciones >---- 1 Usuarios (tecnico)
+Reparaciones 1 ----< * Pruebas
+Bitacora(tipo_actividad: ... + REPUESTOS)
+```
+
+Flujo de estados CP3 (sobre CP2):
+
+```text
+AutorizadoReparacion -> EnReparacion -> EnPruebas -> ListoRetiro (Reparado)
+EnPruebas -falla-> EnReparacion (nueva intervencion N+1)
+EnReparacion/EnPruebas -cancelar-> ListoRetiro (Cancelado, cierra abierta)
+```
+
+### Capas
+
+- DOMAIN (`Features/Repuestos` 3 archivos + `Features/Reparaciones`
+  4 archivos): `Repuesto` (`CrearNuevo` con validacion de
+  codigo/descripcion/stocks/costos, `CargarDesdeDB`, `Activo` con
+  `Desactivar`/`Reactivar`), `MovimientoStock`, `TipoMovimientoStock`
+  (`Compra`/`ConsumoReparacion`/`AjustePositivo`/`AjusteNegativo`);
+  `Reparacion` (`Iniciar`/`Finalizar` con trabajo obligatorio),
+  `ReparacionRepuesto` (cantidad + `costo_unitario` historico), `Prueba`
+  (`CrearNuevo`), `ResultadoPrueba`
+  (`Aprobada`/`RequiereRevision`). `OrdenServicio` suma
+  `IniciarReparacion`/`FinalizarReparacion`/`RegistrarPruebaAprobada`
+  (-> `ListoRetiro` + `Reparado`)/`RegistrarPruebaFallida`
+  (-> `EnReparacion`); `Cancelar` extendida a `EnReparacion`/`EnPruebas`.
+  `CodigosPermiso` suma 4 `REPUESTOS_*`.
+- APPLICATION: `RepuestoService.cs` (Crear/Modificar/Desactivar/Reactivar/
+  `AjustarStock` con motivo obligatorio/Listar/`ObtenerPorCodigo`/
+  `ListarMovimientos(Filtros)`; bitacora `REPUESTOS` por operacion);
+  `OrdenServicioService` extendido (`IniciarReparacion`/`ConsumirRepuesto`/
+  `FinalizarReparacion`/`RegistrarPrueba` + `ListarReparaciones`/
+  `ObtenerReparacion`/`ListarConsumidos`/`ListarPruebas`; `Cancelar`
+  extendida con `CerrarAbiertaYCancelar`; bitacora `ORDENES` en
+  reparaciones/pruebas); `BitacoraService` suma el tipo `REPUESTOS`.
+- INFRASTRUCTURE: `RepuestoRepository` (Crear atomico con movimiento
+  `AjustePositivo` de stock inicial, Modificar solo maestros sin stock,
+  `AjustarStock` con motivo y sin negativo con `THROW`,
+  Desactivar/Reactivar, `ObtenerPorCodigo`),
+  `MovimientoStockRepository` (Inicializar + Listar con filtros);
+  `ReparacionRepository` con 6 batches atomicos (`IniciarReparacion`,
+  `IniciarIntervencionAdicional`, `ConsumirRepuesto` con `THROW` por
+  stock, `FinalizarReparacion`, `RegistrarPrueba` con transicion de
+  estado + historial, `CerrarAbiertaYCancelar`) + lecturas
+  (`ObtenerPorId`/`ObtenerAbierta`/`ListarPorOrden`/`ListarConsumidos`/
+  `ListarPruebas`/`ObtenerPruebaPorId`/`EsUltimaFinalizada`);
+  `PermisoRepository` (seed de 4 permisos, familia `Gestion repuestos`,
+  composiciones Administrador/Lectura, grants de Rol tecnico/encargado,
+  traducciones `Bitacora.REPUESTOS`); `IdiomaRepository` (152 seeds
+  ES/EN, ver Traducciones).
+- UI: `Forms/Repuestos` (8 archivos: `FrmRepuestos` +
+  `FrmRepuestoEditar` + `FrmAjusteStock` + `FrmMovimientosStock`, `.cs` +
+  Designer); `FrmOrdenServicioDetalle` suma 2 tabs (`Reparaciones`:
+  iniciar/consumir/finalizar con grillas; `Pruebas`: combo de
+  intervencion + registrar aprobada/fallida); `FrmPrincipal` con submenu
+  `Inventario > Repuestos` (visible/habilitado por `REPUESTOS_VER`,
+  traduccion por observer); `Program.Main` inicializa `RepuestoService`
+  + `ordenServicioService.InicializarReparaciones`.
+- ABSTRACTIONS: sin cambios.
+- SERVICES: sin cambios (se reutilizan `SessionManager` y `SesionIdioma`).
+
+### Archivos existentes modificados
+
+- `APPLICATION/APPLICATION.csproj`
+- `APPLICATION/Features/Bitacora/BitacoraService.cs`
+- `APPLICATION/Features/Ordenes/OrdenServicioService.cs`
+- `DOMAIN/DOMAIN.csproj`
+- `DOMAIN/Features/Ordenes/OrdenServicio.cs`
+- `DOMAIN/Features/Permisos/CodigosPermiso.cs`
+- `INFRASTRUCTURE/REPOSITORY.csproj`
+- `INFRASTRUCTURE/Features/Idiomas/IdiomaRepository.cs`
+- `INFRASTRUCTURE/Features/Permisos/PermisoRepository.cs`
+- `PRESENTATION/Program.cs`
+- `PRESENTATION/UI.csproj`
+- `PRESENTATION/Forms/FrmPrincipal.cs` + `FrmPrincipal.Designer.cs`
+- `PRESENTATION/Forms/Ordenes/FrmOrdenServicioDetalle.cs` +
+  `FrmOrdenServicioDetalle.Designer.cs`
+- `IMPLEMENTACION_SERVICIO_TECNICO.md` (este informe)
+
+### Archivos nuevos
+
+- `DOMAIN/Features/Repuestos/Repuesto.cs`
+- `DOMAIN/Features/Repuestos/MovimientoStock.cs`
+- `DOMAIN/Features/Repuestos/TipoMovimientoStock.cs`
+- `DOMAIN/Features/Reparaciones/Reparacion.cs`
+- `DOMAIN/Features/Reparaciones/ReparacionRepuesto.cs`
+- `DOMAIN/Features/Reparaciones/Prueba.cs`
+- `DOMAIN/Features/Reparaciones/ResultadoPrueba.cs`
+- `APPLICATION/Features/Repuestos/RepuestoService.cs`
+- `INFRASTRUCTURE/Features/Repuestos/RepuestoRepository.cs`
+- `INFRASTRUCTURE/Features/Repuestos/MovimientoStockRepository.cs`
+- `INFRASTRUCTURE/Features/Reparaciones/ReparacionRepository.cs`
+- `PRESENTATION/Forms/Repuestos/FrmRepuestos.cs` (+ Designer)
+- `PRESENTATION/Forms/Repuestos/FrmRepuestoEditar.cs` (+ Designer)
+- `PRESENTATION/Forms/Repuestos/FrmAjusteStock.cs` (+ Designer)
+- `PRESENTATION/Forms/Repuestos/FrmMovimientosStock.cs` (+ Designer)
+
+### Permisos (4 nuevos)
+
+- `REPUESTOS_VER/CREAR/EDITAR/DESACTIVAR`.
+- Familia nueva `Gestion repuestos` (colgada de `Raiz` y de
+  `Administrador`; `REPUESTOS_VER` tambien cuelga de
+  `Lectura general`).
+- Rol tecnico suma `REPUESTOS_VER`.
+- Rol encargado suma `Gestion repuestos` anidada.
+- Recepcionista sin cambios.
+- Tipo de bitacora `REPUESTOS` (+ traducciones ES/EN en
+  `PermisoRepository`).
+
+### Traducciones (152 seeds ES/EN en IdiomaRepository + 2 en PermisoRepository)
+
+Menu (`Menu.Inventario`/`Menu.Repuestos`), `FrmRepuestos` y filtros/botones
+(`Repuestos.*`: codigo, descripcion, stocks, costos, movimientos, alertas),
+tabs del detalle (`OrdenDetalle.TabReparaciones`/`TabPruebas`), estados
+(`Estado.EnReparacion`/`Estado.EnPruebas`), resultado
+(`Resultado.Reparado`), columnas y mensajes de reparaciones/pruebas/
+movimientos. Mas `Bitacora.REPUESTOS` (ES: "Repuestos" / EN: "Spare
+parts") en `PermisoRepository`.
+
+### Reglas
+
+- Intervenciones N° secuencial `MAX+1` por orden con lock
+  (`UPDLOCK, HOLDLOCK`); indice unico (`id_orden`,
+  `numero_intervencion`).
+- Repeat-consumo acumula cantidad (`cantidad = cantidad + @Cantidad`);
+  `costo_unitario` conserva el del primer consumo (costo historico).
+- Ajustes con motivo obligatorio y sin dejar stock negativo (`THROW`).
+- Consumo atomico con `THROW` (repuesto inexistente / stock
+  insuficiente).
+- Crear con stock inicial > 0 genera movimiento `AjustePositivo`
+  ("Stock inicial"); `Modificar` no toca el stock.
+- Prueba solo sobre la ultima intervencion finalizada y sin intervencion
+  abierta en la orden.
+- Tecnico de la intervencion = tecnico asignado de la orden (validado
+  como elegible).
+- Solo repuestos activos para consumir.
+- Presupuesto intacto: sin `TipoItem` Repuesto.
+
+### Decisiones
+
+- Extender `OrdenServicioService` en lugar de crear un service nuevo: las
+  intervenciones viven dentro del ciclo de la orden y reutilizan sus
+  validaciones, sesion y bitacora `ORDENES`.
+- Sin `TipoItem` Repuesto: el costo de repuestos no entra al presupuesto;
+  el presupuesto queda intacto.
+- Cancelar con intervencion abierta: `CerrarAbiertaYCancelar` en el mismo
+  batch (cierra la abierta y cancela la orden) en lugar de exigir cierre
+  manual previo.
+- Intervenciones secuenciales N+1 con lock en lugar de identity global
+  (numeracion legible por orden).
+- Repeat-consumo acumula con el costo del primero (costo historico, no
+  promedio).
+- Submenu `Inventario` top-level en `Gestion` (no dentro de Ordenes) para
+  futuro crecimiento de stock/compras.
+- Bitacora con 1 solo tipo nuevo (`REPUESTOS`); reparaciones y pruebas
+  bitacoran como `ORDENES`.
+- Paquetes: ninguno nuevo.
+
+### Delegaciones
+
+- 4 exploradores (repo, esquema, permisos/idiomas, UI base): base del
+  disenio (OK).
+- Backend (entidades, repositories, services, permisos, bitacora): OK,
+  verificado funcional.
+- Dump de esquema (tablas/columnas/FKs desde SQL): OK, consistente con
+  los repositories.
+- UI (4 forms de repuestos + 2 tabs del detalle + submenu + seeds +
+  init): OK con incidente — rate limit al devolver el trabajo; se cerro
+  con auditoria de cierre (verificacion de archivos y build por el
+  orquestador).
+- Revision cruzada (backend/UI/DB): 0 blockers, 7 hallazgos menores/info
+  (ver Revisiones cruzadas).
+- Testing (funcional 76/76 + regresion 17 + visual 30/30): PASS.
+- Micro-fix seeds (6 seeds `Estado.EnReparacion`/`EnPruebas` +
+  `Resultado.Reparado`): OK, verificado en `fix(i18n)`.
+
+### Revisiones cruzadas
+
+- 0 blockers.
+- 7 hallazgos menores/info (no bloquean, quedan documentados):
+  1. Repeat-consumo conserva el costo del primero (documentado como
+     regla; pendiente decidir si actualizar al ultimo).
+  2. Cancelar con abierta sobrescribe la observacion de cierre.
+  3. Race entre la lectura de estado en el service y el batch del
+     repository (validacion de estado fuera del batch).
+  4. Batches sin `WHERE` de estado (el estado lo valida el service, no
+     el SQL).
+  5. `EsUltimaFinalizada` sin usos (la ultima se calcula en el service).
+  6. Seed `Columna.Numero` duplicado (clave repetida).
+  7. Ajuste de stock permitido sobre repuesto inactivo.
+
+### Pruebas funcionales (harness temporal fuera del repo): 76/76 PASS
+
+- Repuestos crear/modificar/desactivar/reactivar, codigo unico,
+  `ObtenerPorCodigo`: PASS.
+- Ajustes positivo/negativo con motivo; motivo vacio y negativo bajo
+  cero rechazados: PASS.
+- Stock inicial genera `AjustePositivo`; `Modificar` no toca stock:
+  PASS.
+- Iniciar reparacion (autorizada -> `EnReparacion` N°1; abierta
+  duplicada rechazada; sin tecnico rechazada): PASS.
+- Consumir (descuenta stock, acumula repeat, inactivo/inexistente/
+  insuficiente rechazados): PASS.
+- Finalizar (trabajo obligatorio; exige `EnReparacion`; -> `EnPruebas`):
+  PASS.
+- Pruebas (solo ultima finalizada sin abierta; aprobada -> `ListoRetiro`
+  + `Reparado`; fallida -> `EnReparacion`): PASS.
+- Segunda intervencion N°2 tras falla; prueba sobre intervencion vieja
+  rechazada: PASS.
+- Cancelar en `EnReparacion`/`EnPruebas` cierra la abierta; motivo
+  obligatorio: PASS.
+- Invalidas (transiciones fuera de orden, ids inexistentes): PASS con
+  `ReglaNegocioException`.
+- Bitacora tipos `REPUESTOS`/`ORDENES` en cada operacion: PASS.
+
+### Pruebas visuales (harness STA + UI real): 30/30 PASS (42 PNG)
+
+- `FrmRepuestos`/`FrmRepuestoEditar`/`FrmAjusteStock`/
+  `FrmMovimientosStock` abren (nuevo + editar con datos reales),
+  `DrawToBitmap` OK, resize OK.
+- `FrmOrdenServicioDetalle` tabs Reparaciones/Pruebas por estado
+  (Autorizado/EnReparacion/EnPruebas/ListoRetiro), `DrawToBitmap` OK.
+- ES->EN->ES sin excepcion; submenu `Inventario` visible por
+  `REPUESTOS_VER`.
+- 1 bug visual corregido en este checkpoint (ver Problemas).
+
+### Pruebas de regresion (CP1+CP2): 17 checks PASS
+
+- Login valido/invalido/logout, ES<->EN por service y observer,
+  `VerificarIntegridadUsuarios`, CRUD clientes/equipos/catalogos,
+  baja/reactivacion de usuarios, ciclo
+  ordenes/diagnostico/presupuesto/entrega: PASS sin cambios.
+
+### Herramienta visual
+
+Harness STA temporal fuera del repo: instancia los forms reales de
+`UI.exe` con sesion admin, vuelca arbol de controles, `DrawToBitmap` a
+PNG (42), prueba de resize y `PerformClick` en Crear/Ajustar/Iniciar/
+Consumir/Finalizar/RegistrarPrueba contra UI real. Mas smoke con `UI.exe`
+real (login admin/123, menu `Gestion > Inventario > Repuestos` y detalle
+de orden).
+
+### Problemas encontrados y corregidos
+
+1. Bug visual post-testing: faltaban 6 seeds (`Estado.EnReparacion`/
+   `Estado.EnPruebas` ES/EN + `Resultado.Reparado` ES/EN) y los
+   tabs/grillas mostraban la clave en lugar del texto. Fix: 6
+   `AgregarSeed` en `IdiomaRepository` (commit `fix(i18n)`). Re-test
+   visual: PASS.
+
+### Limitaciones
+
+- Atomicidad indirecta parcial: estado + historial + reparacion van en el
+  mismo batch SQL del repository, sin UoW/transaccion formal a nivel
+  service; un fallo entre batches (p. ej. bitacora) no revierte la
+  transicion (heredado de CP2).
+- Dropdowns de consumo/prueba no capturados control por control en el
+  harness (cubiertos por service + smoke de tabs).
+- Estado `EnPruebas` verificado por service y smoke de tab, sin PNG
+  dedicado en la corrida inicial (cubierto en re-test post-fix).
+- `RecalcularDV` por menu no fue clickeado en el harness (requiere
+  confirmacion modal); se cubrio via `IntegridadService` directo: PASS
+  (heredado CP1/CP2).
+- ES/EN parcial: recorrido por service + observer en pantallas nuevas,
+  sin control-por-control exhaustivo.
+- MDI a prueba humana: el smoke verifica visibilidad por permisos +
+  handlers; la navegacion MDI completa queda a prueba humana.
+- Orden de limpieza FK en testing (prefijo CP3T): el borrado debe
+  respetar `Pruebas` -> `ReparacionRepuesto` -> `Reparaciones` ->
+  `MovimientosStock` -> `Repuestos` -> resto del ciclo.
+
+### Datos de prueba
+
+Limpieza posterior al testing: `DELETE` en una transaccion de todas las
+filas con prefijo CP3T (`Pruebas` -> `ReparacionRepuesto` ->
+`Reparaciones` -> `MovimientosStock` -> `Repuestos`, luego resto del
+ciclo). Tablas CP3 quedaron en 0 filas (0 restos). Bitacora conserva el
+historial (no se purga por trazabilidad).
+
+### Pruebas humanas pendientes
+
+1. Crear un repuesto con stock inicial y verificar el movimiento
+   `AjustePositivo` en Movimientos.
+2. Ajustar stock positivo/negativo con motivo; intentar un ajuste que
+   deje negativo (debe fallar).
+3. Intentar consumir con stock insuficiente (debe fallar con mensaje).
+4. Iniciar reparacion en una orden autorizada y verificar N°1 y estado
+   `EnReparacion`.
+5. Consumir un repuesto activo y verificar descuento de stock y
+   movimiento `ConsumoReparacion`.
+6. Repetir el consumo del mismo repuesto y verificar que acumula
+   cantidad con costo historico.
+7. Finalizar la reparacion con trabajo realizado y verificar
+   `EnPruebas`.
+8. Registrar una prueba fallida y verificar el retorno a
+   `EnReparacion`.
+9. Iniciar la segunda intervencion y verificar N°2.
+10. Registrar una prueba aprobada y verificar `ListoRetiro` +
+    `Reparado`.
+11. Entregar la orden reparada y verificar la fila en `Entregas`.
+12. Probar operaciones invalidas (iniciar sin tecnico, consumir
+    inactivo, prueba en intervencion vieja) y confirmar mensajes.
+13. Cambiar idioma ES<->EN con repuestos y detalle abiertos y verificar
+    traduccion completa.
+14. Regresion CP1+CP2: clientes/equipos/catalogos,
+    ordenes/diagnostico/presupuesto/entrega, bitacora e integridad
+    (`Recalcular DV`).
