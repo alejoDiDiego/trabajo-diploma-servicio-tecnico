@@ -516,7 +516,10 @@ namespace REPOSITORY.Features.Permisos
                 ('Gestion equipos'),
                 ('Gestion catalogos'),
                 ('Gestion ordenes'),
-                ('Lectura general');
+                ('Lectura general'),
+                ('Rol recepcionista'),
+                ('Rol tecnico'),
+                ('Rol encargado');
 
                 INSERT INTO Permisos (nombre, codigo, es_familia)
                 SELECT f.nombre, NULL, 1
@@ -547,7 +550,10 @@ namespace REPOSITORY.Features.Permisos
                 ('Gestion equipos'),
                 ('Gestion catalogos'),
                 ('Gestion ordenes'),
-                ('Lectura general');
+                ('Lectura general'),
+                ('Rol recepcionista'),
+                ('Rol tecnico'),
+                ('Rol encargado');
 
                 INSERT INTO PermisoComposicion (id_permiso_padre, id_permiso_hijo)
                 SELECT raiz.id_permiso, p.id_permiso
@@ -630,7 +636,30 @@ namespace REPOSITORY.Features.Permisos
                 ('Administrador', NULL, 'Gestion catalogos'),
                 ('Administrador', NULL, 'Gestion ordenes'),
                 ('Administrador', 'INTEGRIDAD_RECALCULAR', NULL),
-                ('Administrador', 'BITACORA_VER', NULL);
+                ('Administrador', 'BITACORA_VER', NULL),
+                ('Rol recepcionista', 'CLIENTES_VER', NULL),
+                ('Rol recepcionista', 'CLIENTES_CREAR', NULL),
+                ('Rol recepcionista', 'CLIENTES_EDITAR', NULL),
+                ('Rol recepcionista', 'EQUIPOS_VER', NULL),
+                ('Rol recepcionista', 'EQUIPOS_CREAR', NULL),
+                ('Rol recepcionista', 'EQUIPOS_EDITAR', NULL),
+                ('Rol recepcionista', 'TIPOS_EQUIPO_VER', NULL),
+                ('Rol recepcionista', 'MARCAS_VER', NULL),
+                ('Rol recepcionista', 'ORDENES_VER', NULL),
+                ('Rol recepcionista', 'ORDENES_CREAR', NULL),
+                ('Rol recepcionista', 'ORDENES_EDITAR', NULL),
+                ('Rol recepcionista', 'ORDENES_ENTREGAR', NULL),
+                ('Rol tecnico', 'CLIENTES_VER', NULL),
+                ('Rol tecnico', 'EQUIPOS_VER', NULL),
+                ('Rol tecnico', 'TIPOS_EQUIPO_VER', NULL),
+                ('Rol tecnico', 'MARCAS_VER', NULL),
+                ('Rol tecnico', 'ORDENES_VER', NULL),
+                ('Rol tecnico', 'ORDENES_EDITAR', NULL),
+                ('Rol encargado', 'BITACORA_VER', NULL),
+                ('Rol encargado', NULL, 'Gestion clientes'),
+                ('Rol encargado', NULL, 'Gestion equipos'),
+                ('Rol encargado', NULL, 'Gestion catalogos'),
+                ('Rol encargado', NULL, 'Gestion ordenes');
 
                 INSERT INTO PermisoComposicion (id_permiso_padre, id_permiso_hijo)
                 SELECT padre.id_permiso, hijo.id_permiso

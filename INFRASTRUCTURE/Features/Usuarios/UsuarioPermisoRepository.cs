@@ -250,6 +250,62 @@ namespace REPOSITORY.Features.Usuarios
                       AND up.id_permiso = p.id_permiso
                 );
 
+                -- Familias de rol base: los 3 usuarios pasan de asignacion directa a su rol.
+                CREATE TABLE #AsignacionesRol (
+                    username nvarchar(100),
+                    familia nvarchar(100)
+                );
+
+                INSERT INTO #AsignacionesRol (username, familia) VALUES
+                ('recepcionista', 'Rol recepcionista'),
+                ('tecnico', 'Rol tecnico'),
+                ('encargado', 'Rol encargado');
+
+                INSERT INTO UsuarioPermisos (id_usuario, id_permiso)
+                SELECT u.id_usuario, p.id_permiso
+                FROM #AsignacionesRol a
+                INNER JOIN Usuarios u ON UPPER(u.username) = UPPER(a.username)
+                INNER JOIN Permisos p ON UPPER(p.nombre) = UPPER(a.familia) AND p.es_familia=1
+                WHERE NOT EXISTS (
+                    SELECT 1
+                    FROM UsuarioPermisos up
+                    WHERE up.id_usuario = u.id_usuario
+                      AND up.id_permiso = p.id_permiso
+                );
+
+                -- Limpieza de asignaciones redundantes ahora cubiertas por el rol (solo estos 3 usuarios).
+                DELETE up
+                FROM UsuarioPermisos up
+                INNER JOIN Usuarios u ON u.id_usuario = up.id_usuario
+                INNER JOIN Permisos p ON p.id_permiso = up.id_permiso
+                WHERE UPPER(u.username) = UPPER('recepcionista')
+                  AND p.es_familia = 0
+                  AND p.codigo IN ('CLIENTES_VER', 'CLIENTES_CREAR', 'CLIENTES_EDITAR', 'EQUIPOS_VER', 'EQUIPOS_CREAR', 'EQUIPOS_EDITAR', 'TIPOS_EQUIPO_VER', 'MARCAS_VER', 'ORDENES_VER', 'ORDENES_CREAR', 'ORDENES_EDITAR', 'ORDENES_ENTREGAR');
+
+                DELETE up
+                FROM UsuarioPermisos up
+                INNER JOIN Usuarios u ON u.id_usuario = up.id_usuario
+                INNER JOIN Permisos p ON p.id_permiso = up.id_permiso
+                WHERE UPPER(u.username) = UPPER('tecnico')
+                  AND p.es_familia = 0
+                  AND p.codigo IN ('CLIENTES_VER', 'EQUIPOS_VER', 'TIPOS_EQUIPO_VER', 'MARCAS_VER', 'ORDENES_VER', 'ORDENES_EDITAR');
+
+                DELETE up
+                FROM UsuarioPermisos up
+                INNER JOIN Usuarios u ON u.id_usuario = up.id_usuario
+                INNER JOIN Permisos p ON p.id_permiso = up.id_permiso
+                WHERE UPPER(u.username) = UPPER('encargado')
+                  AND p.es_familia = 0
+                  AND p.codigo IN ('BITACORA_VER');
+
+                DELETE up
+                FROM UsuarioPermisos up
+                INNER JOIN Usuarios u ON u.id_usuario = up.id_usuario
+                INNER JOIN Permisos p ON p.id_permiso = up.id_permiso
+                WHERE UPPER(u.username) = UPPER('encargado')
+                  AND p.es_familia = 1
+                  AND UPPER(p.nombre) IN (UPPER('Gestion clientes'), UPPER('Gestion equipos'), UPPER('Gestion catalogos'), UPPER('Gestion ordenes'));
+
                 SELECT 0;
             ";
 
