@@ -7,6 +7,7 @@ using APPLICATION.Features.Equipos;
 using APPLICATION.Features.Integridad;
 using APPLICATION.Features.Idiomas;
 using APPLICATION.Features.Marcas;
+using APPLICATION.Features.Ordenes;
 using APPLICATION.Features.Permisos;
 using APPLICATION.Features.TiposEquipo;
 using APPLICATION.Features.Usuarios;
@@ -52,6 +53,9 @@ namespace UI
 
             EquipoService equipoService = new EquipoService();
             equipoService.Inicializar();
+
+            OrdenServicioService ordenServicioService = new OrdenServicioService();
+            ordenServicioService.Inicializar();
 
             SesionIdioma.GetInstance().CambiarIdioma(idiomaService.ObtenerIdiomaPorDefecto());
 

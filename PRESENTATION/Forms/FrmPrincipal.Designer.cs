@@ -25,6 +25,7 @@ namespace UI.Forms
             this.TSMI_RecalcularDV = new System.Windows.Forms.ToolStripMenuItem();
             this.TSMI_Clientes = new System.Windows.Forms.ToolStripMenuItem();
             this.TSMI_Equipos = new System.Windows.Forms.ToolStripMenuItem();
+            this.TSMI_Ordenes = new System.Windows.Forms.ToolStripMenuItem();
             this.TSMI_Catalogos = new System.Windows.Forms.ToolStripMenuItem();
             this.TSMI_TiposEquipo = new System.Windows.Forms.ToolStripMenuItem();
             this.TSMI_Marcas = new System.Windows.Forms.ToolStripMenuItem();
@@ -130,6 +131,7 @@ namespace UI.Forms
             this.TSMI_Gestion.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.TSMI_Clientes,
             this.TSMI_Equipos,
+            this.TSMI_Ordenes,
             this.TSMI_Catalogos});
             this.TSMI_Gestion.Name = "TSMI_Gestion";
             this.TSMI_Gestion.Size = new System.Drawing.Size(59, 20);
@@ -151,6 +153,14 @@ namespace UI.Forms
             this.TSMI_Equipos.Tag = "Menu.Equipos";
             this.TSMI_Equipos.Text = "Equipos";
             this.TSMI_Equipos.Click += new System.EventHandler(this.TSMI_Equipos_Click);
+            // 
+            // TSMI_Ordenes
+            // 
+            this.TSMI_Ordenes.Name = "TSMI_Ordenes";
+            this.TSMI_Ordenes.Size = new System.Drawing.Size(180, 22);
+            this.TSMI_Ordenes.Tag = "Menu.Ordenes";
+            this.TSMI_Ordenes.Text = "Ordenes";
+            this.TSMI_Ordenes.Click += new System.EventHandler(this.TSMI_Ordenes_Click);
             // 
             // TSMI_Catalogos
             // 
@@ -229,6 +239,7 @@ namespace UI.Forms
         private System.Windows.Forms.ToolStripMenuItem TSMI_Gestion;
         private System.Windows.Forms.ToolStripMenuItem TSMI_Clientes;
         private System.Windows.Forms.ToolStripMenuItem TSMI_Equipos;
+        private System.Windows.Forms.ToolStripMenuItem TSMI_Ordenes;
         private System.Windows.Forms.ToolStripMenuItem TSMI_Catalogos;
         private System.Windows.Forms.ToolStripMenuItem TSMI_TiposEquipo;
         private System.Windows.Forms.ToolStripMenuItem TSMI_Marcas;
