@@ -192,13 +192,57 @@ namespace REPOSITORY.Features.Usuarios
                 ('permisos', 'Gestion permisos'),
                 ('idiomas', 'Gestion idiomas'),
                 ('idiomas', 'Gestion traducciones'),
-                ('lector', 'Lectura general');
+                ('lector', 'Lectura general'),
+                ('encargado', 'Gestion clientes'),
+                ('encargado', 'Gestion equipos'),
+                ('encargado', 'Gestion catalogos'),
+                ('encargado', 'Gestion ordenes');
 
                 INSERT INTO UsuarioPermisos (id_usuario, id_permiso)
                 SELECT u.id_usuario, p.id_permiso
                 FROM #Asignaciones a
                 INNER JOIN Usuarios u ON UPPER(u.username) = UPPER(a.username)
                 INNER JOIN Permisos p ON UPPER(p.nombre) = UPPER(a.familia) AND p.es_familia=1
+                WHERE NOT EXISTS (
+                    SELECT 1
+                    FROM UsuarioPermisos up
+                    WHERE up.id_usuario = u.id_usuario
+                      AND up.id_permiso = p.id_permiso
+                );
+
+                -- Simples directos: recepcionista/tecnico no usan familias para no heredar de mas;
+                -- encargado solo suma BITACORA_VER simple (sus 4 familias ya calzan exacto arriba).
+                CREATE TABLE #AsignacionesSimples (
+                    username nvarchar(100),
+                    codigo nvarchar(100)
+                );
+
+                INSERT INTO #AsignacionesSimples (username, codigo) VALUES
+                ('recepcionista', 'CLIENTES_VER'),
+                ('recepcionista', 'CLIENTES_CREAR'),
+                ('recepcionista', 'CLIENTES_EDITAR'),
+                ('recepcionista', 'EQUIPOS_VER'),
+                ('recepcionista', 'EQUIPOS_CREAR'),
+                ('recepcionista', 'EQUIPOS_EDITAR'),
+                ('recepcionista', 'TIPOS_EQUIPO_VER'),
+                ('recepcionista', 'MARCAS_VER'),
+                ('recepcionista', 'ORDENES_VER'),
+                ('recepcionista', 'ORDENES_CREAR'),
+                ('recepcionista', 'ORDENES_EDITAR'),
+                ('recepcionista', 'ORDENES_ENTREGAR'),
+                ('tecnico', 'CLIENTES_VER'),
+                ('tecnico', 'EQUIPOS_VER'),
+                ('tecnico', 'TIPOS_EQUIPO_VER'),
+                ('tecnico', 'MARCAS_VER'),
+                ('tecnico', 'ORDENES_VER'),
+                ('tecnico', 'ORDENES_EDITAR'),
+                ('encargado', 'BITACORA_VER');
+
+                INSERT INTO UsuarioPermisos (id_usuario, id_permiso)
+                SELECT u.id_usuario, p.id_permiso
+                FROM #AsignacionesSimples a
+                INNER JOIN Usuarios u ON UPPER(u.username) = UPPER(a.username)
+                INNER JOIN Permisos p ON p.codigo = a.codigo AND p.es_familia=0
                 WHERE NOT EXISTS (
                     SELECT 1
                     FROM UsuarioPermisos up

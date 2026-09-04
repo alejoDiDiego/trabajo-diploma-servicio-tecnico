@@ -681,6 +681,12 @@ trazabilidad).
 12. Abrir el tab Historial y verificar alta + transiciones con usuario y
     fecha.
 13. Cambiar idioma ES<->EN con ambas pantallas abiertas y verificar
-    traduccion de filtros, tabs, botones y columnas.
+     traduccion de filtros, tabs, botones y columnas.
 14. Regresion CP1: clientes/equipos/catalogos, baja/reactivacion de
-    usuarios, bitacora e integridad (`Recalcular DV`).
+     usuarios, bitacora e integridad (`Recalcular DV`).
+
+### Usuarios modelo en seed
+
+- Usuarios agregados al seed (password "123", activo=1, idempotentes): recepcionista, tecnico, encargado. Archivos: APPLICATION/Features/Usuarios/UsuarioService.cs (+3 CrearUsuarioBase), INFRASTRUCTURE/Features/Usuarios/UsuarioPermisoRepository.cs (familias para encargado + simples directos para recepcionista/tecnico/BITACORA_VER).
+- Matriz: recepcionista = CLIENTES_VER/CREAR/EDITAR, EQUIPOS_VER/CREAR/EDITAR, TIPOS_EQUIPO_VER, MARCAS_VER, ORDENES_VER/CREAR/EDITAR/ENTREGAR (sin DESACTIVAR/CANCELAR/DECIDIR); tecnico = CLIENTES_VER, EQUIPOS_VER, TIPOS_EQUIPO_VER, MARCAS_VER, ORDENES_VER/EDITAR; encargado = operativo completo (VER/CREAR/EDITAR/DESACTIVAR en clientes/equipos/tipos/marcas, ORDENES_VER/CREAR/EDITAR/CANCELAR/ENTREGAR, PRESUPUESTOS_DECIDIR) + BITACORA_VER, sin gestion de usuarios/permisos.
+- Verificacion: build 0 errores; matriz efectiva comprobada por SQL con expansion de familias (encargado 23, recepcionista 12, tecnico 6); login 123 OK x3; idempotencia (doble Inicializar sin duplicados); tecnico en ListarTecnicosElegibles; VerificarIntegridadUsuarios()=true. Sin commit (lo hace el orquestador).

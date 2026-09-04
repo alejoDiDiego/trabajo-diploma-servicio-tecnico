@@ -37,6 +37,9 @@ namespace APPLICATION.Features.Usuarios
             CrearUsuarioBase("permisos", "123");
             CrearUsuarioBase("idiomas", "123");
             CrearUsuarioBase("lector", "123");
+            CrearUsuarioBase("recepcionista", "123");
+            CrearUsuarioBase("tecnico", "123");
+            CrearUsuarioBase("encargado", "123");
 
             UsuarioPermisoRepository usuarioPermisoRepository = new UsuarioPermisoRepository();
             usuarioPermisoRepository.Inicializar();
