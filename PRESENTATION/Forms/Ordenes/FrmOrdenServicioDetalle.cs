@@ -950,6 +950,7 @@ namespace UI.Forms.Ordenes
                 DGV_Detalle.DataSource = new BindingList<DetallePresupuesto>(_itemsNuevo);
                 ConfigurarColumnasDetalle();
                 RefrescarTotales();
+                AplicarPermisosDetalle();
             }
             catch (Exception ex)
             {
@@ -983,6 +984,7 @@ namespace UI.Forms.Ordenes
             DGV_Detalle.DataSource = new BindingList<DetallePresupuesto>(_itemsNuevo);
             ConfigurarColumnasDetalle();
             RefrescarTotales();
+            AplicarPermisosDetalle();
         }
 
         private void BTN_Emitir_Click(object sender, EventArgs e)
