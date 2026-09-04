@@ -59,7 +59,8 @@ namespace APPLICATION.Features.Bitacora
                 "CLIENTES",
                 "EQUIPOS",
                 "TIPOS_EQUIPO",
-                "MARCAS"
+                "MARCAS",
+                "ORDENES"
             };
         }
     }

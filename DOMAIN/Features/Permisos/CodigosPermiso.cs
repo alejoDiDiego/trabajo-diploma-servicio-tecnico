@@ -50,5 +50,12 @@ namespace DOMAIN.Features.Permisos
         public const string MarcasCrear = "MARCAS_CREAR";
         public const string MarcasEditar = "MARCAS_EDITAR";
         public const string MarcasDesactivar = "MARCAS_DESACTIVAR";
+
+        public const string OrdenesVer = "ORDENES_VER";
+        public const string OrdenesCrear = "ORDENES_CREAR";
+        public const string OrdenesEditar = "ORDENES_EDITAR";
+        public const string OrdenesCancelar = "ORDENES_CANCELAR";
+        public const string OrdenesEntregar = "ORDENES_ENTREGAR";
+        public const string PresupuestosDecidir = "PRESUPUESTOS_DECIDIR";
     }
 }
