@@ -164,13 +164,48 @@ namespace DOMAIN.Features.Ordenes
             ObservacionResultado = motivo.Trim();
         }
 
+        public void IniciarReparacion()
+        {
+            if (Estado != EstadoOrdenServicio.AutorizadoReparacion)
+                throw new ReglaNegocioException("Solo se puede iniciar la reparacion de una orden autorizada.");
+
+            Estado = EstadoOrdenServicio.EnReparacion;
+        }
+
+        public void FinalizarReparacion()
+        {
+            if (Estado != EstadoOrdenServicio.EnReparacion)
+                throw new ReglaNegocioException("Solo se puede finalizar la reparacion de una orden en reparacion.");
+
+            Estado = EstadoOrdenServicio.EnPruebas;
+        }
+
+        public void RegistrarPruebaAprobada()
+        {
+            if (Estado != EstadoOrdenServicio.EnPruebas)
+                throw new ReglaNegocioException("Solo se puede aprobar la prueba de una orden en pruebas.");
+
+            Estado = EstadoOrdenServicio.ListoRetiro;
+            Resultado = ResultadoOrdenServicio.Reparado;
+        }
+
+        public void RegistrarPruebaFallida()
+        {
+            if (Estado != EstadoOrdenServicio.EnPruebas)
+                throw new ReglaNegocioException("Solo se puede registrar la prueba fallida de una orden en pruebas.");
+
+            Estado = EstadoOrdenServicio.EnReparacion;
+        }
+
         public void Cancelar(string motivo)
         {
             if (Estado != EstadoOrdenServicio.Recibido
                 && Estado != EstadoOrdenServicio.EnDiagnostico
                 && Estado != EstadoOrdenServicio.PendientePresupuesto
                 && Estado != EstadoOrdenServicio.EsperandoRespuesta
-                && Estado != EstadoOrdenServicio.AutorizadoReparacion)
+                && Estado != EstadoOrdenServicio.AutorizadoReparacion
+                && Estado != EstadoOrdenServicio.EnReparacion
+                && Estado != EstadoOrdenServicio.EnPruebas)
                 throw new ReglaNegocioException("La orden no se puede cancelar en su estado actual.");
             if (string.IsNullOrWhiteSpace(motivo))
                 throw new ReglaNegocioException("El motivo de la cancelacion es obligatorio.");

@@ -54,6 +54,9 @@
     <Compile Include="Features\Ordenes\DiagnosticoRepository.cs" />
     <Compile Include="Features\Ordenes\PresupuestoRepository.cs" />
     <Compile Include="Features\Ordenes\EntregaRepository.cs" />
+    <Compile Include="Features\Repuestos\RepuestoRepository.cs" />
+    <Compile Include="Features\Repuestos\MovimientoStockRepository.cs" />
+    <Compile Include="Features\Reparaciones\ReparacionRepository.cs" />
     <Compile Include="Features\Usuarios\UsuarioPermisoRepository.cs" />
     <Compile Include="Features\Usuarios\UsuarioRepository.cs" />
     <Compile Include="Features\Integridad\IntegridadRepository.cs" />

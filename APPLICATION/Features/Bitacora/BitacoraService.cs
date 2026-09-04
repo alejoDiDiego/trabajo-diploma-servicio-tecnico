@@ -60,7 +60,8 @@ namespace APPLICATION.Features.Bitacora
                 "EQUIPOS",
                 "TIPOS_EQUIPO",
                 "MARCAS",
-                "ORDENES"
+                "ORDENES",
+                "REPUESTOS"
             };
         }
     }

@@ -456,7 +456,11 @@ namespace REPOSITORY.Features.Permisos
                 ('Editar ordenes', 'ORDENES_EDITAR', NULL, NULL),
                 ('Cancelar ordenes', 'ORDENES_CANCELAR', NULL, NULL),
                 ('Entregar ordenes', 'ORDENES_ENTREGAR', NULL, NULL),
-                ('Decidir presupuestos', 'PRESUPUESTOS_DECIDIR', NULL, NULL);
+                ('Decidir presupuestos', 'PRESUPUESTOS_DECIDIR', NULL, NULL),
+                ('Ver repuestos', 'REPUESTOS_VER', NULL, NULL),
+                ('Crear repuestos', 'REPUESTOS_CREAR', NULL, NULL),
+                ('Editar repuestos', 'REPUESTOS_EDITAR', NULL, NULL),
+                ('Desactivar repuestos', 'REPUESTOS_DESACTIVAR', NULL, NULL);
 
                 UPDATE p
                 SET p.nombre = s.nombre,
@@ -516,6 +520,7 @@ namespace REPOSITORY.Features.Permisos
                 ('Gestion equipos'),
                 ('Gestion catalogos'),
                 ('Gestion ordenes'),
+                ('Gestion repuestos'),
                 ('Lectura general'),
                 ('Rol recepcionista'),
                 ('Rol tecnico'),
@@ -550,6 +555,7 @@ namespace REPOSITORY.Features.Permisos
                 ('Gestion equipos'),
                 ('Gestion catalogos'),
                 ('Gestion ordenes'),
+                ('Gestion repuestos'),
                 ('Lectura general'),
                 ('Rol recepcionista'),
                 ('Rol tecnico'),
@@ -617,6 +623,10 @@ namespace REPOSITORY.Features.Permisos
                 ('Gestion ordenes', 'ORDENES_CANCELAR', NULL),
                 ('Gestion ordenes', 'ORDENES_ENTREGAR', NULL),
                 ('Gestion ordenes', 'PRESUPUESTOS_DECIDIR', NULL),
+                ('Gestion repuestos', 'REPUESTOS_VER', NULL),
+                ('Gestion repuestos', 'REPUESTOS_CREAR', NULL),
+                ('Gestion repuestos', 'REPUESTOS_EDITAR', NULL),
+                ('Gestion repuestos', 'REPUESTOS_DESACTIVAR', NULL),
                 ('Lectura general', 'USUARIOS_VER', NULL),
                 ('Lectura general', 'PERMISOS_VER', NULL),
                 ('Lectura general', 'IDIOMAS_VER', NULL),
@@ -627,6 +637,7 @@ namespace REPOSITORY.Features.Permisos
                 ('Lectura general', 'TIPOS_EQUIPO_VER', NULL),
                 ('Lectura general', 'MARCAS_VER', NULL),
                 ('Lectura general', 'ORDENES_VER', NULL),
+                ('Lectura general', 'REPUESTOS_VER', NULL),
                 ('Administrador', NULL, 'Gestion usuarios'),
                 ('Administrador', NULL, 'Gestion permisos'),
                 ('Administrador', NULL, 'Gestion idiomas'),
@@ -635,6 +646,7 @@ namespace REPOSITORY.Features.Permisos
                 ('Administrador', NULL, 'Gestion equipos'),
                 ('Administrador', NULL, 'Gestion catalogos'),
                 ('Administrador', NULL, 'Gestion ordenes'),
+                ('Administrador', NULL, 'Gestion repuestos'),
                 ('Administrador', 'INTEGRIDAD_RECALCULAR', NULL),
                 ('Administrador', 'BITACORA_VER', NULL),
                 ('Rol recepcionista', 'CLIENTES_VER', NULL),
@@ -655,11 +667,13 @@ namespace REPOSITORY.Features.Permisos
                 ('Rol tecnico', 'MARCAS_VER', NULL),
                 ('Rol tecnico', 'ORDENES_VER', NULL),
                 ('Rol tecnico', 'ORDENES_EDITAR', NULL),
+                ('Rol tecnico', 'REPUESTOS_VER', NULL),
                 ('Rol encargado', 'BITACORA_VER', NULL),
                 ('Rol encargado', NULL, 'Gestion clientes'),
                 ('Rol encargado', NULL, 'Gestion equipos'),
                 ('Rol encargado', NULL, 'Gestion catalogos'),
-                ('Rol encargado', NULL, 'Gestion ordenes');
+                ('Rol encargado', NULL, 'Gestion ordenes'),
+                ('Rol encargado', NULL, 'Gestion repuestos');
 
                 INSERT INTO PermisoComposicion (id_permiso_padre, id_permiso_hijo)
                 SELECT padre.id_permiso, hijo.id_permiso
@@ -884,7 +898,9 @@ namespace REPOSITORY.Features.Permisos
                     ('Espanol', 'Bitacora.MARCAS', 'Marcas'),
                     ('Ingles', 'Bitacora.MARCAS', 'Brands'),
                     ('Espanol', 'Bitacora.ORDENES', 'Ordenes'),
-                    ('Ingles', 'Bitacora.ORDENES', 'Orders');
+                    ('Ingles', 'Bitacora.ORDENES', 'Orders'),
+                    ('Espanol', 'Bitacora.REPUESTOS', 'Repuestos'),
+                    ('Ingles', 'Bitacora.REPUESTOS', 'Spare parts');
 
                     INSERT INTO Idiomas (nombre)
                     SELECT DISTINCT s.idioma

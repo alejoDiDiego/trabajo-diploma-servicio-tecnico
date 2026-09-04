@@ -57,5 +57,10 @@ namespace DOMAIN.Features.Permisos
         public const string OrdenesCancelar = "ORDENES_CANCELAR";
         public const string OrdenesEntregar = "ORDENES_ENTREGAR";
         public const string PresupuestosDecidir = "PRESUPUESTOS_DECIDIR";
+
+        public const string RepuestosVer = "REPUESTOS_VER";
+        public const string RepuestosCrear = "REPUESTOS_CREAR";
+        public const string RepuestosEditar = "REPUESTOS_EDITAR";
+        public const string RepuestosDesactivar = "REPUESTOS_DESACTIVAR";
     }
 }

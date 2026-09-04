@@ -64,6 +64,13 @@
     <Compile Include="Features\Ordenes\Presupuesto.cs" />
     <Compile Include="Features\Ordenes\DetallePresupuesto.cs" />
     <Compile Include="Features\Ordenes\Entrega.cs" />
+    <Compile Include="Features\Repuestos\TipoMovimientoStock.cs" />
+    <Compile Include="Features\Repuestos\Repuesto.cs" />
+    <Compile Include="Features\Repuestos\MovimientoStock.cs" />
+    <Compile Include="Features\Reparaciones\ResultadoPrueba.cs" />
+    <Compile Include="Features\Reparaciones\Reparacion.cs" />
+    <Compile Include="Features\Reparaciones\ReparacionRepuesto.cs" />
+    <Compile Include="Features\Reparaciones\Prueba.cs" />
     <Compile Include="Features\Usuarios\Exceptions\UsuarioNoExisteException.cs" />
     <Compile Include="Features\Usuarios\Exceptions\UsuarioYaExisteException.cs" />
     <Compile Include="Features\Usuarios\Usuario.cs" />
