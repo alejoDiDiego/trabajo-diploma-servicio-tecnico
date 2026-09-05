@@ -84,10 +84,17 @@ namespace UI.Forms.Ordenes
 
         private class FilaConsumido
         {
+            public int IdRepuesto { get; set; }
             public string Repuesto { get; set; }
             public int Cantidad { get; set; }
             public decimal Costo { get; set; }
             public decimal Subtotal { get; set; }
+        }
+
+        private class ItemSelectorPresupuesto
+        {
+            public int Id { get; set; }
+            public string Nombre { get; set; }
         }
 
         private class FilaPrueba
@@ -110,6 +117,10 @@ namespace UI.Forms.Ordenes
         private OrdenServicio _orden = null;
         private Diagnostico _diagnostico = null;
         private Presupuesto _presupuesto = null;
+        private Presupuesto _original = null;
+        private List<Presupuesto> _adicionales = new List<Presupuesto>();
+        private bool _modoNuevoAdicional = false;
+        private bool _hayAdicionalPendiente = false;
         private Entrega _entrega = null;
         private List<Cliente> _clientes = new List<Cliente>();
         private List<Equipo> _equipos = new List<Equipo>();
@@ -216,6 +227,8 @@ namespace UI.Forms.Ordenes
             BTN_Finalizar.Text = idioma.BuscarTraduccion(BTN_Finalizar.Tag.ToString());
 
             LBL_PTipo.Text = idioma.BuscarTraduccion(LBL_PTipo.Tag.ToString());
+            LBL_SelectorPresupuesto.Text = idioma.BuscarTraduccion(LBL_SelectorPresupuesto.Tag.ToString());
+            BTN_SolicitarAdicional.Text = idioma.BuscarTraduccion(BTN_SolicitarAdicional.Tag.ToString());
             LBL_PDesc.Text = idioma.BuscarTraduccion(LBL_PDesc.Tag.ToString());
             LBL_PCant.Text = idioma.BuscarTraduccion(LBL_PCant.Tag.ToString());
             LBL_PPrecio.Text = idioma.BuscarTraduccion(LBL_PPrecio.Tag.ToString());
@@ -240,6 +253,7 @@ namespace UI.Forms.Ordenes
             LBL_CRepuesto.Text = idioma.BuscarTraduccion(LBL_CRepuesto.Tag.ToString());
             LBL_CCantidad.Text = idioma.BuscarTraduccion(LBL_CCantidad.Tag.ToString());
             BTN_Consumir.Text = idioma.BuscarTraduccion(BTN_Consumir.Tag.ToString());
+            BTN_QuitarConsumo.Text = idioma.BuscarTraduccion(BTN_QuitarConsumo.Tag.ToString());
             LBL_Consumidos.Text = idioma.BuscarTraduccion(LBL_Consumidos.Tag.ToString());
             LBL_FTrabajo.Text = idioma.BuscarTraduccion(LBL_FTrabajo.Tag.ToString()) + " *";
             LBL_FObs.Text = idioma.BuscarTraduccion(LBL_FObs.Tag.ToString());
@@ -473,7 +487,13 @@ namespace UI.Forms.Ordenes
             _orden = null;
             _diagnostico = null;
             _presupuesto = null;
+            _original = null;
+            _adicionales = new List<Presupuesto>();
+            _modoNuevoAdicional = false;
+            _hayAdicionalPendiente = false;
             _entrega = null;
+
+            LBL_MontoAutorizado.Text = "";
 
             LBL_Numero.Text = T("OrdenDetalle.TituloNuevo");
             LBL_Estado.Text = "";
@@ -532,6 +552,183 @@ namespace UI.Forms.Ordenes
         {
             try
             {
+                _original = _service.ObtenerPresupuestoOriginal(_idOrden);
+                _adicionales = _service.ListarAdicionales(_idOrden);
+                _hayAdicionalPendiente = _service.ExisteAdicionalPendiente(_idOrden);
+
+                CargarSelectorPresupuesto();
+                SeleccionarPresupuestoPorDefecto();
+                MostrarPresupuestoSeleccionado();
+                ActualizarMontoAutorizado();
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+
+            RefrescarTotales();
+        }
+
+        private string DescribirPresupuesto(Presupuesto p, string titulo)
+        {
+            return titulo + " | " + TraducirEstadoPresupuesto(p.Estado) + " | $" + p.Total.ToString("F2");
+        }
+
+        private void CargarSelectorPresupuesto()
+        {
+            _cargandoCombos = true;
+
+            try
+            {
+                List<ItemSelectorPresupuesto> items = new List<ItemSelectorPresupuesto>();
+
+                if (_original != null)
+                    items.Add(new ItemSelectorPresupuesto
+                    {
+                        Id = _original.Id,
+                        Nombre = DescribirPresupuesto(_original, TraducirTipoPresupuesto(TipoPresupuesto.Original))
+                    });
+                else
+                    items.Add(new ItemSelectorPresupuesto
+                    {
+                        Id = 0,
+                        Nombre = TraducirTipoPresupuesto(TipoPresupuesto.Original) + " " + T("OrdenDetalle.PresupuestoNuevo")
+                    });
+
+                int numero = 0;
+
+                foreach (Presupuesto adicional in _adicionales)
+                {
+                    numero++;
+                    items.Add(new ItemSelectorPresupuesto
+                    {
+                        Id = adicional.Id,
+                        Nombre = DescribirPresupuesto(adicional, TraducirTipoPresupuesto(TipoPresupuesto.Adicional) + " #" + numero)
+                    });
+                }
+
+                if (_original != null && _original.Estado == EstadoPresupuesto.Aprobado)
+                    items.Add(new ItemSelectorPresupuesto { Id = -1, Nombre = T("OrdenDetalle.NuevoAdicional") });
+
+                CBO_SelectorPresupuesto.DataSource = null;
+                CBO_SelectorPresupuesto.DisplayMember = "Nombre";
+                CBO_SelectorPresupuesto.ValueMember = "Id";
+                CBO_SelectorPresupuesto.DataSource = items;
+            }
+            finally
+            {
+                _cargandoCombos = false;
+            }
+        }
+
+        private void SeleccionarPresupuestoPorDefecto()
+        {
+            if (CBO_SelectorPresupuesto.DataSource == null)
+                return;
+
+            int idSeleccion = 0;
+            bool haySeleccion = false;
+
+            foreach (Presupuesto adicional in _adicionales)
+            {
+                if (adicional.Estado == EstadoPresupuesto.Pendiente)
+                {
+                    idSeleccion = adicional.Id;
+                    haySeleccion = true;
+                    break;
+                }
+            }
+
+            if (!haySeleccion && _original != null && _original.Estado == EstadoPresupuesto.Pendiente)
+            {
+                idSeleccion = _original.Id;
+                haySeleccion = true;
+            }
+
+            if (!haySeleccion && _original != null && _original.Estado == EstadoPresupuesto.Aprobado
+                && _orden != null && _orden.Estado == EstadoOrdenServicio.PendientePresupuesto && !_hayAdicionalPendiente)
+            {
+                idSeleccion = -1;
+                haySeleccion = true;
+            }
+
+            if (!haySeleccion && _original != null)
+            {
+                idSeleccion = _original.Id;
+                haySeleccion = true;
+            }
+
+            if (!haySeleccion)
+                idSeleccion = 0;
+
+            _cargandoCombos = true;
+
+            try
+            {
+                CBO_SelectorPresupuesto.SelectedValue = idSeleccion;
+            }
+            finally
+            {
+                _cargandoCombos = false;
+            }
+
+            AplicarSeleccionPresupuesto(idSeleccion);
+        }
+
+        private void AplicarSeleccionPresupuesto(int idSeleccion)
+        {
+            if (idSeleccion == -1)
+            {
+                _presupuesto = null;
+                _modoNuevoAdicional = true;
+                return;
+            }
+
+            _modoNuevoAdicional = false;
+
+            if (idSeleccion <= 0)
+            {
+                _presupuesto = null;
+                return;
+            }
+
+            try
+            {
+                _presupuesto = _service.ObtenerPresupuestoPorId(idSeleccion);
+            }
+            catch (Exception ex)
+            {
+                _presupuesto = null;
+                MostrarError(ex);
+            }
+        }
+
+        private void CBO_SelectorPresupuesto_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (_cargandoCombos)
+                return;
+
+            if (CBO_SelectorPresupuesto.DataSource == null)
+                return;
+
+            if (_esNuevo)
+                return;
+
+            int idSeleccion = 0;
+
+            if (CBO_SelectorPresupuesto.SelectedValue is int)
+                idSeleccion = (int)CBO_SelectorPresupuesto.SelectedValue;
+
+            AplicarSeleccionPresupuesto(idSeleccion);
+            MostrarPresupuestoSeleccionado();
+            RefrescarTotales();
+            AplicarPermisosDetalle();
+        }
+
+        private void MostrarPresupuestoSeleccionado()
+        {
+            try
+            {
                 if (_presupuesto != null)
                 {
                     List<DetallePresupuesto> detalle = _service.ListarDetalle(_presupuesto.Id);
@@ -545,14 +742,36 @@ namespace UI.Forms.Ordenes
                 else
                 {
                     DGV_Detalle.DataSource = new BindingList<DetallePresupuesto>(_itemsNuevo);
+
+                    if (_modoNuevoAdicional)
+                    {
+                        NUM_PDescuento.Value = 0;
+                        NUM_PGarantia.Value = 0;
+                        TXT_PMedio.Text = "";
+                        TXT_PMotivo.Text = "";
+                        TXT_PObs.Text = "";
+                    }
                 }
+
+                ConfigurarColumnasDetalle();
             }
             catch (Exception ex)
             {
                 MostrarError(ex);
             }
+        }
 
-            RefrescarTotales();
+        private void ActualizarMontoAutorizado()
+        {
+            try
+            {
+                decimal monto = _service.CalcularMontoAutorizado(_idOrden);
+                LBL_MontoAutorizado.Text = T("OrdenDetalle.MontoAutorizado").Replace("{0}", monto.ToString("F2"));
+            }
+            catch
+            {
+                LBL_MontoAutorizado.Text = T("OrdenDetalle.MontoAutorizado").Replace("{0}", "0.00");
+            }
         }
 
         private void CargarTabHistorial()
@@ -750,6 +969,7 @@ namespace UI.Forms.Ordenes
 
                     filas.Add(new FilaConsumido
                     {
+                        IdRepuesto = c.IdRepuesto,
                         Repuesto = ResolverRepuesto(c.IdRepuesto),
                         Cantidad = c.Cantidad,
                         Costo = c.CostoUnitario,
@@ -887,6 +1107,9 @@ namespace UI.Forms.Ordenes
             ConfigurarColumnaGrid(DGV_Consumidos, "Costo", "Columna.Costo");
             ConfigurarColumnaGrid(DGV_Consumidos, "Subtotal", "Columna.Subtotal");
 
+            if (DGV_Consumidos.Columns.Contains("IdRepuesto"))
+                DGV_Consumidos.Columns["IdRepuesto"].Visible = false;
+
             DGV_Consumidos.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells);
         }
 
@@ -940,7 +1163,8 @@ namespace UI.Forms.Ordenes
             {
                 subtotal = _presupuesto.Subtotal;
                 descuento = _presupuesto.Descuento;
-                LBL_EstadoPresupuesto.Text = T("OrdenDetalle.EstadoPresupuesto") + ": " + TraducirEstadoPresupuesto(_presupuesto.Estado);
+                LBL_EstadoPresupuesto.Text = T("OrdenDetalle.EstadoPresupuesto") + ": "
+                    + TraducirTipoPresupuesto(_presupuesto.Tipo) + " - " + TraducirEstadoPresupuesto(_presupuesto.Estado);
             }
             else
             {
@@ -1047,6 +1271,14 @@ namespace UI.Forms.Ordenes
         }
 
         private string TraducirTipo(string tipo)
+        {
+            if (string.IsNullOrEmpty(tipo))
+                return "";
+
+            return T("Tipo." + tipo);
+        }
+
+        private string TraducirTipoPresupuesto(string tipo)
         {
             if (string.IsNullOrEmpty(tipo))
                 return "";
@@ -1333,6 +1565,9 @@ namespace UI.Forms.Ordenes
                 return;
             }
 
+            if (_presupuesto != null)
+                return;
+
             if (string.IsNullOrWhiteSpace(TXT_PDesc.Text))
             {
                 MostrarAdvertencia("Mensaje.ItemCamposObligatorios");
@@ -1371,6 +1606,9 @@ namespace UI.Forms.Ordenes
                 return;
             }
 
+            if (_presupuesto != null)
+                return;
+
             if (DGV_Detalle.SelectedRows.Count == 0)
             {
                 MostrarAdvertencia("Mensaje.SeleccioneRegistro");
@@ -1400,6 +1638,9 @@ namespace UI.Forms.Ordenes
                 return;
             }
 
+            if (_presupuesto != null)
+                return;
+
             if (_itemsNuevo.Count == 0)
             {
                 MostrarAdvertencia("Mensaje.ItemCamposObligatorios");
@@ -1408,8 +1649,13 @@ namespace UI.Forms.Ordenes
 
             try
             {
-                _service.EmitirPresupuesto(_idOrden, new List<DetallePresupuesto>(_itemsNuevo),
-                    NUM_PDescuento.Value, (int)NUM_PGarantia.Value, TXT_PObs.Text.Trim());
+                if (_modoNuevoAdicional)
+                    _service.EmitirAdicional(_idOrden, new List<DetallePresupuesto>(_itemsNuevo),
+                        NUM_PDescuento.Value, (int)NUM_PGarantia.Value, TXT_PObs.Text.Trim());
+                else
+                    _service.EmitirPresupuesto(_idOrden, new List<DetallePresupuesto>(_itemsNuevo),
+                        NUM_PDescuento.Value, (int)NUM_PGarantia.Value, TXT_PObs.Text.Trim());
+
                 _itemsNuevo.Clear();
                 TXT_PDesc.Text = "";
                 CargarOrden();
@@ -1429,9 +1675,19 @@ namespace UI.Forms.Ordenes
                 return;
             }
 
+            if (_presupuesto == null)
+            {
+                MostrarAdvertencia("Mensaje.SeleccioneRegistro");
+                return;
+            }
+
             try
             {
-                _service.RegistrarAprobacionPresupuesto(_idOrden, TXT_PMedio.Text.Trim(), TXT_PObs.Text.Trim());
+                if (_presupuesto.Tipo == TipoPresupuesto.Adicional)
+                    _service.RegistrarAprobacionAdicional(_presupuesto.Id, TXT_PMedio.Text.Trim(), TXT_PObs.Text.Trim());
+                else
+                    _service.RegistrarAprobacionPresupuesto(_idOrden, TXT_PMedio.Text.Trim(), TXT_PObs.Text.Trim());
+
                 CargarOrden();
                 MostrarExito("Mensaje.OperacionExitosa");
             }
@@ -1449,6 +1705,12 @@ namespace UI.Forms.Ordenes
                 return;
             }
 
+            if (_presupuesto == null)
+            {
+                MostrarAdvertencia("Mensaje.SeleccioneRegistro");
+                return;
+            }
+
             if (string.IsNullOrWhiteSpace(TXT_PMotivo.Text))
             {
                 MostrarAdvertencia("Mensaje.OrdenCamposObligatorios");
@@ -1457,14 +1719,150 @@ namespace UI.Forms.Ordenes
 
             try
             {
-                _service.RegistrarRechazoPresupuesto(_idOrden, TXT_PMotivo.Text.Trim(),
-                    TXT_PMedio.Text.Trim(), TXT_PObs.Text.Trim());
+                if (_presupuesto.Tipo == TipoPresupuesto.Adicional)
+                    _service.RegistrarRechazoAdicional(_presupuesto.Id, TXT_PMotivo.Text.Trim(),
+                        TXT_PMedio.Text.Trim(), TXT_PObs.Text.Trim());
+                else
+                    _service.RegistrarRechazoPresupuesto(_idOrden, TXT_PMotivo.Text.Trim(),
+                        TXT_PMedio.Text.Trim(), TXT_PObs.Text.Trim());
+
                 CargarOrden();
                 MostrarExito("Mensaje.OperacionExitosa");
             }
             catch (Exception ex)
             {
                 MostrarError(ex);
+            }
+        }
+
+        private void BTN_SolicitarAdicional_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.OrdenesEditar))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
+            string motivo = PedirTexto(
+                T("OrdenDetalle.SolicitarAdicional"),
+                T("OrdenDetalle.Motivo"));
+
+            if (motivo == null)
+                return;
+
+            if (string.IsNullOrWhiteSpace(motivo))
+            {
+                MostrarAdvertencia("Mensaje.OrdenCamposObligatorios");
+                return;
+            }
+
+            try
+            {
+                _service.SolicitarAdicional(_idOrden, motivo.Trim());
+                CargarOrden();
+                MostrarExito("Mensaje.OperacionExitosa");
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+        }
+
+        private string PedirTexto(string titulo, string etiqueta)
+        {
+            using (Form dialogo = new Form())
+            {
+                dialogo.Text = titulo;
+                dialogo.FormBorderStyle = FormBorderStyle.FixedDialog;
+                dialogo.StartPosition = FormStartPosition.CenterParent;
+                dialogo.MaximizeBox = false;
+                dialogo.MinimizeBox = false;
+                dialogo.ShowInTaskbar = false;
+                dialogo.ClientSize = new System.Drawing.Size(400, 150);
+
+                Label lbl = new Label();
+                lbl.Text = etiqueta;
+                lbl.AutoSize = true;
+                lbl.Location = new System.Drawing.Point(12, 12);
+                dialogo.Controls.Add(lbl);
+
+                TextBox txt = new TextBox();
+                txt.Multiline = true;
+                txt.Location = new System.Drawing.Point(12, 34);
+                txt.Size = new System.Drawing.Size(376, 66);
+                dialogo.Controls.Add(txt);
+
+                Button btnAceptar = new Button();
+                btnAceptar.Text = T("Accion.Aceptar");
+                btnAceptar.DialogResult = DialogResult.OK;
+                btnAceptar.Location = new System.Drawing.Point(212, 108);
+                btnAceptar.Size = new System.Drawing.Size(85, 28);
+                dialogo.Controls.Add(btnAceptar);
+
+                Button btnCancelar = new Button();
+                btnCancelar.Text = T("Accion.Cancelar");
+                btnCancelar.DialogResult = DialogResult.Cancel;
+                btnCancelar.Location = new System.Drawing.Point(303, 108);
+                btnCancelar.Size = new System.Drawing.Size(85, 28);
+                dialogo.Controls.Add(btnCancelar);
+
+                dialogo.AcceptButton = btnAceptar;
+                dialogo.CancelButton = btnCancelar;
+
+                if (dialogo.ShowDialog(this) != DialogResult.OK)
+                    return null;
+
+                return txt.Text;
+            }
+        }
+
+        private int PedirCantidad(string titulo, string etiqueta, int maximo)
+        {
+            using (Form dialogo = new Form())
+            {
+                dialogo.Text = titulo;
+                dialogo.FormBorderStyle = FormBorderStyle.FixedDialog;
+                dialogo.StartPosition = FormStartPosition.CenterParent;
+                dialogo.MaximizeBox = false;
+                dialogo.MinimizeBox = false;
+                dialogo.ShowInTaskbar = false;
+                dialogo.ClientSize = new System.Drawing.Size(300, 110);
+
+                Label lbl = new Label();
+                lbl.Text = etiqueta;
+                lbl.AutoSize = true;
+                lbl.Location = new System.Drawing.Point(12, 12);
+                dialogo.Controls.Add(lbl);
+
+                NumericUpDown num = new NumericUpDown();
+                num.Minimum = 1;
+                num.Maximum = maximo;
+                num.Value = maximo;
+                num.Location = new System.Drawing.Point(12, 34);
+                num.Size = new System.Drawing.Size(276, 22);
+                dialogo.Controls.Add(num);
+
+                Button btnAceptar = new Button();
+                btnAceptar.Text = T("Accion.Aceptar");
+                btnAceptar.DialogResult = DialogResult.OK;
+                btnAceptar.Location = new System.Drawing.Point(112, 68);
+                btnAceptar.Size = new System.Drawing.Size(85, 28);
+                dialogo.Controls.Add(btnAceptar);
+
+                Button btnCancelar = new Button();
+                btnCancelar.Text = T("Accion.Cancelar");
+                btnCancelar.DialogResult = DialogResult.Cancel;
+                btnCancelar.Location = new System.Drawing.Point(203, 68);
+                btnCancelar.Size = new System.Drawing.Size(85, 28);
+                dialogo.Controls.Add(btnCancelar);
+
+                dialogo.AcceptButton = btnAceptar;
+                dialogo.CancelButton = btnCancelar;
+
+                if (dialogo.ShowDialog(this) != DialogResult.OK)
+                    return -1;
+
+                return (int)num.Value;
             }
         }
 
@@ -1577,6 +1975,65 @@ namespace UI.Forms.Ordenes
             try
             {
                 _service.ConsumirRepuesto(seleccionada.Id, idRepuesto, (int)NUM_ConsumoCantidad.Value);
+                CargarOrden();
+                MostrarExito("Mensaje.OperacionExitosa");
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+        }
+
+        private void BTN_QuitarConsumo_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.OrdenesEditar))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
+            Reparacion seleccionada = ReparacionSeleccionada();
+
+            if (seleccionada == null)
+            {
+                MostrarAdvertencia("Mensaje.SeleccioneRegistro");
+                return;
+            }
+
+            if (DGV_Consumidos.SelectedRows.Count == 0)
+            {
+                MostrarAdvertencia("Mensaje.SeleccioneRegistro");
+                return;
+            }
+
+            FilaConsumido fila = DGV_Consumidos.SelectedRows[0].DataBoundItem as FilaConsumido;
+
+            if (fila == null)
+            {
+                MostrarAdvertencia("Mensaje.SeleccioneRegistro");
+                return;
+            }
+
+            int cantidad = PedirCantidad(
+                T("OrdenDetalle.QuitarConsumo"),
+                T("OrdenDetalle.CantidadDevolver"),
+                fila.Cantidad);
+
+            if (cantidad <= 0)
+                return;
+
+            DialogResult confirmacion = MessageBox.Show(
+                T("Mensaje.ConfirmarDevolucion").Replace("{0}", cantidad.ToString()).Replace("{1}", fila.Repuesto),
+                T("Titulo.ConfirmarDevolucion"),
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning);
+
+            if (confirmacion == DialogResult.No)
+                return;
+
+            try
+            {
+                _service.QuitarConsumo(seleccionada.Id, fila.IdRepuesto, cantidad);
                 CargarOrden();
                 MostrarExito("Mensaje.OperacionExitosa");
             }
@@ -1709,6 +2166,7 @@ namespace UI.Forms.Ordenes
                 && _orden.Estado == EstadoOrdenServicio.PendientePresupuesto
                 && _presupuesto == null;
 
+            CBO_SelectorPresupuesto.Enabled = !_esNuevo && !entregado;
             CBO_PTipo.Enabled = editaItems;
             TXT_PDesc.Enabled = editaItems;
             NUM_PCant.Enabled = editaItems;
@@ -1725,6 +2183,15 @@ namespace UI.Forms.Ordenes
             bool presupuestoPendiente = !_esNuevo && _presupuesto != null
                 && _presupuesto.Estado == EstadoPresupuesto.Pendiente
                 && _orden != null && _orden.Estado == EstadoOrdenServicio.EsperandoRespuesta;
+
+            bool puedeSolicitar = editable && _orden != null
+                && (_orden.Estado == EstadoOrdenServicio.EnReparacion
+                    || _orden.Estado == EstadoOrdenServicio.EnPruebas)
+                && _original != null && _original.Estado == EstadoPresupuesto.Aprobado
+                && !_hayAdicionalPendiente;
+
+            BTN_SolicitarAdicional.Visible = !_esNuevo && puedeEditar;
+            BTN_SolicitarAdicional.Enabled = puedeSolicitar;
 
             TXT_PMedio.Enabled = !_esNuevo && !entregado && (editaItems || (puedeDecidir && presupuestoPendiente));
             TXT_PMotivo.Enabled = !_esNuevo && !entregado && puedeDecidir && presupuestoPendiente;
@@ -1762,6 +2229,8 @@ namespace UI.Forms.Ordenes
             NUM_ConsumoCantidad.Enabled = habilitaConsumo;
             BTN_Consumir.Visible = !_esNuevo && puedeEditar;
             BTN_Consumir.Enabled = habilitaConsumo;
+            BTN_QuitarConsumo.Visible = !_esNuevo && puedeEditar;
+            BTN_QuitarConsumo.Enabled = habilitaConsumo;
             TXT_FTrabajo.Enabled = habilitaConsumo;
             TXT_FObs.Enabled = habilitaConsumo;
             BTN_FinalizarReparacion.Visible = !_esNuevo && puedeEditar;

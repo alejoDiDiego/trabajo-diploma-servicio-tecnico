@@ -53,6 +53,10 @@ namespace UI.Forms.Ordenes
             this.BTN_Iniciar = new System.Windows.Forms.Button();
             this.BTN_Finalizar = new System.Windows.Forms.Button();
             this.TAB_Presupuesto = new System.Windows.Forms.TabPage();
+            this.LBL_SelectorPresupuesto = new System.Windows.Forms.Label();
+            this.CBO_SelectorPresupuesto = new System.Windows.Forms.ComboBox();
+            this.LBL_MontoAutorizado = new System.Windows.Forms.Label();
+            this.BTN_SolicitarAdicional = new System.Windows.Forms.Button();
             this.DGV_Detalle = new System.Windows.Forms.DataGridView();
             this.LBL_PTipo = new System.Windows.Forms.Label();
             this.CBO_PTipo = new System.Windows.Forms.ComboBox();
@@ -89,6 +93,7 @@ namespace UI.Forms.Ordenes
             this.LBL_CCantidad = new System.Windows.Forms.Label();
             this.NUM_ConsumoCantidad = new System.Windows.Forms.NumericUpDown();
             this.BTN_Consumir = new System.Windows.Forms.Button();
+            this.BTN_QuitarConsumo = new System.Windows.Forms.Button();
             this.LBL_Consumidos = new System.Windows.Forms.Label();
             this.DGV_Consumidos = new System.Windows.Forms.DataGridView();
             this.LBL_CostoTotal = new System.Windows.Forms.Label();
@@ -614,6 +619,10 @@ namespace UI.Forms.Ordenes
             //
             // TAB_Presupuesto
             //
+            this.TAB_Presupuesto.Controls.Add(this.LBL_SelectorPresupuesto);
+            this.TAB_Presupuesto.Controls.Add(this.CBO_SelectorPresupuesto);
+            this.TAB_Presupuesto.Controls.Add(this.LBL_MontoAutorizado);
+            this.TAB_Presupuesto.Controls.Add(this.BTN_SolicitarAdicional);
             this.TAB_Presupuesto.Controls.Add(this.DGV_Detalle);
             this.TAB_Presupuesto.Controls.Add(this.LBL_PTipo);
             this.TAB_Presupuesto.Controls.Add(this.CBO_PTipo);
@@ -648,6 +657,53 @@ namespace UI.Forms.Ordenes
             this.TAB_Presupuesto.Text = "Presupuesto";
             this.TAB_Presupuesto.UseVisualStyleBackColor = true;
             //
+            // LBL_SelectorPresupuesto
+            //
+            this.LBL_SelectorPresupuesto.AutoSize = true;
+            this.LBL_SelectorPresupuesto.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.LBL_SelectorPresupuesto.Location = new System.Drawing.Point(12, 10);
+            this.LBL_SelectorPresupuesto.Name = "LBL_SelectorPresupuesto";
+            this.LBL_SelectorPresupuesto.Size = new System.Drawing.Size(80, 15);
+            this.LBL_SelectorPresupuesto.TabIndex = 26;
+            this.LBL_SelectorPresupuesto.Tag = "OrdenDetalle.SelectorPresupuesto";
+            this.LBL_SelectorPresupuesto.Text = "Presupuesto:";
+            //
+            // CBO_SelectorPresupuesto
+            //
+            this.CBO_SelectorPresupuesto.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.CBO_SelectorPresupuesto.Location = new System.Drawing.Point(100, 7);
+            this.CBO_SelectorPresupuesto.Name = "CBO_SelectorPresupuesto";
+            this.CBO_SelectorPresupuesto.Size = new System.Drawing.Size(320, 21);
+            this.CBO_SelectorPresupuesto.TabIndex = 27;
+            this.CBO_SelectorPresupuesto.SelectedIndexChanged += new System.EventHandler(this.CBO_SelectorPresupuesto_SelectedIndexChanged);
+            //
+            // LBL_MontoAutorizado
+            //
+            this.LBL_MontoAutorizado.AutoSize = true;
+            this.LBL_MontoAutorizado.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.LBL_MontoAutorizado.Location = new System.Drawing.Point(430, 10);
+            this.LBL_MontoAutorizado.Name = "LBL_MontoAutorizado";
+            this.LBL_MontoAutorizado.Size = new System.Drawing.Size(110, 15);
+            this.LBL_MontoAutorizado.TabIndex = 28;
+            this.LBL_MontoAutorizado.Tag = "OrdenDetalle.MontoAutorizado";
+            this.LBL_MontoAutorizado.Text = "Total autorizado: $0.00";
+            //
+            // BTN_SolicitarAdicional
+            //
+            this.BTN_SolicitarAdicional.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(142)))), ((int)(((byte)(68)))), ((int)(((byte)(173)))));
+            this.BTN_SolicitarAdicional.FlatAppearance.BorderSize = 0;
+            this.BTN_SolicitarAdicional.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.BTN_SolicitarAdicional.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.BTN_SolicitarAdicional.ForeColor = System.Drawing.Color.White;
+            this.BTN_SolicitarAdicional.Location = new System.Drawing.Point(700, 5);
+            this.BTN_SolicitarAdicional.Name = "BTN_SolicitarAdicional";
+            this.BTN_SolicitarAdicional.Size = new System.Drawing.Size(176, 26);
+            this.BTN_SolicitarAdicional.TabIndex = 29;
+            this.BTN_SolicitarAdicional.Tag = "OrdenDetalle.SolicitarAdicional";
+            this.BTN_SolicitarAdicional.Text = "Solicitar adicional";
+            this.BTN_SolicitarAdicional.UseVisualStyleBackColor = false;
+            this.BTN_SolicitarAdicional.Click += new System.EventHandler(this.BTN_SolicitarAdicional_Click);
+            //
             // DGV_Detalle
             //
             this.DGV_Detalle.AllowUserToAddRows = false;
@@ -658,13 +714,13 @@ namespace UI.Forms.Ordenes
             this.DGV_Detalle.BackgroundColor = System.Drawing.Color.White;
             this.DGV_Detalle.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.DGV_Detalle.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.DGV_Detalle.Location = new System.Drawing.Point(12, 8);
+            this.DGV_Detalle.Location = new System.Drawing.Point(12, 36);
             this.DGV_Detalle.MultiSelect = false;
             this.DGV_Detalle.Name = "DGV_Detalle";
             this.DGV_Detalle.ReadOnly = true;
             this.DGV_Detalle.RowHeadersVisible = false;
             this.DGV_Detalle.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.DGV_Detalle.Size = new System.Drawing.Size(864, 160);
+            this.DGV_Detalle.Size = new System.Drawing.Size(864, 132);
             this.DGV_Detalle.TabIndex = 0;
             this.DGV_Detalle.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.DGV_Detalle_CellFormatting);
             //
@@ -1003,6 +1059,7 @@ namespace UI.Forms.Ordenes
             this.TAB_Reparaciones.Controls.Add(this.LBL_CCantidad);
             this.TAB_Reparaciones.Controls.Add(this.NUM_ConsumoCantidad);
             this.TAB_Reparaciones.Controls.Add(this.BTN_Consumir);
+            this.TAB_Reparaciones.Controls.Add(this.BTN_QuitarConsumo);
             this.TAB_Reparaciones.Controls.Add(this.LBL_Consumidos);
             this.TAB_Reparaciones.Controls.Add(this.DGV_Consumidos);
             this.TAB_Reparaciones.Controls.Add(this.LBL_CostoTotal);
@@ -1122,6 +1179,22 @@ namespace UI.Forms.Ordenes
             this.BTN_Consumir.Text = "Consumir";
             this.BTN_Consumir.UseVisualStyleBackColor = false;
             this.BTN_Consumir.Click += new System.EventHandler(this.BTN_Consumir_Click);
+            //
+            // BTN_QuitarConsumo
+            //
+            this.BTN_QuitarConsumo.BackColor = System.Drawing.Color.Maroon;
+            this.BTN_QuitarConsumo.FlatAppearance.BorderSize = 0;
+            this.BTN_QuitarConsumo.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.BTN_QuitarConsumo.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.BTN_QuitarConsumo.ForeColor = System.Drawing.Color.White;
+            this.BTN_QuitarConsumo.Location = new System.Drawing.Point(746, 136);
+            this.BTN_QuitarConsumo.Name = "BTN_QuitarConsumo";
+            this.BTN_QuitarConsumo.Size = new System.Drawing.Size(130, 28);
+            this.BTN_QuitarConsumo.TabIndex = 15;
+            this.BTN_QuitarConsumo.Tag = "OrdenDetalle.QuitarConsumo";
+            this.BTN_QuitarConsumo.Text = "Quitar consumo";
+            this.BTN_QuitarConsumo.UseVisualStyleBackColor = false;
+            this.BTN_QuitarConsumo.Click += new System.EventHandler(this.BTN_QuitarConsumo_Click);
             //
             // LBL_Consumidos
             //
@@ -1561,6 +1634,10 @@ namespace UI.Forms.Ordenes
         private System.Windows.Forms.Button BTN_Iniciar;
         private System.Windows.Forms.Button BTN_Finalizar;
         private System.Windows.Forms.TabPage TAB_Presupuesto;
+        private System.Windows.Forms.Label LBL_SelectorPresupuesto;
+        private System.Windows.Forms.ComboBox CBO_SelectorPresupuesto;
+        private System.Windows.Forms.Label LBL_MontoAutorizado;
+        private System.Windows.Forms.Button BTN_SolicitarAdicional;
         private System.Windows.Forms.DataGridView DGV_Detalle;
         private System.Windows.Forms.Label LBL_PTipo;
         private System.Windows.Forms.ComboBox CBO_PTipo;
@@ -1597,6 +1674,7 @@ namespace UI.Forms.Ordenes
         private System.Windows.Forms.Label LBL_CCantidad;
         private System.Windows.Forms.NumericUpDown NUM_ConsumoCantidad;
         private System.Windows.Forms.Button BTN_Consumir;
+        private System.Windows.Forms.Button BTN_QuitarConsumo;
         private System.Windows.Forms.Label LBL_Consumidos;
         private System.Windows.Forms.DataGridView DGV_Consumidos;
         private System.Windows.Forms.Label LBL_CostoTotal;

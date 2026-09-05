@@ -158,6 +158,7 @@ namespace UI.Forms.Repuestos
             itemsTipos.Add(new ItemTipo { Id = "", Nombre = T("Movimientos.Todos") });
             itemsTipos.Add(new ItemTipo { Id = TipoMovimientoStock.Compra, Nombre = T("MovimientoTipo." + TipoMovimientoStock.Compra) });
             itemsTipos.Add(new ItemTipo { Id = TipoMovimientoStock.ConsumoReparacion, Nombre = T("MovimientoTipo." + TipoMovimientoStock.ConsumoReparacion) });
+            itemsTipos.Add(new ItemTipo { Id = TipoMovimientoStock.DevolucionConsumo, Nombre = T("MovimientoTipo." + TipoMovimientoStock.DevolucionConsumo) });
             itemsTipos.Add(new ItemTipo { Id = TipoMovimientoStock.AjustePositivo, Nombre = T("MovimientoTipo." + TipoMovimientoStock.AjustePositivo) });
             itemsTipos.Add(new ItemTipo { Id = TipoMovimientoStock.AjusteNegativo, Nombre = T("MovimientoTipo." + TipoMovimientoStock.AjusteNegativo) });
 

@@ -1050,6 +1050,35 @@ namespace REPOSITORY.Features.Idiomas
             AgregarSeed("Ingles", "Mensaje.AjusteCamposObligatorios", "Quantity must not be zero and reason is required.");
             AgregarSeed("Espanol", "Mensaje.PruebaCamposObligatorios", "La descripcion de la prueba es obligatoria.");
             AgregarSeed("Ingles", "Mensaje.PruebaCamposObligatorios", "The test description is required.");
+
+            AgregarSeed("Espanol", "OrdenDetalle.SelectorPresupuesto", "Presupuesto:");
+            AgregarSeed("Ingles", "OrdenDetalle.SelectorPresupuesto", "Estimate:");
+            AgregarSeed("Espanol", "OrdenDetalle.MontoAutorizado", "Total autorizado: ${0}");
+            AgregarSeed("Ingles", "OrdenDetalle.MontoAutorizado", "Authorized total: ${0}");
+            AgregarSeed("Espanol", "OrdenDetalle.NuevoAdicional", "(nuevo adicional)");
+            AgregarSeed("Ingles", "OrdenDetalle.NuevoAdicional", "(new add-on)");
+            AgregarSeed("Espanol", "OrdenDetalle.PresupuestoNuevo", "(nuevo)");
+            AgregarSeed("Ingles", "OrdenDetalle.PresupuestoNuevo", "(new)");
+            AgregarSeed("Espanol", "OrdenDetalle.SolicitarAdicional", "Solicitar adicional");
+            AgregarSeed("Ingles", "OrdenDetalle.SolicitarAdicional", "Request add-on");
+            AgregarSeed("Espanol", "OrdenDetalle.QuitarConsumo", "Quitar consumo");
+            AgregarSeed("Ingles", "OrdenDetalle.QuitarConsumo", "Remove consumption");
+            AgregarSeed("Espanol", "OrdenDetalle.CantidadDevolver", "Cantidad a devolver:");
+            AgregarSeed("Ingles", "OrdenDetalle.CantidadDevolver", "Quantity to return:");
+
+            AgregarSeed("Espanol", "Tipo.Original", "Original");
+            AgregarSeed("Ingles", "Tipo.Original", "Original");
+            AgregarSeed("Espanol", "Tipo.Adicional", "Adicional");
+            AgregarSeed("Ingles", "Tipo.Adicional", "Add-on");
+
+            AgregarSeed("Espanol", "MovimientoTipo.DevolucionConsumo", "Devolucion de consumo");
+            AgregarSeed("Ingles", "MovimientoTipo.DevolucionConsumo", "Consumption return");
+
+            AgregarSeed("Espanol", "Mensaje.ConfirmarDevolucion", "Confirma que desea devolver {0} unidad(es) de '{1}'?");
+            AgregarSeed("Ingles", "Mensaje.ConfirmarDevolucion", "Are you sure you want to return {0} unit(s) of '{1}'?");
+
+            AgregarSeed("Espanol", "Titulo.ConfirmarDevolucion", "Confirmar devolucion");
+            AgregarSeed("Ingles", "Titulo.ConfirmarDevolucion", "Confirm return");
         }
 
         private void AgregarSeed(string idioma, string clave, string texto)
