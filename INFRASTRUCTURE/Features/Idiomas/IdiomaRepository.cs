@@ -1079,6 +1079,29 @@ namespace REPOSITORY.Features.Idiomas
 
             AgregarSeed("Espanol", "Titulo.ConfirmarDevolucion", "Confirmar devolucion");
             AgregarSeed("Ingles", "Titulo.ConfirmarDevolucion", "Confirm return");
+
+            AgregarSeed("Espanol", "OrdenDetalle.GuardarBorrador", "Guardar borrador");
+            AgregarSeed("Ingles", "OrdenDetalle.GuardarBorrador", "Save draft");
+            AgregarSeed("Espanol", "OrdenDetalle.EliminarBorrador", "Eliminar borrador");
+            AgregarSeed("Ingles", "OrdenDetalle.EliminarBorrador", "Delete draft");
+            AgregarSeed("Espanol", "OrdenDetalle.Anular", "Anular");
+            AgregarSeed("Ingles", "OrdenDetalle.Anular", "Void");
+            AgregarSeed("Espanol", "OrdenDetalle.CancelarSolicitud", "Cancelar solicitud");
+            AgregarSeed("Ingles", "OrdenDetalle.CancelarSolicitud", "Cancel request");
+            AgregarSeed("Espanol", "OrdenDetalle.MotivoAnulacion", "Motivo anulacion:");
+            AgregarSeed("Ingles", "OrdenDetalle.MotivoAnulacion", "Void reason:");
+            AgregarSeed("Espanol", "PresupuestoEstado.Borrador", "Borrador");
+            AgregarSeed("Ingles", "PresupuestoEstado.Borrador", "Draft");
+            AgregarSeed("Espanol", "PresupuestoEstado.Anulado", "Anulado");
+            AgregarSeed("Ingles", "PresupuestoEstado.Anulado", "Voided");
+            AgregarSeed("Espanol", "Mensaje.ConfirmarEliminarBorrador", "Confirma que desea eliminar el borrador seleccionado?");
+            AgregarSeed("Ingles", "Mensaje.ConfirmarEliminarBorrador", "Are you sure you want to delete the selected draft?");
+            AgregarSeed("Espanol", "Mensaje.ConfirmarAnular", "Confirma que desea anular el presupuesto seleccionado? Esta accion no se puede deshacer.");
+            AgregarSeed("Ingles", "Mensaje.ConfirmarAnular", "Are you sure you want to void the selected estimate? This action cannot be undone.");
+            AgregarSeed("Espanol", "Titulo.ConfirmarAnulacion", "Confirmar anulacion");
+            AgregarSeed("Ingles", "Titulo.ConfirmarAnulacion", "Confirm void");
+            AgregarSeed("Espanol", "Mensaje.ConfirmarCancelarSolicitud", "Confirma que desea cancelar la solicitud de presupuesto adicional? Se eliminaran los borradores adicionales.");
+            AgregarSeed("Ingles", "Mensaje.ConfirmarCancelarSolicitud", "Are you sure you want to cancel the add-on estimate request? Draft add-ons will be deleted.");
         }
 
         private void AgregarSeed(string idioma, string clave, string texto)

@@ -83,6 +83,10 @@ namespace UI.Forms.Ordenes
             this.BTN_Emitir = new System.Windows.Forms.Button();
             this.BTN_Aprobar = new System.Windows.Forms.Button();
             this.BTN_Rechazar = new System.Windows.Forms.Button();
+            this.BTN_GuardarBorrador = new System.Windows.Forms.Button();
+            this.BTN_EliminarBorrador = new System.Windows.Forms.Button();
+            this.BTN_Anular = new System.Windows.Forms.Button();
+            this.BTN_CancelarSolicitud = new System.Windows.Forms.Button();
             this.TAB_Historial = new System.Windows.Forms.TabPage();
             this.DGV_Historial = new System.Windows.Forms.DataGridView();
             this.TAB_Reparaciones = new System.Windows.Forms.TabPage();
@@ -649,6 +653,10 @@ namespace UI.Forms.Ordenes
             this.TAB_Presupuesto.Controls.Add(this.BTN_Emitir);
             this.TAB_Presupuesto.Controls.Add(this.BTN_Aprobar);
             this.TAB_Presupuesto.Controls.Add(this.BTN_Rechazar);
+            this.TAB_Presupuesto.Controls.Add(this.BTN_GuardarBorrador);
+            this.TAB_Presupuesto.Controls.Add(this.BTN_EliminarBorrador);
+            this.TAB_Presupuesto.Controls.Add(this.BTN_Anular);
+            this.TAB_Presupuesto.Controls.Add(this.BTN_CancelarSolicitud);
             this.TAB_Presupuesto.Location = new System.Drawing.Point(4, 22);
             this.TAB_Presupuesto.Name = "TAB_Presupuesto";
             this.TAB_Presupuesto.Size = new System.Drawing.Size(888, 454);
@@ -1020,6 +1028,70 @@ namespace UI.Forms.Ordenes
             this.BTN_Rechazar.Text = "Rechazar";
             this.BTN_Rechazar.UseVisualStyleBackColor = false;
             this.BTN_Rechazar.Click += new System.EventHandler(this.BTN_Rechazar_Click);
+            //
+            // BTN_GuardarBorrador
+            //
+            this.BTN_GuardarBorrador.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(128)))), ((int)(((byte)(185)))));
+            this.BTN_GuardarBorrador.FlatAppearance.BorderSize = 0;
+            this.BTN_GuardarBorrador.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.BTN_GuardarBorrador.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.BTN_GuardarBorrador.ForeColor = System.Drawing.Color.White;
+            this.BTN_GuardarBorrador.Location = new System.Drawing.Point(432, 376);
+            this.BTN_GuardarBorrador.Name = "BTN_GuardarBorrador";
+            this.BTN_GuardarBorrador.Size = new System.Drawing.Size(130, 30);
+            this.BTN_GuardarBorrador.TabIndex = 30;
+            this.BTN_GuardarBorrador.Tag = "OrdenDetalle.GuardarBorrador";
+            this.BTN_GuardarBorrador.Text = "Guardar borrador";
+            this.BTN_GuardarBorrador.UseVisualStyleBackColor = false;
+            this.BTN_GuardarBorrador.Click += new System.EventHandler(this.BTN_GuardarBorrador_Click);
+            //
+            // BTN_EliminarBorrador
+            //
+            this.BTN_EliminarBorrador.BackColor = System.Drawing.Color.Maroon;
+            this.BTN_EliminarBorrador.FlatAppearance.BorderSize = 0;
+            this.BTN_EliminarBorrador.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.BTN_EliminarBorrador.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.BTN_EliminarBorrador.ForeColor = System.Drawing.Color.White;
+            this.BTN_EliminarBorrador.Location = new System.Drawing.Point(572, 376);
+            this.BTN_EliminarBorrador.Name = "BTN_EliminarBorrador";
+            this.BTN_EliminarBorrador.Size = new System.Drawing.Size(130, 30);
+            this.BTN_EliminarBorrador.TabIndex = 31;
+            this.BTN_EliminarBorrador.Tag = "OrdenDetalle.EliminarBorrador";
+            this.BTN_EliminarBorrador.Text = "Eliminar borrador";
+            this.BTN_EliminarBorrador.UseVisualStyleBackColor = false;
+            this.BTN_EliminarBorrador.Click += new System.EventHandler(this.BTN_EliminarBorrador_Click);
+            //
+            // BTN_Anular
+            //
+            this.BTN_Anular.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(57)))), ((int)(((byte)(43)))));
+            this.BTN_Anular.FlatAppearance.BorderSize = 0;
+            this.BTN_Anular.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.BTN_Anular.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.BTN_Anular.ForeColor = System.Drawing.Color.White;
+            this.BTN_Anular.Location = new System.Drawing.Point(712, 376);
+            this.BTN_Anular.Name = "BTN_Anular";
+            this.BTN_Anular.Size = new System.Drawing.Size(130, 30);
+            this.BTN_Anular.TabIndex = 32;
+            this.BTN_Anular.Tag = "OrdenDetalle.Anular";
+            this.BTN_Anular.Text = "Anular";
+            this.BTN_Anular.UseVisualStyleBackColor = false;
+            this.BTN_Anular.Click += new System.EventHandler(this.BTN_Anular_Click);
+            //
+            // BTN_CancelarSolicitud
+            //
+            this.BTN_CancelarSolicitud.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(127)))), ((int)(((byte)(140)))), ((int)(((byte)(141)))));
+            this.BTN_CancelarSolicitud.FlatAppearance.BorderSize = 0;
+            this.BTN_CancelarSolicitud.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.BTN_CancelarSolicitud.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.BTN_CancelarSolicitud.ForeColor = System.Drawing.Color.White;
+            this.BTN_CancelarSolicitud.Location = new System.Drawing.Point(12, 412);
+            this.BTN_CancelarSolicitud.Name = "BTN_CancelarSolicitud";
+            this.BTN_CancelarSolicitud.Size = new System.Drawing.Size(176, 26);
+            this.BTN_CancelarSolicitud.TabIndex = 33;
+            this.BTN_CancelarSolicitud.Tag = "OrdenDetalle.CancelarSolicitud";
+            this.BTN_CancelarSolicitud.Text = "Cancelar solicitud";
+            this.BTN_CancelarSolicitud.UseVisualStyleBackColor = false;
+            this.BTN_CancelarSolicitud.Click += new System.EventHandler(this.BTN_CancelarSolicitud_Click);
             //
             // TAB_Historial
             //
@@ -1664,6 +1736,10 @@ namespace UI.Forms.Ordenes
         private System.Windows.Forms.Button BTN_Emitir;
         private System.Windows.Forms.Button BTN_Aprobar;
         private System.Windows.Forms.Button BTN_Rechazar;
+        private System.Windows.Forms.Button BTN_GuardarBorrador;
+        private System.Windows.Forms.Button BTN_EliminarBorrador;
+        private System.Windows.Forms.Button BTN_Anular;
+        private System.Windows.Forms.Button BTN_CancelarSolicitud;
         private System.Windows.Forms.TabPage TAB_Historial;
         private System.Windows.Forms.DataGridView DGV_Historial;
         private System.Windows.Forms.TabPage TAB_Reparaciones;
