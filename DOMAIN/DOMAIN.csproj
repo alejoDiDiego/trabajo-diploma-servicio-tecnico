@@ -58,6 +58,7 @@
     <Compile Include="Features\Ordenes\TipoOrden.cs" />
     <Compile Include="Features\Ordenes\EstadoPresupuesto.cs" />
     <Compile Include="Features\Ordenes\TipoItemPresupuesto.cs" />
+    <Compile Include="Features\Ordenes\TipoPresupuesto.cs" />
     <Compile Include="Features\Ordenes\OrdenServicio.cs" />
     <Compile Include="Features\Ordenes\HistorialEstadoOrden.cs" />
     <Compile Include="Features\Ordenes\Diagnostico.cs" />

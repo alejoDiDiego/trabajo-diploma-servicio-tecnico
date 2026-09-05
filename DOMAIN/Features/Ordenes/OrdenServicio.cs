@@ -180,6 +180,15 @@ namespace DOMAIN.Features.Ordenes
             Estado = EstadoOrdenServicio.EnPruebas;
         }
 
+        public void SolicitarAdicional()
+        {
+            if (Estado != EstadoOrdenServicio.EnReparacion
+                && Estado != EstadoOrdenServicio.EnPruebas)
+                throw new ReglaNegocioException("Solo se puede solicitar un presupuesto adicional de una orden en reparacion o en pruebas.");
+
+            Estado = EstadoOrdenServicio.PendientePresupuesto;
+        }
+
         public void RegistrarPruebaAprobada()
         {
             if (Estado != EstadoOrdenServicio.EnPruebas)

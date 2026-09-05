@@ -29,6 +29,7 @@ namespace DOMAIN.Features.Repuestos
                 throw new ReglaNegocioException("El tipo del movimiento es obligatorio.");
             if (tipo != TipoMovimientoStock.Compra
                 && tipo != TipoMovimientoStock.ConsumoReparacion
+                && tipo != TipoMovimientoStock.DevolucionConsumo
                 && tipo != TipoMovimientoStock.AjustePositivo
                 && tipo != TipoMovimientoStock.AjusteNegativo)
                 throw new ReglaNegocioException("El tipo de movimiento no es valido.");

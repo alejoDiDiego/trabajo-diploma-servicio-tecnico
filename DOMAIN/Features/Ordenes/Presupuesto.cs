@@ -7,6 +7,7 @@ namespace DOMAIN.Features.Ordenes
     {
         public int Id { get; private set; }
         public int IdOrden { get; private set; }
+        public string Tipo { get; private set; }
         public DateTime FechaEmision { get; private set; }
         public string Estado { get; private set; }
         public decimal Subtotal { get; private set; }
@@ -21,10 +22,12 @@ namespace DOMAIN.Features.Ordenes
         private Presupuesto() { }
 
         public static Presupuesto CrearNuevo(int idOrden, decimal subtotal, decimal descuento,
-            int diasGarantia, string observaciones)
+            int diasGarantia, string observaciones, string tipo)
         {
             if (idOrden <= 0)
                 throw new ReglaNegocioException("La orden del presupuesto es obligatoria.");
+            if (tipo != TipoPresupuesto.Original && tipo != TipoPresupuesto.Adicional)
+                throw new ReglaNegocioException("El tipo de presupuesto no es valido.");
             if (subtotal < 0)
                 throw new ReglaNegocioException("El subtotal no puede ser negativo.");
             if (descuento < 0)
@@ -37,6 +40,7 @@ namespace DOMAIN.Features.Ordenes
             return new Presupuesto
             {
                 IdOrden = idOrden,
+                Tipo = tipo,
                 FechaEmision = DateTime.Now,
                 Estado = EstadoPresupuesto.Pendiente,
                 Subtotal = subtotal,
@@ -50,10 +54,12 @@ namespace DOMAIN.Features.Ordenes
             };
         }
 
-        public static Presupuesto CargarDesdeDB(int id, int idOrden, DateTime fechaEmision,
+        public static Presupuesto CargarDesdeDB(int id, int idOrden, string tipo, DateTime fechaEmision,
             string estado, decimal subtotal, decimal descuento, decimal total, int diasGarantia,
             DateTime? fechaRespuesta, string medioRespuesta, string motivoRechazo, string observaciones)
         {
+            if (tipo != TipoPresupuesto.Original && tipo != TipoPresupuesto.Adicional)
+                throw new ReglaNegocioException("El tipo de presupuesto no es valido.");
             if (total != subtotal - descuento)
                 throw new ReglaNegocioException("El total del presupuesto no coincide con subtotal menos descuento.");
 
@@ -61,6 +67,7 @@ namespace DOMAIN.Features.Ordenes
             {
                 Id = id,
                 IdOrden = idOrden,
+                Tipo = tipo,
                 FechaEmision = fechaEmision,
                 Estado = estado ?? EstadoPresupuesto.Pendiente,
                 Subtotal = subtotal,

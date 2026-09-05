@@ -239,27 +239,15 @@ namespace APPLICATION.Features.Ordenes
                 if (diagnostico == null || !diagnostico.EsReparable)
                     throw new ReglaNegocioException("La orden debe tener un diagnostico reparable para emitir el presupuesto.");
 
-                if (_presupuestoRepository.ObtenerPorOrden(idOrden) != null)
-                    throw new ReglaNegocioException("La orden ya tiene un presupuesto emitido.");
+                if (_presupuestoRepository.ObtenerOriginal(idOrden) != null)
+                    throw new ReglaNegocioException("La orden ya tiene un presupuesto original emitido. Debe emitir un presupuesto adicional.");
 
-                if (items == null || items.Count == 0)
-                    throw new ReglaNegocioException("El presupuesto debe tener al menos un item.");
-
-                decimal subtotal = 0;
-
-                foreach (DetallePresupuesto item in items)
-                {
-                    if (item.TipoItem != TipoItemPresupuesto.ManoObra
-                        && item.TipoItem != TipoItemPresupuesto.Servicio)
-                        throw new ReglaNegocioException("El tipo de item solo puede ser mano de obra o servicio.");
-
-                    subtotal += item.Subtotal;
-                }
+                decimal subtotal = ValidarItemsYCalcularSubtotal(items);
 
                 string estadoAnterior = ordenDb.Estado;
 
                 Presupuesto presupuestoToSave = Presupuesto.CrearNuevo(
-                    idOrden, subtotal, descuento, diasGarantia, observaciones);
+                    idOrden, subtotal, descuento, diasGarantia, observaciones, TipoPresupuesto.Original);
 
                 ordenDb.MarcarEsperandoRespuesta();
 
@@ -294,6 +282,9 @@ namespace APPLICATION.Features.Ordenes
 
                 if (presupuestoDb == null)
                     throw new ReglaNegocioException("La orden no tiene un presupuesto emitido.");
+
+                if (presupuestoDb.Tipo != TipoPresupuesto.Original)
+                    throw new ReglaNegocioException("Solo se puede aprobar el presupuesto original por este medio.");
 
                 string estadoAnterior = ordenDb.Estado;
 
@@ -349,6 +340,216 @@ namespace APPLICATION.Features.Ordenes
             catch (Exception ex)
             {
                 throw new Exception("Error al rechazar presupuesto", ex);
+            }
+        }
+
+        public void SolicitarAdicional(int idOrden, string motivo)
+        {
+            try
+            {
+                int idUsuario = ObtenerIdUsuarioSesion();
+
+                if (string.IsNullOrWhiteSpace(motivo))
+                    throw new ReglaNegocioException("El motivo de la solicitud es obligatorio.");
+
+                OrdenServicio ordenDb = ObtenerOrdenExistente(idOrden);
+
+                Presupuesto original = _presupuestoRepository.ObtenerOriginal(idOrden);
+
+                if (original == null || original.Estado != EstadoPresupuesto.Aprobado)
+                    throw new ReglaNegocioException("La orden debe tener el presupuesto original aprobado para solicitar un adicional.");
+
+                if (_presupuestoRepository.ExisteAdicionalPendiente(idOrden))
+                    throw new ReglaNegocioException("La orden ya tiene un presupuesto adicional pendiente de respuesta.");
+
+                string estadoAnterior = ordenDb.Estado;
+
+                ordenDb.SolicitarAdicional();
+
+                _ordenRepository.CambiarEstadoConHistorial(ordenDb.Id, estadoAnterior, ordenDb.Estado,
+                    idUsuario, motivo.Trim(), null, null, null);
+
+                BitacoraService bitacoraService = new BitacoraService();
+                bitacoraService.Registrar("ADICIONAL_SOLICITADO", "id_orden=" + idOrden, "ORDENES");
+            }
+            catch (ReglaNegocioException ex)
+            {
+                throw new ReglaNegocioException(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al solicitar presupuesto adicional", ex);
+            }
+        }
+
+        public Presupuesto EmitirAdicional(int idOrden, List<DetallePresupuesto> items,
+            decimal descuento, int diasGarantia, string observaciones)
+        {
+            try
+            {
+                int idUsuario = ObtenerIdUsuarioSesion();
+                OrdenServicio ordenDb = ObtenerOrdenExistente(idOrden);
+
+                if (ordenDb.Estado != EstadoOrdenServicio.PendientePresupuesto)
+                    throw new ReglaNegocioException("Solo se puede emitir el presupuesto adicional de una orden pendiente de presupuesto.");
+
+                Presupuesto original = _presupuestoRepository.ObtenerOriginal(idOrden);
+
+                if (original == null || original.Estado != EstadoPresupuesto.Aprobado)
+                    throw new ReglaNegocioException("La orden debe tener el presupuesto original aprobado para emitir un adicional.");
+
+                if (_presupuestoRepository.ExisteAdicionalPendiente(idOrden))
+                    throw new ReglaNegocioException("La orden ya tiene un presupuesto adicional pendiente de respuesta.");
+
+                decimal subtotal = ValidarItemsYCalcularSubtotal(items);
+
+                Presupuesto presupuestoToSave = Presupuesto.CrearNuevo(
+                    idOrden, subtotal, descuento, diasGarantia, observaciones, TipoPresupuesto.Adicional);
+
+                Presupuesto presupuestoDb = _presupuestoRepository.EmitirAdicional(
+                    presupuestoToSave, items, idUsuario);
+
+                BitacoraService bitacoraService = new BitacoraService();
+                bitacoraService.Registrar("ADICIONAL_EMITIDO",
+                    "id_orden=" + idOrden + " | id_presupuesto=" + presupuestoDb.Id + " | total=" + presupuestoDb.Total, "ORDENES");
+
+                return presupuestoDb;
+            }
+            catch (ReglaNegocioException ex)
+            {
+                throw new ReglaNegocioException(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al emitir presupuesto adicional", ex);
+            }
+        }
+
+        public void RegistrarAprobacionAdicional(int idPresupuesto, string medioRespuesta, string observaciones)
+        {
+            try
+            {
+                int idUsuario = ObtenerIdUsuarioSesion();
+
+                Presupuesto presupuestoDb = _presupuestoRepository.ObtenerPorId(idPresupuesto);
+
+                if (presupuestoDb == null)
+                    throw new ReglaNegocioException("El presupuesto seleccionado no existe.");
+
+                if (presupuestoDb.Tipo != TipoPresupuesto.Adicional)
+                    throw new ReglaNegocioException("Solo se puede aprobar un presupuesto adicional por este medio.");
+
+                OrdenServicio ordenDb = ObtenerOrdenExistente(presupuestoDb.IdOrden);
+
+                if (ordenDb.Estado != EstadoOrdenServicio.EsperandoRespuesta)
+                    throw new ReglaNegocioException("Solo se puede aprobar el adicional de una orden en espera de respuesta.");
+
+                presupuestoDb.Aprobar(medioRespuesta, observaciones);
+
+                _presupuestoRepository.AprobarAdicionalConTransicion(presupuestoDb.Id, idUsuario,
+                    presupuestoDb.MedioRespuesta, observaciones);
+
+                BitacoraService bitacoraService = new BitacoraService();
+                bitacoraService.Registrar("ADICIONAL_APROBADO",
+                    "id_orden=" + ordenDb.Id + " | id_presupuesto=" + presupuestoDb.Id, "ORDENES");
+            }
+            catch (ReglaNegocioException ex)
+            {
+                throw new ReglaNegocioException(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al aprobar presupuesto adicional", ex);
+            }
+        }
+
+        public void RegistrarRechazoAdicional(int idPresupuesto, string motivo, string medioRespuesta, string observaciones)
+        {
+            try
+            {
+                int idUsuario = ObtenerIdUsuarioSesion();
+
+                Presupuesto presupuestoDb = _presupuestoRepository.ObtenerPorId(idPresupuesto);
+
+                if (presupuestoDb == null)
+                    throw new ReglaNegocioException("El presupuesto seleccionado no existe.");
+
+                if (presupuestoDb.Tipo != TipoPresupuesto.Adicional)
+                    throw new ReglaNegocioException("Solo se puede rechazar un presupuesto adicional por este medio.");
+
+                OrdenServicio ordenDb = ObtenerOrdenExistente(presupuestoDb.IdOrden);
+
+                presupuestoDb.Rechazar(motivo, medioRespuesta, observaciones);
+                ordenDb.MarcarPresupuestoRechazado(motivo);
+
+                _presupuestoRepository.RechazarAdicionalConTransicion(presupuestoDb.Id, idUsuario,
+                    presupuestoDb.MotivoRechazo, presupuestoDb.MedioRespuesta, observaciones,
+                    ordenDb.Resultado, ordenDb.ObservacionResultado, "Presupuesto adicional rechazado");
+
+                BitacoraService bitacoraService = new BitacoraService();
+                bitacoraService.Registrar("ADICIONAL_RECHAZADO",
+                    "id_orden=" + ordenDb.Id + " | id_presupuesto=" + presupuestoDb.Id, "ORDENES");
+            }
+            catch (ReglaNegocioException ex)
+            {
+                throw new ReglaNegocioException(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al rechazar presupuesto adicional", ex);
+            }
+        }
+
+        public void QuitarConsumo(int idReparacion, int idRepuesto, int cantidad)
+        {
+            try
+            {
+                int idUsuario = ObtenerIdUsuarioSesion();
+
+                Reparacion reparacionDb = _reparacionRepository.ObtenerPorId(idReparacion);
+
+                if (reparacionDb == null)
+                    throw new ReglaNegocioException("La reparacion seleccionada no existe.");
+
+                if (reparacionDb.FechaFin.HasValue)
+                    throw new ReglaNegocioException("La reparacion ya fue finalizada.");
+
+                OrdenServicio ordenDb = ObtenerOrdenExistente(reparacionDb.IdOrden);
+
+                if (ordenDb.Estado != EstadoOrdenServicio.EnReparacion)
+                    throw new ReglaNegocioException("Solo se puede quitar consumo de una orden en reparacion.");
+
+                if (cantidad <= 0)
+                    throw new ReglaNegocioException("La cantidad a devolver debe ser mayor a cero.");
+
+                List<ReparacionRepuesto> consumidos = _reparacionRepository.ListarConsumidos(idReparacion);
+                ReparacionRepuesto fila = null;
+
+                foreach (ReparacionRepuesto c in consumidos)
+                {
+                    if (c.IdRepuesto == idRepuesto)
+                        fila = c;
+                }
+
+                if (fila == null)
+                    throw new ReglaNegocioException("La reparacion no tiene consumo registrado del repuesto.");
+
+                if (cantidad > fila.Cantidad)
+                    throw new ReglaNegocioException("La cantidad a devolver supera la consumida.");
+
+                _reparacionRepository.DevolverConsumo(idReparacion, idRepuesto, cantidad, idUsuario);
+
+                BitacoraService bitacoraService = new BitacoraService();
+                bitacoraService.Registrar("CONSUMO_DEVUELTO",
+                    "id_reparacion=" + idReparacion + " | id_repuesto=" + idRepuesto + " | cantidad=" + cantidad, "ORDENES");
+            }
+            catch (ReglaNegocioException ex)
+            {
+                throw new ReglaNegocioException(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al quitar consumo", ex);
             }
         }
 
@@ -512,7 +713,7 @@ namespace APPLICATION.Features.Ordenes
             try
             {
                 ObtenerOrdenExistente(idOrden);
-                return _presupuestoRepository.ObtenerPorOrden(idOrden);
+                return _presupuestoRepository.ObtenerOriginal(idOrden);
             }
             catch (ReglaNegocioException ex)
             {
@@ -521,6 +722,95 @@ namespace APPLICATION.Features.Ordenes
             catch (Exception ex)
             {
                 throw new Exception("Error al obtener presupuesto", ex);
+            }
+        }
+
+        public Presupuesto ObtenerPresupuestoOriginal(int idOrden)
+        {
+            try
+            {
+                ObtenerOrdenExistente(idOrden);
+                return _presupuestoRepository.ObtenerOriginal(idOrden);
+            }
+            catch (ReglaNegocioException ex)
+            {
+                throw new ReglaNegocioException(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al obtener presupuesto original", ex);
+            }
+        }
+
+        public List<Presupuesto> ListarAdicionales(int idOrden)
+        {
+            try
+            {
+                ObtenerOrdenExistente(idOrden);
+                return _presupuestoRepository.ListarAdicionales(idOrden);
+            }
+            catch (ReglaNegocioException ex)
+            {
+                throw new ReglaNegocioException(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al listar presupuestos adicionales", ex);
+            }
+        }
+
+        public Presupuesto ObtenerPresupuestoPorId(int idPresupuesto)
+        {
+            try
+            {
+                Presupuesto presupuesto = _presupuestoRepository.ObtenerPorId(idPresupuesto);
+
+                if (presupuesto == null)
+                    throw new ReglaNegocioException("El presupuesto seleccionado no existe.");
+
+                return presupuesto;
+            }
+            catch (ReglaNegocioException ex)
+            {
+                throw new ReglaNegocioException(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al obtener presupuesto", ex);
+            }
+        }
+
+        public bool ExisteAdicionalPendiente(int idOrden)
+        {
+            try
+            {
+                ObtenerOrdenExistente(idOrden);
+                return _presupuestoRepository.ExisteAdicionalPendiente(idOrden);
+            }
+            catch (ReglaNegocioException ex)
+            {
+                throw new ReglaNegocioException(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al verificar presupuestos adicionales pendientes", ex);
+            }
+        }
+
+        public decimal CalcularMontoAutorizado(int idOrden)
+        {
+            try
+            {
+                ObtenerOrdenExistente(idOrden);
+                return _presupuestoRepository.CalcularMontoAutorizado(idOrden);
+            }
+            catch (ReglaNegocioException ex)
+            {
+                throw new ReglaNegocioException(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al calcular monto autorizado", ex);
             }
         }
 
@@ -865,6 +1155,25 @@ namespace APPLICATION.Features.Ordenes
             {
                 throw new Exception("Error al listar pruebas", ex);
             }
+        }
+
+        private decimal ValidarItemsYCalcularSubtotal(List<DetallePresupuesto> items)
+        {
+            if (items == null || items.Count == 0)
+                throw new ReglaNegocioException("El presupuesto debe tener al menos un item.");
+
+            decimal subtotal = 0;
+
+            foreach (DetallePresupuesto item in items)
+            {
+                if (item.TipoItem != TipoItemPresupuesto.ManoObra
+                    && item.TipoItem != TipoItemPresupuesto.Servicio)
+                    throw new ReglaNegocioException("El tipo de item solo puede ser mano de obra o servicio.");
+
+                subtotal += item.Subtotal;
+            }
+
+            return subtotal;
         }
 
         private OrdenServicio ObtenerOrdenExistente(int idOrden)

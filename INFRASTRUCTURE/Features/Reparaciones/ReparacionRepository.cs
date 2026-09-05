@@ -347,6 +347,68 @@ namespace REPOSITORY.Features.Reparaciones
             _db.ExecuteTransaction(query, sqlParameters);
         }
 
+        public void DevolverConsumo(int idReparacion, int idRepuesto, int cantidad, int idUsuario)
+        {
+            // Batch atomico: valida consumo, descuenta o elimina la fila, devuelve stock y registra movimiento.
+            string query = @"
+                DECLARE @Consumida int;
+
+                SELECT @Consumida = cantidad
+                FROM ReparacionRepuesto WITH (UPDLOCK, HOLDLOCK)
+                WHERE id_reparacion = @IdReparacion AND id_repuesto = @IdRepuesto;
+
+                IF (@Consumida IS NULL)
+                    THROW 50003, 'La reparacion no tiene consumo registrado del repuesto.', 1;
+
+                IF (@Cantidad > @Consumida)
+                    THROW 50004, 'La cantidad a devolver supera la consumida.', 1;
+
+                IF (@Cantidad = @Consumida)
+                BEGIN
+                    DELETE FROM ReparacionRepuesto
+                    WHERE id_reparacion = @IdReparacion AND id_repuesto = @IdRepuesto;
+                END
+                ELSE
+                BEGIN
+                    UPDATE ReparacionRepuesto
+                    SET cantidad = cantidad - @Cantidad
+                    WHERE id_reparacion = @IdReparacion AND id_repuesto = @IdRepuesto;
+                END
+
+                DECLARE @Stock int;
+
+                SELECT @Stock = stock_actual
+                FROM Repuestos WITH (UPDLOCK, HOLDLOCK)
+                WHERE id_repuesto = @IdRepuesto;
+
+                IF (@Stock IS NULL)
+                    THROW 50001, 'El repuesto seleccionado no existe.', 1;
+
+                UPDATE Repuestos
+                SET stock_actual = @Stock + @Cantidad
+                WHERE id_repuesto = @IdRepuesto;
+
+                INSERT INTO MovimientosStock (id_repuesto, fecha, tipo, cantidad,
+                    stock_anterior, stock_posterior, id_usuario, id_compra,
+                    id_reparacion, observacion)
+                VALUES (@IdRepuesto, GETDATE(), 'DevolucionConsumo', @Cantidad,
+                    @Stock, @Stock + @Cantidad, @IdUsuario, NULL, @IdReparacion, @Observacion);
+
+                SELECT 0;
+            ";
+
+            SqlParameter[] sqlParameters = new SqlParameter[]
+            {
+                new SqlParameter("@IdReparacion", idReparacion),
+                new SqlParameter("@IdRepuesto", idRepuesto),
+                new SqlParameter("@Cantidad", cantidad),
+                new SqlParameter("@IdUsuario", idUsuario),
+                new SqlParameter("@Observacion", "Devolucion de consumo")
+            };
+
+            _db.ExecuteTransaction(query, sqlParameters);
+        }
+
         public void FinalizarReparacion(int idReparacion, string trabajoRealizado,
             string observaciones, int idUsuario)
         {
