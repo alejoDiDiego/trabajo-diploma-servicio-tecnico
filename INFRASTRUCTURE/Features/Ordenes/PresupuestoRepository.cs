@@ -24,12 +24,19 @@ namespace REPOSITORY.Features.Ordenes
 
         public void Inicializar()
         {
-            string query = @"
+            // FIX migracion legacy (Error 207): SQL Server compila el batch completo antes de
+            // ejecutarlo, asi que el CREATE UNIQUE INDEX filtrado WHERE tipo fallaba en DBs sin
+            // la columna 'tipo'. Se divide en 2 batches/compilaciones separadas: fase 1 crea/migra
+            // todo lo que NO referencia 'tipo' (incluye ALTER ADD tipo + DROP old UX), fase 2 crea
+            // el indice filtrado cuando la columna ya existe. Se eligio 2x ExecuteTransaction por
+            // ser lo mas simple/explicito frente a EXEC(sp_executesql).
+            string fase1 = @"
                 IF OBJECT_ID('Presupuestos', 'U') IS NULL
                 BEGIN
                     CREATE TABLE Presupuestos (
                         id_presupuesto int IDENTITY(1,1) NOT NULL PRIMARY KEY,
                         id_orden int NOT NULL,
+                        tipo nvarchar(20) NOT NULL CONSTRAINT DF_Presupuestos_Tipo DEFAULT 'Original',
                         fecha_emision datetime NOT NULL CONSTRAINT DF_Presupuestos_FechaEmision DEFAULT GETDATE(),
                         estado nvarchar(20) NOT NULL CONSTRAINT DF_Presupuestos_Estado DEFAULT 'Pendiente',
                         subtotal decimal(18,2) NOT NULL CONSTRAINT DF_Presupuestos_Subtotal DEFAULT 0,
@@ -48,6 +55,9 @@ namespace REPOSITORY.Features.Ordenes
                 BEGIN
                     IF COL_LENGTH('Presupuestos', 'id_orden') IS NULL
                         ALTER TABLE Presupuestos ADD id_orden int NOT NULL CONSTRAINT DF_Presupuestos_IdOrden DEFAULT 0;
+
+                    IF COL_LENGTH('Presupuestos', 'tipo') IS NULL
+                        ALTER TABLE Presupuestos ADD tipo nvarchar(20) NOT NULL CONSTRAINT DF_Presupuestos_Tipo DEFAULT 'Original';
 
                     IF COL_LENGTH('Presupuestos', 'fecha_emision') IS NULL
                         ALTER TABLE Presupuestos ADD fecha_emision datetime NOT NULL CONSTRAINT DF_Presupuestos_FechaEmision DEFAULT GETDATE();
@@ -91,14 +101,13 @@ namespace REPOSITORY.Features.Ordenes
                     END
                 END
 
-                IF NOT EXISTS (
+                IF EXISTS (
                     SELECT 1 FROM sys.indexes
                     WHERE name = 'UX_Presupuesto_Orden'
                       AND object_id = OBJECT_ID('Presupuestos')
                 )
                 BEGIN
-                    CREATE UNIQUE INDEX UX_Presupuesto_Orden
-                    ON Presupuestos(id_orden);
+                    DROP INDEX UX_Presupuesto_Orden ON Presupuestos;
                 END
 
                 IF OBJECT_ID('PresupuestoDetalle', 'U') IS NULL
@@ -154,7 +163,23 @@ namespace REPOSITORY.Features.Ordenes
                 SELECT 0;
             ";
 
-            _db.ExecuteTransaction(query);
+            _db.ExecuteTransaction(fase1);
+
+            string fase2 = @"
+                IF NOT EXISTS (
+                    SELECT 1 FROM sys.indexes
+                    WHERE name = 'UX_Presupuesto_Original'
+                      AND object_id = OBJECT_ID('Presupuestos')
+                )
+                BEGIN
+                    CREATE UNIQUE INDEX UX_Presupuesto_Original
+                    ON Presupuestos(id_orden) WHERE tipo = 'Original';
+                END
+
+                SELECT 0;
+            ";
+
+            _db.ExecuteTransaction(fase2);
         }
 
         public Presupuesto EmitirConDetalle(Presupuesto presupuesto, List<DetallePresupuesto> items,
@@ -163,9 +188,9 @@ namespace REPOSITORY.Features.Ordenes
             // Batch atomico: INSERT presupuesto + N INSERT detalle + UPDATE orden + INSERT historial.
             StringBuilder sb = new StringBuilder();
             sb.Append(@"
-                INSERT INTO Presupuestos (id_orden, fecha_emision, estado, subtotal, descuento, total,
+                INSERT INTO Presupuestos (id_orden, tipo, fecha_emision, estado, subtotal, descuento, total,
                     dias_garantia, fecha_respuesta, medio_respuesta, motivo_rechazo, observaciones)
-                VALUES (@IdOrden, @FechaEmision, @Estado, @Subtotal, @Descuento, @Total,
+                VALUES (@IdOrden, @Tipo, @FechaEmision, @Estado, @Subtotal, @Descuento, @Total,
                     @DiasGarantia, NULL, NULL, NULL, @Observaciones);
 
                 DECLARE @P int = CAST(SCOPE_IDENTITY() AS int);
@@ -173,6 +198,7 @@ namespace REPOSITORY.Features.Ordenes
 
             List<SqlParameter> parametros = new List<SqlParameter>();
             parametros.Add(new SqlParameter("@IdOrden", presupuesto.IdOrden));
+            parametros.Add(new SqlParameter("@Tipo", presupuesto.Tipo));
             parametros.Add(new SqlParameter("@FechaEmision", presupuesto.FechaEmision));
             parametros.Add(new SqlParameter("@Estado", presupuesto.Estado));
             parametros.Add(new SqlParameter("@Subtotal", presupuesto.Subtotal));
@@ -301,7 +327,7 @@ namespace REPOSITORY.Features.Ordenes
         public Presupuesto ObtenerPorId(int id)
         {
             string query = @"
-                SELECT id_presupuesto, id_orden, fecha_emision, estado, subtotal, descuento, total,
+                SELECT id_presupuesto, id_orden, tipo, fecha_emision, estado, subtotal, descuento, total,
                        dias_garantia, fecha_respuesta, medio_respuesta, motivo_rechazo, observaciones
                 FROM Presupuestos WHERE id_presupuesto = @Id;
             ";
@@ -321,10 +347,11 @@ namespace REPOSITORY.Features.Ordenes
 
         public Presupuesto ObtenerPorOrden(int idOrden)
         {
+            // Compatibilidad: con presupuestos 1:N devuelve el Original.
             string query = @"
-                SELECT id_presupuesto, id_orden, fecha_emision, estado, subtotal, descuento, total,
+                SELECT id_presupuesto, id_orden, tipo, fecha_emision, estado, subtotal, descuento, total,
                        dias_garantia, fecha_respuesta, medio_respuesta, motivo_rechazo, observaciones
-                FROM Presupuestos WHERE id_orden = @IdOrden;
+                FROM Presupuestos WHERE id_orden = @IdOrden AND tipo = 'Original';
             ";
 
             SqlParameter[] sqlParameters = new SqlParameter[]
@@ -338,6 +365,184 @@ namespace REPOSITORY.Features.Ordenes
                 return null;
 
             return Mapear(dt.Rows[0]);
+        }
+
+        public Presupuesto ObtenerOriginal(int idOrden)
+        {
+            string query = @"
+                SELECT id_presupuesto, id_orden, tipo, fecha_emision, estado, subtotal, descuento, total,
+                       dias_garantia, fecha_respuesta, medio_respuesta, motivo_rechazo, observaciones
+                FROM Presupuestos WHERE id_orden = @IdOrden AND tipo = 'Original';
+            ";
+
+            SqlParameter[] sqlParameters = new SqlParameter[]
+            {
+                new SqlParameter("@IdOrden", idOrden)
+            };
+
+            DataTable dt = _db.ExecuteQuery(query, sqlParameters);
+
+            if (dt.Rows.Count <= 0)
+                return null;
+
+            return Mapear(dt.Rows[0]);
+        }
+
+        public List<Presupuesto> ListarAdicionales(int idOrden)
+        {
+            string query = @"
+                SELECT id_presupuesto, id_orden, tipo, fecha_emision, estado, subtotal, descuento, total,
+                       dias_garantia, fecha_respuesta, medio_respuesta, motivo_rechazo, observaciones
+                FROM Presupuestos
+                WHERE id_orden = @IdOrden AND tipo = 'Adicional'
+                ORDER BY id_presupuesto;
+            ";
+
+            SqlParameter[] sqlParameters = new SqlParameter[]
+            {
+                new SqlParameter("@IdOrden", idOrden)
+            };
+
+            DataTable dt = _db.ExecuteQuery(query, sqlParameters);
+            List<Presupuesto> adicionales = new List<Presupuesto>();
+
+            foreach (DataRow fila in dt.Rows)
+                adicionales.Add(Mapear(fila));
+
+            return adicionales;
+        }
+
+        public bool ExisteAdicionalPendiente(int idOrden)
+        {
+            string query = @"
+                SELECT COUNT(1)
+                FROM Presupuestos
+                WHERE id_orden = @IdOrden
+                  AND tipo = 'Adicional'
+                  AND estado IN ('Borrador', 'Pendiente');
+            ";
+
+            SqlParameter[] sqlParameters = new SqlParameter[]
+            {
+                new SqlParameter("@IdOrden", idOrden)
+            };
+
+            return _db.ExecuteTransaction(query, sqlParameters) > 0;
+        }
+
+        public decimal CalcularMontoAutorizado(int idOrden)
+        {
+            string query = @"
+                SELECT ISNULL(SUM(total), 0)
+                FROM Presupuestos
+                WHERE id_orden = @IdOrden AND estado = 'Aprobado';
+            ";
+
+            SqlParameter[] sqlParameters = new SqlParameter[]
+            {
+                new SqlParameter("@IdOrden", idOrden)
+            };
+
+            DataTable dt = _db.ExecuteQuery(query, sqlParameters);
+
+            if (dt.Rows.Count <= 0 || dt.Rows[0][0] == DBNull.Value)
+                return 0;
+
+            return Convert.ToDecimal(dt.Rows[0][0]);
+        }
+
+        public Presupuesto EmitirAdicional(Presupuesto presupuesto, List<DetallePresupuesto> items, int idUsuario)
+        {
+            // Emision atomica como el Original: INSERT adicional + N detalle + orden a EsperandoRespuesta + historial.
+            return EmitirConDetalle(presupuesto, items, "PendientePresupuesto", "EsperandoRespuesta",
+                idUsuario, "Presupuesto adicional emitido");
+        }
+
+        public void AprobarAdicionalConTransicion(int idPresupuesto, int idUsuario,
+            string medioRespuesta, string observaciones)
+        {
+            // Batch atomico: adicional->Aprobado + orden EsperandoRespuesta->EnReparacion + historial.
+            string query = @"
+                DECLARE @Orden int;
+
+                SELECT @Orden = id_orden FROM Presupuestos WHERE id_presupuesto = @IdPresupuesto;
+
+                UPDATE Presupuestos
+                SET estado = 'Aprobado',
+                    fecha_respuesta = GETDATE(),
+                    medio_respuesta = @Medio,
+                    observaciones = COALESCE(@Observaciones, observaciones)
+                WHERE id_presupuesto = @IdPresupuesto;
+
+                UPDATE OrdenesServicio
+                SET estado = 'EnReparacion'
+                WHERE id_orden = @Orden;
+
+                INSERT INTO HistorialOrdenes (id_orden, estado_anterior, estado_nuevo, fecha_hora, id_usuario, observacion)
+                VALUES (@Orden, 'EsperandoRespuesta', 'EnReparacion', GETDATE(), @IdUsuario, 'Presupuesto adicional aprobado');
+
+                SELECT 0;
+            ";
+
+            SqlParameter[] sqlParameters = new SqlParameter[]
+            {
+                new SqlParameter("@IdPresupuesto", idPresupuesto),
+                new SqlParameter("@IdUsuario", idUsuario),
+                new SqlParameter("@Medio", (object)medioRespuesta ?? DBNull.Value),
+                new SqlParameter("@Observaciones", (object)observaciones ?? DBNull.Value)
+            };
+
+            _db.ExecuteTransaction(query, sqlParameters);
+        }
+
+        public void RechazarAdicionalConTransicion(int idPresupuesto, int idUsuario, string motivo,
+            string medioRespuesta, string observaciones, string resultadoOrden,
+            string observacionResultado, string observacionHistorial)
+        {
+            // Batch atomico: adicional->Rechazado + cierra reparacion abierta + orden->ListoRetiro + historial.
+            string query = @"
+                DECLARE @Orden int;
+
+                SELECT @Orden = id_orden FROM Presupuestos WHERE id_presupuesto = @IdPresupuesto;
+
+                UPDATE Presupuestos
+                SET estado = 'Rechazado',
+                    fecha_respuesta = GETDATE(),
+                    medio_respuesta = @Medio,
+                    motivo_rechazo = @Motivo,
+                    observaciones = COALESCE(@Observaciones, observaciones)
+                WHERE id_presupuesto = @IdPresupuesto;
+
+                UPDATE Reparaciones
+                SET fecha_fin = GETDATE(),
+                    observaciones = @Motivo
+                WHERE id_orden = @Orden AND fecha_fin IS NULL;
+
+                UPDATE OrdenesServicio
+                SET estado = 'ListoRetiro',
+                    resultado = @ResultadoOrden,
+                    observacion_resultado = @ObservacionResultado
+                WHERE id_orden = @Orden;
+
+                INSERT INTO HistorialOrdenes (id_orden, estado_anterior, estado_nuevo, fecha_hora, id_usuario, observacion)
+                VALUES (@Orden, 'EsperandoRespuesta', 'ListoRetiro', GETDATE(), @IdUsuario, @ObservacionHistorial);
+
+                SELECT 0;
+            ";
+
+            SqlParameter[] sqlParameters = new SqlParameter[]
+            {
+                new SqlParameter("@IdPresupuesto", idPresupuesto),
+                new SqlParameter("@IdUsuario", idUsuario),
+                new SqlParameter("@Motivo", motivo),
+                new SqlParameter("@Medio", (object)medioRespuesta ?? DBNull.Value),
+                new SqlParameter("@Observaciones", (object)observaciones ?? DBNull.Value),
+                new SqlParameter("@ResultadoOrden", resultadoOrden),
+                new SqlParameter("@ObservacionResultado", (object)observacionResultado ?? DBNull.Value),
+                new SqlParameter("@ObservacionHistorial", (object)observacionHistorial ?? DBNull.Value)
+            };
+
+            _db.ExecuteTransaction(query, sqlParameters);
         }
 
         public List<DetallePresupuesto> ListarDetalle(int idPresupuesto)
@@ -380,6 +585,7 @@ namespace REPOSITORY.Features.Ordenes
             return Presupuesto.CargarDesdeDB(
                 Convert.ToInt32(fila["id_presupuesto"]),
                 Convert.ToInt32(fila["id_orden"]),
+                fila["tipo"] == DBNull.Value ? TipoPresupuesto.Original : fila["tipo"].ToString(),
                 Convert.ToDateTime(fila["fecha_emision"]),
                 fila["estado"] == DBNull.Value ? null : fila["estado"].ToString(),
                 Convert.ToDecimal(fila["subtotal"]),
