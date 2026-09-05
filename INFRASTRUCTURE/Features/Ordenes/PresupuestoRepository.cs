@@ -46,6 +46,7 @@ namespace REPOSITORY.Features.Ordenes
                         fecha_respuesta datetime NULL,
                         medio_respuesta nvarchar(100) NULL,
                         motivo_rechazo nvarchar(max) NULL,
+                        motivo_anulacion nvarchar(500) NULL,
                         observaciones nvarchar(max) NULL,
                         CONSTRAINT FK_Presupuestos_Orden FOREIGN KEY (id_orden)
                             REFERENCES OrdenesServicio(id_orden)
@@ -86,6 +87,9 @@ namespace REPOSITORY.Features.Ordenes
                     IF COL_LENGTH('Presupuestos', 'motivo_rechazo') IS NULL
                         ALTER TABLE Presupuestos ADD motivo_rechazo nvarchar(max) NULL;
 
+                    IF COL_LENGTH('Presupuestos', 'motivo_anulacion') IS NULL
+                        ALTER TABLE Presupuestos ADD motivo_anulacion nvarchar(500) NULL;
+
                     IF COL_LENGTH('Presupuestos', 'observaciones') IS NULL
                         ALTER TABLE Presupuestos ADD observaciones nvarchar(max) NULL;
 
@@ -108,6 +112,15 @@ namespace REPOSITORY.Features.Ordenes
                 )
                 BEGIN
                     DROP INDEX UX_Presupuesto_Orden ON Presupuestos;
+                END
+
+                IF EXISTS (
+                    SELECT 1 FROM sys.indexes
+                    WHERE name = 'UX_Presupuesto_Original'
+                      AND object_id = OBJECT_ID('Presupuestos')
+                )
+                BEGIN
+                    DROP INDEX UX_Presupuesto_Original ON Presupuestos;
                 END
 
                 IF OBJECT_ID('PresupuestoDetalle', 'U') IS NULL
@@ -173,7 +186,7 @@ namespace REPOSITORY.Features.Ordenes
                 )
                 BEGIN
                     CREATE UNIQUE INDEX UX_Presupuesto_Original
-                    ON Presupuestos(id_orden) WHERE tipo = 'Original';
+                    ON Presupuestos(id_orden) WHERE tipo = 'Original' AND estado <> 'Anulado';
                 END
 
                 SELECT 0;
@@ -328,7 +341,7 @@ namespace REPOSITORY.Features.Ordenes
         {
             string query = @"
                 SELECT id_presupuesto, id_orden, tipo, fecha_emision, estado, subtotal, descuento, total,
-                       dias_garantia, fecha_respuesta, medio_respuesta, motivo_rechazo, observaciones
+                       dias_garantia, fecha_respuesta, medio_respuesta, motivo_rechazo, motivo_anulacion, observaciones
                 FROM Presupuestos WHERE id_presupuesto = @Id;
             ";
 
@@ -347,11 +360,11 @@ namespace REPOSITORY.Features.Ordenes
 
         public Presupuesto ObtenerPorOrden(int idOrden)
         {
-            // Compatibilidad: con presupuestos 1:N devuelve el Original.
+            // Compatibilidad: con presupuestos 1:N devuelve el Original activo (los anulados son historial).
             string query = @"
                 SELECT id_presupuesto, id_orden, tipo, fecha_emision, estado, subtotal, descuento, total,
-                       dias_garantia, fecha_respuesta, medio_respuesta, motivo_rechazo, observaciones
-                FROM Presupuestos WHERE id_orden = @IdOrden AND tipo = 'Original';
+                       dias_garantia, fecha_respuesta, medio_respuesta, motivo_rechazo, motivo_anulacion, observaciones
+                FROM Presupuestos WHERE id_orden = @IdOrden AND tipo = 'Original' AND estado <> 'Anulado';
             ";
 
             SqlParameter[] sqlParameters = new SqlParameter[]
@@ -369,10 +382,11 @@ namespace REPOSITORY.Features.Ordenes
 
         public Presupuesto ObtenerOriginal(int idOrden)
         {
+            // Devuelve el Original activo. Los anulados quedan como historial (ver ListarPorOrden).
             string query = @"
                 SELECT id_presupuesto, id_orden, tipo, fecha_emision, estado, subtotal, descuento, total,
-                       dias_garantia, fecha_respuesta, medio_respuesta, motivo_rechazo, observaciones
-                FROM Presupuestos WHERE id_orden = @IdOrden AND tipo = 'Original';
+                       dias_garantia, fecha_respuesta, medio_respuesta, motivo_rechazo, motivo_anulacion, observaciones
+                FROM Presupuestos WHERE id_orden = @IdOrden AND tipo = 'Original' AND estado <> 'Anulado';
             ";
 
             SqlParameter[] sqlParameters = new SqlParameter[]
@@ -392,7 +406,7 @@ namespace REPOSITORY.Features.Ordenes
         {
             string query = @"
                 SELECT id_presupuesto, id_orden, tipo, fecha_emision, estado, subtotal, descuento, total,
-                       dias_garantia, fecha_respuesta, medio_respuesta, motivo_rechazo, observaciones
+                       dias_garantia, fecha_respuesta, medio_respuesta, motivo_rechazo, motivo_anulacion, observaciones
                 FROM Presupuestos
                 WHERE id_orden = @IdOrden AND tipo = 'Adicional'
                 ORDER BY id_presupuesto;
@@ -545,6 +559,310 @@ namespace REPOSITORY.Features.Ordenes
             _db.ExecuteTransaction(query, sqlParameters);
         }
 
+        public Presupuesto CrearBorrador(Presupuesto presupuesto, List<DetallePresupuesto> items)
+        {
+            // Batch atomico SIN transicion de orden: INSERT borrador + N INSERT detalle.
+            // No referencia motivo_anulacion (queda NULL por defecto).
+            StringBuilder sb = new StringBuilder();
+            sb.Append(@"
+                INSERT INTO Presupuestos (id_orden, tipo, fecha_emision, estado, subtotal, descuento, total,
+                    dias_garantia, fecha_respuesta, medio_respuesta, motivo_rechazo, observaciones)
+                VALUES (@IdOrden, @Tipo, @FechaEmision, @Estado, @Subtotal, @Descuento, @Total,
+                    @DiasGarantia, NULL, NULL, NULL, @Observaciones);
+
+                DECLARE @P int = CAST(SCOPE_IDENTITY() AS int);
+            ");
+
+            List<SqlParameter> parametros = new List<SqlParameter>();
+            parametros.Add(new SqlParameter("@IdOrden", presupuesto.IdOrden));
+            parametros.Add(new SqlParameter("@Tipo", presupuesto.Tipo));
+            parametros.Add(new SqlParameter("@FechaEmision", presupuesto.FechaEmision));
+            parametros.Add(new SqlParameter("@Estado", presupuesto.Estado));
+            parametros.Add(new SqlParameter("@Subtotal", presupuesto.Subtotal));
+            parametros.Add(new SqlParameter("@Descuento", presupuesto.Descuento));
+            parametros.Add(new SqlParameter("@Total", presupuesto.Total));
+            parametros.Add(new SqlParameter("@DiasGarantia", presupuesto.DiasGarantia));
+            parametros.Add(new SqlParameter("@Observaciones", (object)presupuesto.Observaciones ?? DBNull.Value));
+
+            for (int i = 0; i < items.Count; i++)
+            {
+                sb.Append(@"
+                INSERT INTO PresupuestoDetalle (id_presupuesto, id_repuesto, tipo_item, descripcion, cantidad, precio_unitario, subtotal)
+                VALUES (@P, NULL, @Tipo" + i + ", @Desc" + i + ", @Cant" + i + ", @Precio" + i + ", @Sub" + i + ");");
+
+                parametros.Add(new SqlParameter("@Tipo" + i, items[i].TipoItem));
+                parametros.Add(new SqlParameter("@Desc" + i, items[i].Descripcion));
+                parametros.Add(new SqlParameter("@Cant" + i, items[i].Cantidad));
+                parametros.Add(new SqlParameter("@Precio" + i, items[i].PrecioUnitario));
+                parametros.Add(new SqlParameter("@Sub" + i, items[i].Subtotal));
+            }
+
+            sb.Append(@"
+                SELECT @P;
+            ");
+
+            int id = _db.ExecuteTransaction(sb.ToString(), parametros.ToArray());
+
+            return ObtenerPorId(id);
+        }
+
+        public void PublicarBorrador(int idPresupuesto, int idUsuario)
+        {
+            // Batch atomico: borrador->Pendiente + orden->EsperandoRespuesta + historial.
+            string query = @"
+                DECLARE @Orden int;
+                DECLARE @Ant nvarchar(50);
+
+                SELECT @Orden = p.id_orden, @Ant = o.estado
+                FROM Presupuestos p
+                INNER JOIN OrdenesServicio o ON o.id_orden = p.id_orden
+                WHERE p.id_presupuesto = @IdPresupuesto;
+
+                IF (@Orden IS NULL)
+                    THROW 50010, 'El presupuesto seleccionado no existe.', 1;
+
+                IF ((SELECT estado FROM Presupuestos WHERE id_presupuesto = @IdPresupuesto) <> 'Borrador')
+                    THROW 50011, 'Solo se puede publicar un presupuesto en borrador.', 1;
+
+                UPDATE Presupuestos
+                SET estado = 'Pendiente'
+                WHERE id_presupuesto = @IdPresupuesto;
+
+                UPDATE OrdenesServicio
+                SET estado = 'EsperandoRespuesta'
+                WHERE id_orden = @Orden;
+
+                INSERT INTO HistorialOrdenes (id_orden, estado_anterior, estado_nuevo, fecha_hora, id_usuario, observacion)
+                VALUES (@Orden, @Ant, 'EsperandoRespuesta', GETDATE(), @IdUsuario, 'Borrador de presupuesto publicado');
+
+                SELECT 0;
+            ";
+
+            SqlParameter[] sqlParameters = new SqlParameter[]
+            {
+                new SqlParameter("@IdPresupuesto", idPresupuesto),
+                new SqlParameter("@IdUsuario", idUsuario)
+            };
+
+            _db.ExecuteTransaction(query, sqlParameters);
+        }
+
+        public void EliminarBorrador(int idPresupuesto)
+        {
+            // Batch atomico: exige Borrador y elimina fisico (detalle + cabecera).
+            string query = @"
+                IF NOT EXISTS (SELECT 1 FROM Presupuestos WHERE id_presupuesto = @IdPresupuesto)
+                    THROW 50010, 'El presupuesto seleccionado no existe.', 1;
+
+                IF ((SELECT estado FROM Presupuestos WHERE id_presupuesto = @IdPresupuesto) <> 'Borrador')
+                    THROW 50012, 'Solo se puede eliminar un presupuesto en borrador.', 1;
+
+                DELETE FROM PresupuestoDetalle WHERE id_presupuesto = @IdPresupuesto;
+
+                DELETE FROM Presupuestos WHERE id_presupuesto = @IdPresupuesto;
+
+                SELECT 0;
+            ";
+
+            SqlParameter[] sqlParameters = new SqlParameter[]
+            {
+                new SqlParameter("@IdPresupuesto", idPresupuesto)
+            };
+
+            _db.ExecuteTransaction(query, sqlParameters);
+        }
+
+        public void AnularConTransicion(int idPresupuesto, string motivo, string estadoOrdenAnterior,
+            string nuevoEstadoOrden, string resultadoOrden, string observacionResultado,
+            string observacionHistorial, bool cerrarAbierta, int idUsuario)
+        {
+            // Batch atomico: budget->Anulado+motivo (+ orden/historial/cierre segun parametros).
+            // Si nuevoEstadoOrden es NULL no se toca la orden ni se registra historial.
+            string query = @"
+                IF NOT EXISTS (SELECT 1 FROM Presupuestos WHERE id_presupuesto = @IdPresupuesto)
+                    THROW 50010, 'El presupuesto seleccionado no existe.', 1;
+
+                IF ((SELECT estado FROM Presupuestos WHERE id_presupuesto = @IdPresupuesto) = 'Anulado')
+                    THROW 50013, 'El presupuesto ya se encuentra anulado.', 1;
+
+                UPDATE Presupuestos
+                SET estado = 'Anulado',
+                    motivo_anulacion = @Motivo
+                WHERE id_presupuesto = @IdPresupuesto;
+
+                DECLARE @Orden int;
+
+                SELECT @Orden = id_orden FROM Presupuestos WHERE id_presupuesto = @IdPresupuesto;
+
+                IF (@CerrarAbierta = 1)
+                BEGIN
+                    UPDATE Reparaciones
+                    SET fecha_fin = GETDATE(),
+                        observaciones = @Motivo
+                    WHERE id_orden = @Orden AND fecha_fin IS NULL;
+                END
+
+                IF (@NuevoEstadoOrden IS NOT NULL)
+                BEGIN
+                    UPDATE OrdenesServicio
+                    SET estado = @NuevoEstadoOrden,
+                        resultado = COALESCE(@ResultadoOrden, resultado),
+                        observacion_resultado = COALESCE(@ObservacionResultado, observacion_resultado)
+                    WHERE id_orden = @Orden;
+
+                    INSERT INTO HistorialOrdenes (id_orden, estado_anterior, estado_nuevo, fecha_hora, id_usuario, observacion)
+                    VALUES (@Orden, @EstadoOrdenAnterior, @NuevoEstadoOrden, GETDATE(), @IdUsuario, @ObservacionHistorial);
+                END
+
+                SELECT 0;
+            ";
+
+            SqlParameter[] sqlParameters = new SqlParameter[]
+            {
+                new SqlParameter("@IdPresupuesto", idPresupuesto),
+                new SqlParameter("@Motivo", motivo),
+                new SqlParameter("@EstadoOrdenAnterior", (object)estadoOrdenAnterior ?? DBNull.Value),
+                new SqlParameter("@NuevoEstadoOrden", (object)nuevoEstadoOrden ?? DBNull.Value),
+                new SqlParameter("@ResultadoOrden", (object)resultadoOrden ?? DBNull.Value),
+                new SqlParameter("@ObservacionResultado", (object)observacionResultado ?? DBNull.Value),
+                new SqlParameter("@ObservacionHistorial", (object)observacionHistorial ?? DBNull.Value),
+                new SqlParameter("@CerrarAbierta", cerrarAbierta ? 1 : 0),
+                new SqlParameter("@IdUsuario", idUsuario)
+            };
+
+            _db.ExecuteTransaction(query, sqlParameters);
+        }
+
+        public void CancelarSolicitudAdicional(int idOrden, string estadoOrigen, string estadoAnterior,
+            int idUsuario, string observacionHistorial)
+        {
+            // Batch atomico: elimina borradores adicionales fisicos + orden->origen + historial.
+            // Si hay adicionales Pendiente/Aprobado/Rechazado (no anulados) se aborta.
+            string query = @"
+                IF EXISTS (SELECT 1 FROM Presupuestos
+                           WHERE id_orden = @IdOrden AND tipo = 'Adicional'
+                             AND estado IN ('Pendiente', 'Aprobado', 'Rechazado'))
+                    THROW 50014, 'La orden tiene presupuestos adicionales que impiden cancelar la solicitud.', 1;
+
+                DELETE d
+                FROM PresupuestoDetalle d
+                INNER JOIN Presupuestos p ON p.id_presupuesto = d.id_presupuesto
+                WHERE p.id_orden = @IdOrden AND p.tipo = 'Adicional' AND p.estado = 'Borrador';
+
+                DELETE FROM Presupuestos
+                WHERE id_orden = @IdOrden AND tipo = 'Adicional' AND estado = 'Borrador';
+
+                UPDATE OrdenesServicio
+                SET estado = @EstadoOrigen
+                WHERE id_orden = @IdOrden;
+
+                INSERT INTO HistorialOrdenes (id_orden, estado_anterior, estado_nuevo, fecha_hora, id_usuario, observacion)
+                VALUES (@IdOrden, @EstadoAnterior, @EstadoOrigen, GETDATE(), @IdUsuario, @ObservacionHistorial);
+
+                SELECT 0;
+            ";
+
+            SqlParameter[] sqlParameters = new SqlParameter[]
+            {
+                new SqlParameter("@IdOrden", idOrden),
+                new SqlParameter("@EstadoOrigen", estadoOrigen),
+                new SqlParameter("@EstadoAnterior", (object)estadoAnterior ?? DBNull.Value),
+                new SqlParameter("@IdUsuario", idUsuario),
+                new SqlParameter("@ObservacionHistorial", (object)observacionHistorial ?? DBNull.Value)
+            };
+
+            _db.ExecuteTransaction(query, sqlParameters);
+        }
+
+        public bool ExisteOriginalActivo(int idOrden)
+        {
+            string query = @"
+                SELECT COUNT(1)
+                FROM Presupuestos
+                WHERE id_orden = @IdOrden
+                  AND tipo = 'Original'
+                  AND estado <> 'Anulado';
+            ";
+
+            SqlParameter[] sqlParameters = new SqlParameter[]
+            {
+                new SqlParameter("@IdOrden", idOrden)
+            };
+
+            return _db.ExecuteTransaction(query, sqlParameters) > 0;
+        }
+
+        public List<Presupuesto> ListarPorOrden(int idOrden)
+        {
+            string query = @"
+                SELECT id_presupuesto, id_orden, tipo, fecha_emision, estado, subtotal, descuento, total,
+                       dias_garantia, fecha_respuesta, medio_respuesta, motivo_rechazo, motivo_anulacion, observaciones
+                FROM Presupuestos
+                WHERE id_orden = @IdOrden
+                ORDER BY id_presupuesto;
+            ";
+
+            SqlParameter[] sqlParameters = new SqlParameter[]
+            {
+                new SqlParameter("@IdOrden", idOrden)
+            };
+
+            DataTable dt = _db.ExecuteQuery(query, sqlParameters);
+            List<Presupuesto> presupuestos = new List<Presupuesto>();
+
+            foreach (DataRow fila in dt.Rows)
+                presupuestos.Add(Mapear(fila));
+
+            return presupuestos;
+        }
+
+        public bool HasActividadPosterior(int idPresupuesto)
+        {
+            // Actividad operativa posterior a la aprobacion (fecha_respuesta):
+            // reparaciones iniciadas despues, movimientos de sus reparaciones o pruebas posteriores.
+            // Las 4 ramas de aprobacion fijan fecha_respuesta = GETDATE(), nunca es NULL en aprobados.
+            // SqlHelper.AddRange adhiere los SqlParameter al comando: no se puede reutilizar
+            // el mismo array en 3 ExecuteTransaction (Error "already contained"). Se crea uno nuevo por consulta.
+            SqlParameter[] P1() { return new SqlParameter[] { new SqlParameter("@Id", idPresupuesto) }; }
+
+            string reparaciones = @"
+                SELECT COUNT(1)
+                FROM Reparaciones r
+                INNER JOIN Presupuestos p ON p.id_orden = r.id_orden
+                WHERE p.id_presupuesto = @Id
+                  AND p.fecha_respuesta IS NOT NULL
+                  AND r.fecha_inicio > p.fecha_respuesta;
+            ";
+
+            if (_db.ExecuteTransaction(reparaciones, P1()) > 0)
+                return true;
+
+            string movimientos = @"
+                SELECT COUNT(1)
+                FROM MovimientosStock m
+                INNER JOIN Reparaciones r ON r.id_reparacion = m.id_reparacion
+                INNER JOIN Presupuestos p ON p.id_orden = r.id_orden
+                WHERE p.id_presupuesto = @Id
+                  AND p.fecha_respuesta IS NOT NULL
+                  AND m.fecha > p.fecha_respuesta;
+            ";
+
+            if (_db.ExecuteTransaction(movimientos, P1()) > 0)
+                return true;
+
+            string pruebas = @"
+                SELECT COUNT(1)
+                FROM Pruebas pr
+                INNER JOIN Reparaciones r ON r.id_reparacion = pr.id_reparacion
+                INNER JOIN Presupuestos p ON p.id_orden = r.id_orden
+                WHERE p.id_presupuesto = @Id
+                  AND p.fecha_respuesta IS NOT NULL
+                  AND pr.fecha > p.fecha_respuesta;
+            ";
+
+            return _db.ExecuteTransaction(pruebas, P1()) > 0;
+        }
+
         public List<DetallePresupuesto> ListarDetalle(int idPresupuesto)
         {
             string query = @"
@@ -595,7 +913,8 @@ namespace REPOSITORY.Features.Ordenes
                 fila["fecha_respuesta"] == DBNull.Value ? (DateTime?)null : Convert.ToDateTime(fila["fecha_respuesta"]),
                 fila["medio_respuesta"] == DBNull.Value ? null : fila["medio_respuesta"].ToString(),
                 fila["motivo_rechazo"] == DBNull.Value ? null : fila["motivo_rechazo"].ToString(),
-                fila["observaciones"] == DBNull.Value ? "" : fila["observaciones"].ToString()
+                fila["observaciones"] == DBNull.Value ? "" : fila["observaciones"].ToString(),
+                fila.Table.Columns.Contains("motivo_anulacion") && fila["motivo_anulacion"] != DBNull.Value ? fila["motivo_anulacion"].ToString() : null
             );
         }
     }

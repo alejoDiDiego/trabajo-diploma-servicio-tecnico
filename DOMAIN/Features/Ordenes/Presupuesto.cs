@@ -17,6 +17,7 @@ namespace DOMAIN.Features.Ordenes
         public DateTime? FechaRespuesta { get; private set; }
         public string MedioRespuesta { get; private set; }
         public string MotivoRechazo { get; private set; }
+        public string MotivoAnulacion { get; private set; }
         public string Observaciones { get; private set; }
 
         private Presupuesto() { }
@@ -50,13 +51,49 @@ namespace DOMAIN.Features.Ordenes
                 FechaRespuesta = null,
                 MedioRespuesta = null,
                 MotivoRechazo = null,
+                MotivoAnulacion = null,
+                Observaciones = observaciones == null ? "" : observaciones.Trim()
+            };
+        }
+
+        public static Presupuesto CrearBorrador(int idOrden, decimal subtotal, decimal descuento,
+            int diasGarantia, string observaciones, string tipo)
+        {
+            if (idOrden <= 0)
+                throw new ReglaNegocioException("La orden del presupuesto es obligatoria.");
+            if (tipo != TipoPresupuesto.Original && tipo != TipoPresupuesto.Adicional)
+                throw new ReglaNegocioException("El tipo de presupuesto no es valido.");
+            if (subtotal < 0)
+                throw new ReglaNegocioException("El subtotal no puede ser negativo.");
+            if (descuento < 0)
+                throw new ReglaNegocioException("El descuento no puede ser negativo.");
+            if (descuento > subtotal)
+                throw new ReglaNegocioException("El descuento no puede superar el subtotal.");
+            if (diasGarantia < 0)
+                throw new ReglaNegocioException("Los dias de garantia no pueden ser negativos.");
+
+            return new Presupuesto
+            {
+                IdOrden = idOrden,
+                Tipo = tipo,
+                FechaEmision = DateTime.Now,
+                Estado = EstadoPresupuesto.Borrador,
+                Subtotal = subtotal,
+                Descuento = descuento,
+                Total = subtotal - descuento,
+                DiasGarantia = diasGarantia,
+                FechaRespuesta = null,
+                MedioRespuesta = null,
+                MotivoRechazo = null,
+                MotivoAnulacion = null,
                 Observaciones = observaciones == null ? "" : observaciones.Trim()
             };
         }
 
         public static Presupuesto CargarDesdeDB(int id, int idOrden, string tipo, DateTime fechaEmision,
             string estado, decimal subtotal, decimal descuento, decimal total, int diasGarantia,
-            DateTime? fechaRespuesta, string medioRespuesta, string motivoRechazo, string observaciones)
+            DateTime? fechaRespuesta, string medioRespuesta, string motivoRechazo, string observaciones,
+            string motivoAnulacion = null)
         {
             if (tipo != TipoPresupuesto.Original && tipo != TipoPresupuesto.Adicional)
                 throw new ReglaNegocioException("El tipo de presupuesto no es valido.");
@@ -77,6 +114,7 @@ namespace DOMAIN.Features.Ordenes
                 FechaRespuesta = fechaRespuesta,
                 MedioRespuesta = medioRespuesta,
                 MotivoRechazo = motivoRechazo,
+                MotivoAnulacion = motivoAnulacion,
                 Observaciones = observaciones ?? ""
             };
         }
@@ -104,6 +142,19 @@ namespace DOMAIN.Features.Ordenes
             MedioRespuesta = medioRespuesta == null ? "" : medioRespuesta.Trim();
             MotivoRechazo = motivo.Trim();
             Observaciones = observaciones == null ? Observaciones : observaciones.Trim();
+        }
+
+        public void Anular(string motivo)
+        {
+            if (string.IsNullOrWhiteSpace(motivo))
+                throw new ReglaNegocioException("El motivo de la anulacion es obligatorio.");
+            if (Estado != EstadoPresupuesto.Pendiente
+                && Estado != EstadoPresupuesto.Aprobado
+                && Estado != EstadoPresupuesto.Rechazado)
+                throw new ReglaNegocioException("Solo se puede anular un presupuesto pendiente, aprobado o rechazado.");
+
+            Estado = EstadoPresupuesto.Anulado;
+            MotivoAnulacion = motivo.Trim();
         }
     }
 }

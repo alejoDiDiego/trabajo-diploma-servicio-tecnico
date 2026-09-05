@@ -189,6 +189,28 @@ namespace DOMAIN.Features.Ordenes
             Estado = EstadoOrdenServicio.PendientePresupuesto;
         }
 
+        public void RevertirAPendientePresupuesto()
+        {
+            if (Estado != EstadoOrdenServicio.EsperandoRespuesta
+                && Estado != EstadoOrdenServicio.AutorizadoReparacion
+                && Estado != EstadoOrdenServicio.EnReparacion
+                && Estado != EstadoOrdenServicio.EnPruebas)
+                throw new ReglaNegocioException("Solo se puede revertir a pendiente de presupuesto una orden en espera de respuesta, autorizada, en reparacion o en pruebas.");
+
+            Estado = EstadoOrdenServicio.PendientePresupuesto;
+        }
+
+        public void CancelarSolicitudAdicional(string estadoOrigen)
+        {
+            if (Estado != EstadoOrdenServicio.PendientePresupuesto)
+                throw new ReglaNegocioException("Solo se puede cancelar la solicitud adicional de una orden pendiente de presupuesto.");
+            if (estadoOrigen != EstadoOrdenServicio.EnReparacion
+                && estadoOrigen != EstadoOrdenServicio.EnPruebas)
+                throw new ReglaNegocioException("El estado origen de la cancelacion no es valido.");
+
+            Estado = estadoOrigen;
+        }
+
         public void RegistrarPruebaAprobada()
         {
             if (Estado != EstadoOrdenServicio.EnPruebas)

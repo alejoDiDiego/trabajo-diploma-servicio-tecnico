@@ -500,6 +500,323 @@ namespace APPLICATION.Features.Ordenes
             }
         }
 
+        public Presupuesto CrearBorrador(int idOrden, string tipo, List<DetallePresupuesto> items,
+            decimal descuento, int diasGarantia, string observaciones)
+        {
+            try
+            {
+                ObtenerIdUsuarioSesion();
+                OrdenServicio ordenDb = ObtenerOrdenExistente(idOrden);
+
+                if (ordenDb.Estado != EstadoOrdenServicio.PendientePresupuesto)
+                    throw new ReglaNegocioException("Solo se puede crear el borrador de una orden pendiente de presupuesto.");
+
+                if (tipo != TipoPresupuesto.Original && tipo != TipoPresupuesto.Adicional)
+                    throw new ReglaNegocioException("El tipo de presupuesto no es valido.");
+
+                if (tipo == TipoPresupuesto.Original)
+                {
+                    if (_presupuestoRepository.ExisteOriginalActivo(idOrden))
+                        throw new ReglaNegocioException("La orden ya tiene un presupuesto original activo. Debe anularlo antes de crear otro.");
+                }
+                else
+                {
+                    Presupuesto original = _presupuestoRepository.ObtenerOriginal(idOrden);
+
+                    if (original == null || original.Estado != EstadoPresupuesto.Aprobado)
+                        throw new ReglaNegocioException("La orden debe tener el presupuesto original aprobado para crear un borrador adicional.");
+
+                    if (_presupuestoRepository.ExisteAdicionalPendiente(idOrden))
+                        throw new ReglaNegocioException("La orden ya tiene un presupuesto adicional pendiente de respuesta.");
+                }
+
+                decimal subtotal = ValidarItemsYCalcularSubtotal(items);
+
+                Presupuesto borradorToSave = Presupuesto.CrearBorrador(
+                    idOrden, subtotal, descuento, diasGarantia, observaciones, tipo);
+
+                Presupuesto borradorDb = _presupuestoRepository.CrearBorrador(borradorToSave, items);
+
+                BitacoraService bitacoraService = new BitacoraService();
+                bitacoraService.Registrar("PRESUPUESTO_BORRADOR_CREADO",
+                    "id_orden=" + idOrden + " | id_presupuesto=" + borradorDb.Id + " | tipo=" + tipo, "ORDENES");
+
+                return borradorDb;
+            }
+            catch (ReglaNegocioException ex)
+            {
+                throw new ReglaNegocioException(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al crear borrador de presupuesto", ex);
+            }
+        }
+
+        public void PublicarBorrador(int idPresupuesto)
+        {
+            try
+            {
+                int idUsuario = ObtenerIdUsuarioSesion();
+
+                Presupuesto borradorDb = _presupuestoRepository.ObtenerPorId(idPresupuesto);
+
+                if (borradorDb == null)
+                    throw new ReglaNegocioException("El presupuesto seleccionado no existe.");
+
+                if (borradorDb.Estado != EstadoPresupuesto.Borrador)
+                    throw new ReglaNegocioException("Solo se puede publicar un presupuesto en borrador.");
+
+                OrdenServicio ordenDb = ObtenerOrdenExistente(borradorDb.IdOrden);
+
+                if (ordenDb.Estado != EstadoOrdenServicio.PendientePresupuesto)
+                    throw new ReglaNegocioException("Solo se puede publicar el borrador de una orden pendiente de presupuesto.");
+
+                if (borradorDb.Tipo == TipoPresupuesto.Original)
+                {
+                    Diagnostico diagnostico = _diagnosticoRepository.ObtenerPorOrden(ordenDb.Id);
+
+                    if (diagnostico == null || !diagnostico.EsReparable)
+                        throw new ReglaNegocioException("La orden debe tener un diagnostico reparable para publicar el presupuesto.");
+
+                    List<Presupuesto> todos = _presupuestoRepository.ListarPorOrden(ordenDb.Id);
+
+                    foreach (Presupuesto p in todos)
+                    {
+                        if (p.Id != borradorDb.Id && p.Tipo == TipoPresupuesto.Original
+                            && p.Estado != EstadoPresupuesto.Anulado)
+                            throw new ReglaNegocioException("La orden ya tiene un presupuesto original activo.");
+                    }
+                }
+                else
+                {
+                    Presupuesto original = _presupuestoRepository.ObtenerOriginal(ordenDb.Id);
+
+                    if (original == null || original.Estado != EstadoPresupuesto.Aprobado)
+                        throw new ReglaNegocioException("La orden debe tener el presupuesto original aprobado para publicar un adicional.");
+
+                    List<Presupuesto> adicionales = _presupuestoRepository.ListarAdicionales(ordenDb.Id);
+
+                    foreach (Presupuesto a in adicionales)
+                    {
+                        if (a.Id != borradorDb.Id
+                            && (a.Estado == EstadoPresupuesto.Borrador || a.Estado == EstadoPresupuesto.Pendiente))
+                            throw new ReglaNegocioException("La orden ya tiene un presupuesto adicional pendiente de respuesta.");
+                    }
+                }
+
+                _presupuestoRepository.PublicarBorrador(borradorDb.Id, idUsuario);
+
+                BitacoraService bitacoraService = new BitacoraService();
+                bitacoraService.Registrar("PRESUPUESTO_BORRADOR_PUBLICADO",
+                    "id_orden=" + ordenDb.Id + " | id_presupuesto=" + borradorDb.Id, "ORDENES");
+            }
+            catch (ReglaNegocioException ex)
+            {
+                throw new ReglaNegocioException(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al publicar borrador de presupuesto", ex);
+            }
+        }
+
+        public void EliminarBorrador(int idPresupuesto)
+        {
+            try
+            {
+                ObtenerIdUsuarioSesion();
+
+                Presupuesto borradorDb = _presupuestoRepository.ObtenerPorId(idPresupuesto);
+
+                if (borradorDb == null)
+                    throw new ReglaNegocioException("El presupuesto seleccionado no existe.");
+
+                if (borradorDb.Estado != EstadoPresupuesto.Borrador)
+                    throw new ReglaNegocioException("Solo se puede eliminar un presupuesto en borrador.");
+
+                _presupuestoRepository.EliminarBorrador(borradorDb.Id);
+
+                BitacoraService bitacoraService = new BitacoraService();
+                bitacoraService.Registrar("PRESUPUESTO_ELIMINADO",
+                    "id_orden=" + borradorDb.IdOrden + " | id_presupuesto=" + borradorDb.Id, "ORDENES");
+            }
+            catch (ReglaNegocioException ex)
+            {
+                throw new ReglaNegocioException(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al eliminar borrador de presupuesto", ex);
+            }
+        }
+
+        public void AnularPresupuesto(int idPresupuesto, string motivo)
+        {
+            try
+            {
+                int idUsuario = ObtenerIdUsuarioSesion();
+
+                if (string.IsNullOrWhiteSpace(motivo))
+                    throw new ReglaNegocioException("El motivo de la anulacion es obligatorio.");
+
+                Presupuesto presupuestoDb = _presupuestoRepository.ObtenerPorId(idPresupuesto);
+
+                if (presupuestoDb == null)
+                    throw new ReglaNegocioException("El presupuesto seleccionado no existe.");
+
+                string estadoAnterior = presupuestoDb.Estado;
+
+                presupuestoDb.Anular(motivo.Trim());
+
+                OrdenServicio ordenDb = ObtenerOrdenExistente(presupuestoDb.IdOrden);
+                string estadoOrdenAnterior = ordenDb.Estado;
+                string nuevoEstadoOrden = null;
+
+                if (presupuestoDb.Tipo == TipoPresupuesto.Original)
+                {
+                    if (estadoAnterior == EstadoPresupuesto.Aprobado)
+                    {
+                        List<Reparacion> reparaciones = _reparacionRepository.ListarPorOrden(ordenDb.Id);
+
+                        if (reparaciones.Count > 0)
+                            throw new ReglaNegocioException("No se puede anular el presupuesto aprobado porque la orden ya tiene reparaciones iniciadas.");
+
+                        if (ordenDb.Estado != EstadoOrdenServicio.AutorizadoReparacion)
+                            throw new ReglaNegocioException("No se puede anular el presupuesto aprobado en el estado actual de la orden.");
+
+                        ordenDb.RevertirAPendientePresupuesto();
+                        nuevoEstadoOrden = ordenDb.Estado;
+                    }
+                    else if (estadoAnterior == EstadoPresupuesto.Pendiente)
+                    {
+                        if (ordenDb.Estado != EstadoOrdenServicio.EsperandoRespuesta)
+                            throw new ReglaNegocioException("No se puede anular el presupuesto pendiente en el estado actual de la orden.");
+
+                        ordenDb.RevertirAPendientePresupuesto();
+                        nuevoEstadoOrden = ordenDb.Estado;
+                    }
+                }
+                else
+                {
+                    if (estadoAnterior == EstadoPresupuesto.Pendiente)
+                    {
+                        if (ordenDb.Estado != EstadoOrdenServicio.EsperandoRespuesta)
+                            throw new ReglaNegocioException("No se puede anular el presupuesto pendiente en el estado actual de la orden.");
+
+                        ordenDb.RevertirAPendientePresupuesto();
+                        nuevoEstadoOrden = ordenDb.Estado;
+                    }
+                    else if (estadoAnterior == EstadoPresupuesto.Aprobado)
+                    {
+                        if (_presupuestoRepository.HasActividadPosterior(presupuestoDb.Id))
+                            throw new ReglaNegocioException("No se puede anular el presupuesto adicional aprobado porque ya produjo actividad operativa.");
+
+                        ordenDb.RevertirAPendientePresupuesto();
+                        nuevoEstadoOrden = ordenDb.Estado;
+                    }
+                }
+
+                _presupuestoRepository.AnularConTransicion(presupuestoDb.Id, presupuestoDb.MotivoAnulacion,
+                    estadoOrdenAnterior, nuevoEstadoOrden, null, null,
+                    "Presupuesto anulado. Motivo: " + presupuestoDb.MotivoAnulacion, false, idUsuario);
+
+                BitacoraService bitacoraService = new BitacoraService();
+                bitacoraService.Registrar("PRESUPUESTO_ANULADO",
+                    "id_orden=" + ordenDb.Id + " | id_presupuesto=" + presupuestoDb.Id
+                    + " | tipo=" + presupuestoDb.Tipo + " | estado_anterior=" + estadoAnterior, "ORDENES");
+            }
+            catch (ReglaNegocioException ex)
+            {
+                throw new ReglaNegocioException(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al anular presupuesto", ex);
+            }
+        }
+
+        public void CancelarSolicitudAdicional(int idOrden)
+        {
+            try
+            {
+                int idUsuario = ObtenerIdUsuarioSesion();
+                OrdenServicio ordenDb = ObtenerOrdenExistente(idOrden);
+
+                if (ordenDb.Estado != EstadoOrdenServicio.PendientePresupuesto)
+                    throw new ReglaNegocioException("Solo se puede cancelar la solicitud adicional de una orden pendiente de presupuesto.");
+
+                string estadoOrigen;
+
+                if (!TryObtenerOrigenSolicitud(idOrden, out estadoOrigen))
+                    throw new ReglaNegocioException("La orden no registra una solicitud de presupuesto adicional para cancelar.");
+
+                List<Presupuesto> adicionales = _presupuestoRepository.ListarAdicionales(idOrden);
+
+                foreach (Presupuesto a in adicionales)
+                {
+                    if (a.Estado == EstadoPresupuesto.Pendiente
+                        || a.Estado == EstadoPresupuesto.Aprobado
+                        || a.Estado == EstadoPresupuesto.Rechazado)
+                        throw new ReglaNegocioException("No se puede cancelar la solicitud porque la orden tiene presupuestos adicionales emitidos.");
+                }
+
+                string estadoAnterior = ordenDb.Estado;
+
+                ordenDb.CancelarSolicitudAdicional(estadoOrigen);
+
+                _presupuestoRepository.CancelarSolicitudAdicional(ordenDb.Id, estadoOrigen,
+                    estadoAnterior, idUsuario, "Solicitud de presupuesto adicional cancelada.");
+
+                BitacoraService bitacoraService = new BitacoraService();
+                bitacoraService.Registrar("SOLICITUD_ADICIONAL_CANCELADA", "id_orden=" + idOrden, "ORDENES");
+            }
+            catch (ReglaNegocioException ex)
+            {
+                throw new ReglaNegocioException(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al cancelar solicitud adicional", ex);
+            }
+        }
+
+        public bool PuedeCancelarSolicitud(int idOrden)
+        {
+            try
+            {
+                OrdenServicio ordenDb = ObtenerOrdenExistente(idOrden);
+
+                if (ordenDb.Estado != EstadoOrdenServicio.PendientePresupuesto)
+                    return false;
+
+                string estadoOrigen;
+
+                if (!TryObtenerOrigenSolicitud(idOrden, out estadoOrigen))
+                    return false;
+
+                List<Presupuesto> adicionales = _presupuestoRepository.ListarAdicionales(idOrden);
+
+                foreach (Presupuesto a in adicionales)
+                {
+                    if (a.Estado == EstadoPresupuesto.Pendiente
+                        || a.Estado == EstadoPresupuesto.Aprobado
+                        || a.Estado == EstadoPresupuesto.Rechazado)
+                        return false;
+                }
+
+                return true;
+            }
+            catch (ReglaNegocioException ex)
+            {
+                throw new ReglaNegocioException(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al evaluar cancelacion de solicitud", ex);
+            }
+        }
+
         public void QuitarConsumo(int idReparacion, int idRepuesto, int cantidad)
         {
             try
@@ -777,6 +1094,23 @@ namespace APPLICATION.Features.Ordenes
             catch (Exception ex)
             {
                 throw new Exception("Error al obtener presupuesto", ex);
+            }
+        }
+
+        public List<Presupuesto> ListarTodosPresupuestos(int idOrden)
+        {
+            try
+            {
+                ObtenerOrdenExistente(idOrden);
+                return _presupuestoRepository.ListarPorOrden(idOrden);
+            }
+            catch (ReglaNegocioException ex)
+            {
+                throw new ReglaNegocioException(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al listar presupuestos", ex);
             }
         }
 
@@ -1184,6 +1518,29 @@ namespace APPLICATION.Features.Ordenes
                 throw new ReglaNegocioException("La orden seleccionada no existe.");
 
             return orden;
+        }
+
+        private bool TryObtenerOrigenSolicitud(int idOrden, out string estadoOrigen)
+        {
+            // Origen = ultima transicion a PendientePresupuesto desde EnReparacion/EnPruebas.
+            estadoOrigen = null;
+
+            List<HistorialEstadoOrden> historial = _historialRepository.ListarPorOrden(idOrden);
+
+            for (int i = historial.Count - 1; i >= 0; i--)
+            {
+                HistorialEstadoOrden h = historial[i];
+
+                if (h.EstadoNuevo == EstadoOrdenServicio.PendientePresupuesto
+                    && (h.EstadoAnterior == EstadoOrdenServicio.EnReparacion
+                        || h.EstadoAnterior == EstadoOrdenServicio.EnPruebas))
+                {
+                    estadoOrigen = h.EstadoAnterior;
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private Usuario ValidarTecnicoElegible(int idTecnico)
