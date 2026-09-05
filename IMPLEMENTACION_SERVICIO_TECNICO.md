@@ -1184,3 +1184,107 @@ historial (no se purga por trazabilidad).
 4. Probar invalidas: quitar sin fila o con cantidad mayor, solicitar sin
    Original aprobado o con pendiente existente, emitir/aprobar por el medio
    del tipo contrario (deben fallar con mensaje).
+
+### Correccion: eliminar vs anular + cancelar solicitud
+
+- Dominio: `EstadoPresupuesto.Anulado` (terminal, conserva historial) +
+  `Presupuesto.MotivoAnulacion` + `Presupuesto.Anular(motivo)` (solo desde
+  `Pendiente`/`Aprobado`/`Rechazado`, motivo obligatorio; `Borrador` nunca
+  se anula, se elimina).
+- Borrador como via alternativa (la emision atomica `Emitir*` queda intacta
+  como via rapida): `Presupuesto.CrearBorrador` (sin transicion de orden) +
+  `PresupuestoRepository.CrearBorrador` (INSERT borrador + detalle, sin tocar
+  la orden) + `PublicarBorrador` (borrador -> `Pendiente` + orden a
+  `EsperandoRespuesta` + historial) + `EliminarBorrador` (fisico
+  detalle + cabecera, solo `Borrador`, con `THROW` 50010/50012).
+- `AnularPresupuesto` con consecuencias por tipo/estado (batch atomico
+  `AnularConTransicion`: presupuesto -> `Anulado` + motivo; orden/historial/
+  cierre segun caso; `MontoAutorizado` = SUM de `total` con
+  `estado = 'Aprobado'`, excluye solo anulados):
+  - Original `Aprobado` sin reparaciones -> orden a `PendientePresupuesto`;
+    con reparaciones -> `throw` (no se puede anular trabajo iniciado).
+  - Original `Pendiente` -> orden a `PendientePresupuesto`.
+  - Adicional `Pendiente` -> orden a `PendientePresupuesto`.
+  - Adicional `Aprobado` sin actividad posterior
+    (`HasActividadPosterior` por `FechaRespuesta`: reparaciones/movimientos/
+    pruebas posteriores) -> orden a `PendientePresupuesto`; con actividad
+    -> `throw`.
+  - `Rechazado` (Original o Adicional) -> sin cambio de orden (la orden ya
+    esta en `ListoRetiro`), solo historial de anulacion.
+- Indice filtrado: `UX_Presupuesto_Original` ahora
+  `WHERE tipo = 'Original' AND estado <> 'Anulado'` (varios Originales en
+  historial si los previos estan anulados, uno solo activo;
+  `ObtenerPorOrden`/`ObtenerOriginal`/`ExisteOriginalActivo` filtran igual).
+- `CancelarSolicitudAdicional`: resuelve el origen recorriendo el historial
+  hacia atras (ultimo estado distinto de `PendientePresupuesto`,
+  `EnReparacion`/`EnPruebas`); bloquea si hay adicionales
+  `Pendiente`/`Aprobado`/`Rechazado` no anulados (`THROW` 50014); borra
+  adicionales `Borrador` fisicos; restaura la orden al origen +
+  observacion en historial + bitacora; `PuedeCancelarSolicitud` para gating
+  de UI.
+- UI (`FrmOrdenServicioDetalle`): selector incluye anulados con motivo
+  visible; botones guardar borrador / publicar borrador / eliminar borrador
+  (con confirmacion), anular con motivo obligatorio + confirmacion, cancelar
+  solicitud con confirmacion; gating: anular exige `PRESUPUESTOS_DECIDIR`,
+  resto exige `ORDENES_EDITAR`. Seeds ES/EN: `GuardarBorrador`,
+  `EliminarBorrador`, `Anular`, `CancelarSolicitud`, `MotivoAnulacion`,
+  `PresupuestoEstado.Borrador/Anulado`, `ConfirmarEliminarBorrador`,
+  `ConfirmarAnular`, `ConfirmarCancelarSolicitud` (+ titulos).
+- Migracion: columna `motivo_anulacion` NULL + recreacion del indice con
+  estado, en las 2 fases idempotentes existentes (`Inicializar`); registros
+  viejos intactos (motivo NULL).
+- Fix testing: `HasActividadPosterior` reutilizaba el mismo array de
+  `SqlParameter` en 3 `ExecuteTransaction` (error "already contained" de
+  `SqlHelper.AddRange`); fix de 4 lineas (fabrica `P1()` con un array nuevo
+  por consulta); re-test 35/35.
+
+### Decisiones de la correccion
+
+- Sin flujo Borrador en dos pasos para emitir: la emision atomica directa a
+  `Pendiente` queda intacta como via rapida; el borrador es solo alternativa
+  de carga progresiva.
+- Pausa por estados: publicar lleva a `EsperandoRespuesta`; anular/aprobar
+  retoman segun el caso; cancelar solicitud restaura el origen
+  (`EnReparacion`/`EnPruebas`).
+- Rechazo de adicional cierra la abierta preexistente (regla ya
+  documentada); la anulacion no borra trabajo: si hay actividad posterior,
+  bloquea con `throw`.
+- Precio vs costo sin cambios (comercial autorizado vs costo historico del
+  consumo; el consumo no aumenta el presupuesto).
+
+### Pruebas de la correccion (harness temporal fuera del repo)
+
+- B 23/23 (borrador crear/publicar/eliminar + validaciones) + C 6/6
+  (anulacion Original/Adicional por estado + `throw` con trabajo/actividad)
+  + D 6/6 (cancelar solicitud: origen, bloqueos, borrado de borradores,
+  restauracion) + visual PASS (4 PNG) + re-test 35/35 post-fix
+  `HasActividadPosterior`.
+- Bug + fix: reuse de `SqlParameter` en `HasActividadPosterior` (ver arriba).
+- Datos: filas ANUL de prueba limpiadas (0 restos); bitacora conservada (no
+  se purga por trazabilidad).
+- Delegaciones: backend, UI, revision (confirma CancelarSolicitud + seed),
+  testing.
+
+### Limitaciones de la correccion
+
+- Atomicidad indirecta (heredada CP2/CP3): presupuesto + orden + historial
+  van en el mismo batch del repository, sin UoW formal; un fallo entre
+  batches (p. ej. bitacora) no revierte la transicion.
+- Un solo adicional pendiente por orden (se mantiene).
+- MDI y `RecalcularDV` por menu a prueba humana.
+- ES/EN por service + observer en pantallas tocadas, sin recorrido
+  exhaustivo control por control.
+
+### Checklist humano de la correccion
+
+1. Crear un borrador, eliminarlo (verificar borrado fisico) y crear otro y
+   publicarlo (verificar `Pendiente` + `EsperandoRespuesta`).
+2. Anular un presupuesto `Pendiente` y uno `Aprobado` sin reparaciones
+   (verificar motivo obligatorio y retorno a `PendientePresupuesto`).
+3. Anular un Original erroneo y emitir un Original nuevo (verificar que el
+   anterior queda como historial anulado y solo hay un activo).
+4. Cancelar una solicitud de adicional desde `EnReparacion` y desde
+   `EnPruebas` (verificar restauracion del origen).
+5. Anular un adicional `Aprobado` sin actividad (verificar retorno) y con
+   actividad posterior (debe fallar con mensaje).
+6. Verificar que el monto autorizado excluye anulados.
