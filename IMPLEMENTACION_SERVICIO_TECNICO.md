@@ -1067,3 +1067,120 @@ historial (no se purga por trazabilidad).
 14. Regresion CP1+CP2: clientes/equipos/catalogos,
     ordenes/diagnostico/presupuesto/entrega, bitacora e integridad
     (`Recalcular DV`).
+
+### Ajuste: quitar consumo con devolucion de stock
+
+- Service `OrdenServicioService.QuitarConsumo(idReparacion, idRepuesto,
+  cantidad)`: solo sobre reparacion abierta (`FechaFin` nula) y orden en
+  `EnReparacion`; valida cantidad > 0, fila existente en
+  `ReparacionRepuesto` y cantidad <= consumida; delega el batch y
+  bitacora `ORDENES` (`CONSUMO_DEVUELTO`).
+- Batch `ReparacionRepository.DevolverConsumo`: valida fila/cantidad con
+  `THROW` (50003 sin consumo, 50004 exceso); si cantidad = consumida hace
+  `DELETE` total, si es parcial hace `UPDATE cantidad - @Cantidad`;
+  devuelve stock (`stock_actual + @Cantidad` con `UPDLOCK, HOLDLOCK`) y
+  registra movimiento `DevolucionConsumo` con `stock_anterior/posterior`.
+- Constante `TipoMovimientoStock.DevolucionConsumo` + validacion en
+  `MovimientoStock`; filtro `DevolucionConsumo` en
+  `FrmMovimientosStock` + seeds ES/EN (`MovimientoTipo.DevolucionConsumo`,
+  `OrdenDetalle.QuitarConsumo`, `OrdenDetalle.CantidadDevolver`,
+  `Mensaje/Titulo.ConfirmarDevolucion`).
+- UI: `BTN_QuitarConsumo` en el tab Reparaciones (cantidad a devolver
+  <= consumida + confirmacion); visible/habilitado solo con reparacion
+  abierta y orden en `EnReparacion`.
+
+### Ajuste: presupuestos 1:N (Original + Adicionales)
+
+- Nuevo `DOMAIN/Features/Ordenes/TipoPresupuesto.cs`
+  (`Original`/`Adicional`); `Presupuesto` suma `Tipo` (validado en
+  `CrearNuevo`/`CargarDesdeDB`); `ObtenerPorOrden` queda como compatibilidad
+  (devuelve el Original); nuevos `ObtenerOriginal`, `ListarAdicionales`,
+  `ExisteAdicionalPendiente`, `CalcularMontoAutorizado` (SUM de `total`
+  con `estado = 'Aprobado'`, calculado, no persistido).
+- Migracion idempotente en `PresupuestoRepository.Inicializar`: columna
+  `tipo` (`DEFAULT 'Original'`), `DROP` de `UX_Presupuesto_Orden` y nuevo
+  indice filtrado `UX_Presupuesto_Original` (`id_orden WHERE tipo =
+  'Original'`); ver Fix bloqueante.
+- Flujo: `SolicitarAdicional` (`EnReparacion`/`EnPruebas` ->
+  `PendientePresupuesto`, exige Original aprobado y sin adicional
+  pendiente); `EmitirAdicional` atomico directo a `Pendiente` + orden a
+  `EsperandoRespuesta` (reutiliza `EmitirConDetalle`); `AprobarAdicional`
+  -> orden a `EnReparacion` (NO `Autorizado`); `RechazoAdicional` ->
+  orden a `ListoRetiro` + `PresupuestoRechazado`, cerrando la reparacion
+  abierta (`fecha_fin = GETDATE()`) y conservando consumos, pruebas e
+  historial.
+- Guards Original-vs-Adicional: aprobar/rechazar/emision original usan el
+  medio correspondiente (`ReglaNegocioException` cruzada); items validados
+  por helper comun (`ManoObra`/`Servicio`, subtotal calculado).
+- UI: selector `CBO_SelectorPresupuesto` (Original / Adicionales / nuevo),
+  `LBL_MontoAutorizado` (`OrdenDetalle.MontoAutorizado`), boton
+  `BTN_SolicitarAdicional` + emitir/aprobar/rechazar segun tipo; seeds ES/EN
+  (`OrdenDetalle.SelectorPresupuesto/MontoAutorizado/NuevoAdicional/
+  PresupuestoNuevo/SolicitarAdicional`, `Tipo.Original/Adicional`).
+
+### Fix bloqueante: `Inicializar()` en 2 batches (Error 207)
+
+- Causa: SQL Server compila el batch completo antes de ejecutarlo; el batch
+  unico con `CREATE UNIQUE INDEX ... WHERE tipo` fallaba con Error 207
+  (`Invalid column name 'tipo'`) en DBs viejas sin la columna.
+- Fix: `Inicializar()` dividido en 2 `ExecuteTransaction` (2 compilaciones):
+  fase 1 crea/migra todo lo que NO referencia `tipo` (incluye `ALTER ADD
+  tipo` + `DROP` del UX viejo); fase 2 crea `UX_Presupuesto_Original`
+  cuando la columna ya existe. Todo idempotente.
+- Verificado: reproduce 207 en scratch legacy, fix 13/13, real idempotente,
+  flujo re-test identico al baseline.
+
+### Decisiones del ajuste
+
+- `EmitirAdicional` directo a `Pendiente` sin flujo Borrador en dos pasos:
+  se reutiliza el camino atomico del Original (INSERT + detalle + orden a
+  `EsperandoRespuesta` + historial) para no duplicar estados intermedios.
+- Pausa impuesta por la maquina de estados: solicitar el adicional lleva la
+  orden a `PendientePresupuesto` y emitirlo a `EsperandoRespuesta`; la
+  reparacion queda pausada hasta aprobar (retoma `EnReparacion`) o rechazar
+  (cierra a `ListoRetiro`).
+- Rechazo del adicional cierra la abierta y conserva todo (consumos,
+  pruebas, historial); no se borra trabajo realizado.
+- Repeat-consumo sin cambios (acumula cantidad, costo del primero).
+- Precio vs costo: `PresupuestoDetalle.PrecioUnitario` = comercial autorizado
+  (lo que paga el cliente); `ReparacionRepuesto.CostoUnitario` = interno
+  (costo historico del consumo); el consumo no aumenta el presupuesto.
+
+### Pruebas del ajuste (harness temporal fuera del repo)
+
+- Quitar consumo 13/13 PASS (total/parcial, validaciones fila/cantidad,
+  stock y movimiento `DevolucionConsumo` con anterior/posterior).
+- Escenarios: C 17/17 + D 9/9 + E 4/4 + F 12/13 (1 aclarado) + G 8/10
+  (2 aclarados, artefactos del harness) + visual 11/11 + regresion PASS.
+- Bug visual previo: n/a en este ajuste. 3 FAIL pre-existentes son deuda del
+  harness (asserts), no del producto.
+- Datos: filas ADIC de prueba limpiadas; bitacora conservada (no se purga
+  por trazabilidad).
+- Delegaciones: backend, dump de esquema, UI, revision cruzada (1 fix:
+  filtro `DevolucionConsumo` en `FrmMovimientosStock`), testing, fix de
+  migracion.
+
+### Limitaciones del ajuste
+
+- Atomicidad indirecta (heredada CP2/CP3): estado + historial + presupuesto /
+  reparacion van en el mismo batch del repository, sin UoW formal; un fallo
+  entre batches (p. ej. bitacora) no revierte la transicion.
+- Un solo adicional pendiente por orden (`ExisteAdicionalPendiente`
+  bloquea el siguiente hasta responder el actual).
+- MDI y `RecalcularDV` por menu a prueba humana (harness cubre service +
+  smoke por permisos/handlers).
+- ES/EN por service + observer en pantallas tocadas, sin recorrido exhaustivo
+  control por control.
+
+### Checklist humano del ajuste
+
+1. Solicitar adicional en `EnReparacion` -> verificar
+   `PendientePresupuesto`; emitir -> `EsperandoRespuesta`; aprobar ->
+   retoma `EnReparacion` y el monto autorizado suma el adicional.
+2. Rechazar un adicional -> verificar `ListoRetiro` +
+   `PresupuestoRechazado`, abierta cerrada y consumos/pruebas conservados.
+3. Quitar consumo parcial y total -> verificar stock devuelto y movimiento
+   `DevolucionConsumo` en `FrmMovimientosStock`.
+4. Probar invalidas: quitar sin fila o con cantidad mayor, solicitar sin
+   Original aprobado o con pendiente existente, emitir/aprobar por el medio
+   del tipo contrario (deben fallar con mensaje).
