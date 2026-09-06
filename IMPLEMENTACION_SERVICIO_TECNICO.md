@@ -1548,3 +1548,42 @@ historial (no se purga por trazabilidad).
 5. Finalizar con todas `Aprobada` (verificar destino
    `ListoRetiro`/`Reparado`); anular todas y finalizar (verificar rechazo
    con mensaje por falta de pruebas validas).
+
+### Cancelar entrega
+
+- Contenido: `CancelarEntrega(idOrden, motivo)` en service + dominio +
+  repository + UI. Solo sobre orden en `Entregado` con entrega registrada;
+  motivo obligatorio. Destinos: `Entregado`/`Reparado` -> `EnPruebas` con
+  `Resultado = NULL` (seguir probando); `Entregado` con otro resultado ->
+  `ListoRetiro` con resultado intacto. Batch atomico
+  `CancelarEntregaConTransicion`: `DELETE` fisico de `Entregas` + `UPDATE`
+  de orden + `INSERT` en historial, con bitacora `ENTREGA_CANCELADA` en
+  tipo `ORDENES`. UI: `BTN_CancelarEntrega` en el tab Entrega, visible y
+  habilitado solo con permiso `ORDENES_ENTREGAR`, orden `Entregado` y
+  entrega cargada; confirmacion + motivo obligatorio; al cancelar sin
+  entrega, los campos del tab se limpian. La orden cancelada admite
+  re-entrega normal. Seeds ES/EN: `OrdenDetalle.CancelarEntrega`,
+  `Mensaje/Titulo.ConfirmarCancelarEntrega`.
+- Decisiones: sin estado intermedio `ListoRetiro` para `Reparado`, porque
+  la orden quedaria varada (nada la devolveria a `EnPruebas`); el destino
+  directo `EnPruebas` conserva la capacidad de seguir probando.
+  `DELETE` fisico de la entrega porque la `UNIQUE` por orden impediria la
+  re-entrega; la trazabilidad queda en historial + bitacora
+  (`ENTREGA_CANCELADA` con motivo). Gating con `ORDENES_ENTREGAR`
+  (mismo permiso que entregar).
+- Pruebas: servicios 67/67 + regresion 14/14 + visual 8/8, 0 bugs. Datos
+  CENT de prueba limpiados; bitacora conservada (no se purga por
+  trazabilidad). Delegaciones: backend, UI, revision (0 blockers),
+  testing.
+- Limitaciones: atomicidad indirecta (heredada CP2/CP3): orden + historial
+  van en el mismo batch del repository, sin UoW formal; un fallo entre
+  batches (p. ej. bitacora) no revierte la transicion. MDI y
+  `RecalcularDV` por menu a prueba humana. ES/EN por service + observer
+  en pantallas tocadas, sin recorrido exhaustivo control por control.
+
+### Checklist humano de cancelar entrega
+
+1. Cancelar en `Entregado`/`Reparado` -> verificar `EnPruebas` con
+   resultado vacio, seguir probando y re-entregar.
+2. Cancelar en `Entregado` no reparable -> verificar `ListoRetiro` con
+   resultado intacto y re-entregar.
