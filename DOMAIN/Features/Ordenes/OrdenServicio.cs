@@ -272,5 +272,17 @@ namespace DOMAIN.Features.Ordenes
                 Estado = EstadoOrdenServicio.ListoRetiro;
             }
         }
+
+        public void ReabrirPruebas()
+        {
+            if (Estado != EstadoOrdenServicio.ListoRetiro)
+                throw new ReglaNegocioException("Solo se pueden reabrir las pruebas de una orden lista para retiro.");
+
+            if (Resultado != ResultadoOrdenServicio.Reparado)
+                throw new ReglaNegocioException("Solo se pueden reabrir las pruebas de una orden con resultado reparado.");
+
+            Estado = EstadoOrdenServicio.EnPruebas;
+            Resultado = null;
+        }
     }
 }

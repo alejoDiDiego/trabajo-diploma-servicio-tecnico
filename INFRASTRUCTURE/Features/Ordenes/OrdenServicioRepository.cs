@@ -252,6 +252,35 @@ namespace REPOSITORY.Features.Ordenes
             _db.ExecuteTransaction(query, sqlParameters);
         }
 
+        public void ReabrirPruebasConTransicion(int idOrden, string estadoAnterior, string estadoNuevo,
+            int idUsuario, string observacion)
+        {
+            // Batch atomico: UPDATE orden (ListoRetiro/Reparado -> EnPruebas/NULL) + INSERT historial.
+            // Metodo propio porque CambiarEstadoConHistorial usa COALESCE y no puede escribir NULL explicito.
+            string query = @"
+                UPDATE OrdenesServicio
+                SET estado = @EstadoNuevo,
+                    resultado = NULL
+                WHERE id_orden = @Id;
+
+                INSERT INTO HistorialOrdenes (id_orden, estado_anterior, estado_nuevo, fecha_hora, id_usuario, observacion)
+                VALUES (@Id, @EstadoAnterior, @EstadoNuevo, GETDATE(), @IdUsuario, @Observacion);
+
+                SELECT 0;
+            ";
+
+            SqlParameter[] sqlParameters = new SqlParameter[]
+            {
+                new SqlParameter("@Id", idOrden),
+                new SqlParameter("@EstadoAnterior", (object)estadoAnterior ?? DBNull.Value),
+                new SqlParameter("@EstadoNuevo", estadoNuevo),
+                new SqlParameter("@IdUsuario", idUsuario),
+                new SqlParameter("@Observacion", (object)observacion ?? DBNull.Value)
+            };
+
+            _db.ExecuteTransaction(query, sqlParameters);
+        }
+
         public void AsignarTecnico(int idOrden, int idTecnico)
         {
             string query = @"

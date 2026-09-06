@@ -1510,6 +1510,37 @@ namespace APPLICATION.Features.Ordenes
             }
         }
 
+        public void ReabrirPruebas(int idOrden, string motivo)
+        {
+            try
+            {
+                int idUsuario = ObtenerIdUsuarioSesion();
+
+                if (string.IsNullOrWhiteSpace(motivo))
+                    throw new ReglaNegocioException("El motivo de la reapertura de pruebas es obligatorio.");
+
+                OrdenServicio ordenDb = ObtenerOrdenExistente(idOrden);
+                string estadoAnterior = ordenDb.Estado;
+
+                ordenDb.ReabrirPruebas();
+
+                _ordenRepository.ReabrirPruebasConTransicion(ordenDb.Id, estadoAnterior, ordenDb.Estado,
+                    idUsuario, "Pruebas reabiertas. Motivo: " + motivo.Trim());
+
+                BitacoraService bitacoraService = new BitacoraService();
+                bitacoraService.Registrar("PRUEBAS_REABIERTAS",
+                    "id_orden=" + idOrden + " | motivo=" + motivo.Trim(), "ORDENES");
+            }
+            catch (ReglaNegocioException ex)
+            {
+                throw new ReglaNegocioException(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al reabrir pruebas", ex);
+            }
+        }
+
         public void AnularPrueba(int idPrueba, string motivo)
         {
             try
