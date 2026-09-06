@@ -129,6 +129,7 @@ namespace UI.Forms.Ordenes
             this.LBL_FechaEntrega = new System.Windows.Forms.Label();
             this.BTN_Entregar = new System.Windows.Forms.Button();
             this.BTN_CancelarEntrega = new System.Windows.Forms.Button();
+            this.BTN_ReabrirPruebas = new System.Windows.Forms.Button();
             this.BTN_Cerrar = new System.Windows.Forms.Button();
             this.PNL_Header.SuspendLayout();
             this.TAB_Detalle.SuspendLayout();
@@ -1550,6 +1551,7 @@ namespace UI.Forms.Ordenes
             this.TAB_Entrega.Controls.Add(this.LBL_FechaEntrega);
             this.TAB_Entrega.Controls.Add(this.BTN_Entregar);
             this.TAB_Entrega.Controls.Add(this.BTN_CancelarEntrega);
+            this.TAB_Entrega.Controls.Add(this.BTN_ReabrirPruebas);
             this.TAB_Entrega.Location = new System.Drawing.Point(4, 22);
             this.TAB_Entrega.Name = "TAB_Entrega";
             this.TAB_Entrega.Size = new System.Drawing.Size(888, 454);
@@ -1654,6 +1656,22 @@ namespace UI.Forms.Ordenes
             this.BTN_CancelarEntrega.Text = "Cancelar entrega";
             this.BTN_CancelarEntrega.UseVisualStyleBackColor = false;
             this.BTN_CancelarEntrega.Click += new System.EventHandler(this.BTN_CancelarEntrega_Click);
+            //
+            // BTN_ReabrirPruebas
+            //
+            this.BTN_ReabrirPruebas.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(211)))), ((int)(((byte)(84)))), ((int)(((byte)(0)))));
+            this.BTN_ReabrirPruebas.FlatAppearance.BorderSize = 0;
+            this.BTN_ReabrirPruebas.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.BTN_ReabrirPruebas.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.BTN_ReabrirPruebas.ForeColor = System.Drawing.Color.White;
+            this.BTN_ReabrirPruebas.Location = new System.Drawing.Point(470, 192);
+            this.BTN_ReabrirPruebas.Name = "BTN_ReabrirPruebas";
+            this.BTN_ReabrirPruebas.Size = new System.Drawing.Size(160, 30);
+            this.BTN_ReabrirPruebas.TabIndex = 9;
+            this.BTN_ReabrirPruebas.Tag = "OrdenDetalle.ReabrirPruebas";
+            this.BTN_ReabrirPruebas.Text = "Volver a pruebas";
+            this.BTN_ReabrirPruebas.UseVisualStyleBackColor = false;
+            this.BTN_ReabrirPruebas.Click += new System.EventHandler(this.BTN_ReabrirPruebas_Click);
             //
             // BTN_Cerrar
             //
@@ -1837,6 +1855,7 @@ namespace UI.Forms.Ordenes
         private System.Windows.Forms.Label LBL_FechaEntrega;
         private System.Windows.Forms.Button BTN_Entregar;
         private System.Windows.Forms.Button BTN_CancelarEntrega;
+        private System.Windows.Forms.Button BTN_ReabrirPruebas;
         private System.Windows.Forms.Button BTN_Cerrar;
     }
 }

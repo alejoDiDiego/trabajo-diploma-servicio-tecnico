@@ -262,6 +262,7 @@ namespace UI.Forms.Ordenes
             LBL_EObs.Text = idioma.BuscarTraduccion(LBL_EObs.Tag.ToString());
             BTN_Entregar.Text = idioma.BuscarTraduccion(BTN_Entregar.Tag.ToString());
             BTN_CancelarEntrega.Text = idioma.BuscarTraduccion(BTN_CancelarEntrega.Tag.ToString());
+            BTN_ReabrirPruebas.Text = idioma.BuscarTraduccion(BTN_ReabrirPruebas.Tag.ToString());
             BTN_Cerrar.Text = idioma.BuscarTraduccion(BTN_Cerrar.Tag.ToString());
 
             BTN_IniciarReparacion.Text = idioma.BuscarTraduccion(BTN_IniciarReparacion.Tag.ToString());
@@ -2595,6 +2596,52 @@ namespace UI.Forms.Ordenes
             }
         }
 
+        private void BTN_ReabrirPruebas_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.OrdenesEditar))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
+            if (_orden == null || _orden.Estado != EstadoOrdenServicio.ListoRetiro
+                || _orden.Resultado != ResultadoOrdenServicio.Reparado)
+                return;
+
+            DialogResult confirmacion = MessageBox.Show(
+                T("Mensaje.ConfirmarReabrirPruebas"),
+                T("Titulo.ConfirmarReabrirPruebas"),
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning);
+
+            if (confirmacion == DialogResult.No)
+                return;
+
+            string motivo = PedirTexto(
+                T("OrdenDetalle.ReabrirPruebas"),
+                T("OrdenDetalle.Motivo"));
+
+            if (motivo == null)
+                return;
+
+            if (string.IsNullOrWhiteSpace(motivo))
+            {
+                MostrarAdvertencia("Mensaje.OrdenCamposObligatorios");
+                return;
+            }
+
+            try
+            {
+                _service.ReabrirPruebas(_idOrden, motivo.Trim());
+                CargarOrden();
+                MostrarExito("Mensaje.OperacionExitosa");
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+        }
+
         private void DGV_Reparaciones_SelectionChanged(object sender, EventArgs e)
         {
             if (_esNuevo || _reparaciones == null)
@@ -2941,6 +2988,13 @@ namespace UI.Forms.Ordenes
 
             BTN_CancelarEntrega.Visible = puedeCancelarEntrega;
             BTN_CancelarEntrega.Enabled = puedeCancelarEntrega;
+
+            bool puedeReabrirPruebas = !_esNuevo && puedeEditar && _orden != null
+                && _orden.Estado == EstadoOrdenServicio.ListoRetiro
+                && _orden.Resultado == ResultadoOrdenServicio.Reparado;
+
+            BTN_ReabrirPruebas.Visible = !_esNuevo && puedeEditar && puedeReabrirPruebas;
+            BTN_ReabrirPruebas.Enabled = puedeReabrirPruebas;
 
             Reparacion reparacionSeleccionada = ReparacionSeleccionada();
             bool hayAbiertaSeleccionada = reparacionSeleccionada != null && !reparacionSeleccionada.FechaFin.HasValue;
