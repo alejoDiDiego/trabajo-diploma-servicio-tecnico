@@ -256,5 +256,21 @@ namespace DOMAIN.Features.Ordenes
 
             Estado = EstadoOrdenServicio.Entregado;
         }
+
+        public void CancelarEntrega()
+        {
+            if (Estado != EstadoOrdenServicio.Entregado)
+                throw new ReglaNegocioException("Solo se puede cancelar la entrega de una orden entregada.");
+
+            if (Resultado == ResultadoOrdenServicio.Reparado)
+            {
+                Estado = EstadoOrdenServicio.EnPruebas;
+                Resultado = null;
+            }
+            else
+            {
+                Estado = EstadoOrdenServicio.ListoRetiro;
+            }
+        }
     }
 }

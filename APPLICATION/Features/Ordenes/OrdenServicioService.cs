@@ -944,6 +944,44 @@ namespace APPLICATION.Features.Ordenes
             }
         }
 
+        public void CancelarEntrega(int idOrden, string motivo)
+        {
+            try
+            {
+                int idUsuario = ObtenerIdUsuarioSesion();
+
+                if (string.IsNullOrWhiteSpace(motivo))
+                    throw new ReglaNegocioException("El motivo de la cancelacion de la entrega es obligatorio.");
+
+                OrdenServicio ordenDb = ObtenerOrdenExistente(idOrden);
+                string estadoAnterior = ordenDb.Estado;
+
+                Entrega entregaDb = _entregaRepository.ObtenerPorOrden(idOrden);
+
+                if (entregaDb == null)
+                    throw new ReglaNegocioException("La orden no tiene una entrega registrada para cancelar.");
+
+                ordenDb.CancelarEntrega();
+
+                bool limpiarResultado = ordenDb.Estado == EstadoOrdenServicio.EnPruebas;
+
+                _entregaRepository.CancelarEntregaConTransicion(ordenDb.Id, estadoAnterior, ordenDb.Estado,
+                    limpiarResultado, idUsuario, "Entrega cancelada. Motivo: " + motivo.Trim());
+
+                BitacoraService bitacoraService = new BitacoraService();
+                bitacoraService.Registrar("ENTREGA_CANCELADA",
+                    "id_orden=" + idOrden + " | motivo=" + motivo.Trim(), "ORDENES");
+            }
+            catch (ReglaNegocioException ex)
+            {
+                throw new ReglaNegocioException(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al cancelar entrega", ex);
+            }
+        }
+
         public OrdenServicio ModificarRecepcion(int idOrden, string problema, string estadoFisico,
             string accesorios, string observacionesIngreso)
         {

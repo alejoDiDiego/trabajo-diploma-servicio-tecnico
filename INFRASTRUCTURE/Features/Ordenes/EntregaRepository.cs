@@ -137,6 +137,40 @@ namespace REPOSITORY.Features.Ordenes
             return ObtenerPorOrden(entrega.IdOrden);
         }
 
+        public void CancelarEntregaConTransicion(int idOrden, string estadoAnterior, string estadoNuevo,
+            bool limpiarResultado, int idUsuarioHistorial, string observacionHistorial)
+        {
+            // Batch atomico: DELETE fisico entrega + UPDATE orden + INSERT historial.
+            // El DELETE fisico es obligatorio: la UNIQUE UX_Entrega_Orden impediria re-entregar.
+            // Si el destino es EnPruebas (era Reparado) el resultado se lleva a NULL explicito;
+            // en otro caso el resultado se conserva intacto.
+            string query = @"
+                DELETE FROM Entregas WHERE id_orden = @IdOrden;
+
+                UPDATE OrdenesServicio
+                SET estado = @EstadoNuevo,
+                    resultado = CASE WHEN @LimpiarResultado = 1 THEN NULL ELSE resultado END
+                WHERE id_orden = @IdOrden;
+
+                INSERT INTO HistorialOrdenes (id_orden, estado_anterior, estado_nuevo, fecha_hora, id_usuario, observacion)
+                VALUES (@IdOrden, @EstadoAnterior, @EstadoNuevo, GETDATE(), @IdUsuarioHistorial, @ObservacionHistorial);
+
+                SELECT 0;
+            ";
+
+            SqlParameter[] sqlParameters = new SqlParameter[]
+            {
+                new SqlParameter("@IdOrden", idOrden),
+                new SqlParameter("@EstadoAnterior", (object)estadoAnterior ?? DBNull.Value),
+                new SqlParameter("@EstadoNuevo", estadoNuevo),
+                new SqlParameter("@LimpiarResultado", limpiarResultado ? 1 : 0),
+                new SqlParameter("@IdUsuarioHistorial", idUsuarioHistorial),
+                new SqlParameter("@ObservacionHistorial", (object)observacionHistorial ?? DBNull.Value)
+            };
+
+            _db.ExecuteTransaction(query, sqlParameters);
+        }
+
         public Entrega ObtenerPorOrden(int idOrden)
         {
             string query = @"
