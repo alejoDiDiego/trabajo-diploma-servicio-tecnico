@@ -183,8 +183,9 @@ namespace DOMAIN.Features.Ordenes
         public void SolicitarAdicional()
         {
             if (Estado != EstadoOrdenServicio.EnReparacion
-                && Estado != EstadoOrdenServicio.EnPruebas)
-                throw new ReglaNegocioException("Solo se puede solicitar un presupuesto adicional de una orden en reparacion o en pruebas.");
+                && Estado != EstadoOrdenServicio.EnPruebas
+                && Estado != EstadoOrdenServicio.AutorizadoReparacion)
+                throw new ReglaNegocioException("Solo se puede solicitar un presupuesto adicional de una orden autorizada, en reparacion o en pruebas.");
 
             Estado = EstadoOrdenServicio.PendientePresupuesto;
         }
@@ -205,7 +206,8 @@ namespace DOMAIN.Features.Ordenes
             if (Estado != EstadoOrdenServicio.PendientePresupuesto)
                 throw new ReglaNegocioException("Solo se puede cancelar la solicitud adicional de una orden pendiente de presupuesto.");
             if (estadoOrigen != EstadoOrdenServicio.EnReparacion
-                && estadoOrigen != EstadoOrdenServicio.EnPruebas)
+                && estadoOrigen != EstadoOrdenServicio.EnPruebas
+                && estadoOrigen != EstadoOrdenServicio.AutorizadoReparacion)
                 throw new ReglaNegocioException("El estado origen de la cancelacion no es valido.");
 
             Estado = estadoOrigen;
@@ -224,6 +226,26 @@ namespace DOMAIN.Features.Ordenes
         {
             if (Estado != EstadoOrdenServicio.EnPruebas)
                 throw new ReglaNegocioException("Solo se puede registrar la prueba fallida de una orden en pruebas.");
+
+            Estado = EstadoOrdenServicio.EnReparacion;
+        }
+
+        public void ReabrirPruebas()
+        {
+            if (Estado != EstadoOrdenServicio.ListoRetiro)
+                throw new ReglaNegocioException("Solo se puede reabrir las pruebas de una orden lista para retiro.");
+            if (Resultado != ResultadoOrdenServicio.Reparado)
+                throw new ReglaNegocioException("Solo se puede reabrir las pruebas de una orden con resultado reparado.");
+
+            Estado = EstadoOrdenServicio.EnPruebas;
+        }
+
+        public void ReabrirReparacion()
+        {
+            if (Estado != EstadoOrdenServicio.ListoRetiro)
+                throw new ReglaNegocioException("Solo se puede reabrir la reparacion de una orden lista para retiro.");
+            if (Resultado != ResultadoOrdenServicio.Reparado)
+                throw new ReglaNegocioException("Solo se puede reabrir la reparacion de una orden con resultado reparado.");
 
             Estado = EstadoOrdenServicio.EnReparacion;
         }

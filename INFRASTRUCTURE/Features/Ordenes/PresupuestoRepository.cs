@@ -473,9 +473,10 @@ namespace REPOSITORY.Features.Ordenes
         }
 
         public void AprobarAdicionalConTransicion(int idPresupuesto, int idUsuario,
-            string medioRespuesta, string observaciones)
+            string medioRespuesta, string observaciones, string estadoDestino)
         {
-            // Batch atomico: adicional->Aprobado + orden EsperandoRespuesta->EnReparacion + historial.
+            // Batch atomico: adicional->Aprobado + orden EsperandoRespuesta->origen + historial.
+            // Origen EnReparacion/EnPruebas vuelve a EnReparacion; origen Autorizado vuelve a Autorizado.
             string query = @"
                 DECLARE @Orden int;
 
@@ -489,11 +490,11 @@ namespace REPOSITORY.Features.Ordenes
                 WHERE id_presupuesto = @IdPresupuesto;
 
                 UPDATE OrdenesServicio
-                SET estado = 'EnReparacion'
+                SET estado = @EstadoDestino
                 WHERE id_orden = @Orden;
 
                 INSERT INTO HistorialOrdenes (id_orden, estado_anterior, estado_nuevo, fecha_hora, id_usuario, observacion)
-                VALUES (@Orden, 'EsperandoRespuesta', 'EnReparacion', GETDATE(), @IdUsuario, 'Presupuesto adicional aprobado');
+                VALUES (@Orden, 'EsperandoRespuesta', @EstadoDestino, GETDATE(), @IdUsuario, 'Presupuesto adicional aprobado');
 
                 SELECT 0;
             ";
@@ -503,7 +504,8 @@ namespace REPOSITORY.Features.Ordenes
                 new SqlParameter("@IdPresupuesto", idPresupuesto),
                 new SqlParameter("@IdUsuario", idUsuario),
                 new SqlParameter("@Medio", (object)medioRespuesta ?? DBNull.Value),
-                new SqlParameter("@Observaciones", (object)observaciones ?? DBNull.Value)
+                new SqlParameter("@Observaciones", (object)observaciones ?? DBNull.Value),
+                new SqlParameter("@EstadoDestino", estadoDestino)
             };
 
             _db.ExecuteTransaction(query, sqlParameters);
@@ -737,12 +739,14 @@ namespace REPOSITORY.Features.Ordenes
             int idUsuario, string observacionHistorial)
         {
             // Batch atomico: elimina borradores adicionales fisicos + orden->origen + historial.
-            // Si hay adicionales Pendiente/Aprobado/Rechazado (no anulados) se aborta.
+            // Solo bloquea un adicional Pendiente del ciclo actual: los Aprobado/Rechazado
+            // pertenecen siempre a ciclos anteriores (aprobar/rechazar saca a la orden de
+            // PendientePresupuesto) y no deben impedir cancelar la solicitud vigente.
             string query = @"
                 IF EXISTS (SELECT 1 FROM Presupuestos
                            WHERE id_orden = @IdOrden AND tipo = 'Adicional'
-                             AND estado IN ('Pendiente', 'Aprobado', 'Rechazado'))
-                    THROW 50014, 'La orden tiene presupuestos adicionales que impiden cancelar la solicitud.', 1;
+                             AND estado = 'Pendiente')
+                    THROW 50014, 'La orden tiene un presupuesto adicional pendiente que impide cancelar la solicitud.', 1;
 
                 DELETE d
                 FROM PresupuestoDetalle d

@@ -152,6 +152,7 @@ namespace REPOSITORY.Features.Reparaciones
                         descripcion nvarchar(max) NOT NULL,
                         resultado nvarchar(30) NOT NULL,
                         observaciones nvarchar(max) NULL,
+                        motivo_anulacion nvarchar(500) NULL,
                         CONSTRAINT FK_Pruebas_Reparacion FOREIGN KEY (id_reparacion)
                             REFERENCES Reparaciones(id_reparacion),
                         CONSTRAINT FK_Pruebas_Tecnico FOREIGN KEY (id_usuario_tecnico)
@@ -177,6 +178,9 @@ namespace REPOSITORY.Features.Reparaciones
 
                     IF COL_LENGTH('Pruebas', 'observaciones') IS NULL
                         ALTER TABLE Pruebas ADD observaciones nvarchar(max) NULL;
+
+                    IF COL_LENGTH('Pruebas', 'motivo_anulacion') IS NULL
+                        ALTER TABLE Pruebas ADD motivo_anulacion nvarchar(500) NULL;
 
                     IF NOT EXISTS (
                         SELECT 1 FROM sys.foreign_keys
@@ -504,6 +508,118 @@ namespace REPOSITORY.Features.Reparaciones
             return _db.ExecuteTransaction(query, sqlParameters);
         }
 
+        public int RegistrarPruebaSinTransicion(int idReparacion, int idTecnico, string descripcion,
+            string resultado, string observaciones, int idUsuario)
+        {
+            // Batch atomico SIN transicion de orden: solo INSERT prueba (aprobada en ListoRetiro/Reparado).
+            string query = @"
+                INSERT INTO Pruebas (id_reparacion, id_usuario_tecnico, fecha,
+                    descripcion, resultado, observaciones)
+                VALUES (@IdReparacion, @IdTecnico, GETDATE(),
+                    @Descripcion, @Resultado, @Observaciones);
+
+                SELECT CAST(SCOPE_IDENTITY() AS int);
+            ";
+
+            SqlParameter[] sqlParameters = new SqlParameter[]
+            {
+                new SqlParameter("@IdReparacion", idReparacion),
+                new SqlParameter("@IdTecnico", idTecnico),
+                new SqlParameter("@Descripcion", descripcion),
+                new SqlParameter("@Resultado", resultado),
+                new SqlParameter("@Observaciones", (object)observaciones ?? DBNull.Value)
+            };
+
+            return _db.ExecuteTransaction(query, sqlParameters);
+        }
+
+        public int RegistrarPruebaConRetrabajo(int idReparacion, int idTecnico, string descripcion,
+            string resultado, string observaciones, int idUsuario)
+        {
+            // Batch atomico: INSERT prueba + transicion ListoRetiro->EnReparacion + historial (retrabajo).
+            string query = @"
+                INSERT INTO Pruebas (id_reparacion, id_usuario_tecnico, fecha,
+                    descripcion, resultado, observaciones)
+                VALUES (@IdReparacion, @IdTecnico, GETDATE(),
+                    @Descripcion, @Resultado, @Observaciones);
+
+                DECLARE @P int = CAST(SCOPE_IDENTITY() AS int);
+
+                DECLARE @Orden int;
+
+                SELECT @Orden = id_orden FROM Reparaciones WHERE id_reparacion = @IdReparacion;
+
+                UPDATE OrdenesServicio
+                SET estado = 'EnReparacion'
+                WHERE id_orden = @Orden;
+
+                INSERT INTO HistorialOrdenes (id_orden, estado_anterior, estado_nuevo,
+                    fecha_hora, id_usuario, observacion)
+                VALUES (@Orden, 'ListoRetiro', 'EnReparacion', GETDATE(), @IdUsuario, 'Prueba fallida (retrabajo)');
+
+                SELECT @P;
+            ";
+
+            SqlParameter[] sqlParameters = new SqlParameter[]
+            {
+                new SqlParameter("@IdReparacion", idReparacion),
+                new SqlParameter("@IdTecnico", idTecnico),
+                new SqlParameter("@Descripcion", descripcion),
+                new SqlParameter("@Resultado", resultado),
+                new SqlParameter("@Observaciones", (object)observaciones ?? DBNull.Value),
+                new SqlParameter("@IdUsuario", idUsuario)
+            };
+
+            return _db.ExecuteTransaction(query, sqlParameters);
+        }
+
+        public void AnularPrueba(int idPrueba, string motivo, int idUsuario, bool conReapertura)
+        {
+            // Batch atomico: UPDATE prueba->Anulada (+ orden ListoRetiro->EnPruebas + historial si reabre).
+            string query = @"
+                DECLARE @Orden int;
+
+                SELECT @Orden = r.id_orden
+                FROM Pruebas p
+                INNER JOIN Reparaciones r ON r.id_reparacion = p.id_reparacion
+                WHERE p.id_prueba = @Id;
+
+                IF (@Orden IS NULL)
+                    THROW 50020, 'La prueba seleccionada no existe.', 1;
+
+                IF ((SELECT resultado FROM Pruebas WHERE id_prueba = @Id) = 'Anulada')
+                    THROW 50021, 'La prueba ya se encuentra anulada.', 1;
+
+                UPDATE Pruebas
+                SET resultado = 'Anulada',
+                    motivo_anulacion = @Motivo
+                WHERE id_prueba = @Id;
+
+                IF (@ConReapertura = 1)
+                BEGIN
+                    UPDATE OrdenesServicio
+                    SET estado = 'EnPruebas'
+                    WHERE id_orden = @Orden;
+
+                    INSERT INTO HistorialOrdenes (id_orden, estado_anterior, estado_nuevo,
+                        fecha_hora, id_usuario, observacion)
+                    VALUES (@Orden, 'ListoRetiro', 'EnPruebas', GETDATE(), @IdUsuario, 'Prueba anulada, pruebas reabiertas');
+                END
+
+                SELECT 0;
+            ";
+
+            SqlParameter[] sqlParameters = new SqlParameter[]
+            {
+                new SqlParameter("@Id", idPrueba),
+                new SqlParameter("@Motivo", motivo),
+                new SqlParameter("@IdUsuario", idUsuario),
+                new SqlParameter("@ConReapertura", conReapertura ? 1 : 0)
+            };
+
+            _db.ExecuteTransaction(query, sqlParameters);
+        }
+
         public void CerrarAbiertaYCancelar(int idOrden, string motivo, int idUsuario)
         {
             // Batch atomico: cierra reparacion abierta + orden->ListoRetiro(Cancelado) + historial.
@@ -638,7 +754,7 @@ namespace REPOSITORY.Features.Reparaciones
         {
             string query = @"
                 SELECT id_prueba, id_reparacion, id_usuario_tecnico, fecha,
-                       descripcion, resultado, observaciones
+                       descripcion, resultado, observaciones, motivo_anulacion
                 FROM Pruebas
                 WHERE id_reparacion = @IdReparacion
                 ORDER BY fecha, id_prueba;
@@ -654,15 +770,34 @@ namespace REPOSITORY.Features.Reparaciones
 
             foreach (DataRow fila in dt.Rows)
             {
-                pruebas.Add(Prueba.CargarDesdeDB(
-                    Convert.ToInt32(fila["id_prueba"]),
-                    Convert.ToInt32(fila["id_reparacion"]),
-                    Convert.ToInt32(fila["id_usuario_tecnico"]),
-                    Convert.ToDateTime(fila["fecha"]),
-                    fila["descripcion"] == DBNull.Value ? "" : fila["descripcion"].ToString(),
-                    fila["resultado"] == DBNull.Value ? "" : fila["resultado"].ToString(),
-                    fila["observaciones"] == DBNull.Value ? "" : fila["observaciones"].ToString()
-                ));
+                pruebas.Add(MapearPrueba(fila));
+            }
+
+            return pruebas;
+        }
+
+        public List<Prueba> ListarPruebasPorOrden(int idOrden)
+        {
+            string query = @"
+                SELECT p.id_prueba, p.id_reparacion, p.id_usuario_tecnico, p.fecha,
+                       p.descripcion, p.resultado, p.observaciones, p.motivo_anulacion
+                FROM Pruebas p
+                INNER JOIN Reparaciones r ON r.id_reparacion = p.id_reparacion
+                WHERE r.id_orden = @IdOrden
+                ORDER BY p.fecha, p.id_prueba;
+            ";
+
+            SqlParameter[] sqlParameters = new SqlParameter[]
+            {
+                new SqlParameter("@IdOrden", idOrden)
+            };
+
+            DataTable dt = _db.ExecuteQuery(query, sqlParameters);
+            List<Prueba> pruebas = new List<Prueba>();
+
+            foreach (DataRow fila in dt.Rows)
+            {
+                pruebas.Add(MapearPrueba(fila));
             }
 
             return pruebas;
@@ -672,7 +807,7 @@ namespace REPOSITORY.Features.Reparaciones
         {
             string query = @"
                 SELECT id_prueba, id_reparacion, id_usuario_tecnico, fecha,
-                       descripcion, resultado, observaciones
+                       descripcion, resultado, observaciones, motivo_anulacion
                 FROM Pruebas WHERE id_prueba = @Id;
             ";
 
@@ -686,17 +821,7 @@ namespace REPOSITORY.Features.Reparaciones
             if (dt.Rows.Count <= 0)
                 return null;
 
-            DataRow fila = dt.Rows[0];
-
-            return Prueba.CargarDesdeDB(
-                Convert.ToInt32(fila["id_prueba"]),
-                Convert.ToInt32(fila["id_reparacion"]),
-                Convert.ToInt32(fila["id_usuario_tecnico"]),
-                Convert.ToDateTime(fila["fecha"]),
-                fila["descripcion"] == DBNull.Value ? "" : fila["descripcion"].ToString(),
-                fila["resultado"] == DBNull.Value ? "" : fila["resultado"].ToString(),
-                fila["observaciones"] == DBNull.Value ? "" : fila["observaciones"].ToString()
-            );
+            return MapearPrueba(dt.Rows[0]);
         }
 
         public bool EsUltimaFinalizada(int idReparacion)
@@ -738,6 +863,20 @@ namespace REPOSITORY.Features.Reparaciones
                 return null;
 
             return dt.Rows[0]["estado"] == DBNull.Value ? null : dt.Rows[0]["estado"].ToString();
+        }
+
+        private Prueba MapearPrueba(DataRow fila)
+        {
+            return Prueba.CargarDesdeDB(
+                Convert.ToInt32(fila["id_prueba"]),
+                Convert.ToInt32(fila["id_reparacion"]),
+                Convert.ToInt32(fila["id_usuario_tecnico"]),
+                Convert.ToDateTime(fila["fecha"]),
+                fila["descripcion"] == DBNull.Value ? "" : fila["descripcion"].ToString(),
+                fila["resultado"] == DBNull.Value ? "" : fila["resultado"].ToString(),
+                fila["observaciones"] == DBNull.Value ? "" : fila["observaciones"].ToString(),
+                fila.Table.Columns.Contains("motivo_anulacion") && fila["motivo_anulacion"] != DBNull.Value ? fila["motivo_anulacion"].ToString() : null
+            );
         }
 
         private Reparacion MapearReparacion(DataRow fila)

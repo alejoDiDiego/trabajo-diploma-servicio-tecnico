@@ -444,10 +444,22 @@ namespace APPLICATION.Features.Ordenes
                 if (ordenDb.Estado != EstadoOrdenServicio.EsperandoRespuesta)
                     throw new ReglaNegocioException("Solo se puede aprobar el adicional de una orden en espera de respuesta.");
 
+                string estadoOrigen;
+
+                if (!TryObtenerOrigenSolicitud(ordenDb.Id, out estadoOrigen))
+                    throw new ReglaNegocioException("La orden no registra una solicitud de presupuesto adicional para aprobar.");
+
                 presupuestoDb.Aprobar(medioRespuesta, observaciones);
 
+                string estadoDestino = estadoOrigen == EstadoOrdenServicio.AutorizadoReparacion
+                    ? EstadoOrdenServicio.AutorizadoReparacion
+                    : EstadoOrdenServicio.EnReparacion;
+
+                if (estadoDestino == EstadoOrdenServicio.AutorizadoReparacion)
+                    ordenDb.AutorizarReparacion();
+
                 _presupuestoRepository.AprobarAdicionalConTransicion(presupuestoDb.Id, idUsuario,
-                    presupuestoDb.MedioRespuesta, observaciones);
+                    presupuestoDb.MedioRespuesta, observaciones, estadoDestino);
 
                 BitacoraService bitacoraService = new BitacoraService();
                 bitacoraService.Registrar("ADICIONAL_APROBADO",
@@ -755,10 +767,8 @@ namespace APPLICATION.Features.Ordenes
 
                 foreach (Presupuesto a in adicionales)
                 {
-                    if (a.Estado == EstadoPresupuesto.Pendiente
-                        || a.Estado == EstadoPresupuesto.Aprobado
-                        || a.Estado == EstadoPresupuesto.Rechazado)
-                        throw new ReglaNegocioException("No se puede cancelar la solicitud porque la orden tiene presupuestos adicionales emitidos.");
+                    if (a.Estado == EstadoPresupuesto.Pendiente)
+                        throw new ReglaNegocioException("No se puede cancelar la solicitud porque la orden tiene un presupuesto adicional pendiente de respuesta.");
                 }
 
                 string estadoAnterior = ordenDb.Estado;
@@ -799,9 +809,7 @@ namespace APPLICATION.Features.Ordenes
 
                 foreach (Presupuesto a in adicionales)
                 {
-                    if (a.Estado == EstadoPresupuesto.Pendiente
-                        || a.Estado == EstadoPresupuesto.Aprobado
-                        || a.Estado == EstadoPresupuesto.Rechazado)
+                    if (a.Estado == EstadoPresupuesto.Pendiente)
                         return false;
                 }
 
@@ -1361,8 +1369,12 @@ namespace APPLICATION.Features.Ordenes
 
                 OrdenServicio ordenDb = ObtenerOrdenExistente(reparacionDb.IdOrden);
 
-                if (ordenDb.Estado != EstadoOrdenServicio.EnPruebas)
-                    throw new ReglaNegocioException("Solo se puede registrar la prueba de una orden en pruebas.");
+                bool enPruebas = ordenDb.Estado == EstadoOrdenServicio.EnPruebas;
+                bool listoReparado = ordenDb.Estado == EstadoOrdenServicio.ListoRetiro
+                    && ordenDb.Resultado == ResultadoOrdenServicio.Reparado;
+
+                if (!enPruebas && !listoReparado)
+                    throw new ReglaNegocioException("Solo se puede registrar la prueba de una orden en pruebas o lista para retiro con resultado reparado.");
 
                 if (_reparacionRepository.ObtenerAbierta(ordenDb.Id) != null)
                     throw new ReglaNegocioException("Existe una reparacion abierta en la orden.");
@@ -1390,14 +1402,33 @@ namespace APPLICATION.Features.Ordenes
                     descripcion, aprobada ? ResultadoPrueba.Aprobada : ResultadoPrueba.RequiereRevision,
                     observaciones);
 
-                if (aprobada)
-                    ordenDb.RegistrarPruebaAprobada();
-                else
-                    ordenDb.RegistrarPruebaFallida();
+                int idPrueba;
 
-                int idPrueba = _reparacionRepository.RegistrarPrueba(idReparacion,
-                    pruebaToSave.IdUsuarioTecnico, pruebaToSave.Descripcion,
-                    pruebaToSave.Resultado, pruebaToSave.Observaciones, idUsuario, aprobada);
+                if (enPruebas)
+                {
+                    if (aprobada)
+                        ordenDb.RegistrarPruebaAprobada();
+                    else
+                        ordenDb.RegistrarPruebaFallida();
+
+                    idPrueba = _reparacionRepository.RegistrarPrueba(idReparacion,
+                        pruebaToSave.IdUsuarioTecnico, pruebaToSave.Descripcion,
+                        pruebaToSave.Resultado, pruebaToSave.Observaciones, idUsuario, aprobada);
+                }
+                else if (aprobada)
+                {
+                    idPrueba = _reparacionRepository.RegistrarPruebaSinTransicion(idReparacion,
+                        pruebaToSave.IdUsuarioTecnico, pruebaToSave.Descripcion,
+                        pruebaToSave.Resultado, pruebaToSave.Observaciones, idUsuario);
+                }
+                else
+                {
+                    ordenDb.ReabrirReparacion();
+
+                    idPrueba = _reparacionRepository.RegistrarPruebaConRetrabajo(idReparacion,
+                        pruebaToSave.IdUsuarioTecnico, pruebaToSave.Descripcion,
+                        pruebaToSave.Resultado, pruebaToSave.Observaciones, idUsuario);
+                }
 
                 BitacoraService bitacoraService = new BitacoraService();
                 bitacoraService.Registrar(aprobada ? "Prueba aprobada" : "Prueba fallida",
@@ -1412,6 +1443,72 @@ namespace APPLICATION.Features.Ordenes
             catch (Exception ex)
             {
                 throw new Exception("Error al registrar prueba", ex);
+            }
+        }
+
+        public void AnularPrueba(int idPrueba, string motivo)
+        {
+            try
+            {
+                int idUsuario = ObtenerIdUsuarioSesion();
+
+                if (string.IsNullOrWhiteSpace(motivo))
+                    throw new ReglaNegocioException("El motivo de la anulacion es obligatorio.");
+
+                Prueba pruebaDb = _reparacionRepository.ObtenerPruebaPorId(idPrueba);
+
+                if (pruebaDb == null)
+                    throw new ReglaNegocioException("La prueba seleccionada no existe.");
+
+                if (pruebaDb.Resultado == ResultadoPrueba.Anulada)
+                    throw new ReglaNegocioException("La prueba ya se encuentra anulada.");
+
+                Reparacion reparacionDb = _reparacionRepository.ObtenerPorId(pruebaDb.IdReparacion);
+
+                if (reparacionDb == null)
+                    throw new ReglaNegocioException("La reparacion seleccionada no existe.");
+
+                OrdenServicio ordenDb = ObtenerOrdenExistente(reparacionDb.IdOrden);
+
+                if (ordenDb.Estado == EstadoOrdenServicio.Entregado)
+                    throw new ReglaNegocioException("No se puede anular la prueba de una orden entregada.");
+
+                List<Prueba> todas = _reparacionRepository.ListarPruebasPorOrden(ordenDb.Id);
+                Prueba ultima = null;
+
+                foreach (Prueba p in todas)
+                {
+                    if (p.Resultado != ResultadoPrueba.Anulada)
+                        ultima = p;
+                }
+
+                if (ultima == null || ultima.Id != idPrueba)
+                    throw new ReglaNegocioException("Solo se puede anular la ultima prueba no anulada de la orden.");
+
+                bool eraAprobada = pruebaDb.Resultado == ResultadoPrueba.Aprobada;
+
+                pruebaDb.Anular(motivo.Trim());
+
+                bool conReapertura = eraAprobada
+                    && ordenDb.Estado == EstadoOrdenServicio.ListoRetiro
+                    && ordenDb.Resultado == ResultadoOrdenServicio.Reparado;
+
+                if (conReapertura)
+                    ordenDb.ReabrirPruebas();
+
+                _reparacionRepository.AnularPrueba(idPrueba, pruebaDb.MotivoAnulacion, idUsuario, conReapertura);
+
+                BitacoraService bitacoraService = new BitacoraService();
+                bitacoraService.Registrar("PRUEBA_ANULADA",
+                    "id_orden=" + ordenDb.Id + " | id_prueba=" + idPrueba, "ORDENES");
+            }
+            catch (ReglaNegocioException ex)
+            {
+                throw new ReglaNegocioException(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al anular prueba", ex);
             }
         }
 
@@ -1522,7 +1619,9 @@ namespace APPLICATION.Features.Ordenes
 
         private bool TryObtenerOrigenSolicitud(int idOrden, out string estadoOrigen)
         {
-            // Origen = ultima transicion a PendientePresupuesto desde EnReparacion/EnPruebas.
+            // Origen = ULTIMA transicion a PendientePresupuesto desde Autorizado/EnReparacion/EnPruebas.
+            // Se recorre hacia atras: la primera coincidencia es la solicitud vigente. Los
+            // Aprobado/Rechazado de ciclos anteriores no bloquean (ver CancelarSolicitudAdicional).
             estadoOrigen = null;
 
             List<HistorialEstadoOrden> historial = _historialRepository.ListarPorOrden(idOrden);
@@ -1533,7 +1632,8 @@ namespace APPLICATION.Features.Ordenes
 
                 if (h.EstadoNuevo == EstadoOrdenServicio.PendientePresupuesto
                     && (h.EstadoAnterior == EstadoOrdenServicio.EnReparacion
-                        || h.EstadoAnterior == EstadoOrdenServicio.EnPruebas))
+                        || h.EstadoAnterior == EstadoOrdenServicio.EnPruebas
+                        || h.EstadoAnterior == EstadoOrdenServicio.AutorizadoReparacion))
                 {
                     estadoOrigen = h.EstadoAnterior;
                     return true;
