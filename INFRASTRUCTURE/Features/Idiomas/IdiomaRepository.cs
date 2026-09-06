@@ -1113,6 +1113,20 @@ namespace REPOSITORY.Features.Idiomas
             AgregarSeed("Ingles", "Columna.Motivo", "Reason");
             AgregarSeed("Espanol", "Mensaje.ConfirmarAnularPrueba", "Confirma que desea anular la ultima prueba? Esta accion no se puede deshacer.");
             AgregarSeed("Ingles", "Mensaje.ConfirmarAnularPrueba", "Are you sure you want to void the latest test? This action cannot be undone.");
+            AgregarSeed("Espanol", "OrdenDetalle.FinalizarPruebas", "Finalizar pruebas");
+            AgregarSeed("Ingles", "OrdenDetalle.FinalizarPruebas", "Finish tests");
+            AgregarSeed("Espanol", "Mensaje.ConfirmarFinalizarPruebas", "Confirma que desea finalizar las pruebas de la orden? Esta accion no se puede deshacer.");
+            AgregarSeed("Ingles", "Mensaje.ConfirmarFinalizarPruebas", "Are you sure you want to finalize the order tests? This action cannot be undone.");
+            AgregarSeed("Espanol", "Titulo.ConfirmarFinalizarPruebas", "Confirmar finalizacion de pruebas");
+            AgregarSeed("Ingles", "Titulo.ConfirmarFinalizarPruebas", "Confirm tests finalization");
+            AgregarSeed("Espanol", "Mensaje.PruebasFinalizadasListo", "Pruebas finalizadas. La orden quedo lista para retiro (resultado: {0}).");
+            AgregarSeed("Ingles", "Mensaje.PruebasFinalizadasListo", "Tests finalized. The order is ready for pickup (result: {0}).");
+            AgregarSeed("Espanol", "Mensaje.PruebasDevueltasReparacion", "Pruebas finalizadas. La orden volvio a reparacion para revision.");
+            AgregarSeed("Ingles", "Mensaje.PruebasDevueltasReparacion", "Tests finalized. The order returned to repair for review.");
+            AgregarSeed("Espanol", "Columna.FechaAnulacion", "Fecha anulacion");
+            AgregarSeed("Ingles", "Columna.FechaAnulacion", "Void date");
+            AgregarSeed("Espanol", "Columna.UsuarioAnulacion", "Usuario anulacion");
+            AgregarSeed("Ingles", "Columna.UsuarioAnulacion", "Void user");
         }
 
         private void AgregarSeed(string idioma, string clave, string texto)

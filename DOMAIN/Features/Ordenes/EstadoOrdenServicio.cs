@@ -1,8 +1,7 @@
 namespace DOMAIN.Features.Ordenes
 {
-    // Estados del ciclo de vida de una orden de servicio (CP2).
-    // Valores existentes pero SIN transiciones en CP2 (reservados para checkpoints futuros):
-    // EnReparacion, EnPruebas y PendienteEvaluacionGarantia no se alcanzan desde ningun metodo.
+    // Estados del ciclo de vida de una orden de servicio.
+    // Reservado para checkpoints futuros: PendienteEvaluacionGarantia no se alcanza desde ningun metodo.
     public static class EstadoOrdenServicio
     {
         public const string Recibido = "Recibido";

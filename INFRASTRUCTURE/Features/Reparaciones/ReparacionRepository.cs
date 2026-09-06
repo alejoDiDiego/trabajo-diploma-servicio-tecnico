@@ -153,9 +153,13 @@ namespace REPOSITORY.Features.Reparaciones
                         resultado nvarchar(30) NOT NULL,
                         observaciones nvarchar(max) NULL,
                         motivo_anulacion nvarchar(500) NULL,
+                        fecha_anulacion datetime NULL,
+                        id_usuario_anulacion int NULL,
                         CONSTRAINT FK_Pruebas_Reparacion FOREIGN KEY (id_reparacion)
                             REFERENCES Reparaciones(id_reparacion),
                         CONSTRAINT FK_Pruebas_Tecnico FOREIGN KEY (id_usuario_tecnico)
+                            REFERENCES Usuarios(id_usuario),
+                        CONSTRAINT FK_Pruebas_UsuarioAnulacion FOREIGN KEY (id_usuario_anulacion)
                             REFERENCES Usuarios(id_usuario)
                     );
                 END
@@ -182,6 +186,12 @@ namespace REPOSITORY.Features.Reparaciones
                     IF COL_LENGTH('Pruebas', 'motivo_anulacion') IS NULL
                         ALTER TABLE Pruebas ADD motivo_anulacion nvarchar(500) NULL;
 
+                    IF COL_LENGTH('Pruebas', 'fecha_anulacion') IS NULL
+                        ALTER TABLE Pruebas ADD fecha_anulacion datetime NULL;
+
+                    IF COL_LENGTH('Pruebas', 'id_usuario_anulacion') IS NULL
+                        ALTER TABLE Pruebas ADD id_usuario_anulacion int NULL;
+
                     IF NOT EXISTS (
                         SELECT 1 FROM sys.foreign_keys
                         WHERE name = 'FK_Pruebas_Reparacion'
@@ -201,6 +211,17 @@ namespace REPOSITORY.Features.Reparaciones
                     BEGIN
                         ALTER TABLE Pruebas WITH CHECK
                         ADD CONSTRAINT FK_Pruebas_Tecnico FOREIGN KEY (id_usuario_tecnico)
+                            REFERENCES Usuarios(id_usuario);
+                    END
+
+                    IF NOT EXISTS (
+                        SELECT 1 FROM sys.foreign_keys
+                        WHERE name = 'FK_Pruebas_UsuarioAnulacion'
+                          AND parent_object_id = OBJECT_ID('Pruebas')
+                    )
+                    BEGIN
+                        ALTER TABLE Pruebas WITH CHECK
+                        ADD CONSTRAINT FK_Pruebas_UsuarioAnulacion FOREIGN KEY (id_usuario_anulacion)
                             REFERENCES Usuarios(id_usuario);
                     END
                 END
@@ -454,64 +475,10 @@ namespace REPOSITORY.Features.Reparaciones
         }
 
         public int RegistrarPrueba(int idReparacion, int idTecnico, string descripcion,
-            string resultado, string observaciones, int idUsuario, bool aprobada)
+            string resultado, string observaciones)
         {
-            // Batch atomico: INSERT prueba + transicion EnPruebas->ListoRetiro(Reparado) o ->EnReparacion + historial.
-            string query = @"
-                INSERT INTO Pruebas (id_reparacion, id_usuario_tecnico, fecha,
-                    descripcion, resultado, observaciones)
-                VALUES (@IdReparacion, @IdTecnico, GETDATE(),
-                    @Descripcion, @Resultado, @Observaciones);
-
-                DECLARE @P int = CAST(SCOPE_IDENTITY() AS int);
-
-                DECLARE @Orden int;
-
-                SELECT @Orden = id_orden FROM Reparaciones WHERE id_reparacion = @IdReparacion;
-
-                IF (@Aprobada = 1)
-                BEGIN
-                    UPDATE OrdenesServicio
-                    SET estado = 'ListoRetiro',
-                        resultado = 'Reparado'
-                    WHERE id_orden = @Orden;
-
-                    INSERT INTO HistorialOrdenes (id_orden, estado_anterior, estado_nuevo,
-                        fecha_hora, id_usuario, observacion)
-                    VALUES (@Orden, 'EnPruebas', 'ListoRetiro', GETDATE(), @IdUsuario, 'Prueba aprobada');
-                END
-                ELSE
-                BEGIN
-                    UPDATE OrdenesServicio
-                    SET estado = 'EnReparacion'
-                    WHERE id_orden = @Orden;
-
-                    INSERT INTO HistorialOrdenes (id_orden, estado_anterior, estado_nuevo,
-                        fecha_hora, id_usuario, observacion)
-                    VALUES (@Orden, 'EnPruebas', 'EnReparacion', GETDATE(), @IdUsuario, 'Prueba fallida');
-                END
-
-                SELECT @P;
-            ";
-
-            SqlParameter[] sqlParameters = new SqlParameter[]
-            {
-                new SqlParameter("@IdReparacion", idReparacion),
-                new SqlParameter("@IdTecnico", idTecnico),
-                new SqlParameter("@Descripcion", descripcion),
-                new SqlParameter("@Resultado", resultado),
-                new SqlParameter("@Observaciones", (object)observaciones ?? DBNull.Value),
-                new SqlParameter("@IdUsuario", idUsuario),
-                new SqlParameter("@Aprobada", aprobada ? 1 : 0)
-            };
-
-            return _db.ExecuteTransaction(query, sqlParameters);
-        }
-
-        public int RegistrarPruebaSinTransicion(int idReparacion, int idTecnico, string descripcion,
-            string resultado, string observaciones, int idUsuario)
-        {
-            // Batch atomico SIN transicion de orden: solo INSERT prueba (aprobada en ListoRetiro/Reparado).
+            // Batch atomico INSERT-only: persiste la prueba sin transicion de orden.
+            // La decision (ListoRetiro/EnReparacion) la toma FinalizarPruebas.
             string query = @"
                 INSERT INTO Pruebas (id_reparacion, id_usuario_tecnico, fecha,
                     descripcion, resultado, observaciones)
@@ -533,58 +500,52 @@ namespace REPOSITORY.Features.Reparaciones
             return _db.ExecuteTransaction(query, sqlParameters);
         }
 
-        public int RegistrarPruebaConRetrabajo(int idReparacion, int idTecnico, string descripcion,
-            string resultado, string observaciones, int idUsuario)
+        public void FinalizarPruebas(int idOrden, bool todasAprobadas, int idUsuario)
         {
-            // Batch atomico: INSERT prueba + transicion ListoRetiro->EnReparacion + historial (retrabajo).
+            // Batch atomico: UPDATE orden + historial. La evaluacion previa la hace el service.
+            // Todas aprobadas: EnPruebas->ListoRetiro(Reparado). Con revision: EnPruebas->EnReparacion(resultado NULL).
             string query = @"
-                INSERT INTO Pruebas (id_reparacion, id_usuario_tecnico, fecha,
-                    descripcion, resultado, observaciones)
-                VALUES (@IdReparacion, @IdTecnico, GETDATE(),
-                    @Descripcion, @Resultado, @Observaciones);
+                IF (@TodasAprobadas = 1)
+                BEGIN
+                    UPDATE OrdenesServicio
+                    SET estado = 'ListoRetiro',
+                        resultado = 'Reparado'
+                    WHERE id_orden = @IdOrden;
 
-                DECLARE @P int = CAST(SCOPE_IDENTITY() AS int);
+                    INSERT INTO HistorialOrdenes (id_orden, estado_anterior, estado_nuevo,
+                        fecha_hora, id_usuario, observacion)
+                    VALUES (@IdOrden, 'EnPruebas', 'ListoRetiro', GETDATE(), @IdUsuario, 'Pruebas finalizadas: todas aprobadas');
+                END
+                ELSE
+                BEGIN
+                    UPDATE OrdenesServicio
+                    SET estado = 'EnReparacion',
+                        resultado = NULL
+                    WHERE id_orden = @IdOrden;
 
-                DECLARE @Orden int;
+                    INSERT INTO HistorialOrdenes (id_orden, estado_anterior, estado_nuevo,
+                        fecha_hora, id_usuario, observacion)
+                    VALUES (@IdOrden, 'EnPruebas', 'EnReparacion', GETDATE(), @IdUsuario, 'Pruebas finalizadas: requiere revision');
+                END
 
-                SELECT @Orden = id_orden FROM Reparaciones WHERE id_reparacion = @IdReparacion;
-
-                UPDATE OrdenesServicio
-                SET estado = 'EnReparacion'
-                WHERE id_orden = @Orden;
-
-                INSERT INTO HistorialOrdenes (id_orden, estado_anterior, estado_nuevo,
-                    fecha_hora, id_usuario, observacion)
-                VALUES (@Orden, 'ListoRetiro', 'EnReparacion', GETDATE(), @IdUsuario, 'Prueba fallida (retrabajo)');
-
-                SELECT @P;
+                SELECT 0;
             ";
 
             SqlParameter[] sqlParameters = new SqlParameter[]
             {
-                new SqlParameter("@IdReparacion", idReparacion),
-                new SqlParameter("@IdTecnico", idTecnico),
-                new SqlParameter("@Descripcion", descripcion),
-                new SqlParameter("@Resultado", resultado),
-                new SqlParameter("@Observaciones", (object)observaciones ?? DBNull.Value),
+                new SqlParameter("@IdOrden", idOrden),
+                new SqlParameter("@TodasAprobadas", todasAprobadas ? 1 : 0),
                 new SqlParameter("@IdUsuario", idUsuario)
             };
 
-            return _db.ExecuteTransaction(query, sqlParameters);
+            _db.ExecuteTransaction(query, sqlParameters);
         }
 
-        public void AnularPrueba(int idPrueba, string motivo, int idUsuario, bool conReapertura)
+        public void AnularPrueba(int idPrueba, string motivo, int idUsuario)
         {
-            // Batch atomico: UPDATE prueba->Anulada (+ orden ListoRetiro->EnPruebas + historial si reabre).
+            // Batch atomico SIN cambio de estado: solo marca la prueba como anulada.
             string query = @"
-                DECLARE @Orden int;
-
-                SELECT @Orden = r.id_orden
-                FROM Pruebas p
-                INNER JOIN Reparaciones r ON r.id_reparacion = p.id_reparacion
-                WHERE p.id_prueba = @Id;
-
-                IF (@Orden IS NULL)
+                IF NOT EXISTS (SELECT 1 FROM Pruebas WHERE id_prueba = @Id)
                     THROW 50020, 'La prueba seleccionada no existe.', 1;
 
                 IF ((SELECT resultado FROM Pruebas WHERE id_prueba = @Id) = 'Anulada')
@@ -592,19 +553,10 @@ namespace REPOSITORY.Features.Reparaciones
 
                 UPDATE Pruebas
                 SET resultado = 'Anulada',
-                    motivo_anulacion = @Motivo
+                    motivo_anulacion = @Motivo,
+                    fecha_anulacion = GETDATE(),
+                    id_usuario_anulacion = @IdUsuario
                 WHERE id_prueba = @Id;
-
-                IF (@ConReapertura = 1)
-                BEGIN
-                    UPDATE OrdenesServicio
-                    SET estado = 'EnPruebas'
-                    WHERE id_orden = @Orden;
-
-                    INSERT INTO HistorialOrdenes (id_orden, estado_anterior, estado_nuevo,
-                        fecha_hora, id_usuario, observacion)
-                    VALUES (@Orden, 'ListoRetiro', 'EnPruebas', GETDATE(), @IdUsuario, 'Prueba anulada, pruebas reabiertas');
-                END
 
                 SELECT 0;
             ";
@@ -613,8 +565,7 @@ namespace REPOSITORY.Features.Reparaciones
             {
                 new SqlParameter("@Id", idPrueba),
                 new SqlParameter("@Motivo", motivo),
-                new SqlParameter("@IdUsuario", idUsuario),
-                new SqlParameter("@ConReapertura", conReapertura ? 1 : 0)
+                new SqlParameter("@IdUsuario", idUsuario)
             };
 
             _db.ExecuteTransaction(query, sqlParameters);
@@ -754,7 +705,8 @@ namespace REPOSITORY.Features.Reparaciones
         {
             string query = @"
                 SELECT id_prueba, id_reparacion, id_usuario_tecnico, fecha,
-                       descripcion, resultado, observaciones, motivo_anulacion
+                       descripcion, resultado, observaciones, motivo_anulacion,
+                       fecha_anulacion, id_usuario_anulacion
                 FROM Pruebas
                 WHERE id_reparacion = @IdReparacion
                 ORDER BY fecha, id_prueba;
@@ -776,38 +728,12 @@ namespace REPOSITORY.Features.Reparaciones
             return pruebas;
         }
 
-        public List<Prueba> ListarPruebasPorOrden(int idOrden)
-        {
-            string query = @"
-                SELECT p.id_prueba, p.id_reparacion, p.id_usuario_tecnico, p.fecha,
-                       p.descripcion, p.resultado, p.observaciones, p.motivo_anulacion
-                FROM Pruebas p
-                INNER JOIN Reparaciones r ON r.id_reparacion = p.id_reparacion
-                WHERE r.id_orden = @IdOrden
-                ORDER BY p.fecha, p.id_prueba;
-            ";
-
-            SqlParameter[] sqlParameters = new SqlParameter[]
-            {
-                new SqlParameter("@IdOrden", idOrden)
-            };
-
-            DataTable dt = _db.ExecuteQuery(query, sqlParameters);
-            List<Prueba> pruebas = new List<Prueba>();
-
-            foreach (DataRow fila in dt.Rows)
-            {
-                pruebas.Add(MapearPrueba(fila));
-            }
-
-            return pruebas;
-        }
-
         public Prueba ObtenerPruebaPorId(int idPrueba)
         {
             string query = @"
                 SELECT id_prueba, id_reparacion, id_usuario_tecnico, fecha,
-                       descripcion, resultado, observaciones, motivo_anulacion
+                       descripcion, resultado, observaciones, motivo_anulacion,
+                       fecha_anulacion, id_usuario_anulacion
                 FROM Pruebas WHERE id_prueba = @Id;
             ";
 
@@ -824,28 +750,21 @@ namespace REPOSITORY.Features.Reparaciones
             return MapearPrueba(dt.Rows[0]);
         }
 
-        public bool EsUltimaFinalizada(int idReparacion)
+        private Prueba MapearPrueba(DataRow fila)
         {
-            string query = @"
-                SELECT COUNT(1)
-                FROM Reparaciones r
-                WHERE r.id_reparacion = @Id
-                  AND r.fecha_fin IS NOT NULL
-                  AND r.numero_intervencion = (
-                      SELECT MAX(numero_intervencion)
-                      FROM Reparaciones
-                      WHERE id_orden = r.id_orden
-                  );
-            ";
-
-            SqlParameter[] sqlParameters = new SqlParameter[]
-            {
-                new SqlParameter("@Id", idReparacion)
-            };
-
-            return _db.ExecuteTransaction(query, sqlParameters) > 0;
+            return Prueba.CargarDesdeDB(
+                Convert.ToInt32(fila["id_prueba"]),
+                Convert.ToInt32(fila["id_reparacion"]),
+                Convert.ToInt32(fila["id_usuario_tecnico"]),
+                Convert.ToDateTime(fila["fecha"]),
+                fila["descripcion"] == DBNull.Value ? "" : fila["descripcion"].ToString(),
+                fila["resultado"] == DBNull.Value ? "" : fila["resultado"].ToString(),
+                fila["observaciones"] == DBNull.Value ? "" : fila["observaciones"].ToString(),
+                fila.Table.Columns.Contains("motivo_anulacion") && fila["motivo_anulacion"] != DBNull.Value ? fila["motivo_anulacion"].ToString() : null,
+                fila.Table.Columns.Contains("fecha_anulacion") && fila["fecha_anulacion"] != DBNull.Value ? (DateTime?)Convert.ToDateTime(fila["fecha_anulacion"]) : null,
+                fila.Table.Columns.Contains("id_usuario_anulacion") && fila["id_usuario_anulacion"] != DBNull.Value ? (int?)Convert.ToInt32(fila["id_usuario_anulacion"]) : null
+            );
         }
-
         private string ObtenerEstadoOrdenParaHistorial(int idOrden)
         {
             string query = @"
@@ -863,20 +782,6 @@ namespace REPOSITORY.Features.Reparaciones
                 return null;
 
             return dt.Rows[0]["estado"] == DBNull.Value ? null : dt.Rows[0]["estado"].ToString();
-        }
-
-        private Prueba MapearPrueba(DataRow fila)
-        {
-            return Prueba.CargarDesdeDB(
-                Convert.ToInt32(fila["id_prueba"]),
-                Convert.ToInt32(fila["id_reparacion"]),
-                Convert.ToInt32(fila["id_usuario_tecnico"]),
-                Convert.ToDateTime(fila["fecha"]),
-                fila["descripcion"] == DBNull.Value ? "" : fila["descripcion"].ToString(),
-                fila["resultado"] == DBNull.Value ? "" : fila["resultado"].ToString(),
-                fila["observaciones"] == DBNull.Value ? "" : fila["observaciones"].ToString(),
-                fila.Table.Columns.Contains("motivo_anulacion") && fila["motivo_anulacion"] != DBNull.Value ? fila["motivo_anulacion"].ToString() : null
-            );
         }
 
         private Reparacion MapearReparacion(DataRow fila)

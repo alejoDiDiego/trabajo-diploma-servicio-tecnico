@@ -213,41 +213,22 @@ namespace DOMAIN.Features.Ordenes
             Estado = estadoOrigen;
         }
 
-        public void RegistrarPruebaAprobada()
+        public void FinalizarPruebasAprobadas()
         {
             if (Estado != EstadoOrdenServicio.EnPruebas)
-                throw new ReglaNegocioException("Solo se puede aprobar la prueba de una orden en pruebas.");
+                throw new ReglaNegocioException("Solo se pueden finalizar las pruebas de una orden en pruebas.");
 
             Estado = EstadoOrdenServicio.ListoRetiro;
             Resultado = ResultadoOrdenServicio.Reparado;
         }
 
-        public void RegistrarPruebaFallida()
+        public void FinalizarPruebasRequiereRevision()
         {
             if (Estado != EstadoOrdenServicio.EnPruebas)
-                throw new ReglaNegocioException("Solo se puede registrar la prueba fallida de una orden en pruebas.");
+                throw new ReglaNegocioException("Solo se pueden finalizar las pruebas de una orden en pruebas.");
 
             Estado = EstadoOrdenServicio.EnReparacion;
-        }
-
-        public void ReabrirPruebas()
-        {
-            if (Estado != EstadoOrdenServicio.ListoRetiro)
-                throw new ReglaNegocioException("Solo se puede reabrir las pruebas de una orden lista para retiro.");
-            if (Resultado != ResultadoOrdenServicio.Reparado)
-                throw new ReglaNegocioException("Solo se puede reabrir las pruebas de una orden con resultado reparado.");
-
-            Estado = EstadoOrdenServicio.EnPruebas;
-        }
-
-        public void ReabrirReparacion()
-        {
-            if (Estado != EstadoOrdenServicio.ListoRetiro)
-                throw new ReglaNegocioException("Solo se puede reabrir la reparacion de una orden lista para retiro.");
-            if (Resultado != ResultadoOrdenServicio.Reparado)
-                throw new ReglaNegocioException("Solo se puede reabrir la reparacion de una orden con resultado reparado.");
-
-            Estado = EstadoOrdenServicio.EnReparacion;
+            Resultado = null;
         }
 
         public void Cancelar(string motivo)

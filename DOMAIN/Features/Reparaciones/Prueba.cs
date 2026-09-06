@@ -13,6 +13,8 @@ namespace DOMAIN.Features.Reparaciones
         public string Resultado { get; private set; }
         public string Observaciones { get; private set; }
         public string MotivoAnulacion { get; private set; }
+        public DateTime? FechaAnulacion { get; private set; }
+        public int? IdUsuarioAnulacion { get; private set; }
 
         private Prueba() { }
 
@@ -41,7 +43,7 @@ namespace DOMAIN.Features.Reparaciones
 
         public static Prueba CargarDesdeDB(int id, int idReparacion, int idUsuarioTecnico,
             DateTime fecha, string descripcion, string resultado, string observaciones,
-            string motivoAnulacion)
+            string motivoAnulacion, DateTime? fechaAnulacion, int? idUsuarioAnulacion)
         {
             return new Prueba
             {
@@ -52,19 +54,25 @@ namespace DOMAIN.Features.Reparaciones
                 Descripcion = descripcion ?? "",
                 Resultado = resultado ?? "",
                 Observaciones = observaciones ?? "",
-                MotivoAnulacion = motivoAnulacion
+                MotivoAnulacion = motivoAnulacion,
+                FechaAnulacion = fechaAnulacion,
+                IdUsuarioAnulacion = idUsuarioAnulacion
             };
         }
 
-        public void Anular(string motivo)
+        public void Anular(string motivo, int idUsuario)
         {
             if (string.IsNullOrWhiteSpace(motivo))
                 throw new ReglaNegocioException("El motivo de la anulacion es obligatorio.");
+            if (idUsuario <= 0)
+                throw new ReglaNegocioException("El usuario de la anulacion es obligatorio.");
             if (Resultado == ResultadoPrueba.Anulada)
                 throw new ReglaNegocioException("La prueba ya se encuentra anulada.");
 
             Resultado = ResultadoPrueba.Anulada;
             MotivoAnulacion = motivo.Trim();
+            FechaAnulacion = DateTime.Now;
+            IdUsuarioAnulacion = idUsuario;
         }
     }
 }
