@@ -1297,3 +1297,138 @@ historial (no se purga por trazabilidad).
 5. Anular un adicional `Aprobado` sin actividad (verificar retorno) y con
    actividad posterior (debe fallar con mensaje).
 6. Verificar que el monto autorizado excluye anulados.
+
+### Correccion: adicional desde Autorizado + fix cancelar 3067 + gating Iniciar + anular/registrar pruebas
+
+1. Adicional desde `AutorizadoReparacion`: solicitar/emitir/aprobar/cancelar/
+   rechazar con retorno al origen (`Autorizado` -> `Autorizado`, resto ->
+   `EnReparacion`); el monto autorizado suma el adicional; orden 3067 NO
+   mutada (solo lectura de verificacion).
+   - Dominio (`OrdenServicio`): `SolicitarAdicional` y
+     `CancelarSolicitudAdicional` aceptan `AutorizadoReparacion` como origen
+     valido ademas de `EnReparacion`/`EnPruebas`; nuevos `ReabrirPruebas`
+     (`ListoRetiro`/`Reparado` -> `EnPruebas`) y `ReabrirReparacion`
+     (`ListoRetiro`/`Reparado` -> `EnReparacion`, retrabajo por prueba
+     fallida).
+   - Service (`OrdenServicioService`): `TryObtenerOrigenSolicitud` incluye
+     `AutorizadoReparacion` al recorrer el historial hacia atras;
+     `AprobarAdicional` calcula `estadoDestino` (origen `Autorizado` ->
+     `AutorizarReparacion()`, resto -> `EnReparacion`) y lo pasa al
+     repository; `RechazarAdicional`/`CancelarSolicitudAdicional` ya
+     restauraban el origen recorrido y ahora lo cubren tambien desde
+     `Autorizado`.
+   - Repository (`PresupuestoRepository.AprobarAdicionalConTransicion`):
+     parametro nuevo `@EstadoDestino` (batch: adicional -> `Aprobado` +
+     orden `EsperandoRespuesta` -> destino + historial con el destino).
+   - UI: `puedeSolicitar` incluye `AutorizadoReparacion` (con Original
+     aprobado y sin adicional pendiente, como antes).
+2. Bug 3067 diagnosticado: NO era el origen por historial (ya tomaba la
+   ultima transicion a `PendientePresupuesto`) sino el bloqueo por adicional
+   `Aprobado`/`Rechazado` viejo; fix = cancelar solo bloquea `Pendiente`.
+   Verificado read-only `PuedeCancelar(3067)=true`.
+   - Service + repository (`CancelarSolicitudAdicional` /
+     `PuedeCancelarSolicitud` + batch SQL `THROW` 50014): el bloqueo pasa de
+     `IN ('Pendiente','Aprobado','Rechazado')` a `= 'Pendiente'`.
+   - Fundamento: aprobar/rechazar saca a la orden de `PendientePresupuesto`,
+     por lo que un `Aprobado`/`Rechazado` pertenece siempre a un ciclo
+     anterior y no debe impedir cancelar la solicitud vigente.
+   - Orden 3067 intacta: solo se ejecuto `PuedeCancelar` de lectura; ningun
+     INSERT/UPDATE/DELETE sobre sus datos.
+3. Iniciar Reparacion deshabilitado salvo `Autorizado` o
+   `EnReparacion`-sin-abierta (el service ya lo exigia; era solo UI).
+   - UI (`FrmOrdenServicioDetalle`): `puedeIniciarReparacion` pasa de
+     `Autorizado || EnReparacion` a `Autorizado || (EnReparacion &&
+     !hayAbierta)`; backend sin cambios (ya rechazaba reparacion abierta
+     duplicada).
+4. `AnularPrueba` (ultima no-anulada, motivo persistido en
+   `motivo_anulacion`, `Entregado` bloquea; aprobada en
+   `ListoRetiro`/`Reparado` -> `EnPruebas`) + registrar pruebas en
+   `ListoRetiro`/`Reparado` (aprueba se queda, falla -> `EnReparacion`).
+   Columna Motivo + `Resultado.Anulada` + seeds.
+   - Dominio: `ResultadoPrueba.Anulada` + `Prueba.MotivoAnulacion` +
+     `Prueba.Anular(motivo)` (motivo obligatorio, ya-anulada rechaza) +
+     `CargarDesdeDB` con motivo; `OrdenServicio.ReabrirPruebas` y
+     `ReabrirReparacion` (ver punto 1).
+   - Service: `AnularPrueba(idPrueba, motivo)` (motivo obligatorio;
+     inexistente/ya-anulada/`Entregado` rechazan; exige ser la ultima no
+     anulada de la orden via `ListarPruebasPorOrden`; si era aprobada en
+     `ListoRetiro`/`Reparado` reabre a `EnPruebas`; bitacora
+     `PRUEBA_ANULADA`); `RegistrarPrueba` acepta `EnPruebas` (flujo
+     existente con transicion) o `ListoRetiro`/`Reparado` (aprobada sin
+     transicion, fallida con retrabajo a `EnReparacion`).
+   - Repository (`ReparacionRepository`): columna `motivo_anulacion`
+     NULL en `CREATE Pruebas` + `ALTER` defensivo; nuevos
+     `RegistrarPruebaSinTransicion` (solo INSERT), `RegistrarPruebaConRetrabajo`
+     (INSERT + `ListoRetiro` -> `EnReparacion` + historial) y `AnularPrueba`
+     (UPDATE a `Anulada` + motivo, con reapertura a `EnPruebas` + historial
+     si corresponde; `THROW` 50020/50021); nuevo `ListarPruebasPorOrden` +
+     `MapearPrueba` centralizado (SELECTs incluyen `motivo_anulacion`).
+   - UI: `BTN_AnularPrueba` (visible solo con permiso `ORDENES_EDITAR`,
+     orden no nueva y ultima no-anulada en la vista actual; habilitado solo
+     si la fila seleccionada es esa ultima y la orden no esta `Entregado`;
+     confirmacion + motivo obligatorio); grilla de pruebas con columna
+     `Motivo` (motivo solo en filas anuladas) y resultado traducido
+     (`Anulada`/`Aprobada`/`Fallida`); `habilitaPrueba` incluye
+     `ListoRetiro`/`Reparado`; precarga de pruebas por reparacion con
+     fallback defensivo.
+   - Seeds ES/EN (`IdiomaRepository`): `OrdenDetalle.AnularPrueba`,
+     `Resultado.Anulada`, `Columna.Motivo`,
+     `Mensaje.ConfirmarAnularPrueba`.
+
+### Decisiones de la correccion (4 fixes)
+
+- Retorno al origen: aprobar/cancelar/rechazar un adicional restauran el
+  estado previo a la solicitud (`Autorizado` -> `Autorizado`,
+  `EnReparacion`/`EnPruebas` -> `EnReparacion`); el rechazo de adicional
+  mantiene la regla previa (cierra la abierta preexistente) y el monto
+  autorizado suma el adicional aprobado.
+- Solo-`Pendiente` bloquea cancelar: los `Aprobado`/`Rechazado` no anulados
+  son historia de ciclos cerrados, no emision vigente; bloquear por ellos
+  dejaba solicitudes vigentes incancelables (caso 3067).
+- Reapertura conserva `Reparado` (observacion, sin cambio): `ReabrirPruebas`
+  y `ReabrirReparacion` cambian solo el estado, no el resultado; la orden
+  reabierta sigue marcada `Reparado` hasta la proxima prueba decisiva.
+  Se documenta como LOW residual, no como defecto a corregir en este pase.
+- Sin `Borrador` nuevo para pruebas: a diferencia de presupuestos (borrador
+  como via alternativa), las pruebas se anulan directo con motivo
+  obligatorio; no hay flujo publicar/eliminar para pruebas.
+
+### Pruebas de la correccion (harness temporal fuera del repo)
+
+- Servicios 86/86 PASS + visual 8/8 PASS + regresion PASS (CP1+CP2+CP3
+  previos intactos).
+- Datos P4 de prueba limpiados (0 restos); orden 3067 intacta (solo lectura
+  `PuedeCancelar=true`); bitacora conservada (no se purga por trazabilidad).
+- Delegaciones: backend, UI, revision (0 blockers, 5 LOW documentados abajo),
+  testing.
+
+### Limitaciones de la correccion
+
+- Atomicidad indirecta (heredada CP2/CP3): orden + historial + prueba van en
+  el mismo batch del repository, sin UoW formal; un fallo entre batches
+  (p. ej. bitacora) no revierte la transicion.
+- Residuales LOW de revision (0 blockers, documentados sin corregir en este
+  pase): `Reparado` residual al reabrir (ver Decisiones); `Autorizado` no
+  chequea abierta antes de solicitar (el service la exige al iniciar, no al
+  solicitar); `idUsuario` sin usar en `RegistrarPruebaSinTransicion`;
+  `catch` silencioso en la precarga de pruebas por reparacion (fallback a
+  lista vacia); `motivo_anulacion` > 500 sin validacion previa (corte a nivel
+  de columna).
+- MDI y `RecalcularDV` por menu a prueba humana.
+- ES/EN por service + observer en pantallas tocadas, sin recorrido
+  exhaustivo control por control.
+
+### Checklist humano de la correccion
+
+1. Adicional desde `Autorizado`: solicitar -> emitir -> aprobar (verificar
+   retorno a `Autorizado` y monto sumado) y luego rechazar/cancelar otro
+   (verificar retorno al origen en cada caso).
+2. Cancelar en 3067: verificar `PuedeCancelar=true` (boton habilitado) y
+   cancelar una solicitud vigente (verificar restauracion del origen).
+3. Iniciar deshabilitado: en `EnReparacion` con reparacion abierta verificar
+   boton Iniciar deshabilitado; cerrarla y verificar que se habilita.
+4. Anular prueba: anular la ultima (verificar motivo obligatorio, columna
+   Motivo y reapertura a `EnPruebas` si era aprobada en `ListoRetiro`);
+   intentar anular una anterior o en `Entregado` (debe fallar con mensaje).
+5. Registrar en `ListoRetiro`/`Reparado`: aprobada se queda, fallida vuelve
+   a `EnReparacion` (verificar historial de retrabajo).
