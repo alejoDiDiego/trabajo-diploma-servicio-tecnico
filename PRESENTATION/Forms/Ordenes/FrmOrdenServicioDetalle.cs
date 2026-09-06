@@ -123,6 +123,7 @@ namespace UI.Forms.Ordenes
         private bool _puedeCancelarSolicitud = false;
         private int? _idSeleccionPreferida = null;
         private bool _modoNuevoAdicional = false;
+        private bool _modoNuevoOriginal = false;
         private bool _hayAdicionalPendiente = false;
         private Entrega _entrega = null;
         private List<Cliente> _clientes = new List<Cliente>();
@@ -500,6 +501,7 @@ namespace UI.Forms.Ordenes
             _puedeCancelarSolicitud = false;
             _idSeleccionPreferida = null;
             _modoNuevoAdicional = false;
+            _modoNuevoOriginal = false;
             _hayAdicionalPendiente = false;
             _entrega = null;
 
@@ -673,6 +675,13 @@ namespace UI.Forms.Ordenes
                 if (_original != null && _original.Estado == EstadoPresupuesto.Aprobado)
                     items.Add(new ItemSelectorPresupuesto { Id = -1, Nombre = T("OrdenDetalle.NuevoAdicional") });
 
+                // Nuevo Original tras anulacion: sin Original activo, en PendientePresupuesto
+                // y sin pausa por solicitud de adicional (pausada => solo nuevo adicional).
+                if (_original == null && originales.Count > 0 && _orden != null
+                    && _orden.Estado == EstadoOrdenServicio.PendientePresupuesto
+                    && !_puedeCancelarSolicitud)
+                    items.Add(new ItemSelectorPresupuesto { Id = -2, Nombre = T("OrdenDetalle.NuevoOriginal") });
+
                 CBO_SelectorPresupuesto.DataSource = null;
                 CBO_SelectorPresupuesto.DisplayMember = "Nombre";
                 CBO_SelectorPresupuesto.ValueMember = "Id";
@@ -756,6 +765,21 @@ namespace UI.Forms.Ordenes
                 haySeleccion = true;
             }
 
+            if (!haySeleccion && _original == null && items != null
+                && _orden != null && _orden.Estado == EstadoOrdenServicio.PendientePresupuesto
+                && !_puedeCancelarSolicitud)
+            {
+                foreach (ItemSelectorPresupuesto item in items)
+                {
+                    if (item.Id == -2 || item.Id == 0)
+                    {
+                        idSeleccion = item.Id;
+                        haySeleccion = true;
+                        break;
+                    }
+                }
+            }
+
             if (!haySeleccion && items != null)
             {
                 foreach (ItemSelectorPresupuesto item in items)
@@ -785,18 +809,20 @@ namespace UI.Forms.Ordenes
 
             if (!haySeleccion && items != null && items.Count > 0)
             {
-                bool existeCero = false;
+                int idNuevo = int.MinValue;
+                bool hayNuevo = false;
 
                 foreach (ItemSelectorPresupuesto item in items)
                 {
-                    if (item.Id == 0)
+                    if (item.Id == 0 || item.Id == -2)
                     {
-                        existeCero = true;
+                        idNuevo = item.Id;
+                        hayNuevo = true;
                         break;
                     }
                 }
 
-                idSeleccion = existeCero ? 0 : items[0].Id;
+                idSeleccion = hayNuevo ? idNuevo : items[0].Id;
                 haySeleccion = true;
             }
 
@@ -823,10 +849,20 @@ namespace UI.Forms.Ordenes
             {
                 _presupuesto = null;
                 _modoNuevoAdicional = true;
+                _modoNuevoOriginal = false;
+                return;
+            }
+
+            if (idSeleccion == -2)
+            {
+                _presupuesto = null;
+                _modoNuevoAdicional = false;
+                _modoNuevoOriginal = true;
                 return;
             }
 
             _modoNuevoAdicional = false;
+            _modoNuevoOriginal = false;
 
             if (idSeleccion <= 0)
             {
@@ -897,7 +933,7 @@ namespace UI.Forms.Ordenes
                 {
                     DGV_Detalle.DataSource = new BindingList<DetallePresupuesto>(_itemsNuevo);
 
-                    if (_modoNuevoAdicional)
+                    if (_modoNuevoAdicional || _modoNuevoOriginal)
                     {
                         NUM_PDescuento.Value = 0;
                         NUM_PGarantia.Value = 0;
@@ -2493,7 +2529,8 @@ namespace UI.Forms.Ordenes
 
             bool editaItems = editable && _orden != null
                 && _orden.Estado == EstadoOrdenServicio.PendientePresupuesto
-                && _presupuesto == null;
+                && _presupuesto == null
+                && (_modoNuevoAdicional || (_original == null && !_puedeCancelarSolicitud));
 
             bool esBorrador = !_esNuevo && _presupuesto != null
                 && _presupuesto.Estado == EstadoPresupuesto.Borrador;

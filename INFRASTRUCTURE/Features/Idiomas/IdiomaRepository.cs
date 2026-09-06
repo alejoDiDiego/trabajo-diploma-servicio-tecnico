@@ -1057,6 +1057,8 @@ namespace REPOSITORY.Features.Idiomas
             AgregarSeed("Ingles", "OrdenDetalle.MontoAutorizado", "Authorized total: ${0}");
             AgregarSeed("Espanol", "OrdenDetalle.NuevoAdicional", "(nuevo adicional)");
             AgregarSeed("Ingles", "OrdenDetalle.NuevoAdicional", "(new add-on)");
+            AgregarSeed("Espanol", "OrdenDetalle.NuevoOriginal", "(nuevo original)");
+            AgregarSeed("Ingles", "OrdenDetalle.NuevoOriginal", "(new original)");
             AgregarSeed("Espanol", "OrdenDetalle.PresupuestoNuevo", "(nuevo)");
             AgregarSeed("Ingles", "OrdenDetalle.PresupuestoNuevo", "(new)");
             AgregarSeed("Espanol", "OrdenDetalle.SolicitarAdicional", "Solicitar adicional");

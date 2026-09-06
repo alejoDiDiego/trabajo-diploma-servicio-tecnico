@@ -1237,6 +1237,15 @@ historial (no se purga por trazabilidad).
   `SqlParameter` en 3 `ExecuteTransaction` (error "already contained" de
   `SqlHelper.AddRange`); fix de 4 lineas (fabrica `P1()` con un array nuevo
   por consulta); re-test 35/35.
+- Bug #3063 (reporte de usuario, orden #3063): tras anular el Original,
+  todos los botones quedaban deshabilitados y era imposible crear un Original
+  nuevo. Causa: `editaItems` exigia `_presupuesto == null` sin modo
+  nuevo-Original. Fix solo UI + 2 seeds: placeholder `(nuevo original)`
+  (Id -2, `OrdenDetalle.NuevoOriginal` ES/EN) ofrecido solo si no hay
+  Original activo + orden en `PendientePresupuesto` + sin pausa por solicitud
+  (`PuedeCancelarSolicitud`); backend intacto (ya lo soportaba) y gating de
+  `SolicitarAdicional` ya correcto. Testing 40/40 (orden #3063 preservada de
+  solo lectura, end-to-end con clics reales, regresion ES/EN, limpieza FIX3).
 
 ### Decisiones de la correccion
 
