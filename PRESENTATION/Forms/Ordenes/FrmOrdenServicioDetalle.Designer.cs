@@ -128,6 +128,7 @@ namespace UI.Forms.Ordenes
             this.TXT_EObs = new System.Windows.Forms.TextBox();
             this.LBL_FechaEntrega = new System.Windows.Forms.Label();
             this.BTN_Entregar = new System.Windows.Forms.Button();
+            this.BTN_CancelarEntrega = new System.Windows.Forms.Button();
             this.BTN_Cerrar = new System.Windows.Forms.Button();
             this.PNL_Header.SuspendLayout();
             this.TAB_Detalle.SuspendLayout();
@@ -1548,6 +1549,7 @@ namespace UI.Forms.Ordenes
             this.TAB_Entrega.Controls.Add(this.TXT_EObs);
             this.TAB_Entrega.Controls.Add(this.LBL_FechaEntrega);
             this.TAB_Entrega.Controls.Add(this.BTN_Entregar);
+            this.TAB_Entrega.Controls.Add(this.BTN_CancelarEntrega);
             this.TAB_Entrega.Location = new System.Drawing.Point(4, 22);
             this.TAB_Entrega.Name = "TAB_Entrega";
             this.TAB_Entrega.Size = new System.Drawing.Size(888, 454);
@@ -1636,6 +1638,22 @@ namespace UI.Forms.Ordenes
             this.BTN_Entregar.Text = "Entregar";
             this.BTN_Entregar.UseVisualStyleBackColor = false;
             this.BTN_Entregar.Click += new System.EventHandler(this.BTN_Entregar_Click);
+            //
+            // BTN_CancelarEntrega
+            //
+            this.BTN_CancelarEntrega.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(57)))), ((int)(((byte)(43)))));
+            this.BTN_CancelarEntrega.FlatAppearance.BorderSize = 0;
+            this.BTN_CancelarEntrega.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.BTN_CancelarEntrega.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.BTN_CancelarEntrega.ForeColor = System.Drawing.Color.White;
+            this.BTN_CancelarEntrega.Location = new System.Drawing.Point(300, 192);
+            this.BTN_CancelarEntrega.Name = "BTN_CancelarEntrega";
+            this.BTN_CancelarEntrega.Size = new System.Drawing.Size(160, 30);
+            this.BTN_CancelarEntrega.TabIndex = 8;
+            this.BTN_CancelarEntrega.Tag = "OrdenDetalle.CancelarEntrega";
+            this.BTN_CancelarEntrega.Text = "Cancelar entrega";
+            this.BTN_CancelarEntrega.UseVisualStyleBackColor = false;
+            this.BTN_CancelarEntrega.Click += new System.EventHandler(this.BTN_CancelarEntrega_Click);
             //
             // BTN_Cerrar
             //
@@ -1818,6 +1836,7 @@ namespace UI.Forms.Ordenes
         private System.Windows.Forms.TextBox TXT_EObs;
         private System.Windows.Forms.Label LBL_FechaEntrega;
         private System.Windows.Forms.Button BTN_Entregar;
+        private System.Windows.Forms.Button BTN_CancelarEntrega;
         private System.Windows.Forms.Button BTN_Cerrar;
     }
 }

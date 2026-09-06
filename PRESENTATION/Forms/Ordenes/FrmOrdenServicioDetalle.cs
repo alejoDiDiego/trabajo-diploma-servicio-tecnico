@@ -261,6 +261,7 @@ namespace UI.Forms.Ordenes
             LBL_EDocumento.Text = idioma.BuscarTraduccion(LBL_EDocumento.Tag.ToString());
             LBL_EObs.Text = idioma.BuscarTraduccion(LBL_EObs.Tag.ToString());
             BTN_Entregar.Text = idioma.BuscarTraduccion(BTN_Entregar.Tag.ToString());
+            BTN_CancelarEntrega.Text = idioma.BuscarTraduccion(BTN_CancelarEntrega.Tag.ToString());
             BTN_Cerrar.Text = idioma.BuscarTraduccion(BTN_Cerrar.Tag.ToString());
 
             BTN_IniciarReparacion.Text = idioma.BuscarTraduccion(BTN_IniciarReparacion.Tag.ToString());
@@ -1622,6 +1623,9 @@ namespace UI.Forms.Ordenes
             }
             else
             {
+                TXT_EEntregadoA.Text = "";
+                TXT_EDocumento.Text = "";
+                TXT_EObs.Text = "";
                 LBL_FechaEntrega.Text = T("OrdenDetalle.FechaEntrega") + ": " + T("Resultado.SinResultado");
             }
         }
@@ -2546,6 +2550,51 @@ namespace UI.Forms.Ordenes
             }
         }
 
+        private void BTN_CancelarEntrega_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.OrdenesEntregar))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
+            if (_orden == null || _orden.Estado != EstadoOrdenServicio.Entregado)
+                return;
+
+            DialogResult confirmacion = MessageBox.Show(
+                T("Mensaje.ConfirmarCancelarEntrega"),
+                T("Titulo.ConfirmarCancelarEntrega"),
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning);
+
+            if (confirmacion == DialogResult.No)
+                return;
+
+            string motivo = PedirTexto(
+                T("OrdenDetalle.CancelarEntrega"),
+                T("OrdenDetalle.Motivo"));
+
+            if (motivo == null)
+                return;
+
+            if (string.IsNullOrWhiteSpace(motivo))
+            {
+                MostrarAdvertencia("Mensaje.OrdenCamposObligatorios");
+                return;
+            }
+
+            try
+            {
+                _service.CancelarEntrega(_idOrden, motivo.Trim());
+                CargarOrden();
+                MostrarExito("Mensaje.OperacionExitosa");
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+        }
+
         private void DGV_Reparaciones_SelectionChanged(object sender, EventArgs e)
         {
             if (_esNuevo || _reparaciones == null)
@@ -2885,6 +2934,13 @@ namespace UI.Forms.Ordenes
             TXT_EObs.Enabled = puedeEntregarAhora;
             BTN_Entregar.Visible = !_esNuevo && puedeEntregar;
             BTN_Entregar.Enabled = puedeEntregarAhora;
+
+            bool puedeCancelarEntrega = !_esNuevo && puedeEntregar && _orden != null
+                && _orden.Estado == EstadoOrdenServicio.Entregado
+                && _entrega != null;
+
+            BTN_CancelarEntrega.Visible = puedeCancelarEntrega;
+            BTN_CancelarEntrega.Enabled = puedeCancelarEntrega;
 
             Reparacion reparacionSeleccionada = ReparacionSeleccionada();
             bool hayAbiertaSeleccionada = reparacionSeleccionada != null && !reparacionSeleccionada.FechaFin.HasValue;

@@ -801,6 +801,8 @@ namespace REPOSITORY.Features.Idiomas
             AgregarSeed("Ingles", "OrdenDetalle.FechaEntrega", "Delivery date");
             AgregarSeed("Espanol", "OrdenDetalle.Entregar", "Entregar");
             AgregarSeed("Ingles", "OrdenDetalle.Entregar", "Deliver");
+            AgregarSeed("Espanol", "OrdenDetalle.CancelarEntrega", "Cancelar entrega");
+            AgregarSeed("Ingles", "OrdenDetalle.CancelarEntrega", "Cancel delivery");
             AgregarSeed("Espanol", "OrdenDetalle.Cerrar", "Cerrar");
             AgregarSeed("Ingles", "OrdenDetalle.Cerrar", "Close");
 
@@ -882,6 +884,8 @@ namespace REPOSITORY.Features.Idiomas
             AgregarSeed("Ingles", "Mensaje.ConfirmarCancelar", "Are you sure you want to cancel the selected order?");
             AgregarSeed("Espanol", "Mensaje.ConfirmarEntregar", "Confirma que desea entregar la orden seleccionada?");
             AgregarSeed("Ingles", "Mensaje.ConfirmarEntregar", "Are you sure you want to deliver the selected order?");
+            AgregarSeed("Espanol", "Mensaje.ConfirmarCancelarEntrega", "Confirma que desea cancelar la entrega? Se eliminara la entrega registrada y la orden volvera a su estado anterior (En pruebas o Lista para retiro).");
+            AgregarSeed("Ingles", "Mensaje.ConfirmarCancelarEntrega", "Are you sure you want to cancel the delivery? The recorded delivery will be deleted and the order will return to its previous state (In testing or Ready for pickup).");
             AgregarSeed("Espanol", "Mensaje.OrdenNoCancelable", "La orden no se puede cancelar en su estado actual.");
             AgregarSeed("Ingles", "Mensaje.OrdenNoCancelable", "The order cannot be cancelled in its current state.");
             AgregarSeed("Espanol", "Mensaje.OrdenNoEntregable", "Solo se puede entregar una orden lista para retiro.");
@@ -895,6 +899,8 @@ namespace REPOSITORY.Features.Idiomas
             AgregarSeed("Ingles", "Titulo.ConfirmarCancelacion", "Confirm cancellation");
             AgregarSeed("Espanol", "Titulo.ConfirmarEntrega", "Confirmar entrega");
             AgregarSeed("Ingles", "Titulo.ConfirmarEntrega", "Confirm delivery");
+            AgregarSeed("Espanol", "Titulo.ConfirmarCancelarEntrega", "Confirmar cancelacion de entrega");
+            AgregarSeed("Ingles", "Titulo.ConfirmarCancelarEntrega", "Confirm delivery cancellation");
 
             AgregarSeed("Espanol", "Menu.Inventario", "Inventario");
             AgregarSeed("Ingles", "Menu.Inventario", "Inventory");
