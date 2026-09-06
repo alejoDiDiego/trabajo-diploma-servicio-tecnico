@@ -1587,3 +1587,42 @@ historial (no se purga por trazabilidad).
    resultado vacio, seguir probando y re-entregar.
 2. Cancelar en `Entregado` no reparable -> verificar `ListoRetiro` con
    resultado intacto y re-entregar.
+
+### Reabrir pruebas
+
+- Contenido: `ReabrirPruebas(idOrden, motivo)` en service + dominio +
+  repository + UI. Solo sobre orden en `ListoRetiro`/`Reparado` con motivo
+  obligatorio; otros casos `throw`. Transicion `ListoRetiro`/`Reparado` ->
+  `EnPruebas` con `Resultado = NULL` + `INSERT` en historial, con bitacora
+  `PRUEBAS_REABIERTAS` en tipo `ORDENES`. Batch atomico
+  `ReabrirPruebasConTransicion`: `UPDATE` de orden + `INSERT` en historial.
+  UI: `BTN_ReabrirPruebas` ("Volver a pruebas") en el tab Entrega, visible
+  y habilitado solo con permiso `ORDENES_EDITAR` y orden
+  `ListoRetiro`/`Reparado`; confirmacion + motivo obligatorio; coexiste con
+  `Entregar`/`CancelarEntrega` sin alterarlos. Sin cambios de esquema.
+  Seeds ES/EN: `OrdenDetalle.ReabrirPruebas`,
+  `Mensaje/Titulo.ConfirmarReabrirPruebas`.
+- Decisiones: sin `ListoRetiro` intermedio, porque la orden ya esta alli y
+  el objetivo es volver a probar; el destino directo `EnPruebas` conserva
+  la capacidad de seguir probando. `NULL` explicito en `Resultado` porque
+  `CambiarEstadoConHistorial` usa `COALESCE` y no puede escribir `NULL`;
+  por eso el metodo propio `ReabrirPruebasConTransicion`. Gating con
+  `ORDENES_EDITAR` (correccion tecnica, no entrega). Convive con
+  `Entregar`/`CancelarEntrega`: cada boton mantiene su gating y la orden
+  reabierta admite re-finalizar y entregar normal.
+- Pruebas: servicios 21/21 + regresion 14/14 + visual 10/10, 0 bugs. Datos
+  REAB de prueba limpiados; bitacora conservada (no se purga por
+  trazabilidad). Delegaciones: backend, UI, revision (0 blockers),
+  testing.
+- Limitaciones: atomicidad indirecta (heredada CP2/CP3): orden + historial
+  van en el mismo batch del repository, sin UoW formal; un fallo entre
+  batches (p. ej. bitacora) no revierte la transicion. MDI y
+  `RecalcularDV` por menu a prueba humana. ES/EN por service + observer
+  en pantallas tocadas, sin recorrido exhaustivo control por control.
+
+### Checklist humano de reabrir pruebas
+
+1. Reabrir en `ListoRetiro`/`Reparado` -> verificar `EnPruebas` con
+   resultado vacio, seguir probando y re-finalizar.
+2. Re-finalizar y entregar normal (verificar historial de reapertura y
+   entrega posterior).
