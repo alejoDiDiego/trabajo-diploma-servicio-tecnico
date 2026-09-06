@@ -118,6 +118,7 @@ namespace UI.Forms.Ordenes
             this.TXT_PruebaObs = new System.Windows.Forms.TextBox();
             this.BTN_RegistrarPrueba = new System.Windows.Forms.Button();
             this.BTN_AnularPrueba = new System.Windows.Forms.Button();
+            this.BTN_FinalizarPruebas = new System.Windows.Forms.Button();
             this.TAB_Entrega = new System.Windows.Forms.TabPage();
             this.LBL_EEntregadoA = new System.Windows.Forms.Label();
             this.TXT_EEntregadoA = new System.Windows.Forms.TextBox();
@@ -1376,6 +1377,7 @@ namespace UI.Forms.Ordenes
             this.TAB_Pruebas.Controls.Add(this.TXT_PruebaObs);
             this.TAB_Pruebas.Controls.Add(this.BTN_RegistrarPrueba);
             this.TAB_Pruebas.Controls.Add(this.BTN_AnularPrueba);
+            this.TAB_Pruebas.Controls.Add(this.BTN_FinalizarPruebas);
             this.TAB_Pruebas.Location = new System.Drawing.Point(4, 22);
             this.TAB_Pruebas.Name = "TAB_Pruebas";
             this.TAB_Pruebas.Size = new System.Drawing.Size(888, 454);
@@ -1519,6 +1521,22 @@ namespace UI.Forms.Ordenes
             this.BTN_AnularPrueba.Text = "Anular prueba";
             this.BTN_AnularPrueba.UseVisualStyleBackColor = false;
             this.BTN_AnularPrueba.Click += new System.EventHandler(this.BTN_AnularPrueba_Click);
+            //
+            // BTN_FinalizarPruebas
+            //
+            this.BTN_FinalizarPruebas.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(128)))), ((int)(((byte)(185)))));
+            this.BTN_FinalizarPruebas.FlatAppearance.BorderSize = 0;
+            this.BTN_FinalizarPruebas.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.BTN_FinalizarPruebas.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.BTN_FinalizarPruebas.ForeColor = System.Drawing.Color.White;
+            this.BTN_FinalizarPruebas.Location = new System.Drawing.Point(490, 382);
+            this.BTN_FinalizarPruebas.Name = "BTN_FinalizarPruebas";
+            this.BTN_FinalizarPruebas.Size = new System.Drawing.Size(160, 30);
+            this.BTN_FinalizarPruebas.TabIndex = 11;
+            this.BTN_FinalizarPruebas.Tag = "OrdenDetalle.FinalizarPruebas";
+            this.BTN_FinalizarPruebas.Text = "Finalizar pruebas";
+            this.BTN_FinalizarPruebas.UseVisualStyleBackColor = false;
+            this.BTN_FinalizarPruebas.Click += new System.EventHandler(this.BTN_FinalizarPruebas_Click);
             //
             // TAB_Entrega
             //
@@ -1790,6 +1808,7 @@ namespace UI.Forms.Ordenes
         private System.Windows.Forms.TextBox TXT_PruebaObs;
         private System.Windows.Forms.Button BTN_RegistrarPrueba;
         private System.Windows.Forms.Button BTN_AnularPrueba;
+        private System.Windows.Forms.Button BTN_FinalizarPruebas;
         private System.Windows.Forms.TabPage TAB_Entrega;
         private System.Windows.Forms.Label LBL_EEntregadoA;
         private System.Windows.Forms.TextBox TXT_EEntregadoA;

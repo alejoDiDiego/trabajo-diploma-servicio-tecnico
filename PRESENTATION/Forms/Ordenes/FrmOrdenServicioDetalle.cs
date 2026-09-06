@@ -105,6 +105,8 @@ namespace UI.Forms.Ordenes
             public string Descripcion { get; set; }
             public string Resultado { get; set; }
             public string Motivo { get; set; }
+            public string FechaAnulacion { get; set; }
+            public string UsuarioAnulacion { get; set; }
             public string Usuario { get; set; }
         }
 
@@ -277,6 +279,7 @@ namespace UI.Forms.Ordenes
             LBL_PDObs.Text = idioma.BuscarTraduccion(LBL_PDObs.Tag.ToString());
             BTN_RegistrarPrueba.Text = idioma.BuscarTraduccion(BTN_RegistrarPrueba.Tag.ToString());
             BTN_AnularPrueba.Text = idioma.BuscarTraduccion(BTN_AnularPrueba.Tag.ToString());
+            BTN_FinalizarPruebas.Text = idioma.BuscarTraduccion(BTN_FinalizarPruebas.Tag.ToString());
             BTN_Cerrar.Text = idioma.BuscarTraduccion(BTN_Cerrar.Tag.ToString());
         }
 
@@ -1212,7 +1215,6 @@ namespace UI.Forms.Ordenes
                 }
 
                 List<ItemIntervencion> items = new List<ItemIntervencion>();
-                int idUltima = 0;
 
                 if (_reparaciones != null)
                 {
@@ -1223,9 +1225,10 @@ namespace UI.Forms.Ordenes
                             Id = r.Id,
                             Nombre = "N° " + r.NumeroIntervencion + " (" + r.FechaInicio.ToString("g") + ")"
                         });
-                        idUltima = r.Id;
                     }
                 }
+
+                int idUltima = ObtenerIdUltimaIntervencion();
 
                 CBO_PruebaReparacion.DataSource = null;
                 CBO_PruebaReparacion.DisplayMember = "Nombre";
@@ -1297,6 +1300,10 @@ namespace UI.Forms.Ordenes
                         Descripcion = p.Descripcion,
                         Resultado = TraducirResultadoPrueba(p.Resultado),
                         Motivo = p.Resultado == ResultadoPrueba.Anulada ? (p.MotivoAnulacion ?? "") : "",
+                        FechaAnulacion = p.Resultado == ResultadoPrueba.Anulada && p.FechaAnulacion.HasValue
+                            ? p.FechaAnulacion.Value.ToString("g") : "",
+                        UsuarioAnulacion = p.Resultado == ResultadoPrueba.Anulada && p.IdUsuarioAnulacion.HasValue
+                            ? ResolverTecnico(p.IdUsuarioAnulacion) : "",
                         Usuario = ResolverTecnico(p.IdUsuarioTecnico)
                     });
                 }
@@ -1367,22 +1374,41 @@ namespace UI.Forms.Ordenes
             return null;
         }
 
+        private int ObtenerIdUltimaIntervencion()
+        {
+            if (_reparaciones == null || _reparaciones.Count == 0)
+                return 0;
+
+            Reparacion ultima = _reparaciones[0];
+
+            foreach (Reparacion r in _reparaciones)
+            {
+                if (r.NumeroIntervencion > ultima.NumeroIntervencion)
+                    ultima = r;
+            }
+
+            return ultima.Id;
+        }
+
         private void ActualizarBotonAnularPrueba()
         {
             if (BTN_AnularPrueba == null)
                 return;
 
             bool puedeEditar = TienePermiso(CodigosPermiso.OrdenesEditar);
-            Prueba ultima = _esNuevo ? null : ObtenerUltimaPruebaNoAnulada();
+            bool enPruebas = !_esNuevo && _orden != null && _orden.Estado == EstadoOrdenServicio.EnPruebas;
 
             int idReparacionActual = 0;
 
             if (CBO_PruebaReparacion.SelectedValue is int)
                 idReparacionActual = (int)CBO_PruebaReparacion.SelectedValue;
 
-            bool ultimaEnVista = ultima != null && ultima.IdReparacion == idReparacionActual;
+            int idUltimaIntervencion = ObtenerIdUltimaIntervencion();
 
-            BTN_AnularPrueba.Visible = !_esNuevo && puedeEditar && ultimaEnVista;
+            bool vistaActual = enPruebas && idReparacionActual > 0
+                && idReparacionActual == idUltimaIntervencion;
+
+            BTN_AnularPrueba.Visible = !_esNuevo && puedeEditar && vistaActual;
 
             if (!BTN_AnularPrueba.Visible)
             {
@@ -1394,7 +1420,10 @@ namespace UI.Forms.Ordenes
             bool ordenBloqueada = _orden != null && _orden.Estado == EstadoOrdenServicio.Entregado;
 
             BTN_AnularPrueba.Enabled = puedeEditar && !ordenBloqueada
-                && seleccionada != null && seleccionada.Id == ultima.Id;
+                && seleccionada != null
+                && seleccionada.Resultado != ResultadoPrueba.Anulada
+                && seleccionada.IdReparacion == idUltimaIntervencion
+                && seleccionada.IdReparacion == idReparacionActual;
         }
 
         private void DGV_Pruebas_SelectionChanged(object sender, EventArgs e)
@@ -1413,17 +1442,24 @@ namespace UI.Forms.Ordenes
                 return;
             }
 
-            Prueba ultima = ObtenerUltimaPruebaNoAnulada();
+            Prueba seleccionada = PruebaSeleccionada();
 
-            if (ultima == null)
+            if (seleccionada == null)
             {
                 MostrarAdvertencia("Mensaje.SeleccioneRegistro");
                 return;
             }
 
-            Prueba seleccionada = PruebaSeleccionada();
+            if (_orden == null || _orden.Estado != EstadoOrdenServicio.EnPruebas)
+                return;
 
-            if (seleccionada == null || seleccionada.Id != ultima.Id)
+            if (seleccionada.Resultado == ResultadoPrueba.Anulada)
+            {
+                MostrarAdvertencia("Mensaje.SeleccioneRegistro");
+                return;
+            }
+
+            if (seleccionada.IdReparacion != ObtenerIdUltimaIntervencion())
             {
                 MostrarAdvertencia("Mensaje.SeleccioneRegistro");
                 return;
@@ -1453,7 +1489,7 @@ namespace UI.Forms.Ordenes
 
             try
             {
-                _service.AnularPrueba(ultima.Id, motivo.Trim());
+                _service.AnularPrueba(seleccionada.Id, motivo.Trim());
                 CargarOrden();
                 MostrarExito("Mensaje.OperacionExitosa");
             }
@@ -1461,6 +1497,54 @@ namespace UI.Forms.Ordenes
             {
                 MostrarError(ex);
             }
+        }
+
+        private void BTN_FinalizarPruebas_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.OrdenesEditar))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
+            if (_orden == null || _orden.Estado != EstadoOrdenServicio.EnPruebas)
+                return;
+
+            DialogResult confirmacion = MessageBox.Show(
+                T("Mensaje.ConfirmarFinalizarPruebas"),
+                T("Titulo.ConfirmarFinalizarPruebas"),
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning);
+
+            if (confirmacion == DialogResult.No)
+                return;
+
+            try
+            {
+                _service.FinalizarPruebas(_idOrden);
+                CargarOrden();
+                MostrarDestinoFinalizarPruebas();
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+        }
+
+        private void MostrarDestinoFinalizarPruebas()
+        {
+            string texto;
+
+            if (_orden != null && _orden.Estado == EstadoOrdenServicio.ListoRetiro)
+                texto = T("Mensaje.PruebasFinalizadasListo").Replace("{0}", TraducirResultado(_orden.Resultado));
+            else
+                texto = T("Mensaje.PruebasDevueltasReparacion");
+
+            MessageBox.Show(
+                texto,
+                T("Titulo.Exito"),
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
         }
 
         private void ConfigurarColumnasReparaciones()
@@ -1505,6 +1589,8 @@ namespace UI.Forms.Ordenes
             ConfigurarColumnaGrid(DGV_Pruebas, "Descripcion", "Columna.Descripcion");
             ConfigurarColumnaGrid(DGV_Pruebas, "Resultado", "Columna.Resultado");
             ConfigurarColumnaGrid(DGV_Pruebas, "Motivo", "Columna.Motivo");
+            ConfigurarColumnaGrid(DGV_Pruebas, "FechaAnulacion", "Columna.FechaAnulacion");
+            ConfigurarColumnaGrid(DGV_Pruebas, "UsuarioAnulacion", "Columna.UsuarioAnulacion");
             ConfigurarColumnaGrid(DGV_Pruebas, "Usuario", "Columna.Usuario");
 
             if (DGV_Pruebas.Columns.Contains("Id"))
@@ -2662,6 +2748,15 @@ namespace UI.Forms.Ordenes
                 return;
             }
 
+            if (_orden == null || _orden.Estado != EstadoOrdenServicio.EnPruebas)
+                return;
+
+            if (idReparacion != ObtenerIdUltimaIntervencion())
+            {
+                MostrarAdvertencia("Mensaje.SeleccioneRegistro");
+                return;
+            }
+
             try
             {
                 _service.RegistrarPrueba(idReparacion, TXT_PruebaDesc.Text.Trim(),
@@ -2802,9 +2897,9 @@ namespace UI.Forms.Ordenes
                 && _orden.Estado == EstadoOrdenServicio.EnReparacion
                 && hayAbiertaSeleccionada;
             bool habilitaPrueba = editable && _orden != null
-                && (_orden.Estado == EstadoOrdenServicio.EnPruebas
-                    || (_orden.Estado == EstadoOrdenServicio.ListoRetiro
-                        && _orden.Resultado == ResultadoOrdenServicio.Reparado));
+                && _orden.Estado == EstadoOrdenServicio.EnPruebas;
+            bool puedeFinalizarPruebas = editable && _orden != null
+                && _orden.Estado == EstadoOrdenServicio.EnPruebas;
 
             BTN_IniciarReparacion.Visible = !_esNuevo && puedeEditar;
             BTN_IniciarReparacion.Enabled = puedeIniciarReparacion;
@@ -2825,6 +2920,8 @@ namespace UI.Forms.Ordenes
             TXT_PruebaObs.Enabled = habilitaPrueba;
             BTN_RegistrarPrueba.Visible = !_esNuevo && puedeEditar;
             BTN_RegistrarPrueba.Enabled = habilitaPrueba;
+            BTN_FinalizarPruebas.Visible = !_esNuevo && puedeEditar;
+            BTN_FinalizarPruebas.Enabled = puedeFinalizarPruebas;
             ActualizarBotonAnularPrueba();
         }
 
