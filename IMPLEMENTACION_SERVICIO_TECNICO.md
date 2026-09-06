@@ -1432,3 +1432,119 @@ historial (no se purga por trazabilidad).
    intentar anular una anterior o en `Entregado` (debe fallar con mensaje).
 5. Registrar en `ListoRetiro`/`Reparado`: aprobada se queda, fallida vuelve
    a `EnReparacion` (verificar historial de retrabajo).
+
+### Cambio: pruebas por lote con finalizacion explicita
+
+1. `RegistrarPrueba` solo persiste en `EnPruebas`: valida orden en
+   `EnPruebas`, sin reparacion abierta y ultima intervencion finalizada;
+   crea la prueba (`Aprobada` o `RequiereRevision`) sobre la ultima
+   intervencion SIN mover el estado de la orden. Bitacora
+   `PRUEBA_REGISTRADA` por cada registro.
+   - Service (`OrdenServicioService.RegistrarPrueba`): exige
+     `Estado == EnPruebas`; resuelve la ultima intervencion con
+     `ObtenerUltimaIntervencion`; INSERT via
+     `ReparacionRepository.RegistrarPrueba` (sin transicion de orden).
+   - Repository (`ReparacionRepository.RegistrarPrueba`): solo INSERT en
+     `Pruebas` + SELECT de retorno; sin cambio de estado ni historial.
+2. `FinalizarPruebas` explicito decide por TODAS las no-anuladas de la
+   ultima intervencion: exige orden en `EnPruebas`, sin reparacion abierta
+   y ultima intervencion finalizada; filtra `Resultado != Anulada`; sin
+   validas -> `throw`; todas `Aprobada` -> `ListoRetiro`/`Reparado`
+   (`FinalizarPruebasAprobadas`); alguna `RequiereRevision` ->
+   `EnReparacion` + `Resultado = NULL`
+   (`FinalizarPruebasRequiereRevision`). Bitacora `PRUEBAS_FINALIZADAS`
+   con conteo y resultado (`TodasAprobadas`/`RequiereRevision`).
+   - Repository (`ReparacionRepository.FinalizarPruebas`): la orden
+     `EnPruebas` -> destino + historial en el mismo batch.
+3. `AnularPrueba` acotado: solo en `EnPruebas`, solo prueba no-anulada de
+   la ultima intervencion, con motivo obligatorio + usuario/fecha; SIN
+   reapertura (no mueve el estado de la orden). Bitacora `PRUEBA_ANULADA`.
+   - Dominio (`Prueba.Anular(motivo, idUsuario)`): motivo y usuario
+     obligatorios; ya-anulada rechaza; fija `Resultado = Anulada`,
+     `MotivoAnulacion`, `FechaAnulacion = Now`, `IdUsuarioAnulacion`.
+   - Columnas nuevas en `Pruebas`: `fecha_anulacion datetime NULL` +
+     `id_usuario_anulacion int NULL` + `FK_Pruebas_UsuarioAnulacion`
+     (`CREATE` + `ALTER` defensivo); `CargarDesdeDB`/`MapearPrueba` las
+     propagan.
+4. Limpieza de codigo muerto del modelo anterior:
+   - Dominio (`OrdenServicio`): eliminados `RegistrarPruebaAprobada`,
+     `RegistrarPruebaFallida`, `ReabrirPruebas`, `ReabrirReparacion`;
+     agregados `FinalizarPruebasAprobadas` y
+     `FinalizarPruebasRequiereRevision` (ambos exigen `EnPruebas`).
+   - Repository (`ReparacionRepository`): eliminados
+     `RegistrarPruebaSinTransicion`, `RegistrarPruebaConRetrabajo`,
+     `ListarPruebasPorOrden`, `EsUltimaFinalizada`; `AnularPrueba` pierde
+     el parametro `conReapertura` (UPDATE a `Anulada` + motivo +
+     `fecha_anulacion`/`id_usuario_anulacion`, sin transicion de orden).
+   - Bitacora: `PRUEBA_REGISTRADA` / `PRUEBA_ANULADA` /
+     `PRUEBAS_FINALIZADAS` en vez de `Prueba aprobada` / `Prueba fallida`
+     por registro.
+5. UI (`FrmOrdenServicioDetalle` + Designer): boton `BTN_FinalizarPruebas`
+   (visible con permiso `ORDENES_EDITAR`, orden no nueva; habilitado solo
+   en `EnPruebas` editable con pruebas registradas; confirmacion +
+   mensaje de destino tras finalizar); `habilitaPrueba` restringido a
+   `EnPruebas`; gating de `AnularPrueba` mantenido (ultima no-anulada de
+   la vista, orden no `Entregado`); grilla conserva columna `Motivo`;
+   micro-fix de gating P1-P3 aplicado.
+   - Seeds ES/EN (`IdiomaRepository`): `Boton.FinalizarPruebas`,
+     `Mensaje.ConfirmarFinalizarPruebas`,
+     `Titulo.ConfirmarFinalizarPruebas` y mensajes de destino.
+
+### Decisiones del cambio (pruebas por lote)
+
+- La ultima prueba NO decide: registrar N pruebas no mueve el estado; la
+  decision es colectiva y explicita en `FinalizarPruebas`.
+- Las anuladas NO participan: `FinalizarPruebas` filtra
+  `Resultado != Anulada`; anular todo deja cero validas y el finalizar
+  rechaza con `throw` (no hay destino por defecto).
+- Sin rollback: una vez finalizado (`ListoRetiro` o `EnReparacion`), no se
+  reabre el lote; el retrabajo requiere cerrar la reparacion e iniciar una
+  intervencion nueva (`NumeroIntervencion + 1`) con sus propias pruebas.
+- Retrabajo con intervencion nueva: `FinalizarPruebasRequiereRevision`
+  vuelve a `EnReparacion` con `Resultado = NULL` (limpia el residual
+  `Reparado` del modelo anterior); la proxima decision la toma el
+  siguiente lote de la nueva intervencion.
+- SUPERSEDED explicito: reemplaza y deja obsoleto el modelo anterior
+  documentado en la correccion previa (registro en
+  `ListoRetiro`/`Reparado` con decision por prueba + reapertura al anular
+  con `ReabrirPruebas`/`ReabrirReparacion` y `conReapertura`). Ese
+  comportamiento ya no existe en codigo; la presente subseccion es la
+  referencia vigente.
+- Precio vs costo: sin cambio; rige lo ya documentado (precio de venta en
+  presupuesto vs costo de insumos en consumo, sin margen en este modulo).
+
+### Pruebas del cambio (harness temporal fuera del repo)
+
+- Servicios 38/38 PASS + invalidas 4/4 PASS + visual PASS + regresion PASS
+  (CP1+CP2+CP3 previos intactos); 0 bugs.
+- Datos TST de prueba limpiados (0 restos); bitacora conservada (no se
+  purga por trazabilidad).
+- Delegaciones: backend, UI, revision (0 blockers, 5 LOW), micro-fix
+  (gating P1-P3), testing.
+
+### Limitaciones del cambio
+
+- Atomicidad indirecta (heredada CP2/CP3): orden + historial + pruebas van
+  en el batch del repository, sin UoW formal; un fallo entre batches
+  (p. ej. bitacora) no revierte la transicion.
+- Sin finalizar parcial: `FinalizarPruebas` siempre evalua TODAS las
+  no-anuladas de la ultima intervencion; no hay cierre por prueba
+  individual ni por subconjunto.
+- MDI y `RecalcularDV` por menu a prueba humana.
+- ES/EN por service + observer en pantallas tocadas, sin recorrido
+  exhaustivo control por control.
+
+### Checklist humano del cambio
+
+1. Registrar N pruebas en `EnPruebas` (verificar que el estado NO se
+   mueve y que cada registro suma una fila con bitacora
+   `PRUEBA_REGISTRADA`).
+2. Anular una prueba (verificar motivo obligatorio, columnas
+   usuario/fecha y que el estado NO se mueve ni reabre nada).
+3. Finalizar con alguna `RequiereRevision` no-anulada (verificar destino
+   `EnReparacion` con `Resultado NULL` e historial).
+4. Iniciar intervencion nueva y registrar sus pruebas (verificar que el
+   lote anterior no influye en la decision del lote nuevo).
+5. Finalizar con todas `Aprobada` (verificar destino
+   `ListoRetiro`/`Reparado`); anular todas y finalizar (verificar rechazo
+   con mensaje por falta de pruebas validas).
