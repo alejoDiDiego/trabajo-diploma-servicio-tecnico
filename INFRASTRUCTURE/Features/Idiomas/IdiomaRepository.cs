@@ -1104,6 +1104,15 @@ namespace REPOSITORY.Features.Idiomas
             AgregarSeed("Ingles", "Titulo.ConfirmarAnulacion", "Confirm void");
             AgregarSeed("Espanol", "Mensaje.ConfirmarCancelarSolicitud", "Confirma que desea cancelar la solicitud de presupuesto adicional? Se eliminaran los borradores adicionales.");
             AgregarSeed("Ingles", "Mensaje.ConfirmarCancelarSolicitud", "Are you sure you want to cancel the add-on estimate request? Draft add-ons will be deleted.");
+
+            AgregarSeed("Espanol", "OrdenDetalle.AnularPrueba", "Anular prueba");
+            AgregarSeed("Ingles", "OrdenDetalle.AnularPrueba", "Void test");
+            AgregarSeed("Espanol", "Resultado.Anulada", "Anulada");
+            AgregarSeed("Ingles", "Resultado.Anulada", "Voided");
+            AgregarSeed("Espanol", "Columna.Motivo", "Motivo");
+            AgregarSeed("Ingles", "Columna.Motivo", "Reason");
+            AgregarSeed("Espanol", "Mensaje.ConfirmarAnularPrueba", "Confirma que desea anular la ultima prueba? Esta accion no se puede deshacer.");
+            AgregarSeed("Ingles", "Mensaje.ConfirmarAnularPrueba", "Are you sure you want to void the latest test? This action cannot be undone.");
         }
 
         private void AgregarSeed(string idioma, string clave, string texto)

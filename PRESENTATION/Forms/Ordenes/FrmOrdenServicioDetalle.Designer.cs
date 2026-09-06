@@ -117,6 +117,7 @@ namespace UI.Forms.Ordenes
             this.LBL_PDObs = new System.Windows.Forms.Label();
             this.TXT_PruebaObs = new System.Windows.Forms.TextBox();
             this.BTN_RegistrarPrueba = new System.Windows.Forms.Button();
+            this.BTN_AnularPrueba = new System.Windows.Forms.Button();
             this.TAB_Entrega = new System.Windows.Forms.TabPage();
             this.LBL_EEntregadoA = new System.Windows.Forms.Label();
             this.TXT_EEntregadoA = new System.Windows.Forms.TextBox();
@@ -1374,6 +1375,7 @@ namespace UI.Forms.Ordenes
             this.TAB_Pruebas.Controls.Add(this.LBL_PDObs);
             this.TAB_Pruebas.Controls.Add(this.TXT_PruebaObs);
             this.TAB_Pruebas.Controls.Add(this.BTN_RegistrarPrueba);
+            this.TAB_Pruebas.Controls.Add(this.BTN_AnularPrueba);
             this.TAB_Pruebas.Location = new System.Drawing.Point(4, 22);
             this.TAB_Pruebas.Name = "TAB_Pruebas";
             this.TAB_Pruebas.Size = new System.Drawing.Size(888, 454);
@@ -1420,6 +1422,7 @@ namespace UI.Forms.Ordenes
             this.DGV_Pruebas.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.DGV_Pruebas.Size = new System.Drawing.Size(864, 180);
             this.DGV_Pruebas.TabIndex = 2;
+            this.DGV_Pruebas.SelectionChanged += new System.EventHandler(this.DGV_Pruebas_SelectionChanged);
             //
             // LBL_PDDesc
             //
@@ -1500,6 +1503,22 @@ namespace UI.Forms.Ordenes
             this.BTN_RegistrarPrueba.Text = "Registrar prueba";
             this.BTN_RegistrarPrueba.UseVisualStyleBackColor = false;
             this.BTN_RegistrarPrueba.Click += new System.EventHandler(this.BTN_RegistrarPrueba_Click);
+            //
+            // BTN_AnularPrueba
+            //
+            this.BTN_AnularPrueba.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(57)))), ((int)(((byte)(43)))));
+            this.BTN_AnularPrueba.FlatAppearance.BorderSize = 0;
+            this.BTN_AnularPrueba.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.BTN_AnularPrueba.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.BTN_AnularPrueba.ForeColor = System.Drawing.Color.White;
+            this.BTN_AnularPrueba.Location = new System.Drawing.Point(320, 382);
+            this.BTN_AnularPrueba.Name = "BTN_AnularPrueba";
+            this.BTN_AnularPrueba.Size = new System.Drawing.Size(160, 30);
+            this.BTN_AnularPrueba.TabIndex = 10;
+            this.BTN_AnularPrueba.Tag = "OrdenDetalle.AnularPrueba";
+            this.BTN_AnularPrueba.Text = "Anular prueba";
+            this.BTN_AnularPrueba.UseVisualStyleBackColor = false;
+            this.BTN_AnularPrueba.Click += new System.EventHandler(this.BTN_AnularPrueba_Click);
             //
             // TAB_Entrega
             //
@@ -1770,6 +1789,7 @@ namespace UI.Forms.Ordenes
         private System.Windows.Forms.Label LBL_PDObs;
         private System.Windows.Forms.TextBox TXT_PruebaObs;
         private System.Windows.Forms.Button BTN_RegistrarPrueba;
+        private System.Windows.Forms.Button BTN_AnularPrueba;
         private System.Windows.Forms.TabPage TAB_Entrega;
         private System.Windows.Forms.Label LBL_EEntregadoA;
         private System.Windows.Forms.TextBox TXT_EEntregadoA;

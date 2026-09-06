@@ -99,10 +99,12 @@ namespace UI.Forms.Ordenes
 
         private class FilaPrueba
         {
+            public int Id { get; set; }
             public DateTime Fecha { get; set; }
             public string Intervencion { get; set; }
             public string Descripcion { get; set; }
             public string Resultado { get; set; }
+            public string Motivo { get; set; }
             public string Usuario { get; set; }
         }
 
@@ -131,6 +133,8 @@ namespace UI.Forms.Ordenes
         private List<Usuario> _tecnicos = new List<Usuario>();
         private List<DetallePresupuesto> _itemsNuevo = new List<DetallePresupuesto>();
         private List<Reparacion> _reparaciones = new List<Reparacion>();
+        private Dictionary<int, List<Prueba>> _pruebasPorReparacion = new Dictionary<int, List<Prueba>>();
+        private List<Prueba> _pruebasActuales = new List<Prueba>();
         private Dictionary<int, string> _nombresRepuestos = new Dictionary<int, string>();
 
         public FrmOrdenServicioDetalle()
@@ -272,6 +276,7 @@ namespace UI.Forms.Ordenes
             RDO_Fallida.Text = idioma.BuscarTraduccion(RDO_Fallida.Tag.ToString());
             LBL_PDObs.Text = idioma.BuscarTraduccion(LBL_PDObs.Tag.ToString());
             BTN_RegistrarPrueba.Text = idioma.BuscarTraduccion(BTN_RegistrarPrueba.Tag.ToString());
+            BTN_AnularPrueba.Text = idioma.BuscarTraduccion(BTN_AnularPrueba.Tag.ToString());
             BTN_Cerrar.Text = idioma.BuscarTraduccion(BTN_Cerrar.Tag.ToString());
         }
 
@@ -504,6 +509,8 @@ namespace UI.Forms.Ordenes
             _modoNuevoOriginal = false;
             _hayAdicionalPendiente = false;
             _entrega = null;
+            _pruebasPorReparacion = new Dictionary<int, List<Prueba>>();
+            _pruebasActuales = new List<Prueba>();
 
             LBL_MontoAutorizado.Text = "";
 
@@ -1186,6 +1193,24 @@ namespace UI.Forms.Ordenes
 
             try
             {
+                _pruebasPorReparacion = new Dictionary<int, List<Prueba>>();
+                _pruebasActuales = new List<Prueba>();
+
+                if (_reparaciones != null)
+                {
+                    foreach (Reparacion r in _reparaciones)
+                    {
+                        try
+                        {
+                            _pruebasPorReparacion[r.Id] = _service.ListarPruebas(r.Id);
+                        }
+                        catch
+                        {
+                            _pruebasPorReparacion[r.Id] = new List<Prueba>();
+                        }
+                    }
+                }
+
                 List<ItemIntervencion> items = new List<ItemIntervencion>();
                 int idUltima = 0;
 
@@ -1230,7 +1255,9 @@ namespace UI.Forms.Ordenes
 
             if (idReparacion <= 0)
             {
+                _pruebasActuales = new List<Prueba>();
                 DGV_Pruebas.DataSource = new BindingList<FilaPrueba>(new List<FilaPrueba>());
+                ActualizarBotonAnularPrueba();
                 return;
             }
 
@@ -1250,23 +1277,185 @@ namespace UI.Forms.Ordenes
                     }
                 }
 
-                List<Prueba> pruebas = _service.ListarPruebas(idReparacion);
+                List<Prueba> pruebas = null;
+
+                if (_pruebasPorReparacion != null && _pruebasPorReparacion.ContainsKey(idReparacion))
+                    pruebas = _pruebasPorReparacion[idReparacion];
+                else
+                    pruebas = _service.ListarPruebas(idReparacion);
+
+                _pruebasActuales = pruebas != null ? new List<Prueba>(pruebas) : new List<Prueba>();
                 List<FilaPrueba> filas = new List<FilaPrueba>();
 
-                foreach (Prueba p in pruebas)
+                foreach (Prueba p in _pruebasActuales)
                 {
                     filas.Add(new FilaPrueba
                     {
+                        Id = p.Id,
                         Fecha = p.Fecha,
                         Intervencion = intervencion,
                         Descripcion = p.Descripcion,
-                        Resultado = p.Resultado == ResultadoPrueba.Aprobada ? T("OrdenDetalle.Aprobada") : T("OrdenDetalle.Fallida"),
+                        Resultado = TraducirResultadoPrueba(p.Resultado),
+                        Motivo = p.Resultado == ResultadoPrueba.Anulada ? (p.MotivoAnulacion ?? "") : "",
                         Usuario = ResolverTecnico(p.IdUsuarioTecnico)
                     });
                 }
 
                 DGV_Pruebas.DataSource = new BindingList<FilaPrueba>(filas);
                 ConfigurarColumnasPruebas();
+                ActualizarBotonAnularPrueba();
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+        }
+
+        private string TraducirResultadoPrueba(string resultado)
+        {
+            if (resultado == ResultadoPrueba.Anulada)
+                return T("Resultado.Anulada");
+
+            if (resultado == ResultadoPrueba.Aprobada)
+                return T("OrdenDetalle.Aprobada");
+
+            return T("OrdenDetalle.Fallida");
+        }
+
+        private Prueba ObtenerUltimaPruebaNoAnulada()
+        {
+            if (_pruebasPorReparacion == null)
+                return null;
+
+            Prueba ultima = null;
+
+            foreach (List<Prueba> lista in _pruebasPorReparacion.Values)
+            {
+                if (lista == null)
+                    continue;
+
+                foreach (Prueba p in lista)
+                {
+                    if (p.Resultado == ResultadoPrueba.Anulada)
+                        continue;
+
+                    if (ultima == null || p.Fecha > ultima.Fecha
+                        || (p.Fecha == ultima.Fecha && p.Id > ultima.Id))
+                        ultima = p;
+                }
+            }
+
+            return ultima;
+        }
+
+        private Prueba PruebaSeleccionada()
+        {
+            if (_pruebasActuales == null || DGV_Pruebas.SelectedRows.Count == 0)
+                return null;
+
+            FilaPrueba fila = DGV_Pruebas.SelectedRows[0].DataBoundItem as FilaPrueba;
+
+            if (fila == null)
+                return null;
+
+            foreach (Prueba p in _pruebasActuales)
+            {
+                if (p.Id == fila.Id)
+                    return p;
+            }
+
+            return null;
+        }
+
+        private void ActualizarBotonAnularPrueba()
+        {
+            if (BTN_AnularPrueba == null)
+                return;
+
+            bool puedeEditar = TienePermiso(CodigosPermiso.OrdenesEditar);
+            Prueba ultima = _esNuevo ? null : ObtenerUltimaPruebaNoAnulada();
+
+            int idReparacionActual = 0;
+
+            if (CBO_PruebaReparacion.SelectedValue is int)
+                idReparacionActual = (int)CBO_PruebaReparacion.SelectedValue;
+
+            bool ultimaEnVista = ultima != null && ultima.IdReparacion == idReparacionActual;
+
+            BTN_AnularPrueba.Visible = !_esNuevo && puedeEditar && ultimaEnVista;
+
+            if (!BTN_AnularPrueba.Visible)
+            {
+                BTN_AnularPrueba.Enabled = false;
+                return;
+            }
+
+            Prueba seleccionada = PruebaSeleccionada();
+            bool ordenBloqueada = _orden != null && _orden.Estado == EstadoOrdenServicio.Entregado;
+
+            BTN_AnularPrueba.Enabled = puedeEditar && !ordenBloqueada
+                && seleccionada != null && seleccionada.Id == ultima.Id;
+        }
+
+        private void DGV_Pruebas_SelectionChanged(object sender, EventArgs e)
+        {
+            if (_esNuevo)
+                return;
+
+            ActualizarBotonAnularPrueba();
+        }
+
+        private void BTN_AnularPrueba_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.OrdenesEditar))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
+            Prueba ultima = ObtenerUltimaPruebaNoAnulada();
+
+            if (ultima == null)
+            {
+                MostrarAdvertencia("Mensaje.SeleccioneRegistro");
+                return;
+            }
+
+            Prueba seleccionada = PruebaSeleccionada();
+
+            if (seleccionada == null || seleccionada.Id != ultima.Id)
+            {
+                MostrarAdvertencia("Mensaje.SeleccioneRegistro");
+                return;
+            }
+
+            DialogResult confirmacion = MessageBox.Show(
+                T("Mensaje.ConfirmarAnularPrueba"),
+                T("Titulo.ConfirmarAnulacion"),
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning);
+
+            if (confirmacion == DialogResult.No)
+                return;
+
+            string motivo = PedirTexto(
+                T("OrdenDetalle.AnularPrueba"),
+                T("OrdenDetalle.MotivoAnulacion"));
+
+            if (motivo == null)
+                return;
+
+            if (string.IsNullOrWhiteSpace(motivo))
+            {
+                MostrarAdvertencia("Mensaje.OrdenCamposObligatorios");
+                return;
+            }
+
+            try
+            {
+                _service.AnularPrueba(ultima.Id, motivo.Trim());
+                CargarOrden();
+                MostrarExito("Mensaje.OperacionExitosa");
             }
             catch (Exception ex)
             {
@@ -1315,7 +1504,11 @@ namespace UI.Forms.Ordenes
             ConfigurarColumnaGrid(DGV_Pruebas, "Intervencion", "Columna.Intervencion");
             ConfigurarColumnaGrid(DGV_Pruebas, "Descripcion", "Columna.Descripcion");
             ConfigurarColumnaGrid(DGV_Pruebas, "Resultado", "Columna.Resultado");
+            ConfigurarColumnaGrid(DGV_Pruebas, "Motivo", "Columna.Motivo");
             ConfigurarColumnaGrid(DGV_Pruebas, "Usuario", "Columna.Usuario");
+
+            if (DGV_Pruebas.Columns.Contains("Id"))
+                DGV_Pruebas.Columns["Id"].Visible = false;
 
             DGV_Pruebas.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells);
         }
@@ -2567,7 +2760,8 @@ namespace UI.Forms.Ordenes
                 && _orden != null && _orden.Estado == EstadoOrdenServicio.EsperandoRespuesta;
 
             bool puedeSolicitar = editable && _orden != null
-                && (_orden.Estado == EstadoOrdenServicio.EnReparacion
+                && (_orden.Estado == EstadoOrdenServicio.AutorizadoReparacion
+                    || _orden.Estado == EstadoOrdenServicio.EnReparacion
                     || _orden.Estado == EstadoOrdenServicio.EnPruebas)
                 && _original != null && _original.Estado == EstadoPresupuesto.Aprobado
                 && !_hayAdicionalPendiente;
@@ -2599,15 +2793,18 @@ namespace UI.Forms.Ordenes
 
             Reparacion reparacionSeleccionada = ReparacionSeleccionada();
             bool hayAbiertaSeleccionada = reparacionSeleccionada != null && !reparacionSeleccionada.FechaFin.HasValue;
+            bool hayAbierta = _reparaciones != null && _reparaciones.Any(r => !r.FechaFin.HasValue);
 
             bool puedeIniciarReparacion = editable && _orden != null
                 && (_orden.Estado == EstadoOrdenServicio.AutorizadoReparacion
-                    || _orden.Estado == EstadoOrdenServicio.EnReparacion);
+                    || (_orden.Estado == EstadoOrdenServicio.EnReparacion && !hayAbierta));
             bool habilitaConsumo = editable && _orden != null
                 && _orden.Estado == EstadoOrdenServicio.EnReparacion
                 && hayAbiertaSeleccionada;
             bool habilitaPrueba = editable && _orden != null
-                && _orden.Estado == EstadoOrdenServicio.EnPruebas;
+                && (_orden.Estado == EstadoOrdenServicio.EnPruebas
+                    || (_orden.Estado == EstadoOrdenServicio.ListoRetiro
+                        && _orden.Resultado == ResultadoOrdenServicio.Reparado));
 
             BTN_IniciarReparacion.Visible = !_esNuevo && puedeEditar;
             BTN_IniciarReparacion.Enabled = puedeIniciarReparacion;
@@ -2628,6 +2825,7 @@ namespace UI.Forms.Ordenes
             TXT_PruebaObs.Enabled = habilitaPrueba;
             BTN_RegistrarPrueba.Visible = !_esNuevo && puedeEditar;
             BTN_RegistrarPrueba.Enabled = habilitaPrueba;
+            ActualizarBotonAnularPrueba();
         }
 
         private bool TienePermiso(string codigo)
