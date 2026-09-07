@@ -32,9 +32,11 @@ namespace UI.Forms.Ordenes
             public string TecnicoNombre { get; set; }
             public string EstadoRaw { get; set; }
             public string ResultadoRaw { get; set; }
+            public string TipoRaw { get; set; }
             public string Problema { get; set; }
             public string Estado { get; set; }
             public string Resultado { get; set; }
+            public string Tipo { get; set; }
             public DateTime Fecha { get; set; }
         }
 
@@ -91,6 +93,7 @@ namespace UI.Forms.Ordenes
             LBL_Cliente.Text = idiomaObservado.BuscarTraduccion(LBL_Cliente.Tag.ToString());
             LBL_Estado.Text = idiomaObservado.BuscarTraduccion(LBL_Estado.Tag.ToString());
             LBL_Busqueda.Text = idiomaObservado.BuscarTraduccion(LBL_Busqueda.Tag.ToString());
+            LBL_Tipo.Text = idiomaObservado.BuscarTraduccion(LBL_Tipo.Tag.ToString());
             CHK_Entregadas.Text = idiomaObservado.BuscarTraduccion(CHK_Entregadas.Tag.ToString());
             BTN_Crear.Text = idiomaObservado.BuscarTraduccion(BTN_Crear.Tag.ToString());
             BTN_Detalle.Text = idiomaObservado.BuscarTraduccion(BTN_Detalle.Tag.ToString());
@@ -99,6 +102,7 @@ namespace UI.Forms.Ordenes
 
             CargarComboClientes();
             CargarComboEstados();
+            CargarComboTipos();
             AplicarFiltro();
             ConfigurarColumnas();
             AplicarPermisos();
@@ -110,6 +114,7 @@ namespace UI.Forms.Ordenes
             CargarCatalogos();
             CargarComboClientes();
             CargarComboEstados();
+            CargarComboTipos();
             ActualizarTextos();
             ConfigurarColumnas();
             AplicarPermisos();
@@ -134,6 +139,7 @@ namespace UI.Forms.Ordenes
             LBL_Cliente.Text = _sesionIdioma.idioma.BuscarTraduccion(LBL_Cliente.Tag.ToString());
             LBL_Estado.Text = _sesionIdioma.idioma.BuscarTraduccion(LBL_Estado.Tag.ToString());
             LBL_Busqueda.Text = _sesionIdioma.idioma.BuscarTraduccion(LBL_Busqueda.Tag.ToString());
+            LBL_Tipo.Text = _sesionIdioma.idioma.BuscarTraduccion(LBL_Tipo.Tag.ToString());
             CHK_Entregadas.Text = _sesionIdioma.idioma.BuscarTraduccion(CHK_Entregadas.Tag.ToString());
             BTN_Crear.Text = _sesionIdioma.idioma.BuscarTraduccion(BTN_Crear.Tag.ToString());
             BTN_Detalle.Text = _sesionIdioma.idioma.BuscarTraduccion(BTN_Detalle.Tag.ToString());
@@ -223,6 +229,46 @@ namespace UI.Forms.Ordenes
             }
         }
 
+        private static readonly string[] TiposOrden = new string[]
+        {
+            TipoOrden.Normal,
+            TipoOrden.Garantia
+        };
+
+        private void CargarComboTipos()
+        {
+            _cargandoCombos = true;
+
+            try
+            {
+                string todos = _sesionIdioma.idioma != null
+                    ? _sesionIdioma.idioma.BuscarTraduccion("Ordenes.Todos")
+                    : "Todos";
+
+                List<ItemEstado> items = new List<ItemEstado>();
+                items.Add(new ItemEstado { Id = "", Nombre = todos });
+
+                foreach (string tipo in TiposOrden)
+                    items.Add(new ItemEstado { Id = tipo, Nombre = TraducirTipo(tipo) });
+
+                string seleccionado = "";
+
+                if (CBO_Tipo.SelectedValue is string)
+                    seleccionado = (string)CBO_Tipo.SelectedValue;
+
+                CBO_Tipo.DataSource = null;
+                CBO_Tipo.DisplayMember = "Nombre";
+                CBO_Tipo.ValueMember = "Id";
+                CBO_Tipo.DataSource = items;
+
+                CBO_Tipo.SelectedValue = seleccionado;
+            }
+            finally
+            {
+                _cargandoCombos = false;
+            }
+        }
+
         private void CargarOrdenes()
         {
             try
@@ -251,15 +297,22 @@ namespace UI.Forms.Ordenes
         {
             string texto = TXT_Busqueda.Text.Trim().ToLowerInvariant();
             string estadoFiltro = "";
+            string tipoFiltro = "";
 
             if (CBO_Estado.SelectedValue is string)
                 estadoFiltro = (string)CBO_Estado.SelectedValue;
+
+            if (CBO_Tipo.SelectedValue is string)
+                tipoFiltro = (string)CBO_Tipo.SelectedValue;
 
             List<FilaOrden> filas = new List<FilaOrden>();
 
             foreach (OrdenServicio o in _todos)
             {
                 if (!string.IsNullOrEmpty(estadoFiltro) && o.Estado != estadoFiltro)
+                    continue;
+
+                if (!string.IsNullOrEmpty(tipoFiltro) && o.TipoOrden != tipoFiltro)
                     continue;
 
                 if (!string.IsNullOrEmpty(texto))
@@ -283,9 +336,11 @@ namespace UI.Forms.Ordenes
                     TecnicoNombre = ResolverTecnico(o.IdTecnicoAsignado),
                     EstadoRaw = o.Estado,
                     ResultadoRaw = o.Resultado,
+                    TipoRaw = o.TipoOrden,
                     Problema = o.ProblemaInformado,
                     Estado = TraducirEstado(o.Estado),
                     Resultado = TraducirResultado(o.Resultado),
+                    Tipo = TraducirTipo(o.TipoOrden),
                     Fecha = o.FechaIngreso
                 };
 
@@ -383,6 +438,17 @@ namespace UI.Forms.Ordenes
             return _sesionIdioma.idioma.BuscarTraduccion("Resultado." + resultado);
         }
 
+        private string TraducirTipo(string tipo)
+        {
+            if (string.IsNullOrEmpty(tipo))
+                return "";
+
+            if (_sesionIdioma.idioma == null)
+                return tipo;
+
+            return _sesionIdioma.idioma.BuscarTraduccion("Tipo." + tipo);
+        }
+
         private void ConfigurarColumnas()
         {
             if (DGV_Ordenes.Columns.Count == 0)
@@ -394,6 +460,7 @@ namespace UI.Forms.Ordenes
             ConfigurarColumna("TecnicoNombre", "Columna.Tecnico");
             ConfigurarColumna("Estado", "Columna.Estado");
             ConfigurarColumna("Resultado", "Columna.Resultado");
+            ConfigurarColumna("Tipo", "Columna.Tipo");
             ConfigurarColumna("Fecha", "Columna.Fecha");
 
             if (DGV_Ordenes.Columns.Contains("Id"))
@@ -408,6 +475,8 @@ namespace UI.Forms.Ordenes
                 DGV_Ordenes.Columns["EstadoRaw"].Visible = false;
             if (DGV_Ordenes.Columns.Contains("ResultadoRaw"))
                 DGV_Ordenes.Columns["ResultadoRaw"].Visible = false;
+            if (DGV_Ordenes.Columns.Contains("TipoRaw"))
+                DGV_Ordenes.Columns["TipoRaw"].Visible = false;
             if (DGV_Ordenes.Columns.Contains("Problema"))
                 DGV_Ordenes.Columns["Problema"].Visible = false;
 
@@ -457,6 +526,17 @@ namespace UI.Forms.Ordenes
                 return;
 
             if (CBO_Estado.DataSource == null)
+                return;
+
+            AplicarFiltro();
+        }
+
+        private void CBO_Tipo_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (_cargandoCombos)
+                return;
+
+            if (CBO_Tipo.DataSource == null)
                 return;
 
             AplicarFiltro();

@@ -12,10 +12,13 @@ using UI.Forms.Auth;
 using UI.Forms.Bitacora;
 using UI.Forms.Catalogos;
 using UI.Forms.Clientes;
+using UI.Forms.Compras;
 using UI.Forms.ControlCambios;
 using UI.Forms.Equipos;
+using UI.Forms.Garantias;
 using UI.Forms.Idiomas;
 using UI.Forms.Ordenes;
+using UI.Forms.Proveedores;
 using UI.Forms.Repuestos;
 
 namespace UI.Forms
@@ -59,6 +62,9 @@ namespace UI.Forms
             TSMI_Inventario.Text = idiomaObservado.BuscarTraduccion(TSMI_Inventario.Tag.ToString());
             TSMI_Repuestos.Text = idiomaObservado.BuscarTraduccion(TSMI_Repuestos.Tag.ToString());
             TSMI_Movimientos.Text = idiomaObservado.BuscarTraduccion(TSMI_Movimientos.Tag.ToString());
+            TSMI_Proveedores.Text = idiomaObservado.BuscarTraduccion(TSMI_Proveedores.Tag.ToString());
+            TSMI_Compras.Text = idiomaObservado.BuscarTraduccion(TSMI_Compras.Tag.ToString());
+            TSMI_Garantias.Text = idiomaObservado.BuscarTraduccion(TSMI_Garantias.Tag.ToString());
 
             ActualizarMenuUsuario();
             CargarMenuIdiomas();
@@ -150,6 +156,10 @@ namespace UI.Forms
             bool puedeVerTipos = TienePermiso(CodigosPermiso.TiposEquipoVer);
             bool puedeVerMarcas = TienePermiso(CodigosPermiso.MarcasVer);
             bool puedeVerRepuestos = TienePermiso(CodigosPermiso.RepuestosVer);
+            bool puedeVerProveedores = TienePermiso(CodigosPermiso.ProveedoresVer);
+            bool puedeVerCompras = TienePermiso(CodigosPermiso.ComprasVer);
+            // Garantias es fase de orden: gate ORDENES_VER (no COMPRAS_VER).
+            bool puedeVerGarantias = TienePermiso(CodigosPermiso.OrdenesVer);
 
             TSMI_IniciarSesion.Visible = !haySesionActiva;
             TSMI_CerrarSesion.Visible = haySesionActiva;
@@ -160,16 +170,19 @@ namespace UI.Forms
             TSMI_Bitacora.Visible = haySesionActiva && puedeVerBitacora;
             TSMI_RecalcularDV.Visible = haySesionActiva && puedeRecalcularDV;
             TSMI_AdministrarTraducciones.Visible = haySesionActiva && puedeVerTraducciones;
-            TSMI_Gestion.Visible = haySesionActiva && (puedeVerClientes || puedeVerEquipos || puedeVerOrdenes || puedeVerTipos || puedeVerMarcas || puedeVerRepuestos);
+            TSMI_Gestion.Visible = haySesionActiva && (puedeVerClientes || puedeVerEquipos || puedeVerOrdenes || puedeVerTipos || puedeVerMarcas || puedeVerRepuestos || puedeVerProveedores || puedeVerCompras || puedeVerGarantias);
             TSMI_Clientes.Visible = haySesionActiva && puedeVerClientes;
             TSMI_Equipos.Visible = haySesionActiva && puedeVerEquipos;
             TSMI_Ordenes.Visible = haySesionActiva && puedeVerOrdenes;
+            TSMI_Garantias.Visible = haySesionActiva && puedeVerGarantias;
             TSMI_Catalogos.Visible = haySesionActiva && (puedeVerTipos || puedeVerMarcas);
             TSMI_TiposEquipo.Visible = haySesionActiva && puedeVerTipos;
             TSMI_Marcas.Visible = haySesionActiva && puedeVerMarcas;
-            TSMI_Inventario.Visible = haySesionActiva && puedeVerRepuestos;
+            TSMI_Inventario.Visible = haySesionActiva && (puedeVerRepuestos || puedeVerProveedores || puedeVerCompras);
             TSMI_Repuestos.Visible = haySesionActiva && puedeVerRepuestos;
             TSMI_Movimientos.Visible = haySesionActiva && puedeVerRepuestos;
+            TSMI_Proveedores.Visible = haySesionActiva && puedeVerProveedores;
+            TSMI_Compras.Visible = haySesionActiva && puedeVerCompras;
 
             TSMI_IniciarSesion.Enabled = !haySesionActiva;
             TSMI_CerrarSesion.Enabled = haySesionActiva;
@@ -180,16 +193,19 @@ namespace UI.Forms
             TSMI_Bitacora.Enabled = haySesionActiva && puedeVerBitacora;
             TSMI_RecalcularDV.Enabled = haySesionActiva && puedeRecalcularDV;
             TSMI_AdministrarTraducciones.Enabled = haySesionActiva && puedeVerTraducciones;
-            TSMI_Gestion.Enabled = haySesionActiva && (puedeVerClientes || puedeVerEquipos || puedeVerOrdenes || puedeVerTipos || puedeVerMarcas || puedeVerRepuestos);
+            TSMI_Gestion.Enabled = haySesionActiva && (puedeVerClientes || puedeVerEquipos || puedeVerOrdenes || puedeVerTipos || puedeVerMarcas || puedeVerRepuestos || puedeVerProveedores || puedeVerCompras || puedeVerGarantias);
             TSMI_Clientes.Enabled = haySesionActiva && puedeVerClientes;
             TSMI_Equipos.Enabled = haySesionActiva && puedeVerEquipos;
             TSMI_Ordenes.Enabled = haySesionActiva && puedeVerOrdenes;
+            TSMI_Garantias.Enabled = haySesionActiva && puedeVerGarantias;
             TSMI_Catalogos.Enabled = haySesionActiva && (puedeVerTipos || puedeVerMarcas);
             TSMI_TiposEquipo.Enabled = haySesionActiva && puedeVerTipos;
             TSMI_Marcas.Enabled = haySesionActiva && puedeVerMarcas;
-            TSMI_Inventario.Enabled = haySesionActiva && puedeVerRepuestos;
+            TSMI_Inventario.Enabled = haySesionActiva && (puedeVerRepuestos || puedeVerProveedores || puedeVerCompras);
             TSMI_Repuestos.Enabled = haySesionActiva && puedeVerRepuestos;
             TSMI_Movimientos.Enabled = haySesionActiva && puedeVerRepuestos;
+            TSMI_Proveedores.Enabled = haySesionActiva && puedeVerProveedores;
+            TSMI_Compras.Enabled = haySesionActiva && puedeVerCompras;
 
             var usuario = SessionManager.ObtenerUsuarioActual();
             TSMI_Usuario.Text = haySesionActiva
@@ -507,6 +523,78 @@ namespace UI.Forms
             frmMovimientos.MdiParent = this;
             frmMovimientos.FormClosed += FormularioHijo_FormClosed;
             frmMovimientos.Show();
+        }
+
+        private void TSMI_Proveedores_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.ProveedoresVer))
+            {
+                MostrarAccesoDenegado();
+                ActualizarMenuUsuario();
+                return;
+            }
+
+            foreach (Form formulario in MdiChildren)
+            {
+                if (formulario is FrmProveedores)
+                {
+                    formulario.Activate();
+                    return;
+                }
+            }
+
+            FrmProveedores frmProveedores = new FrmProveedores();
+            frmProveedores.MdiParent = this;
+            frmProveedores.FormClosed += FormularioHijo_FormClosed;
+            frmProveedores.Show();
+        }
+
+        private void TSMI_Compras_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.ComprasVer))
+            {
+                MostrarAccesoDenegado();
+                ActualizarMenuUsuario();
+                return;
+            }
+
+            foreach (Form formulario in MdiChildren)
+            {
+                if (formulario is FrmCompras)
+                {
+                    formulario.Activate();
+                    return;
+                }
+            }
+
+            FrmCompras frmCompras = new FrmCompras();
+            frmCompras.MdiParent = this;
+            frmCompras.FormClosed += FormularioHijo_FormClosed;
+            frmCompras.Show();
+        }
+
+        private void TSMI_Garantias_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.OrdenesVer))
+            {
+                MostrarAccesoDenegado();
+                ActualizarMenuUsuario();
+                return;
+            }
+
+            foreach (Form formulario in MdiChildren)
+            {
+                if (formulario is FrmGarantias)
+                {
+                    formulario.Activate();
+                    return;
+                }
+            }
+
+            FrmGarantias frmGarantias = new FrmGarantias();
+            frmGarantias.MdiParent = this;
+            frmGarantias.FormClosed += FormularioHijo_FormClosed;
+            frmGarantias.Show();
         }
 
         private void TSMI_ControlCambios_Click(object sender, EventArgs e)

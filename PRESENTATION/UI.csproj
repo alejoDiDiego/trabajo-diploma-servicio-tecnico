@@ -172,6 +172,36 @@
     <Compile Include="Forms\Repuestos\FrmMovimientosStock.Designer.cs">
       <DependentUpon>FrmMovimientosStock.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\Proveedores\FrmProveedores.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\Proveedores\FrmProveedores.Designer.cs">
+      <DependentUpon>FrmProveedores.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\Proveedores\FrmProveedorEditar.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\Proveedores\FrmProveedorEditar.Designer.cs">
+      <DependentUpon>FrmProveedorEditar.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\Compras\FrmCompras.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\Compras\FrmCompras.Designer.cs">
+      <DependentUpon>FrmCompras.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\Compras\FrmCompraDetalle.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\Compras\FrmCompraDetalle.Designer.cs">
+      <DependentUpon>FrmCompraDetalle.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\Garantias\FrmGarantias.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\Garantias\FrmGarantias.Designer.cs">
+      <DependentUpon>FrmGarantias.cs</DependentUpon>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Forms\Auth\FrmAdministrarUsuarios.resx">

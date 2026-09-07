@@ -130,6 +130,23 @@ namespace UI.Forms.Ordenes
             this.BTN_Entregar = new System.Windows.Forms.Button();
             this.BTN_CancelarEntrega = new System.Windows.Forms.Button();
             this.BTN_ReabrirPruebas = new System.Windows.Forms.Button();
+            this.TAB_Garantia = new System.Windows.Forms.TabPage();
+            this.LBL_GOrigen = new System.Windows.Forms.Label();
+            this.LBL_GOrigenValor = new System.Windows.Forms.Label();
+            this.BTN_VerOriginal = new System.Windows.Forms.Button();
+            this.LBL_GVigencia = new System.Windows.Forms.Label();
+            this.LBL_GVigenciaValor = new System.Windows.Forms.Label();
+            this.LBL_GEstado = new System.Windows.Forms.Label();
+            this.LBL_GEstadoValor = new System.Windows.Forms.Label();
+            this.LBL_GEvaluacion = new System.Windows.Forms.Label();
+            this.LBL_GEvaluacionValor = new System.Windows.Forms.Label();
+            this.LBL_GMotivo = new System.Windows.Forms.Label();
+            this.TXT_GMotivo = new System.Windows.Forms.TextBox();
+            this.LBL_GObs = new System.Windows.Forms.Label();
+            this.TXT_GObs = new System.Windows.Forms.TextBox();
+            this.BTN_AceptarGarantia = new System.Windows.Forms.Button();
+            this.BTN_RechazarGarantia = new System.Windows.Forms.Button();
+            this.BTN_CrearReingreso = new System.Windows.Forms.Button();
             this.BTN_Cerrar = new System.Windows.Forms.Button();
             this.PNL_Header.SuspendLayout();
             this.TAB_Detalle.SuspendLayout();
@@ -151,6 +168,7 @@ namespace UI.Forms.Ordenes
             this.TAB_Pruebas.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.DGV_Pruebas)).BeginInit();
             this.TAB_Entrega.SuspendLayout();
+            this.TAB_Garantia.SuspendLayout();
             this.SuspendLayout();
             //
             // PNL_Header
@@ -272,6 +290,7 @@ namespace UI.Forms.Ordenes
             this.TAB_Detalle.Controls.Add(this.TAB_Pruebas);
             this.TAB_Detalle.Controls.Add(this.TAB_Historial);
             this.TAB_Detalle.Controls.Add(this.TAB_Entrega);
+            this.TAB_Detalle.Controls.Add(this.TAB_Garantia);
             this.TAB_Detalle.Location = new System.Drawing.Point(12, 112);
             this.TAB_Detalle.Name = "TAB_Detalle";
             this.TAB_Detalle.SelectedIndex = 0;
@@ -1673,6 +1692,217 @@ namespace UI.Forms.Ordenes
             this.BTN_ReabrirPruebas.UseVisualStyleBackColor = false;
             this.BTN_ReabrirPruebas.Click += new System.EventHandler(this.BTN_ReabrirPruebas_Click);
             //
+            // TAB_Garantia
+            //
+            this.TAB_Garantia.Controls.Add(this.LBL_GOrigen);
+            this.TAB_Garantia.Controls.Add(this.LBL_GOrigenValor);
+            this.TAB_Garantia.Controls.Add(this.BTN_VerOriginal);
+            this.TAB_Garantia.Controls.Add(this.LBL_GVigencia);
+            this.TAB_Garantia.Controls.Add(this.LBL_GVigenciaValor);
+            this.TAB_Garantia.Controls.Add(this.LBL_GEstado);
+            this.TAB_Garantia.Controls.Add(this.LBL_GEstadoValor);
+            this.TAB_Garantia.Controls.Add(this.LBL_GEvaluacion);
+            this.TAB_Garantia.Controls.Add(this.LBL_GEvaluacionValor);
+            this.TAB_Garantia.Controls.Add(this.LBL_GMotivo);
+            this.TAB_Garantia.Controls.Add(this.TXT_GMotivo);
+            this.TAB_Garantia.Controls.Add(this.LBL_GObs);
+            this.TAB_Garantia.Controls.Add(this.TXT_GObs);
+            this.TAB_Garantia.Controls.Add(this.BTN_AceptarGarantia);
+            this.TAB_Garantia.Controls.Add(this.BTN_RechazarGarantia);
+            this.TAB_Garantia.Controls.Add(this.BTN_CrearReingreso);
+            this.TAB_Garantia.Location = new System.Drawing.Point(4, 22);
+            this.TAB_Garantia.Name = "TAB_Garantia";
+            this.TAB_Garantia.Size = new System.Drawing.Size(888, 454);
+            this.TAB_Garantia.TabIndex = 7;
+            this.TAB_Garantia.Tag = "OrdenDetalle.TabGarantia";
+            this.TAB_Garantia.Text = "Garantia";
+            this.TAB_Garantia.UseVisualStyleBackColor = true;
+            //
+            // LBL_GOrigen
+            //
+            this.LBL_GOrigen.AutoSize = true;
+            this.LBL_GOrigen.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.LBL_GOrigen.Location = new System.Drawing.Point(12, 14);
+            this.LBL_GOrigen.Name = "LBL_GOrigen";
+            this.LBL_GOrigen.Size = new System.Drawing.Size(80, 15);
+            this.LBL_GOrigen.TabIndex = 0;
+            this.LBL_GOrigen.Tag = "OrdenDetalle.GarantiaOrigen";
+            this.LBL_GOrigen.Text = "Orden origen:";
+            //
+            // LBL_GOrigenValor
+            //
+            this.LBL_GOrigenValor.AutoSize = true;
+            this.LBL_GOrigenValor.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.LBL_GOrigenValor.Location = new System.Drawing.Point(150, 14);
+            this.LBL_GOrigenValor.Name = "LBL_GOrigenValor";
+            this.LBL_GOrigenValor.Size = new System.Drawing.Size(20, 15);
+            this.LBL_GOrigenValor.TabIndex = 1;
+            this.LBL_GOrigenValor.Text = "-";
+            //
+            // BTN_VerOriginal
+            //
+            this.BTN_VerOriginal.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(152)))), ((int)(((byte)(219)))));
+            this.BTN_VerOriginal.FlatAppearance.BorderSize = 0;
+            this.BTN_VerOriginal.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.BTN_VerOriginal.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.BTN_VerOriginal.ForeColor = System.Drawing.Color.White;
+            this.BTN_VerOriginal.Location = new System.Drawing.Point(350, 9);
+            this.BTN_VerOriginal.Name = "BTN_VerOriginal";
+            this.BTN_VerOriginal.Size = new System.Drawing.Size(130, 28);
+            this.BTN_VerOriginal.TabIndex = 2;
+            this.BTN_VerOriginal.Tag = "OrdenDetalle.VerOriginal";
+            this.BTN_VerOriginal.Text = "Ver original";
+            this.BTN_VerOriginal.UseVisualStyleBackColor = false;
+            this.BTN_VerOriginal.Click += new System.EventHandler(this.BTN_VerOriginal_Click);
+            //
+            // LBL_GVigencia
+            //
+            this.LBL_GVigencia.AutoSize = true;
+            this.LBL_GVigencia.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.LBL_GVigencia.Location = new System.Drawing.Point(12, 50);
+            this.LBL_GVigencia.Name = "LBL_GVigencia";
+            this.LBL_GVigencia.Size = new System.Drawing.Size(55, 15);
+            this.LBL_GVigencia.TabIndex = 3;
+            this.LBL_GVigencia.Tag = "OrdenDetalle.GarantiaVigencia";
+            this.LBL_GVigencia.Text = "Vigencia:";
+            //
+            // LBL_GVigenciaValor
+            //
+            this.LBL_GVigenciaValor.AutoSize = true;
+            this.LBL_GVigenciaValor.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.LBL_GVigenciaValor.Location = new System.Drawing.Point(150, 50);
+            this.LBL_GVigenciaValor.Name = "LBL_GVigenciaValor";
+            this.LBL_GVigenciaValor.Size = new System.Drawing.Size(20, 15);
+            this.LBL_GVigenciaValor.TabIndex = 4;
+            this.LBL_GVigenciaValor.Text = "-";
+            //
+            // LBL_GEstado
+            //
+            this.LBL_GEstado.AutoSize = true;
+            this.LBL_GEstado.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.LBL_GEstado.Location = new System.Drawing.Point(12, 80);
+            this.LBL_GEstado.Name = "LBL_GEstado";
+            this.LBL_GEstado.Size = new System.Drawing.Size(90, 15);
+            this.LBL_GEstado.TabIndex = 5;
+            this.LBL_GEstado.Tag = "OrdenDetalle.GarantiaEstado";
+            this.LBL_GEstado.Text = "Estado garantia:";
+            //
+            // LBL_GEstadoValor
+            //
+            this.LBL_GEstadoValor.AutoSize = true;
+            this.LBL_GEstadoValor.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.LBL_GEstadoValor.Location = new System.Drawing.Point(150, 80);
+            this.LBL_GEstadoValor.Name = "LBL_GEstadoValor";
+            this.LBL_GEstadoValor.Size = new System.Drawing.Size(20, 15);
+            this.LBL_GEstadoValor.TabIndex = 6;
+            this.LBL_GEstadoValor.Text = "-";
+            //
+            // LBL_GEvaluacion
+            //
+            this.LBL_GEvaluacion.AutoSize = true;
+            this.LBL_GEvaluacion.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.LBL_GEvaluacion.Location = new System.Drawing.Point(12, 110);
+            this.LBL_GEvaluacion.Name = "LBL_GEvaluacion";
+            this.LBL_GEvaluacion.Size = new System.Drawing.Size(70, 15);
+            this.LBL_GEvaluacion.TabIndex = 7;
+            this.LBL_GEvaluacion.Tag = "OrdenDetalle.GarantiaEvaluacion";
+            this.LBL_GEvaluacion.Text = "Evaluacion:";
+            //
+            // LBL_GEvaluacionValor
+            //
+            this.LBL_GEvaluacionValor.AutoSize = true;
+            this.LBL_GEvaluacionValor.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.LBL_GEvaluacionValor.Location = new System.Drawing.Point(150, 110);
+            this.LBL_GEvaluacionValor.Name = "LBL_GEvaluacionValor";
+            this.LBL_GEvaluacionValor.Size = new System.Drawing.Size(20, 15);
+            this.LBL_GEvaluacionValor.TabIndex = 8;
+            this.LBL_GEvaluacionValor.Text = "-";
+            //
+            // LBL_GMotivo
+            //
+            this.LBL_GMotivo.AutoSize = true;
+            this.LBL_GMotivo.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.LBL_GMotivo.Location = new System.Drawing.Point(12, 140);
+            this.LBL_GMotivo.Name = "LBL_GMotivo";
+            this.LBL_GMotivo.Size = new System.Drawing.Size(110, 15);
+            this.LBL_GMotivo.TabIndex = 9;
+            this.LBL_GMotivo.Tag = "OrdenDetalle.GarantiaMotivo";
+            this.LBL_GMotivo.Text = "Motivo evaluacion:";
+            //
+            // TXT_GMotivo
+            //
+            this.TXT_GMotivo.Location = new System.Drawing.Point(150, 137);
+            this.TXT_GMotivo.Name = "TXT_GMotivo";
+            this.TXT_GMotivo.Size = new System.Drawing.Size(720, 22);
+            this.TXT_GMotivo.TabIndex = 10;
+            //
+            // LBL_GObs
+            //
+            this.LBL_GObs.AutoSize = true;
+            this.LBL_GObs.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.LBL_GObs.Location = new System.Drawing.Point(12, 170);
+            this.LBL_GObs.Name = "LBL_GObs";
+            this.LBL_GObs.Size = new System.Drawing.Size(87, 15);
+            this.LBL_GObs.TabIndex = 11;
+            this.LBL_GObs.Tag = "OrdenDetalle.ReingresoObs";
+            this.LBL_GObs.Text = "Observaciones:";
+            //
+            // TXT_GObs
+            //
+            this.TXT_GObs.Location = new System.Drawing.Point(150, 167);
+            this.TXT_GObs.Multiline = true;
+            this.TXT_GObs.Name = "TXT_GObs";
+            this.TXT_GObs.Size = new System.Drawing.Size(720, 60);
+            this.TXT_GObs.TabIndex = 12;
+            //
+            // BTN_AceptarGarantia
+            //
+            this.BTN_AceptarGarantia.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(39)))), ((int)(((byte)(174)))), ((int)(((byte)(96)))));
+            this.BTN_AceptarGarantia.FlatAppearance.BorderSize = 0;
+            this.BTN_AceptarGarantia.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.BTN_AceptarGarantia.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.BTN_AceptarGarantia.ForeColor = System.Drawing.Color.White;
+            this.BTN_AceptarGarantia.Location = new System.Drawing.Point(150, 240);
+            this.BTN_AceptarGarantia.Name = "BTN_AceptarGarantia";
+            this.BTN_AceptarGarantia.Size = new System.Drawing.Size(160, 30);
+            this.BTN_AceptarGarantia.TabIndex = 13;
+            this.BTN_AceptarGarantia.Tag = "OrdenDetalle.AceptarGarantia";
+            this.BTN_AceptarGarantia.Text = "Aceptar garantia";
+            this.BTN_AceptarGarantia.UseVisualStyleBackColor = false;
+            this.BTN_AceptarGarantia.Click += new System.EventHandler(this.BTN_AceptarGarantia_Click);
+            //
+            // BTN_RechazarGarantia
+            //
+            this.BTN_RechazarGarantia.BackColor = System.Drawing.Color.Maroon;
+            this.BTN_RechazarGarantia.FlatAppearance.BorderSize = 0;
+            this.BTN_RechazarGarantia.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.BTN_RechazarGarantia.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.BTN_RechazarGarantia.ForeColor = System.Drawing.Color.White;
+            this.BTN_RechazarGarantia.Location = new System.Drawing.Point(320, 240);
+            this.BTN_RechazarGarantia.Name = "BTN_RechazarGarantia";
+            this.BTN_RechazarGarantia.Size = new System.Drawing.Size(160, 30);
+            this.BTN_RechazarGarantia.TabIndex = 14;
+            this.BTN_RechazarGarantia.Tag = "OrdenDetalle.RechazarGarantia";
+            this.BTN_RechazarGarantia.Text = "Rechazar garantia";
+            this.BTN_RechazarGarantia.UseVisualStyleBackColor = false;
+            this.BTN_RechazarGarantia.Click += new System.EventHandler(this.BTN_RechazarGarantia_Click);
+            //
+            // BTN_CrearReingreso
+            //
+            this.BTN_CrearReingreso.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(142)))), ((int)(((byte)(68)))), ((int)(((byte)(173)))));
+            this.BTN_CrearReingreso.FlatAppearance.BorderSize = 0;
+            this.BTN_CrearReingreso.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.BTN_CrearReingreso.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.BTN_CrearReingreso.ForeColor = System.Drawing.Color.White;
+            this.BTN_CrearReingreso.Location = new System.Drawing.Point(490, 240);
+            this.BTN_CrearReingreso.Name = "BTN_CrearReingreso";
+            this.BTN_CrearReingreso.Size = new System.Drawing.Size(160, 30);
+            this.BTN_CrearReingreso.TabIndex = 15;
+            this.BTN_CrearReingreso.Tag = "OrdenDetalle.CrearReingreso";
+            this.BTN_CrearReingreso.Text = "Crear reingreso";
+            this.BTN_CrearReingreso.UseVisualStyleBackColor = false;
+            this.BTN_CrearReingreso.Click += new System.EventHandler(this.BTN_CrearReingreso_Click);
+            //
             // BTN_Cerrar
             //
             this.BTN_Cerrar.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
@@ -1736,6 +1966,8 @@ namespace UI.Forms.Ordenes
             ((System.ComponentModel.ISupportInitialize)(this.DGV_Pruebas)).EndInit();
             this.TAB_Entrega.ResumeLayout(false);
             this.TAB_Entrega.PerformLayout();
+            this.TAB_Garantia.ResumeLayout(false);
+            this.TAB_Garantia.PerformLayout();
             this.ResumeLayout(false);
         }
 
@@ -1856,6 +2088,23 @@ namespace UI.Forms.Ordenes
         private System.Windows.Forms.Button BTN_Entregar;
         private System.Windows.Forms.Button BTN_CancelarEntrega;
         private System.Windows.Forms.Button BTN_ReabrirPruebas;
+        private System.Windows.Forms.TabPage TAB_Garantia;
+        private System.Windows.Forms.Label LBL_GOrigen;
+        private System.Windows.Forms.Label LBL_GOrigenValor;
+        private System.Windows.Forms.Button BTN_VerOriginal;
+        private System.Windows.Forms.Label LBL_GVigencia;
+        private System.Windows.Forms.Label LBL_GVigenciaValor;
+        private System.Windows.Forms.Label LBL_GEstado;
+        private System.Windows.Forms.Label LBL_GEstadoValor;
+        private System.Windows.Forms.Label LBL_GEvaluacion;
+        private System.Windows.Forms.Label LBL_GEvaluacionValor;
+        private System.Windows.Forms.Label LBL_GMotivo;
+        private System.Windows.Forms.TextBox TXT_GMotivo;
+        private System.Windows.Forms.Label LBL_GObs;
+        private System.Windows.Forms.TextBox TXT_GObs;
+        private System.Windows.Forms.Button BTN_AceptarGarantia;
+        private System.Windows.Forms.Button BTN_RechazarGarantia;
+        private System.Windows.Forms.Button BTN_CrearReingreso;
         private System.Windows.Forms.Button BTN_Cerrar;
     }
 }

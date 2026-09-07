@@ -2,13 +2,16 @@ using System;
 using System.Windows.Forms;
 using APPLICATION.Features.Bitacora;
 using APPLICATION.Features.Clientes;
+using APPLICATION.Features.Compras;
 using APPLICATION.Features.ControlCambios;
 using APPLICATION.Features.Equipos;
+using APPLICATION.Features.Garantias;
 using APPLICATION.Features.Integridad;
 using APPLICATION.Features.Idiomas;
 using APPLICATION.Features.Marcas;
 using APPLICATION.Features.Ordenes;
 using APPLICATION.Features.Permisos;
+using APPLICATION.Features.Proveedores;
 using APPLICATION.Features.Repuestos;
 using APPLICATION.Features.TiposEquipo;
 using APPLICATION.Features.Usuarios;
@@ -61,7 +64,16 @@ namespace UI
             RepuestoService repuestoService = new RepuestoService();
             repuestoService.Inicializar();
 
+            ProveedorService proveedorService = new ProveedorService();
+            proveedorService.Inicializar();
+
+            CompraService compraService = new CompraService();
+            compraService.Inicializar();
+
             ordenServicioService.InicializarReparaciones();
+
+            GarantiaService garantiaService = new GarantiaService();
+            garantiaService.Inicializar();
 
             SesionIdioma.GetInstance().CambiarIdioma(idiomaService.ObtenerIdiomaPorDefecto());
 

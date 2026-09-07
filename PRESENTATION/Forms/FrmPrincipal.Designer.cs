@@ -32,6 +32,9 @@ namespace UI.Forms
             this.TSMI_Inventario = new System.Windows.Forms.ToolStripMenuItem();
             this.TSMI_Repuestos = new System.Windows.Forms.ToolStripMenuItem();
             this.TSMI_Movimientos = new System.Windows.Forms.ToolStripMenuItem();
+            this.TSMI_Proveedores = new System.Windows.Forms.ToolStripMenuItem();
+            this.TSMI_Compras = new System.Windows.Forms.ToolStripMenuItem();
+            this.TSMI_Garantias = new System.Windows.Forms.ToolStripMenuItem();
             this.TSMI_Idioma = new System.Windows.Forms.ToolStripMenuItem();
             this.TSMI_AdministrarTraducciones = new System.Windows.Forms.ToolStripMenuItem();
             this.TSMI_Gestion = new System.Windows.Forms.ToolStripMenuItem();
@@ -135,6 +138,7 @@ namespace UI.Forms
             this.TSMI_Clientes,
             this.TSMI_Equipos,
             this.TSMI_Ordenes,
+            this.TSMI_Garantias,
             this.TSMI_Catalogos,
             this.TSMI_Inventario});
             this.TSMI_Gestion.Name = "TSMI_Gestion";
@@ -196,7 +200,9 @@ namespace UI.Forms
             //
             this.TSMI_Inventario.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.TSMI_Repuestos,
-            this.TSMI_Movimientos});
+            this.TSMI_Movimientos,
+            this.TSMI_Proveedores,
+            this.TSMI_Compras});
             this.TSMI_Inventario.Name = "TSMI_Inventario";
             this.TSMI_Inventario.Size = new System.Drawing.Size(180, 22);
             this.TSMI_Inventario.Tag = "Menu.Inventario";
@@ -217,6 +223,30 @@ namespace UI.Forms
             this.TSMI_Movimientos.Tag = "Menu.MovimientosStock";
             this.TSMI_Movimientos.Text = "Movimientos de stock";
             this.TSMI_Movimientos.Click += new System.EventHandler(this.TSMI_Movimientos_Click);
+            //
+            // TSMI_Proveedores
+            //
+            this.TSMI_Proveedores.Name = "TSMI_Proveedores";
+            this.TSMI_Proveedores.Size = new System.Drawing.Size(180, 22);
+            this.TSMI_Proveedores.Tag = "Menu.Proveedores";
+            this.TSMI_Proveedores.Text = "Proveedores";
+            this.TSMI_Proveedores.Click += new System.EventHandler(this.TSMI_Proveedores_Click);
+            //
+            // TSMI_Compras
+            //
+            this.TSMI_Compras.Name = "TSMI_Compras";
+            this.TSMI_Compras.Size = new System.Drawing.Size(180, 22);
+            this.TSMI_Compras.Tag = "Menu.Compras";
+            this.TSMI_Compras.Text = "Compras";
+            this.TSMI_Compras.Click += new System.EventHandler(this.TSMI_Compras_Click);
+            //
+            // TSMI_Garantias
+            //
+            this.TSMI_Garantias.Name = "TSMI_Garantias";
+            this.TSMI_Garantias.Size = new System.Drawing.Size(180, 22);
+            this.TSMI_Garantias.Tag = "Menu.Garantias";
+            this.TSMI_Garantias.Text = "Garantias";
+            this.TSMI_Garantias.Click += new System.EventHandler(this.TSMI_Garantias_Click);
             //
             // TSMI_Idioma
             //
@@ -276,6 +306,9 @@ namespace UI.Forms
         private System.Windows.Forms.ToolStripMenuItem TSMI_Inventario;
         private System.Windows.Forms.ToolStripMenuItem TSMI_Repuestos;
         private System.Windows.Forms.ToolStripMenuItem TSMI_Movimientos;
+        private System.Windows.Forms.ToolStripMenuItem TSMI_Proveedores;
+        private System.Windows.Forms.ToolStripMenuItem TSMI_Compras;
+        private System.Windows.Forms.ToolStripMenuItem TSMI_Garantias;
         private System.Windows.Forms.ToolStripMenuItem TSMI_Idioma;
         private System.Windows.Forms.ToolStripMenuItem TSMI_AdministrarTraducciones;
     }

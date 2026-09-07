@@ -20,6 +20,8 @@ namespace UI.Forms.Ordenes
             this.CBO_Cliente = new System.Windows.Forms.ComboBox();
             this.LBL_Estado = new System.Windows.Forms.Label();
             this.CBO_Estado = new System.Windows.Forms.ComboBox();
+            this.LBL_Tipo = new System.Windows.Forms.Label();
+            this.CBO_Tipo = new System.Windows.Forms.ComboBox();
             this.LBL_Busqueda = new System.Windows.Forms.Label();
             this.TXT_Busqueda = new System.Windows.Forms.TextBox();
             this.CHK_Entregadas = new System.Windows.Forms.CheckBox();
@@ -65,12 +67,14 @@ namespace UI.Forms.Ordenes
             this.PNL_Filtros.Controls.Add(this.CBO_Cliente);
             this.PNL_Filtros.Controls.Add(this.LBL_Estado);
             this.PNL_Filtros.Controls.Add(this.CBO_Estado);
+            this.PNL_Filtros.Controls.Add(this.LBL_Tipo);
+            this.PNL_Filtros.Controls.Add(this.CBO_Tipo);
             this.PNL_Filtros.Controls.Add(this.LBL_Busqueda);
             this.PNL_Filtros.Controls.Add(this.TXT_Busqueda);
             this.PNL_Filtros.Controls.Add(this.CHK_Entregadas);
             this.PNL_Filtros.Location = new System.Drawing.Point(15, 75);
             this.PNL_Filtros.Name = "PNL_Filtros";
-            this.PNL_Filtros.Size = new System.Drawing.Size(1020, 50);
+            this.PNL_Filtros.Size = new System.Drawing.Size(1020, 78);
             this.PNL_Filtros.TabIndex = 1;
             //
             // LBL_Cliente
@@ -112,6 +116,26 @@ namespace UI.Forms.Ordenes
             this.CBO_Estado.Size = new System.Drawing.Size(165, 21);
             this.CBO_Estado.TabIndex = 3;
             this.CBO_Estado.SelectedIndexChanged += new System.EventHandler(this.CBO_Estado_SelectedIndexChanged);
+            //
+            // LBL_Tipo
+            //
+            this.LBL_Tipo.AutoSize = true;
+            this.LBL_Tipo.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.LBL_Tipo.Location = new System.Drawing.Point(10, 48);
+            this.LBL_Tipo.Name = "LBL_Tipo";
+            this.LBL_Tipo.Size = new System.Drawing.Size(33, 15);
+            this.LBL_Tipo.TabIndex = 7;
+            this.LBL_Tipo.Tag = "Ordenes.FiltroTipo";
+            this.LBL_Tipo.Text = "Tipo:";
+            //
+            // CBO_Tipo
+            //
+            this.CBO_Tipo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.CBO_Tipo.Location = new System.Drawing.Point(63, 45);
+            this.CBO_Tipo.Name = "CBO_Tipo";
+            this.CBO_Tipo.Size = new System.Drawing.Size(180, 21);
+            this.CBO_Tipo.TabIndex = 8;
+            this.CBO_Tipo.SelectedIndexChanged += new System.EventHandler(this.CBO_Tipo_SelectedIndexChanged);
             //
             // LBL_Busqueda
             //
@@ -156,7 +180,7 @@ namespace UI.Forms.Ordenes
             this.DGV_Ordenes.BackgroundColor = System.Drawing.Color.White;
             this.DGV_Ordenes.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.DGV_Ordenes.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.DGV_Ordenes.Location = new System.Drawing.Point(15, 140);
+            this.DGV_Ordenes.Location = new System.Drawing.Point(15, 168);
             this.DGV_Ordenes.MultiSelect = false;
             this.DGV_Ordenes.Name = "DGV_Ordenes";
             this.DGV_Ordenes.ReadOnly = true;
@@ -275,6 +299,8 @@ namespace UI.Forms.Ordenes
         private System.Windows.Forms.ComboBox CBO_Cliente;
         private System.Windows.Forms.Label LBL_Estado;
         private System.Windows.Forms.ComboBox CBO_Estado;
+        private System.Windows.Forms.Label LBL_Tipo;
+        private System.Windows.Forms.ComboBox CBO_Tipo;
         private System.Windows.Forms.Label LBL_Busqueda;
         private System.Windows.Forms.TextBox TXT_Busqueda;
         private System.Windows.Forms.CheckBox CHK_Entregadas;

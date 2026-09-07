@@ -1,15 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using ABSTRACTIONS.Features.Idiomas;
 using APPLICATION.Features.Clientes;
 using APPLICATION.Features.Equipos;
+using APPLICATION.Features.Garantias;
 using APPLICATION.Features.Ordenes;
 using APPLICATION.Features.Repuestos;
 using DOMAIN.Features.Clientes;
 using DOMAIN.Features.Equipos;
+using DOMAIN.Features.Garantias;
 using DOMAIN.Features.Ordenes;
 using DOMAIN.Features.Permisos;
 using DOMAIN.Features.Reparaciones;
@@ -112,6 +115,7 @@ namespace UI.Forms.Ordenes
 
         private readonly SesionIdioma _sesionIdioma;
         private readonly OrdenServicioService _service;
+        private readonly GarantiaService _garantiaService;
         private readonly ClienteService _clienteService;
         private readonly EquipoService _equipoService;
         private readonly string _tabInicial;
@@ -138,6 +142,9 @@ namespace UI.Forms.Ordenes
         private Dictionary<int, List<Prueba>> _pruebasPorReparacion = new Dictionary<int, List<Prueba>>();
         private List<Prueba> _pruebasActuales = new List<Prueba>();
         private Dictionary<int, string> _nombresRepuestos = new Dictionary<int, string>();
+        private Garantia _garantia = null;
+        private bool _garantiaVigente = false;
+        private EvaluacionGarantia _evaluacion = null;
 
         public FrmOrdenServicioDetalle()
             : this(0, null)
@@ -153,6 +160,7 @@ namespace UI.Forms.Ordenes
         {
             _sesionIdioma = SesionIdioma.GetInstance();
             _service = new OrdenServicioService();
+            _garantiaService = new GarantiaService();
             _clienteService = new ClienteService();
             _equipoService = new EquipoService();
             _idOrden = idOrden;
@@ -216,6 +224,18 @@ namespace UI.Forms.Ordenes
             TAB_Pruebas.Text = idioma.BuscarTraduccion(TAB_Pruebas.Tag.ToString());
             TAB_Historial.Text = idioma.BuscarTraduccion(TAB_Historial.Tag.ToString());
             TAB_Entrega.Text = idioma.BuscarTraduccion(TAB_Entrega.Tag.ToString());
+            TAB_Garantia.Text = idioma.BuscarTraduccion(TAB_Garantia.Tag.ToString());
+
+            LBL_GOrigen.Text = idioma.BuscarTraduccion(LBL_GOrigen.Tag.ToString());
+            LBL_GVigencia.Text = idioma.BuscarTraduccion(LBL_GVigencia.Tag.ToString());
+            LBL_GEstado.Text = idioma.BuscarTraduccion(LBL_GEstado.Tag.ToString());
+            LBL_GEvaluacion.Text = idioma.BuscarTraduccion(LBL_GEvaluacion.Tag.ToString());
+            LBL_GMotivo.Text = idioma.BuscarTraduccion(LBL_GMotivo.Tag.ToString());
+            LBL_GObs.Text = idioma.BuscarTraduccion(LBL_GObs.Tag.ToString());
+            BTN_VerOriginal.Text = idioma.BuscarTraduccion(BTN_VerOriginal.Tag.ToString());
+            BTN_AceptarGarantia.Text = idioma.BuscarTraduccion(BTN_AceptarGarantia.Tag.ToString());
+            BTN_RechazarGarantia.Text = idioma.BuscarTraduccion(BTN_RechazarGarantia.Tag.ToString());
+            BTN_CrearReingreso.Text = idioma.BuscarTraduccion(BTN_CrearReingreso.Tag.ToString());
 
             LBL_RCliente.Text = idioma.BuscarTraduccion(LBL_RCliente.Tag.ToString());
             LBL_REquipo.Text = idioma.BuscarTraduccion(LBL_REquipo.Tag.ToString());
@@ -492,6 +512,7 @@ namespace UI.Forms.Ordenes
             CargarTabPruebas();
             CargarTabHistorial();
             CargarTabEntrega();
+            CargarTabGarantia();
             AplicarPermisosDetalle();
             ConfigurarColumnasDetalle();
             ConfigurarColumnasReparaciones();
@@ -516,6 +537,9 @@ namespace UI.Forms.Ordenes
             _entrega = null;
             _pruebasPorReparacion = new Dictionary<int, List<Prueba>>();
             _pruebasActuales = new List<Prueba>();
+            _garantia = null;
+            _garantiaVigente = false;
+            _evaluacion = null;
 
             LBL_MontoAutorizado.Text = "";
 
@@ -539,6 +563,7 @@ namespace UI.Forms.Ordenes
             TAB_Pruebas.Enabled = false;
             TAB_Historial.Enabled = false;
             TAB_Entrega.Enabled = false;
+            TAB_Garantia.Enabled = false;
             TAB_Detalle.SelectedTab = TAB_Recepcion;
 
             AplicarPermisosDetalle();
@@ -554,6 +579,362 @@ namespace UI.Forms.Ordenes
             LBL_HEquipo.Text = T("OrdenDetalle.Equipo") + ": " + ResolverEquipo(_orden.IdEquipo);
             LBL_HTecnico.Text = T("OrdenDetalle.Tecnico") + ": " + ResolverTecnico(_orden.IdTecnicoAsignado);
             LBL_HFecha.Text = T("OrdenDetalle.Fecha") + ": " + _orden.FechaIngreso.ToString("g");
+        }
+
+        private void CargarTabGarantia()
+        {
+            _garantia = null;
+            _garantiaVigente = false;
+            _evaluacion = null;
+
+            LBL_GOrigenValor.Text = "-";
+            LBL_GVigenciaValor.Text = "-";
+            LBL_GEstadoValor.Text = T("OrdenDetalle.GarantiaSinGarantia");
+            LBL_GEvaluacionValor.Text = "-";
+            TXT_GMotivo.Text = "";
+            TXT_GObs.Text = "";
+            TXT_GMotivo.Enabled = false;
+            TXT_GObs.Enabled = false;
+
+            if (_esNuevo || _orden == null)
+                return;
+
+            bool esReingreso = _orden.TipoOrden == TipoOrden.Garantia;
+
+            // Info de garantia de la orden original (Normal) o del origen (reingreso).
+            int idOrdenGarantia = esReingreso && _orden.IdOrdenOrigen.HasValue
+                ? _orden.IdOrdenOrigen.Value
+                : _orden.Id;
+
+            try
+            {
+                _garantia = _garantiaService.ObtenerPorOrden(idOrdenGarantia);
+            }
+            catch
+            {
+                _garantia = null;
+            }
+
+            if (_garantia != null)
+            {
+                _garantiaVigente = !_garantia.Anulada && DateTime.Now <= _garantia.FechaFin;
+                LBL_GVigenciaValor.Text = _garantia.FechaInicio.ToString("g") + " - " + _garantia.FechaFin.ToString("g");
+
+                if (_garantia.Anulada)
+                    LBL_GEstadoValor.Text = T("OrdenDetalle.GarantiaAnulada");
+                else if (_garantiaVigente)
+                    LBL_GEstadoValor.Text = T("OrdenDetalle.GarantiaVigente");
+                else
+                    LBL_GEstadoValor.Text = T("OrdenDetalle.GarantiaVencida");
+            }
+
+            if (esReingreso && _orden.IdOrdenOrigen.HasValue)
+            {
+                try
+                {
+                    OrdenServicio origen = _service.ObtenerPorId(_orden.IdOrdenOrigen.Value);
+                    LBL_GOrigenValor.Text = "#" + origen.NumeroOrden;
+                }
+                catch
+                {
+                    LBL_GOrigenValor.Text = "#" + _orden.IdOrdenOrigen.Value;
+                }
+
+                try
+                {
+                    _evaluacion = _garantiaService.ObtenerEvaluacionPorReingreso(_orden.Id);
+                }
+                catch
+                {
+                    _evaluacion = null;
+                }
+
+                if (_evaluacion != null)
+                {
+                    LBL_GEvaluacionValor.Text = TraducirEvaluacion(_evaluacion.Estado);
+                    TXT_GMotivo.Text = _evaluacion.Motivo;
+                    TXT_GObs.Text = _evaluacion.Observaciones;
+                }
+                else
+                {
+                    LBL_GEvaluacionValor.Text = T("OrdenDetalle.EvaluacionPendiente");
+                }
+            }
+            else
+            {
+                LBL_GOrigenValor.Text = "-";
+                LBL_GEvaluacionValor.Text = "-";
+
+                // Orden Normal sin garantia registrada: el texto queda en "Sin garantia"
+                // (incluye DiasGarantia=0 o no Reparado, que nunca generan garantia).
+                if (_garantia == null && _orden.Resultado == ResultadoOrdenServicio.Reparado)
+                    LBL_GEstadoValor.Text = T("OrdenDetalle.GarantiaSinGarantia");
+            }
+
+            AplicarPermisosGarantia();
+        }
+
+        private string TraducirEvaluacion(string estado)
+        {
+            if (string.IsNullOrEmpty(estado))
+                return T("OrdenDetalle.EvaluacionPendiente");
+
+            if (estado == EstadoEvaluacionGarantia.Aceptada)
+                return T("OrdenDetalle.EvaluacionAceptada");
+
+            if (estado == EstadoEvaluacionGarantia.Rechazada)
+                return T("OrdenDetalle.EvaluacionRechazada");
+
+            return T("OrdenDetalle.EvaluacionPendiente");
+        }
+
+        private void AplicarPermisosGarantia()
+        {
+            if (BTN_AceptarGarantia == null || BTN_RechazarGarantia == null
+                || BTN_VerOriginal == null || BTN_CrearReingreso == null)
+                return;
+
+            bool puedeEditar = TienePermiso(CodigosPermiso.OrdenesEditar);
+            bool puedeDecidir = TienePermiso(CodigosPermiso.PresupuestosDecidir);
+
+            bool esReingreso = !_esNuevo && _orden != null && _orden.TipoOrden == TipoOrden.Garantia;
+            bool tieneOrigen = esReingreso && _orden.IdOrdenOrigen.HasValue;
+
+            bool pendienteEvaluacion = esReingreso && _orden != null
+                && _orden.Estado == EstadoOrdenServicio.PendienteEvaluacionGarantia
+                && (_evaluacion == null || _evaluacion.Estado == EstadoEvaluacionGarantia.Pendiente);
+
+            BTN_VerOriginal.Visible = tieneOrigen;
+            BTN_VerOriginal.Enabled = tieneOrigen;
+
+            BTN_AceptarGarantia.Visible = esReingreso && puedeEditar;
+            BTN_AceptarGarantia.Enabled = pendienteEvaluacion && puedeEditar;
+            BTN_RechazarGarantia.Visible = esReingreso && puedeDecidir;
+            BTN_RechazarGarantia.Enabled = pendienteEvaluacion && puedeDecidir;
+
+            TXT_GMotivo.Enabled = pendienteEvaluacion && (puedeEditar || puedeDecidir);
+            TXT_GObs.Enabled = pendienteEvaluacion && (puedeEditar || puedeDecidir);
+
+            // Crear reingreso: solo orden original Normal + Entregada + Reparada +
+            // garantia vigente. El service revalida todo (muestra su error si cambia).
+            bool puedeReingresar = !_esNuevo && _orden != null
+                && _orden.TipoOrden == TipoOrden.Normal
+                && _orden.Estado == EstadoOrdenServicio.Entregado
+                && _orden.Resultado == ResultadoOrdenServicio.Reparado
+                && _garantia != null && _garantiaVigente;
+
+            BTN_CrearReingreso.Visible = !_esNuevo && puedeEditar
+                && _orden != null && _orden.TipoOrden == TipoOrden.Normal;
+            BTN_CrearReingreso.Enabled = puedeReingresar && puedeEditar;
+        }
+
+        private void BTN_VerOriginal_Click(object sender, EventArgs e)
+        {
+            if (_esNuevo || _orden == null || !_orden.IdOrdenOrigen.HasValue)
+                return;
+
+            if (!TienePermiso(CodigosPermiso.OrdenesVer))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
+            using (FrmOrdenServicioDetalle dlg = new FrmOrdenServicioDetalle(_orden.IdOrdenOrigen.Value))
+            {
+                dlg.ShowDialog(this);
+            }
+
+            CargarOrden();
+        }
+
+        private void BTN_CrearReingreso_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.OrdenesCrear))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
+            if (_esNuevo || _orden == null || _orden.TipoOrden != TipoOrden.Normal)
+                return;
+
+            string problema = PedirTexto(
+                T("OrdenDetalle.CrearReingreso"),
+                T("OrdenDetalle.ReingresoProblema"));
+
+            if (problema == null)
+                return;
+
+            if (string.IsNullOrWhiteSpace(problema))
+            {
+                MostrarAdvertencia("Mensaje.OrdenCamposObligatorios");
+                return;
+            }
+
+            DialogResult confirmacion = MessageBox.Show(
+                T("Mensaje.ConfirmarCrearReingreso"),
+                T("Titulo.ConfirmarEdicion"),
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning);
+
+            if (confirmacion == DialogResult.No)
+                return;
+
+            try
+            {
+                OrdenServicio reingreso = _service.CrearReingresoGarantia(
+                    _orden.Id, _orden.IdCliente, problema.Trim(), "", "", "");
+                MessageBox.Show(
+                    T("Mensaje.ReingresoCreado").Replace("{0}", reingreso.NumeroOrden.ToString()),
+                    T("Titulo.Exito"),
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+                CargarOrden();
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+        }
+
+        private void BTN_AceptarGarantia_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.OrdenesEditar))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
+            if (_esNuevo || _orden == null || _orden.TipoOrden != TipoOrden.Garantia)
+                return;
+
+            if (string.IsNullOrWhiteSpace(TXT_GMotivo.Text))
+            {
+                MostrarAdvertencia("Mensaje.OrdenCamposObligatorios");
+                return;
+            }
+
+            DialogResult confirmacion = MessageBox.Show(
+                T("Mensaje.ConfirmarAceptarGarantia"),
+                T("Titulo.ConfirmarEdicion"),
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning);
+
+            if (confirmacion == DialogResult.No)
+                return;
+
+            try
+            {
+                _service.EvaluarReingreso(_idOrden, true,
+                    TXT_GMotivo.Text.Trim(), TXT_GObs.Text.Trim());
+                CargarOrden();
+                MostrarExito("Mensaje.OperacionExitosa");
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+        }
+
+        private void BTN_RechazarGarantia_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.PresupuestosDecidir))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
+            if (_esNuevo || _orden == null || _orden.TipoOrden != TipoOrden.Garantia)
+                return;
+
+            if (string.IsNullOrWhiteSpace(TXT_GMotivo.Text))
+            {
+                MostrarAdvertencia("Mensaje.OrdenCamposObligatorios");
+                return;
+            }
+
+            // OJO CP4: el backend decide por motivo.Contains("pago"). La UI NO confia
+            // en el texto: pregunta explicita con DOS botones. "pago" => motivo con
+            // continuidad de pago (PendientePresupuesto); retiro => motivo tal cual
+            // (ListoRetiro + GarantiaNoCubierta).
+            int destino = PedirDestinoRechazo();
+
+            if (destino < 0)
+                return;
+
+            string motivo = TXT_GMotivo.Text.Trim();
+
+            if (destino == 0)
+            {
+                MessageBox.Show(
+                    T("Mensaje.GarantiaPagoInfo"),
+                    T("Titulo.Exito"),
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+
+                if (!motivo.ToLower().Contains("pago"))
+                    motivo = motivo + " [pago: continua como reparacion paga]";
+            }
+
+            try
+            {
+                _service.EvaluarReingreso(_idOrden, false, motivo, TXT_GObs.Text.Trim());
+                CargarOrden();
+                MostrarExito("Mensaje.OperacionExitosa");
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+        }
+
+        // Devuelve 0 = reparacion paga, 1 = retiro sin cobertura, -1 = cancelado.
+        private int PedirDestinoRechazo()
+        {
+            using (Form dialogo = new Form())
+            {
+                dialogo.Text = T("OrdenDetalle.EvaluarRechazoTitulo");
+                dialogo.FormBorderStyle = FormBorderStyle.FixedDialog;
+                dialogo.StartPosition = FormStartPosition.CenterParent;
+                dialogo.MaximizeBox = false;
+                dialogo.MinimizeBox = false;
+                dialogo.ShowInTaskbar = false;
+                dialogo.ClientSize = new Size(440, 140);
+
+                Label lbl = new Label();
+                lbl.Text = T("OrdenDetalle.EvaluarRechazoPregunta");
+                lbl.AutoSize = false;
+                lbl.Location = new Point(12, 12);
+                lbl.Size = new Size(416, 40);
+                dialogo.Controls.Add(lbl);
+
+                int resultado = -1;
+
+                Button btnPago = new Button();
+                btnPago.Text = T("OrdenDetalle.RechazoPago");
+                btnPago.Location = new Point(12, 60);
+                btnPago.Size = new Size(200, 50);
+                btnPago.BackColor = Color.FromArgb(39, 174, 96);
+                btnPago.FlatStyle = FlatStyle.Flat;
+                btnPago.ForeColor = Color.White;
+                btnPago.Click += (s, ev) => { resultado = 0; dialogo.DialogResult = DialogResult.OK; dialogo.Close(); };
+                dialogo.Controls.Add(btnPago);
+
+                Button btnRetiro = new Button();
+                btnRetiro.Text = T("OrdenDetalle.RechazoRetiro");
+                btnRetiro.Location = new Point(222, 60);
+                btnRetiro.Size = new Size(206, 50);
+                btnRetiro.BackColor = Color.Maroon;
+                btnRetiro.FlatStyle = FlatStyle.Flat;
+                btnRetiro.ForeColor = Color.White;
+                btnRetiro.Click += (s, ev) => { resultado = 1; dialogo.DialogResult = DialogResult.OK; dialogo.Close(); };
+                dialogo.Controls.Add(btnRetiro);
+
+                if (dialogo.ShowDialog(this) != DialogResult.OK)
+                    return -1;
+
+                return resultado;
+            }
         }
 
         private void CargarTabDiagnostico()
@@ -1943,6 +2324,7 @@ namespace UI.Forms.Ordenes
                 TAB_Pruebas.Enabled = true;
                 TAB_Historial.Enabled = true;
                 TAB_Entrega.Enabled = true;
+                TAB_Garantia.Enabled = true;
                 CargarOrden();
                 MostrarExito("Mensaje.OperacionExitosa");
             }
@@ -3081,6 +3463,7 @@ namespace UI.Forms.Ordenes
             BTN_FinalizarPruebas.Visible = !_esNuevo && puedeEditar;
             BTN_FinalizarPruebas.Enabled = puedeFinalizarPruebas;
             ActualizarBotonAnularPrueba();
+            AplicarPermisosGarantia();
         }
 
         private bool TienePermiso(string codigo)
