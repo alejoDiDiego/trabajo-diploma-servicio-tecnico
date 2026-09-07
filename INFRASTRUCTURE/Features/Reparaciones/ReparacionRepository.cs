@@ -23,7 +23,15 @@ namespace REPOSITORY.Features.Reparaciones
 
         public void Inicializar()
         {
-            string query = @"
+            // FIX migracion legacy (idem Presupuestos Error 207): SQL Server compila el batch
+            // completo antes de ejecutarlo, asi que el bloque ELSE que referencia 'id_consumo'
+            // fallaria en DBs legacy sin esa columna si va en el mismo batch que el ALTER ADD.
+            // Se divide en 2 fases: fase 1 crea todo lo que NO referencia 'id_consumo'
+            // (incluye ALTER ADD id_consumo + DROP PK compuesta + PK nueva + resto de columnas/FKs),
+            // fase 2 crea el indice cuando la columna ya existe. 2x ExecuteTransaction por
+            // ser lo mas simple/explicito frente a EXEC(sp_executesql).
+            // F8: ReparacionRepuesto pasa a una fila por consumo (id_consumo IDENTITY PK).
+            string fase1 = @"
                 IF OBJECT_ID('Reparaciones', 'U') IS NULL
                 BEGIN
                     CREATE TABLE Reparaciones (
@@ -99,12 +107,15 @@ namespace REPOSITORY.Features.Reparaciones
 
                 IF OBJECT_ID('ReparacionRepuesto', 'U') IS NULL
                 BEGIN
+                    -- F8: una fila por consumo (id_consumo IDENTITY PK) + indice normal
+                    -- en (id_reparacion, id_repuesto). Filas existentes (una por par)
+                    -- siguen validas tras la migracion.
                     CREATE TABLE ReparacionRepuesto (
+                        id_consumo int IDENTITY(1,1) NOT NULL PRIMARY KEY,
                         id_reparacion int NOT NULL,
                         id_repuesto int NOT NULL,
                         cantidad int NOT NULL,
                         costo_unitario decimal(18,2) NOT NULL CONSTRAINT DF_ReparacionRepuesto_Costo DEFAULT 0,
-                        CONSTRAINT PK_ReparacionRepuesto PRIMARY KEY (id_reparacion, id_repuesto),
                         CONSTRAINT FK_ReparacionRepuesto_Reparacion FOREIGN KEY (id_reparacion)
                             REFERENCES Reparaciones(id_reparacion),
                         CONSTRAINT FK_ReparacionRepuesto_Repuesto FOREIGN KEY (id_repuesto)
@@ -113,6 +124,14 @@ namespace REPOSITORY.Features.Reparaciones
                 END
                 ELSE
                 BEGIN
+                    -- F8 migracion idempotente PK compuesta -> id_consumo IDENTITY PK.
+                    -- NOTA compile-time (Error 207): todo lo que referencia 'id_consumo'
+                    -- (DROP PK por nombre + ADD PK + SELECT del cursor/lecturas) debe ir en
+                    -- fase 2 (EXEC separado tras el ALTER ADD); fase 1 solo agrega la columna
+                    -- y migra lo que NO nombra 'id_consumo'. Segunda pasada idempotente.
+                    IF COL_LENGTH('ReparacionRepuesto', 'id_consumo') IS NULL
+                        ALTER TABLE ReparacionRepuesto ADD id_consumo int IDENTITY(1,1) NOT NULL;
+
                     IF COL_LENGTH('ReparacionRepuesto', 'cantidad') IS NULL
                         ALTER TABLE ReparacionRepuesto ADD cantidad int NOT NULL CONSTRAINT DF_ReparacionRepuesto_Cantidad DEFAULT 1;
 
@@ -247,7 +266,56 @@ namespace REPOSITORY.Features.Reparaciones
                 SELECT 0;
             ";
 
-            _db.ExecuteTransaction(query);
+            _db.ExecuteTransaction(fase1);
+
+            string fase2 = @"
+                -- F8 fase 2 (compilacion separada: 'id_consumo' ya existe tras fase 1).
+                -- (1) soltar PK compuesta legacy si sigue, (2) PK en id_consumo si falta,
+                -- (3) indice normal. Todo con guarda: segunda pasada no-op.
+                IF EXISTS (
+                    SELECT 1 FROM sys.key_constraints
+                    WHERE name = 'PK_ReparacionRepuesto'
+                      AND parent_object_id = OBJECT_ID('ReparacionRepuesto')
+                      AND type = 'PK'
+                      AND OBJECT_NAME(parent_object_id) = 'ReparacionRepuesto'
+                )
+                BEGIN
+                    DECLARE @Cols int;
+
+                    SELECT @Cols = COUNT(1)
+                    FROM sys.index_columns ic
+                    INNER JOIN sys.key_constraints kc ON kc.parent_object_id = ic.object_id
+                        AND kc.unique_index_id = ic.index_id
+                    WHERE kc.name = 'PK_ReparacionRepuesto'
+                      AND kc.parent_object_id = OBJECT_ID('ReparacionRepuesto');
+
+                    IF (@Cols > 1)
+                        ALTER TABLE ReparacionRepuesto DROP CONSTRAINT PK_ReparacionRepuesto;
+                END
+
+                IF NOT EXISTS (
+                    SELECT 1 FROM sys.key_constraints
+                    WHERE parent_object_id = OBJECT_ID('ReparacionRepuesto')
+                      AND type = 'PK'
+                )
+                BEGIN
+                    ALTER TABLE ReparacionRepuesto ADD CONSTRAINT PK_ReparacionRepuesto PRIMARY KEY (id_consumo);
+                END
+
+                IF NOT EXISTS (
+                    SELECT 1 FROM sys.indexes
+                    WHERE name = 'IX_ReparacionRepuesto_Rep_Rep'
+                      AND object_id = OBJECT_ID('ReparacionRepuesto')
+                )
+                BEGIN
+                    CREATE INDEX IX_ReparacionRepuesto_Rep_Rep
+                    ON ReparacionRepuesto(id_reparacion, id_repuesto);
+                END
+
+                SELECT 0;
+            ";
+
+            _db.ExecuteTransaction(fase2);
         }
 
         public int IniciarReparacion(int idOrden, int idTecnico, int idUsuario)
@@ -319,7 +387,9 @@ namespace REPOSITORY.Features.Reparaciones
         public void ConsumirRepuesto(int idReparacion, int idRepuesto, int cantidad,
             decimal costoUnitario, int idUsuario, string observacion)
         {
-            // Batch atomico: valida stock, acumula consumo, descuenta stock y registra movimiento.
+            // F8: batch atomico con FILA SEPARADA por consumo (sin upsert cantidad+=):
+            // cada consumo inserta una fila con el costo vigente. Valida stock,
+            // inserta consumo, descuenta stock y registra movimiento.
             string query = @"
                 DECLARE @Stock int;
 
@@ -333,18 +403,8 @@ namespace REPOSITORY.Features.Reparaciones
                 IF (@Stock < @Cantidad)
                     THROW 50002, 'Stock insuficiente para el consumo.', 1;
 
-                IF EXISTS (SELECT 1 FROM ReparacionRepuesto
-                           WHERE id_reparacion = @IdReparacion AND id_repuesto = @IdRepuesto)
-                BEGIN
-                    UPDATE ReparacionRepuesto
-                    SET cantidad = cantidad + @Cantidad
-                    WHERE id_reparacion = @IdReparacion AND id_repuesto = @IdRepuesto;
-                END
-                ELSE
-                BEGIN
-                    INSERT INTO ReparacionRepuesto (id_reparacion, id_repuesto, cantidad, costo_unitario)
-                    VALUES (@IdReparacion, @IdRepuesto, @Cantidad, @Costo);
-                END
+                INSERT INTO ReparacionRepuesto (id_reparacion, id_repuesto, cantidad, costo_unitario)
+                VALUES (@IdReparacion, @IdRepuesto, @Cantidad, @Costo);
 
                 UPDATE Repuestos
                 SET stock_actual = @Stock - @Cantidad
@@ -374,50 +434,80 @@ namespace REPOSITORY.Features.Reparaciones
 
         public void DevolverConsumo(int idReparacion, int idRepuesto, int cantidad, int idUsuario)
         {
-            // Batch atomico: valida consumo, descuenta o elimina la fila, devuelve stock y registra movimiento.
+            // F8: batch atomico con devolucion FIFO contra consumos concretos (por id_consumo,
+            // los mas viejos primero) hasta cubrir la cantidad, con sus movimientos
+            // correspondientes (una fila DevolucionConsumo por cada fila consumida tocada).
             string query = @"
-                DECLARE @Consumida int;
+                DECLARE @Total int;
 
-                SELECT @Consumida = cantidad
+                SELECT @Total = ISNULL(SUM(cantidad), 0)
                 FROM ReparacionRepuesto WITH (UPDLOCK, HOLDLOCK)
                 WHERE id_reparacion = @IdReparacion AND id_repuesto = @IdRepuesto;
 
-                IF (@Consumida IS NULL)
+                IF (@Total <= 0)
                     THROW 50003, 'La reparacion no tiene consumo registrado del repuesto.', 1;
 
-                IF (@Cantidad > @Consumida)
+                IF (@Cantidad > @Total)
                     THROW 50004, 'La cantidad a devolver supera la consumida.', 1;
 
-                IF (@Cantidad = @Consumida)
+                DECLARE @Resto int = @Cantidad;
+                DECLARE @IdConsumo int;
+                DECLARE @CantFila int;
+                DECLARE @Dev int;
+                DECLARE @StockFila int;
+
+                DECLARE cur CURSOR LOCAL FAST_FORWARD FOR
+                    SELECT id_consumo, cantidad
+                    FROM ReparacionRepuesto WITH (UPDLOCK, HOLDLOCK)
+                    WHERE id_reparacion = @IdReparacion AND id_repuesto = @IdRepuesto
+                    ORDER BY id_consumo;
+
+                OPEN cur;
+                FETCH NEXT FROM cur INTO @IdConsumo, @CantFila;
+
+                WHILE (@@FETCH_STATUS = 0 AND @Resto > 0)
                 BEGIN
-                    DELETE FROM ReparacionRepuesto
-                    WHERE id_reparacion = @IdReparacion AND id_repuesto = @IdRepuesto;
+                    SET @Dev = CASE WHEN @CantFila <= @Resto THEN @CantFila ELSE @Resto END;
+
+                    IF (@Dev = @CantFila)
+                    BEGIN
+                        DELETE FROM ReparacionRepuesto WHERE id_consumo = @IdConsumo;
+                    END
+                    ELSE
+                    BEGIN
+                        UPDATE ReparacionRepuesto
+                        SET cantidad = cantidad - @Dev
+                        WHERE id_consumo = @IdConsumo;
+                    END
+
+                    SELECT @StockFila = stock_actual
+                    FROM Repuestos WITH (UPDLOCK, HOLDLOCK)
+                    WHERE id_repuesto = @IdRepuesto;
+
+                    IF (@StockFila IS NULL)
+                    BEGIN
+                        CLOSE cur;
+                        DEALLOCATE cur;
+                        THROW 50001, 'El repuesto seleccionado no existe.', 1;
+                    END
+
+                    UPDATE Repuestos
+                    SET stock_actual = @StockFila + @Dev
+                    WHERE id_repuesto = @IdRepuesto;
+
+                    INSERT INTO MovimientosStock (id_repuesto, fecha, tipo, cantidad,
+                        stock_anterior, stock_posterior, id_usuario, id_compra,
+                        id_reparacion, observacion)
+                    VALUES (@IdRepuesto, GETDATE(), 'DevolucionConsumo', @Dev,
+                        @StockFila, @StockFila + @Dev, @IdUsuario, NULL, @IdReparacion, @Observacion);
+
+                    SET @Resto = @Resto - @Dev;
+
+                    FETCH NEXT FROM cur INTO @IdConsumo, @CantFila;
                 END
-                ELSE
-                BEGIN
-                    UPDATE ReparacionRepuesto
-                    SET cantidad = cantidad - @Cantidad
-                    WHERE id_reparacion = @IdReparacion AND id_repuesto = @IdRepuesto;
-                END
 
-                DECLARE @Stock int;
-
-                SELECT @Stock = stock_actual
-                FROM Repuestos WITH (UPDLOCK, HOLDLOCK)
-                WHERE id_repuesto = @IdRepuesto;
-
-                IF (@Stock IS NULL)
-                    THROW 50001, 'El repuesto seleccionado no existe.', 1;
-
-                UPDATE Repuestos
-                SET stock_actual = @Stock + @Cantidad
-                WHERE id_repuesto = @IdRepuesto;
-
-                INSERT INTO MovimientosStock (id_repuesto, fecha, tipo, cantidad,
-                    stock_anterior, stock_posterior, id_usuario, id_compra,
-                    id_reparacion, observacion)
-                VALUES (@IdRepuesto, GETDATE(), 'DevolucionConsumo', @Cantidad,
-                    @Stock, @Stock + @Cantidad, @IdUsuario, NULL, @IdReparacion, @Observacion);
+                CLOSE cur;
+                DEALLOCATE cur;
 
                 SELECT 0;
             ";
@@ -573,17 +663,25 @@ namespace REPOSITORY.Features.Reparaciones
 
         public void CerrarAbiertaYCancelar(int idOrden, string motivo, int idUsuario)
         {
-            // Batch atomico: cierra reparacion abierta + orden->ListoRetiro(Cancelado) + historial.
+            // F2: sin llamantes validos (CancelarOrden ya no cierra reparaciones porque solo
+            // admite hasta AutorizadoReparacion). Se conserva el batch por riesgo y se aplica
+            // F9: preservar observaciones existentes (solo completa NULL/vacio con el motivo,
+            // sin sobrescribir). Batch atomico: cierra reparacion abierta + orden->ListoRetiro(Cancelado) + historial.
+            // F9: observacion_resultado tambien preserva combinando (existente + " | " + motivo).
             string query = @"
                 UPDATE Reparaciones
                 SET fecha_fin = GETDATE(),
-                    observaciones = @Motivo
+                    observaciones = CASE WHEN observaciones IS NULL OR LTRIM(RTRIM(observaciones)) = '' THEN @Motivo ELSE observaciones END
                 WHERE id_orden = @IdOrden AND fecha_fin IS NULL;
+
+                DECLARE @ObsPrevia nvarchar(max);
+
+                SELECT @ObsPrevia = observacion_resultado FROM OrdenesServicio WHERE id_orden = @IdOrden;
 
                 UPDATE OrdenesServicio
                 SET estado = 'ListoRetiro',
                     resultado = 'Cancelado',
-                    observacion_resultado = @Motivo
+                    observacion_resultado = CASE WHEN @ObsPrevia IS NULL OR LTRIM(RTRIM(@ObsPrevia)) = '' THEN @Motivo ELSE @ObsPrevia + ' | ' + @Motivo END
                 WHERE id_orden = @IdOrden;
 
                 INSERT INTO HistorialOrdenes (id_orden, estado_anterior, estado_nuevo,
@@ -673,11 +771,16 @@ namespace REPOSITORY.Features.Reparaciones
 
         public List<ReparacionRepuesto> ListarConsumidos(int idReparacion)
         {
+            // F8: una fila por consumo (orden FIFO por id_consumo, igual que la devolucion).
+            // NOTA compile-time (Error 207): el SELECT nombra 'id_consumo' directo; en DBs
+            // legacy sin la columna fallaria al compilar. Pero Inicializar() fase 1/2 corre
+            // en Program.cs ANTES que cualquier lectura, asi que para cuando este metodo
+            // se ejecuta la columna ya existe. Segunda pasada idempotente.
             string query = @"
-                SELECT id_reparacion, id_repuesto, cantidad, costo_unitario
+                SELECT id_consumo, id_reparacion, id_repuesto, cantidad, costo_unitario
                 FROM ReparacionRepuesto
                 WHERE id_reparacion = @IdReparacion
-                ORDER BY id_repuesto;
+                ORDER BY id_consumo;
             ";
 
             SqlParameter[] sqlParameters = new SqlParameter[]
@@ -694,7 +797,8 @@ namespace REPOSITORY.Features.Reparaciones
                     Convert.ToInt32(fila["id_reparacion"]),
                     Convert.ToInt32(fila["id_repuesto"]),
                     Convert.ToInt32(fila["cantidad"]),
-                    Convert.ToDecimal(fila["costo_unitario"])
+                    Convert.ToDecimal(fila["costo_unitario"]),
+                    fila["id_consumo"] == DBNull.Value ? 0 : Convert.ToInt32(fila["id_consumo"])
                 ));
             }
 

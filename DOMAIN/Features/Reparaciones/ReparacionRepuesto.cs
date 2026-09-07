@@ -4,6 +4,9 @@ namespace DOMAIN.Features.Reparaciones
 {
     public class ReparacionRepuesto
     {
+        // F8: una fila por consumo (id_consumo IDENTITY PK) para conservar el costo
+        // vigente de cada consumo; (id_reparacion, id_repuesto) queda como indice normal.
+        public int IdConsumo { get; private set; }
         public int IdReparacion { get; private set; }
         public int IdRepuesto { get; private set; }
         public int Cantidad { get; private set; }
@@ -33,10 +36,11 @@ namespace DOMAIN.Features.Reparaciones
         }
 
         public static ReparacionRepuesto CargarDesdeDB(int idReparacion, int idRepuesto,
-            int cantidad, decimal costoUnitario)
+            int cantidad, decimal costoUnitario, int idConsumo = 0)
         {
             return new ReparacionRepuesto
             {
+                IdConsumo = idConsumo,
                 IdReparacion = idReparacion,
                 IdRepuesto = idRepuesto,
                 Cantidad = cantidad,

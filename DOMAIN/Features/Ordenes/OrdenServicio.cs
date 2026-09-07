@@ -233,13 +233,13 @@ namespace DOMAIN.Features.Ordenes
 
         public void Cancelar(string motivo)
         {
+            // F2: solo hasta AutorizadoReparacion. EnReparacion/EnPruebas/ListoRetiro/Entregado
+            // rechazan con el mismo mensaje; el guard corre antes de escribir (sin cambios en DB).
             if (Estado != EstadoOrdenServicio.Recibido
                 && Estado != EstadoOrdenServicio.EnDiagnostico
                 && Estado != EstadoOrdenServicio.PendientePresupuesto
                 && Estado != EstadoOrdenServicio.EsperandoRespuesta
-                && Estado != EstadoOrdenServicio.AutorizadoReparacion
-                && Estado != EstadoOrdenServicio.EnReparacion
-                && Estado != EstadoOrdenServicio.EnPruebas)
+                && Estado != EstadoOrdenServicio.AutorizadoReparacion)
                 throw new ReglaNegocioException("La orden no se puede cancelar en su estado actual.");
             if (string.IsNullOrWhiteSpace(motivo))
                 throw new ReglaNegocioException("El motivo de la cancelacion es obligatorio.");

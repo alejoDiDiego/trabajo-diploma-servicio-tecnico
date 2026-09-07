@@ -529,9 +529,10 @@ namespace REPOSITORY.Features.Ordenes
                     observaciones = COALESCE(@Observaciones, observaciones)
                 WHERE id_presupuesto = @IdPresupuesto;
 
+                -- F9: preservar observaciones existentes de la reparacion abierta
+                -- (no sobrescribir con el motivo del rechazo).
                 UPDATE Reparaciones
-                SET fecha_fin = GETDATE(),
-                    observaciones = @Motivo
+                SET fecha_fin = GETDATE()
                 WHERE id_orden = @Orden AND fecha_fin IS NULL;
 
                 UPDATE OrdenesServicio
@@ -729,6 +730,67 @@ namespace REPOSITORY.Features.Ordenes
                 new SqlParameter("@ObservacionResultado", (object)observacionResultado ?? DBNull.Value),
                 new SqlParameter("@ObservacionHistorial", (object)observacionHistorial ?? DBNull.Value),
                 new SqlParameter("@CerrarAbierta", cerrarAbierta ? 1 : 0),
+                new SqlParameter("@IdUsuario", idUsuario)
+            };
+
+            _db.ExecuteTransaction(query, sqlParameters);
+        }
+
+        public void AnularRechazadoConTransicion(int idPresupuesto, string motivo,
+            string estadoOrdenAnterior, string nuevoEstadoOrden, string observacionResultadoCombinada,
+            string observacionHistorial, int idUsuario)
+        {
+            // F5: batch atomico especifico para anular un Rechazado con transicion coherente:
+            // presupuesto->Anulado + orden ListoRetiro/PresupuestoRechazado->PendientePresupuesto +
+            // resultado NULL + historial. F9: observacion_resultado se COMBINA en C# antes de
+            // llamar (existente + " | " + motivo anulacion), el batch solo la escribe.
+            string query = @"
+                IF NOT EXISTS (SELECT 1 FROM Presupuestos WHERE id_presupuesto = @IdPresupuesto)
+                    THROW 50010, 'El presupuesto seleccionado no existe.', 1;
+
+                IF ((SELECT estado FROM Presupuestos WHERE id_presupuesto = @IdPresupuesto) <> 'Rechazado')
+                    THROW 50015, 'Solo se puede anular con transicion un presupuesto rechazado.', 1;
+
+                DECLARE @Orden int;
+                DECLARE @EstadoOrden nvarchar(50);
+                DECLARE @ResultadoOrden nvarchar(50);
+
+                SELECT @Orden = id_orden FROM Presupuestos WHERE id_presupuesto = @IdPresupuesto;
+
+                SELECT @EstadoOrden = estado, @ResultadoOrden = resultado
+                FROM OrdenesServicio WHERE id_orden = @Orden;
+
+                IF (@EstadoOrden <> 'ListoRetiro' OR @ResultadoOrden <> 'PresupuestoRechazado')
+                    THROW 50016, 'No se puede anular el presupuesto rechazado en el estado actual de la orden.', 1;
+
+                IF EXISTS (SELECT 1 FROM Entregas WHERE id_orden = @Orden)
+                    THROW 50017, 'No se puede anular el presupuesto rechazado porque la orden ya fue entregada.', 1;
+
+                UPDATE Presupuestos
+                SET estado = 'Anulado',
+                    motivo_anulacion = @Motivo
+                WHERE id_presupuesto = @IdPresupuesto;
+
+                UPDATE OrdenesServicio
+                SET estado = @NuevoEstadoOrden,
+                    resultado = NULL,
+                    observacion_resultado = @ObservacionResultado
+                WHERE id_orden = @Orden;
+
+                INSERT INTO HistorialOrdenes (id_orden, estado_anterior, estado_nuevo, fecha_hora, id_usuario, observacion)
+                VALUES (@Orden, @EstadoOrdenAnterior, @NuevoEstadoOrden, GETDATE(), @IdUsuario, @ObservacionHistorial);
+
+                SELECT 0;
+            ";
+
+            SqlParameter[] sqlParameters = new SqlParameter[]
+            {
+                new SqlParameter("@IdPresupuesto", idPresupuesto),
+                new SqlParameter("@Motivo", motivo),
+                new SqlParameter("@EstadoOrdenAnterior", (object)estadoOrdenAnterior ?? DBNull.Value),
+                new SqlParameter("@NuevoEstadoOrden", nuevoEstadoOrden),
+                new SqlParameter("@ObservacionResultado", (object)observacionResultadoCombinada ?? DBNull.Value),
+                new SqlParameter("@ObservacionHistorial", (object)observacionHistorial ?? DBNull.Value),
                 new SqlParameter("@IdUsuario", idUsuario)
             };
 

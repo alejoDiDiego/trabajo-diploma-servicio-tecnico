@@ -708,6 +708,28 @@ namespace APPLICATION.Features.Ordenes
                         ordenDb.RevertirAPendientePresupuesto();
                         nuevoEstadoOrden = ordenDb.Estado;
                     }
+                    else if (estadoAnterior == EstadoPresupuesto.Rechazado)
+                    {
+                        // F5: anular Original Rechazado con transicion coherente:
+                        // orden ListoRetiro + Resultado PresupuestoRechazado + sin entrega +
+                        // el rechazado es el ULTIMO no-anulado relevante (sin Original activo
+                        // posterior ni Adicional posterior no-anulado) -> Pendiente + Resultado NULL.
+                        ValidarAnulacionRechazadoOriginal(presupuestoDb, ordenDb);
+
+                        nuevoEstadoOrden = EstadoOrdenServicio.PendientePresupuesto;
+
+                        _presupuestoRepository.AnularRechazadoConTransicion(presupuestoDb.Id,
+                            presupuestoDb.MotivoAnulacion, estadoOrdenAnterior, nuevoEstadoOrden,
+                            CombineObservacion(ordenDb.ObservacionResultado, presupuestoDb.MotivoAnulacion),
+                            "Presupuesto anulado. Motivo: " + presupuestoDb.MotivoAnulacion, idUsuario);
+
+                        BitacoraService bitacoraAnulado = new BitacoraService();
+                        bitacoraAnulado.Registrar("PRESUPUESTO_ANULADO",
+                            "id_orden=" + ordenDb.Id + " | id_presupuesto=" + presupuestoDb.Id
+                            + " | tipo=" + presupuestoDb.Tipo + " | estado_anterior=" + estadoAnterior, "ORDENES");
+
+                        return;
+                    }
                 }
                 else
                 {
@@ -727,7 +749,33 @@ namespace APPLICATION.Features.Ordenes
                         ordenDb.RevertirAPendientePresupuesto();
                         nuevoEstadoOrden = ordenDb.Estado;
                     }
+                    else if (estadoAnterior == EstadoPresupuesto.Rechazado)
+                    {
+                        // F5: anular Adicional Rechazado (misma idea adaptada):
+                        // orden ListoRetiro + PresupuestoRechazado + ese adicional es el ultimo
+                        // no-anulado + sin entrega -> Pendiente + Resultado NULL.
+                        ValidarAnulacionRechazadoAdicional(presupuestoDb, ordenDb);
+
+                        nuevoEstadoOrden = EstadoOrdenServicio.PendientePresupuesto;
+
+                        _presupuestoRepository.AnularRechazadoConTransicion(presupuestoDb.Id,
+                            presupuestoDb.MotivoAnulacion, estadoOrdenAnterior, nuevoEstadoOrden,
+                            CombineObservacion(ordenDb.ObservacionResultado, presupuestoDb.MotivoAnulacion),
+                            "Presupuesto anulado. Motivo: " + presupuestoDb.MotivoAnulacion, idUsuario);
+
+                        BitacoraService bitacoraAnuladoAd = new BitacoraService();
+                        bitacoraAnuladoAd.Registrar("PRESUPUESTO_ANULADO",
+                            "id_orden=" + ordenDb.Id + " | id_presupuesto=" + presupuestoDb.Id
+                            + " | tipo=" + presupuestoDb.Tipo + " | estado_anterior=" + estadoAnterior, "ORDENES");
+
+                        return;
+                    }
                 }
+
+                // F5: Rechazado que no cumple las condiciones del flujo anterior nunca es
+                // exito silencioso: si llego aca con nuevoEstadoOrden NULL, es invalido.
+                if (estadoAnterior == EstadoPresupuesto.Rechazado && nuevoEstadoOrden == null)
+                    throw new ReglaNegocioException("No se puede anular el presupuesto rechazado en el estado actual de la orden.");
 
                 _presupuestoRepository.AnularConTransicion(presupuestoDb.Id, presupuestoDb.MotivoAnulacion,
                     estadoOrdenAnterior, nuevoEstadoOrden, null, null,
@@ -847,19 +895,20 @@ namespace APPLICATION.Features.Ordenes
                 if (cantidad <= 0)
                     throw new ReglaNegocioException("La cantidad a devolver debe ser mayor a cero.");
 
+                // F8: con filas por consumo, sumar todas las filas del repuesto.
                 List<ReparacionRepuesto> consumidos = _reparacionRepository.ListarConsumidos(idReparacion);
-                ReparacionRepuesto fila = null;
+                int totalConsumido = 0;
 
                 foreach (ReparacionRepuesto c in consumidos)
                 {
                     if (c.IdRepuesto == idRepuesto)
-                        fila = c;
+                        totalConsumido += c.Cantidad;
                 }
 
-                if (fila == null)
+                if (totalConsumido <= 0)
                     throw new ReglaNegocioException("La reparacion no tiene consumo registrado del repuesto.");
 
-                if (cantidad > fila.Cantidad)
+                if (cantidad > totalConsumido)
                     throw new ReglaNegocioException("La cantidad a devolver supera la consumida.");
 
                 _reparacionRepository.DevolverConsumo(idReparacion, idRepuesto, cantidad, idUsuario);
@@ -888,17 +937,11 @@ namespace APPLICATION.Features.Ordenes
 
                 ordenDb.Cancelar(motivo);
 
-                Reparacion abierta = _reparacionRepository.ObtenerAbierta(idOrden);
-
-                if (abierta != null)
-                {
-                    _reparacionRepository.CerrarAbiertaYCancelar(idOrden, motivo.Trim(), idUsuario);
-                }
-                else
-                {
-                    _ordenRepository.CambiarEstadoConHistorial(ordenDb.Id, estadoAnterior, ordenDb.Estado,
-                        idUsuario, "Orden cancelada", ordenDb.Resultado, ordenDb.ObservacionResultado, null);
-                }
+                // F2: Cancelar() solo admite hasta AutorizadoReparacion, donde nunca hay
+                // intervencion abierta (se crea recien al IniciarReparacion desde Autorizado).
+                // Se mantiene el batch simple sin rama CerrarAbiertaYCancelar.
+                _ordenRepository.CambiarEstadoConHistorial(ordenDb.Id, estadoAnterior, ordenDb.Estado,
+                    idUsuario, "Orden cancelada", ordenDb.Resultado, ordenDb.ObservacionResultado, null);
 
                 BitacoraService bitacoraService = new BitacoraService();
                 bitacoraService.Registrar("Orden cancelada", "id_orden=" + idOrden, "ORDENES");
@@ -1720,6 +1763,10 @@ namespace APPLICATION.Features.Ordenes
             // Origen = ULTIMA transicion a PendientePresupuesto desde Autorizado/EnReparacion/EnPruebas.
             // Se recorre hacia atras: la primera coincidencia es la solicitud vigente. Los
             // Aprobado/Rechazado de ciclos anteriores no bloquean (ver CancelarSolicitudAdicional).
+            // FIX F4 huella fantasma: AnularPresupuesto (Original aprobado y demas casos) tambien
+            // revierte a PendientePresupuesto con observacion "Presupuesto anulado. Motivo: ...".
+            // Esa huella NO es una solicitud de adicional y debe excluirse, o PuedeCancelarSolicitud
+            // devuelve true indebido y CancelarSolicitudAdicional resucita un origen fantasma.
             estadoOrigen = null;
 
             List<HistorialEstadoOrden> historial = _historialRepository.ListarPorOrden(idOrden);
@@ -1731,7 +1778,8 @@ namespace APPLICATION.Features.Ordenes
                 if (h.EstadoNuevo == EstadoOrdenServicio.PendientePresupuesto
                     && (h.EstadoAnterior == EstadoOrdenServicio.EnReparacion
                         || h.EstadoAnterior == EstadoOrdenServicio.EnPruebas
-                        || h.EstadoAnterior == EstadoOrdenServicio.AutorizadoReparacion))
+                        || h.EstadoAnterior == EstadoOrdenServicio.AutorizadoReparacion)
+                    && (h.Observacion == null || !h.Observacion.StartsWith("Presupuesto anulado")))
                 {
                     estadoOrigen = h.EstadoAnterior;
                     return true;
@@ -1794,6 +1842,67 @@ namespace APPLICATION.Features.Ordenes
                 throw new ReglaNegocioException("Debe iniciar sesion para gestionar ordenes.");
 
             return SessionManager.ObtenerUsuarioActual().Id;
+        }
+
+        private void ValidarAnulacionRechazadoOriginal(Presupuesto presupuestoDb, OrdenServicio ordenDb)
+        {
+            // F5: coherencia explicita, sin exito silencioso.
+            if (ordenDb.Estado != EstadoOrdenServicio.ListoRetiro
+                || ordenDb.Resultado != ResultadoOrdenServicio.PresupuestoRechazado)
+                throw new ReglaNegocioException("No se puede anular el presupuesto rechazado en el estado actual de la orden.");
+
+            if (_entregaRepository.ObtenerPorOrden(ordenDb.Id) != null)
+                throw new ReglaNegocioException("No se puede anular el presupuesto rechazado porque la orden ya fue entregada.");
+
+            List<Presupuesto> todos = _presupuestoRepository.ListarPorOrden(ordenDb.Id);
+
+            foreach (Presupuesto p in todos)
+            {
+                if (p.Id == presupuestoDb.Id || p.Estado == EstadoPresupuesto.Anulado)
+                    continue;
+
+                if (p.Tipo == TipoPresupuesto.Original)
+                    throw new ReglaNegocioException("No se puede anular el presupuesto rechazado porque existe un presupuesto original posterior.");
+
+                if (p.Tipo == TipoPresupuesto.Adicional && p.Id > presupuestoDb.Id)
+                    throw new ReglaNegocioException("No se puede anular el presupuesto rechazado porque existe un presupuesto adicional posterior.");
+            }
+        }
+
+        private void ValidarAnulacionRechazadoAdicional(Presupuesto presupuestoDb, OrdenServicio ordenDb)
+        {
+            // F5 (adicional): misma idea adaptada al adicional como ultimo no-anulado.
+            // El Original padre (Aprobado) debe existir y NO bloquea; solo bloquea un
+            // Adicional posterior no-anulado (incluye Borrador posterior).
+            if (ordenDb.Estado != EstadoOrdenServicio.ListoRetiro
+                || ordenDb.Resultado != ResultadoOrdenServicio.PresupuestoRechazado)
+                throw new ReglaNegocioException("No se puede anular el presupuesto rechazado en el estado actual de la orden.");
+
+            if (_entregaRepository.ObtenerPorOrden(ordenDb.Id) != null)
+                throw new ReglaNegocioException("No se puede anular el presupuesto rechazado porque la orden ya fue entregada.");
+
+            List<Presupuesto> todos = _presupuestoRepository.ListarPorOrden(ordenDb.Id);
+
+            foreach (Presupuesto p in todos)
+            {
+                if (p.Id == presupuestoDb.Id || p.Estado == EstadoPresupuesto.Anulado)
+                    continue;
+
+                if (p.Tipo == TipoPresupuesto.Adicional && p.Id > presupuestoDb.Id)
+                    throw new ReglaNegocioException("No se puede anular el presupuesto rechazado porque existe un presupuesto adicional posterior.");
+            }
+        }
+
+        private string CombineObservacion(string existente, string nuevo)
+        {
+            // F9: si ya hay texto (p.ej. motivo de rechazo), combinar en vez de reemplazar.
+            if (string.IsNullOrWhiteSpace(existente))
+                return nuevo;
+
+            if (string.IsNullOrWhiteSpace(nuevo))
+                return existente;
+
+            return existente.Trim() + " | " + nuevo.Trim();
         }
     }
 }
