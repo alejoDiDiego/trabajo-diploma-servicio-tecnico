@@ -467,7 +467,8 @@ namespace REPOSITORY.Features.Permisos
                 ('Desactivar proveedores', 'PROVEEDORES_DESACTIVAR', NULL, NULL),
                 ('Ver compras', 'COMPRAS_VER', NULL, NULL),
                 ('Crear compras', 'COMPRAS_CREAR', NULL, NULL),
-                ('Cancelar compras', 'COMPRAS_CANCELAR', NULL, NULL);
+                ('Cancelar compras', 'COMPRAS_CANCELAR', NULL, NULL),
+                ('Ver reportes', 'REPORTES_VER', NULL, NULL);
 
                 UPDATE p
                 SET p.nombre = s.nombre,
@@ -658,6 +659,7 @@ namespace REPOSITORY.Features.Permisos
                 ('Lectura general', 'REPUESTOS_VER', NULL),
                 ('Lectura general', 'PROVEEDORES_VER', NULL),
                 ('Lectura general', 'COMPRAS_VER', NULL),
+                ('Lectura general', 'REPORTES_VER', NULL),
                 ('Administrador', NULL, 'Gestion usuarios'),
                 ('Administrador', NULL, 'Gestion permisos'),
                 ('Administrador', NULL, 'Gestion idiomas'),
@@ -669,6 +671,7 @@ namespace REPOSITORY.Features.Permisos
                 ('Administrador', NULL, 'Gestion repuestos'),
                 ('Administrador', NULL, 'Gestion proveedores'),
                 ('Administrador', NULL, 'Gestion compras'),
+                ('Administrador', 'REPORTES_VER', NULL),
                 ('Administrador', 'INTEGRIDAD_RECALCULAR', NULL),
                 ('Administrador', 'BITACORA_VER', NULL),
                 ('Rol recepcionista', 'CLIENTES_VER', NULL),
@@ -691,6 +694,7 @@ namespace REPOSITORY.Features.Permisos
                 ('Rol tecnico', 'ORDENES_EDITAR', NULL),
                 ('Rol tecnico', 'REPUESTOS_VER', NULL),
                 ('Rol encargado', 'BITACORA_VER', NULL),
+                ('Rol encargado', 'REPORTES_VER', NULL),
                 ('Rol encargado', NULL, 'Gestion clientes'),
                 ('Rol encargado', NULL, 'Gestion equipos'),
                 ('Rol encargado', NULL, 'Gestion catalogos'),

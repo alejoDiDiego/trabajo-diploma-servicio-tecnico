@@ -60,6 +60,7 @@
     <Compile Include="Features\Garantias\EvaluacionGarantiaRepository.cs" />
     <Compile Include="Features\Repuestos\RepuestoRepository.cs" />
     <Compile Include="Features\Repuestos\MovimientoStockRepository.cs" />
+    <Compile Include="Features\Reportes\ReporteRepository.cs" />
     <Compile Include="Features\Reparaciones\ReparacionRepository.cs" />
     <Compile Include="Features\Usuarios\UsuarioPermisoRepository.cs" />
     <Compile Include="Features\Usuarios\UsuarioRepository.cs" />

@@ -71,5 +71,7 @@ namespace DOMAIN.Features.Permisos
         public const string ComprasVer = "COMPRAS_VER";
         public const string ComprasCrear = "COMPRAS_CREAR";
         public const string ComprasCancelar = "COMPRAS_CANCELAR";
+
+        public const string ReportesVer = "REPORTES_VER";
     }
 }

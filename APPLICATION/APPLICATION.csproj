@@ -53,6 +53,7 @@
     <Compile Include="Features\Compras\CompraService.cs" />
     <Compile Include="Features\Garantias\GarantiaService.cs" />
     <Compile Include="Features\Repuestos\RepuestoService.cs" />
+    <Compile Include="Features\Reportes\ReporteService.cs" />
     <Compile Include="Features\Usuarios\Exceptions\DatosUsuarioIncorrectosException.cs" />
     <Compile Include="Features\Usuarios\UsuarioPermisoService.cs" />
     <Compile Include="Features\Usuarios\UsuarioService.cs" />
