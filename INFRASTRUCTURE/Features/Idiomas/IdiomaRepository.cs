@@ -1380,6 +1380,88 @@ namespace REPOSITORY.Features.Idiomas
 
             AgregarSeed("Espanol", "Ordenes.FiltroTipo", "Tipo:");
             AgregarSeed("Ingles", "Ordenes.FiltroTipo", "Type:");
+
+            // CHECKPOINT 5: dashboard y reportes (solo lectura, gate REPORTES_VER).
+            AgregarSeed("Espanol", "Menu.Dashboard", "Dashboard");
+            AgregarSeed("Ingles", "Menu.Dashboard", "Dashboard");
+            AgregarSeed("Espanol", "Menu.Reportes", "Reportes");
+            AgregarSeed("Ingles", "Menu.Reportes", "Reports");
+
+            AgregarSeed("Espanol", "FrmDashboard.Text", "Dashboard");
+            AgregarSeed("Ingles", "FrmDashboard.Text", "Dashboard");
+            AgregarSeed("Espanol", "Dashboard.Titulo", "Dashboard");
+            AgregarSeed("Ingles", "Dashboard.Titulo", "Dashboard");
+            AgregarSeed("Espanol", "Dashboard.Abiertas", "Ordenes abiertas");
+            AgregarSeed("Ingles", "Dashboard.Abiertas", "Open orders");
+            AgregarSeed("Espanol", "Dashboard.EsperandoRespuesta", "Esperando respuesta");
+            AgregarSeed("Ingles", "Dashboard.EsperandoRespuesta", "Waiting for reply");
+            AgregarSeed("Espanol", "Dashboard.EnReparacion", "En reparacion");
+            AgregarSeed("Ingles", "Dashboard.EnReparacion", "Under repair");
+            AgregarSeed("Espanol", "Dashboard.ListasRetiro", "Listas para retiro");
+            AgregarSeed("Ingles", "Dashboard.ListasRetiro", "Ready for pickup");
+            AgregarSeed("Espanol", "Dashboard.GarantiasAbiertas", "Garantias abiertas");
+            AgregarSeed("Ingles", "Dashboard.GarantiasAbiertas", "Open warranties");
+            AgregarSeed("Espanol", "Dashboard.BajoMinimo", "Repuestos bajo minimo");
+            AgregarSeed("Ingles", "Dashboard.BajoMinimo", "Parts below minimum");
+            AgregarSeed("Espanol", "Dashboard.Actualizar", "Actualizar");
+            AgregarSeed("Ingles", "Dashboard.Actualizar", "Refresh");
+
+            AgregarSeed("Espanol", "FrmReportes.Text", "Reportes");
+            AgregarSeed("Ingles", "FrmReportes.Text", "Reports");
+            AgregarSeed("Espanol", "Reportes.Titulo", "Reportes");
+            AgregarSeed("Ingles", "Reportes.Titulo", "Reports");
+            AgregarSeed("Espanol", "Reportes.Tipo", "Reporte:");
+            AgregarSeed("Ingles", "Reportes.Tipo", "Report:");
+            AgregarSeed("Espanol", "Reportes.Desde", "Desde:");
+            AgregarSeed("Ingles", "Reportes.Desde", "From:");
+            AgregarSeed("Espanol", "Reportes.Hasta", "Hasta:");
+            AgregarSeed("Ingles", "Reportes.Hasta", "To:");
+            AgregarSeed("Espanol", "Reportes.Top", "Top:");
+            AgregarSeed("Ingles", "Reportes.Top", "Top:");
+            AgregarSeed("Espanol", "Reportes.Buscar", "Buscar");
+            AgregarSeed("Ingles", "Reportes.Buscar", "Search");
+            // ResultadoVacio es texto inicial vacio del label: se siembra con un
+            // espacio porque Traduccion.Crear rechaza "" y Listar() lanzaria
+            // al iniciar la app (ObtenerIdiomaPorDefecto).
+            AgregarSeed("Espanol", "Reportes.ResultadoVacio", " ");
+            AgregarSeed("Ingles", "Reportes.ResultadoVacio", " ");
+            AgregarSeed("Espanol", "ReporteTipo.OrdenesEstado", "Ordenes por estado");
+            AgregarSeed("Ingles", "ReporteTipo.OrdenesEstado", "Orders by status");
+            AgregarSeed("Espanol", "ReporteTipo.OrdenesResultado", "Ordenes por resultado");
+            AgregarSeed("Ingles", "ReporteTipo.OrdenesResultado", "Orders by result");
+            AgregarSeed("Espanol", "ReporteTipo.ReparacionesTecnico", "Reparaciones por tecnico");
+            AgregarSeed("Ingles", "ReporteTipo.ReparacionesTecnico", "Repairs by technician");
+            AgregarSeed("Espanol", "ReporteTipo.TiempoPromedio", "Tiempo promedio ingreso-entrega");
+            AgregarSeed("Ingles", "ReporteTipo.TiempoPromedio", "Average intake-delivery time");
+            AgregarSeed("Espanol", "ReporteTipo.TasaAprobacion", "Tasa de aprobacion de presupuestos");
+            AgregarSeed("Ingles", "ReporteTipo.TasaAprobacion", "Estimate approval rate");
+            AgregarSeed("Espanol", "ReporteTipo.RepuestosMasUtilizados", "Repuestos mas utilizados");
+            AgregarSeed("Ingles", "ReporteTipo.RepuestosMasUtilizados", "Most used parts");
+            AgregarSeed("Espanol", "ReporteTipo.ComprasProveedor", "Compras por proveedor");
+            AgregarSeed("Ingles", "ReporteTipo.ComprasProveedor", "Purchases by supplier");
+            AgregarSeed("Espanol", "ReporteTipo.Reingresos", "Reingresos en garantia");
+            AgregarSeed("Ingles", "ReporteTipo.Reingresos", "Warranty reentries");
+            AgregarSeed("Espanol", "ReporteTipo.EvaluacionesEstado", "Evaluaciones de garantia por estado");
+            AgregarSeed("Ingles", "ReporteTipo.EvaluacionesEstado", "Warranty evaluations by status");
+            AgregarSeed("Espanol", "ReporteTipo.TasaGarantia", "Tasa de aceptacion de garantia");
+            AgregarSeed("Ingles", "ReporteTipo.TasaGarantia", "Warranty acceptance rate");
+            AgregarSeed("Espanol", "ReporteTipo.MontoAprobados", "Monto de presupuestos aprobados");
+            AgregarSeed("Ingles", "ReporteTipo.MontoAprobados", "Approved estimates amount");
+            AgregarSeed("Espanol", "Reportes.TiempoPromedioResultado", "Tiempo promedio ingreso-entrega: {0} dias.");
+            AgregarSeed("Ingles", "Reportes.TiempoPromedioResultado", "Average intake-delivery time: {0} days.");
+            AgregarSeed("Espanol", "Reportes.TasaAprobacionResultado", "Tasa de aprobacion de presupuestos: {0}.");
+            AgregarSeed("Ingles", "Reportes.TasaAprobacionResultado", "Estimate approval rate: {0}.");
+            AgregarSeed("Espanol", "Reportes.ReingresosResultado", "Reingresos en garantia: {0}.");
+            AgregarSeed("Ingles", "Reportes.ReingresosResultado", "Warranty reentries: {0}.");
+            AgregarSeed("Espanol", "Reportes.TasaGarantiaResultado", "Tasa de aceptacion de garantia: {0}.");
+            AgregarSeed("Ingles", "Reportes.TasaGarantiaResultado", "Warranty acceptance rate: {0}.");
+            AgregarSeed("Espanol", "Reportes.MontoAprobadosResultado", "Monto de presupuestos aprobados: ${0}.");
+            AgregarSeed("Ingles", "Reportes.MontoAprobadosResultado", "Approved estimates amount: ${0}.");
+
+            AgregarSeed("Espanol", "Columna.Codigo", "Codigo");
+            AgregarSeed("Ingles", "Columna.Codigo", "Code");
+            AgregarSeed("Espanol", "Columna.Monto", "Monto");
+            AgregarSeed("Ingles", "Columna.Monto", "Amount");
         }
 
         private void AgregarSeed(string idioma, string clave, string texto)
