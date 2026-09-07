@@ -12,6 +12,7 @@ namespace DOMAIN.Features.Compras
         public decimal Total { get; private set; }
         public int IdUsuario { get; private set; }
         public string Observaciones { get; private set; }
+        public string MotivoAnulacion { get; private set; }
 
         private Compra() { }
 
@@ -29,12 +30,33 @@ namespace DOMAIN.Features.Compras
                 Estado = EstadoCompra.Borrador,
                 Total = 0,
                 IdUsuario = idUsuario,
-                Observaciones = observaciones == null ? "" : observaciones.Trim()
+                Observaciones = observaciones == null ? "" : observaciones.Trim(),
+                MotivoAnulacion = null
             };
         }
 
+        public void CancelarBorrador()
+        {
+            if (Estado != EstadoCompra.Borrador)
+                throw new ReglaNegocioException("Solo se puede cancelar una compra en borrador.");
+
+            Estado = EstadoCompra.Cancelada;
+        }
+
+        public void AnularConfirmada(string motivo)
+        {
+            if (Estado != EstadoCompra.Confirmada)
+                throw new ReglaNegocioException("Solo se puede anular una compra confirmada.");
+            if (string.IsNullOrWhiteSpace(motivo))
+                throw new ReglaNegocioException("El motivo de la anulacion es obligatorio.");
+
+            Estado = EstadoCompra.Cancelada;
+            MotivoAnulacion = motivo.Trim();
+        }
+
         public static Compra CargarDesdeDB(int id, int idProveedor, DateTime fecha,
-            string estado, decimal total, int idUsuario, string observaciones)
+            string estado, decimal total, int idUsuario, string observaciones,
+            string motivoAnulacion = null)
         {
             return new Compra
             {
@@ -44,7 +66,8 @@ namespace DOMAIN.Features.Compras
                 Estado = estado ?? EstadoCompra.Borrador,
                 Total = total,
                 IdUsuario = idUsuario,
-                Observaciones = observaciones ?? ""
+                Observaciones = observaciones ?? "",
+                MotivoAnulacion = motivoAnulacion
             };
         }
     }

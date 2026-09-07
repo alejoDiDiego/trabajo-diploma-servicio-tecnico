@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using APPLICATION.Features.Bitacora;
 using DOMAIN.Exceptions;
 using DOMAIN.Features.Compras;
@@ -173,13 +174,13 @@ namespace APPLICATION.Features.Compras
 
         public void Cancelar(int idCompra)
         {
+            // Permiso COMPRAS_CANCELAR (mismo codigo cubre Cancelar borrador y Anular confirmada).
             try
             {
                 ObtenerIdUsuarioSesion();
                 Compra compraDb = ObtenerCompraExistente(idCompra);
 
-                if (compraDb.Estado != EstadoCompra.Borrador)
-                    throw new ReglaNegocioException("Solo se puede cancelar una compra en borrador.");
+                compraDb.CancelarBorrador();
 
                 _compraRepository.CancelarBorrador(idCompra);
 
@@ -190,9 +191,50 @@ namespace APPLICATION.Features.Compras
             {
                 throw new ReglaNegocioException(ex.Message);
             }
+            catch (SqlException ex)
+            {
+                throw new ReglaNegocioException(ex.Message);
+            }
             catch (Exception ex)
             {
                 throw new Exception("Error al cancelar compra", ex);
+            }
+        }
+
+        public void Anular(int idCompra, string motivo)
+        {
+            // Permiso COMPRAS_CANCELAR (mismo codigo que Cancelar borrador, documentado).
+            // Anula una Confirmada con motivo obligatorio: si el stock cubre la reversion
+            // completa pasa a Cancelada + revierte stock con AjusteNegativo por item;
+            // si no cubre, el repository hace THROW 50035 sin cambios (consumos posteriores).
+            try
+            {
+                int idUsuario = ObtenerIdUsuarioSesion();
+
+                if (string.IsNullOrWhiteSpace(motivo))
+                    throw new ReglaNegocioException("El motivo de la anulacion es obligatorio.");
+
+                Compra compraDb = ObtenerCompraExistente(idCompra);
+
+                compraDb.AnularConfirmada(motivo.Trim());
+
+                _compraRepository.AnularConfirmadaConStock(idCompra, compraDb.MotivoAnulacion, idUsuario);
+
+                BitacoraService bitacoraService = new BitacoraService();
+                bitacoraService.Registrar("Compra anulada",
+                    "id=" + idCompra + " | motivo=" + compraDb.MotivoAnulacion, "COMPRAS");
+            }
+            catch (ReglaNegocioException ex)
+            {
+                throw new ReglaNegocioException(ex.Message);
+            }
+            catch (SqlException ex)
+            {
+                throw new ReglaNegocioException(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al anular compra", ex);
             }
         }
 

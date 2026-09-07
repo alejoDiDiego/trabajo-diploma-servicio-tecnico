@@ -38,6 +38,7 @@ namespace REPOSITORY.Features.Compras
                         total decimal(18,2) NOT NULL CONSTRAINT DF_Compras_Total DEFAULT 0,
                         id_usuario int NOT NULL,
                         observaciones nvarchar(max) NULL,
+                        motivo_anulacion nvarchar(500) NULL,
                         CONSTRAINT FK_Compras_Proveedor FOREIGN KEY (id_proveedor)
                             REFERENCES Proveedores(id_proveedor),
                         CONSTRAINT FK_Compras_Usuario FOREIGN KEY (id_usuario)
@@ -63,6 +64,9 @@ namespace REPOSITORY.Features.Compras
 
                     IF COL_LENGTH('Compras', 'observaciones') IS NULL
                         ALTER TABLE Compras ADD observaciones nvarchar(max) NULL;
+
+                    IF COL_LENGTH('Compras', 'motivo_anulacion') IS NULL
+                        ALTER TABLE Compras ADD motivo_anulacion nvarchar(500) NULL;
 
                     IF NOT EXISTS (
                         SELECT 1 FROM sys.foreign_keys
@@ -355,7 +359,8 @@ namespace REPOSITORY.Features.Compras
 
         public void CancelarBorrador(int idCompra)
         {
-            // Batch atomico: exige Borrador, DELETE fisico detalle + cabecera. Sin tocar stock.
+            // Batch atomico: exige Borrador, UPDATE estado->Cancelada.
+            // Conserva cabecera + detalle para trazabilidad (filtrable por Cancelada). Sin tocar stock.
             string query = @"
                 IF NOT EXISTS (SELECT 1 FROM Compras WHERE id_compra = @IdCompra)
                     THROW 50030, 'La compra seleccionada no existe.', 1;
@@ -363,9 +368,7 @@ namespace REPOSITORY.Features.Compras
                 IF ((SELECT estado FROM Compras WHERE id_compra = @IdCompra) <> 'Borrador')
                     THROW 50031, 'Solo se puede cancelar una compra en borrador.', 1;
 
-                DELETE FROM CompraDetalle WHERE id_compra = @IdCompra;
-
-                DELETE FROM Compras WHERE id_compra = @IdCompra;
+                UPDATE Compras SET estado = 'Cancelada' WHERE id_compra = @IdCompra;
 
                 SELECT 0;
             ";
@@ -378,10 +381,105 @@ namespace REPOSITORY.Features.Compras
             _db.ExecuteTransaction(query, sqlParameters);
         }
 
+        public void AnularConfirmadaConStock(int idCompra, string motivo, int idUsuario)
+        {
+            // Batch atomico: exige Confirmada + motivo no vacio; si el stock actual cubre
+            // la reversion completa por repuesto (stock >= cantidad comprada): UPDATE
+            // estado->Cancelada + motivo + por item UPDATE stock-= + INSERT AjusteNegativo
+            // con obs 'Anulacion compra N'. Si no cubre -> THROW 50035 sin cambios.
+            string query = @"
+                DECLARE @Estado nvarchar(20);
+
+                SELECT @Estado = estado FROM Compras WITH (UPDLOCK, HOLDLOCK) WHERE id_compra = @IdCompra;
+
+                IF (@Estado IS NULL)
+                    THROW 50030, 'La compra seleccionada no existe.', 1;
+
+                IF (@Estado <> 'Confirmada')
+                    THROW 50031, 'Solo se puede anular una compra confirmada.', 1;
+
+                IF (@Motivo IS NULL OR LTRIM(RTRIM(@Motivo)) = '')
+                    THROW 50036, 'El motivo de la anulacion es obligatorio.', 1;
+
+                IF NOT EXISTS (SELECT 1 FROM CompraDetalle WHERE id_compra = @IdCompra)
+                    THROW 50033, 'La compra debe tener al menos un item para anularse.', 1;
+
+                IF EXISTS (
+                    SELECT 1
+                    FROM CompraDetalle d
+                    INNER JOIN Repuestos r WITH (UPDLOCK, HOLDLOCK) ON r.id_repuesto = d.id_repuesto
+                    WHERE d.id_compra = @IdCompra
+                      AND r.stock_actual < d.cantidad
+                )
+                    THROW 50035, 'No se puede anular la compra porque el stock actual no cubre la reversion. Los repuestos ya fueron consumidos parcial o totalmente.', 1;
+
+                UPDATE Compras
+                SET estado = 'Cancelada',
+                    motivo_anulacion = @Motivo
+                WHERE id_compra = @IdCompra;
+
+                DECLARE @IdRepuesto int;
+                DECLARE @Cantidad int;
+                DECLARE @Stock int;
+
+                DECLARE cur CURSOR LOCAL FAST_FORWARD FOR
+                    SELECT id_repuesto, cantidad
+                    FROM CompraDetalle WITH (UPDLOCK, HOLDLOCK)
+                    WHERE id_compra = @IdCompra
+                    ORDER BY id_detalle;
+
+                OPEN cur;
+                FETCH NEXT FROM cur INTO @IdRepuesto, @Cantidad;
+
+                WHILE (@@FETCH_STATUS = 0)
+                BEGIN
+                    SELECT @Stock = stock_actual
+                    FROM Repuestos WITH (UPDLOCK, HOLDLOCK)
+                    WHERE id_repuesto = @IdRepuesto;
+
+                    IF (@Stock IS NULL)
+                    BEGIN
+                        CLOSE cur;
+                        DEALLOCATE cur;
+                        THROW 50034, 'El repuesto seleccionado no existe.', 1;
+                    END
+
+                    UPDATE Repuestos
+                    SET stock_actual = @Stock - @Cantidad
+                    WHERE id_repuesto = @IdRepuesto;
+
+                    INSERT INTO MovimientosStock (id_repuesto, fecha, tipo, cantidad,
+                        stock_anterior, stock_posterior, id_usuario, id_compra,
+                        id_reparacion, observacion)
+                    VALUES (@IdRepuesto, GETDATE(), 'AjusteNegativo', @Cantidad,
+                        @Stock, @Stock - @Cantidad, @IdUsuario, @IdCompra, NULL,
+                        'Anulacion compra ' + CAST(@IdCompra AS nvarchar(20)));
+
+                    FETCH NEXT FROM cur INTO @IdRepuesto, @Cantidad;
+                END
+
+                CLOSE cur;
+                DEALLOCATE cur;
+
+                SELECT 0;
+            ";
+
+            SqlParameter[] sqlParameters = new SqlParameter[]
+            {
+                new SqlParameter("@IdCompra", idCompra),
+                new SqlParameter("@Motivo", motivo),
+                new SqlParameter("@IdUsuario", idUsuario)
+            };
+
+            _db.ExecuteTransaction(query, sqlParameters);
+        }
+
         public Compra ObtenerPorId(int id)
         {
+            // motivo_anulacion garantizado por Inicializar (misma idea que Presupuestos);
+            // Mapear usa Columns.Contains como defensa adicional.
             string query = @"
-                SELECT id_compra, id_proveedor, fecha, estado, total, id_usuario, observaciones
+                SELECT id_compra, id_proveedor, fecha, estado, total, id_usuario, observaciones, motivo_anulacion
                 FROM Compras WHERE id_compra = @Id;
             ";
 
@@ -401,7 +499,7 @@ namespace REPOSITORY.Features.Compras
         public List<Compra> Listar(bool incluirNoBorrador = true)
         {
             string query = @"
-                SELECT id_compra, id_proveedor, fecha, estado, total, id_usuario, observaciones
+                SELECT id_compra, id_proveedor, fecha, estado, total, id_usuario, observaciones, motivo_anulacion
                 FROM Compras
                 WHERE (@Todas = 1 OR estado = 'Borrador')
                 ORDER BY id_compra;
@@ -462,7 +560,8 @@ namespace REPOSITORY.Features.Compras
                 fila["estado"] == DBNull.Value ? null : fila["estado"].ToString(),
                 Convert.ToDecimal(fila["total"]),
                 Convert.ToInt32(fila["id_usuario"]),
-                fila["observaciones"] == DBNull.Value ? "" : fila["observaciones"].ToString()
+                fila["observaciones"] == DBNull.Value ? "" : fila["observaciones"].ToString(),
+                fila.Table.Columns.Contains("motivo_anulacion") && fila["motivo_anulacion"] != DBNull.Value ? fila["motivo_anulacion"].ToString() : null
             );
         }
     }
