@@ -2121,3 +2121,63 @@ se purga por trazabilidad).
 10. Regresion CP1+CP2+CP3: clientes/equipos/catalogos/repuestos,
     ordenes/diagnostico/presupuesto/reparacion/pruebas/entrega,
     bitacora e integridad (`Recalcular DV`).
+
+### Fix compras: cancelar persistente y anular confirmada
+
+Contenido:
+
+- Cancelar borrador pasa a `UPDATE estado='Cancelada'` (antes
+  `DELETE` fisico de detalle + cabecera); conserva cabecera +
+  detalle y es filtrable por `Cancelada`. Sin tocar stock.
+- Anular confirmada con motivo obligatorio: `UPDATE
+  estado='Cancelada' + motivo_anulacion`, revierte stock por item
+  (`stock_actual -= cantidad`) con movimientos `AjusteNegativo`
+  (obs `Anulacion compra N`, `id_compra` persistido); exige
+  cobertura total (`stock_actual >= cantidad` por repuesto) o
+  `THROW 50035` sin cambios.
+- Confirmada inmutable en el resto de operaciones; `Cancelada`
+  terminal (solo lectura via Detalle).
+- Columna `Compras.motivo_anulacion nvarchar(500) NULL`
+  (`CREATE` + `ALTER` defensivo); la UI muestra el motivo solo si
+  la compra fue anulada (Confirmada -> Cancelada con motivo).
+- Micro-fixes: `SqlException` -> `ReglaNegocioException` en
+  Cancelar/Anular (mensajes explicitos de SQL en vez de
+  "Error al..."); header `LBL_Numero` con
+  `Tag=CompraDetalle.Numero` (`Compra #{0}` / `Purchase #{0}`).
+
+Decisiones:
+
+- Mismo permiso `COMPRAS_CANCELAR` cubre Cancelar borrador y
+  Anular confirmada.
+- Movimientos de reversion tipo `AjusteNegativo` con `id_compra`
+  (trazabilidad de la compra anulada).
+- `costo_actual` NO se restaura al anular (queda el ultimo costo
+  confirmado).
+- `Cancelada` terminal: sin acciones, solo lectura via Detalle.
+
+Pruebas:
+
+- Testing 94/94 + visual + regresion: PASS.
+- 1 bug medio corregido (mapeo `motivo_anulacion` con
+  `Columns.Contains` defensivo); 2 bajos (header EN corregido,
+  grisado de botones cosmetico).
+- Datos FIXC limpios; bitacora conservada (no se purga).
+- Delegaciones: implementacion, verificacion, micro-fixes.
+
+Limitaciones:
+
+- Sin UoW/transaccion formal a nivel service (batch SQL atomico
+  + bitacora aparte, como CP2/CP3).
+- `costo_actual` no vuelve atras tras anular (decision).
+- Supera H1 (`Cancelada` inalcanzable): ahora se persiste tanto
+  por cancelar borrador como por anular confirmada.
+
+Checklist humano:
+
+1. Borrador -> Cancelar -> filtrar por `Cancelada` (conserva
+   detalle).
+2. Confirmada -> Anular con motivo -> verificar stock revertido
+   y movimientos `AjusteNegativo`.
+3. Confirmada con stock consumido -> Anular -> verificar rechazo
+   explicito sin cambios.
+4. Detalle con idioma EN -> verificar header `Purchase #N`.
