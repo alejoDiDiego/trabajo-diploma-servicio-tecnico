@@ -26,6 +26,7 @@ namespace UI.Forms.Compras
             this.BTN_Detalle = new System.Windows.Forms.Button();
             this.BTN_Confirmar = new System.Windows.Forms.Button();
             this.BTN_Cancelar = new System.Windows.Forms.Button();
+            this.BTN_Anular = new System.Windows.Forms.Button();
             this.PNL_Header.SuspendLayout();
             this.PNL_Filtros.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.DGV_Compras)).BeginInit();
@@ -137,6 +138,7 @@ namespace UI.Forms.Compras
             this.PNL_Botones.Controls.Add(this.BTN_Detalle);
             this.PNL_Botones.Controls.Add(this.BTN_Confirmar);
             this.PNL_Botones.Controls.Add(this.BTN_Cancelar);
+            this.PNL_Botones.Controls.Add(this.BTN_Anular);
             this.PNL_Botones.Location = new System.Drawing.Point(15, 480);
             this.PNL_Botones.Name = "PNL_Botones";
             this.PNL_Botones.Size = new System.Drawing.Size(950, 50);
@@ -206,6 +208,22 @@ namespace UI.Forms.Compras
             this.BTN_Cancelar.UseVisualStyleBackColor = false;
             this.BTN_Cancelar.Click += new System.EventHandler(this.BTN_Cancelar_Click);
             //
+            // BTN_Anular
+            //
+            this.BTN_Anular.BackColor = System.Drawing.Color.Maroon;
+            this.BTN_Anular.FlatAppearance.BorderSize = 0;
+            this.BTN_Anular.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.BTN_Anular.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.BTN_Anular.ForeColor = System.Drawing.Color.White;
+            this.BTN_Anular.Location = new System.Drawing.Point(525, 10);
+            this.BTN_Anular.Name = "BTN_Anular";
+            this.BTN_Anular.Size = new System.Drawing.Size(120, 30);
+            this.BTN_Anular.TabIndex = 4;
+            this.BTN_Anular.Tag = "Compras.Anular";
+            this.BTN_Anular.Text = "Anular";
+            this.BTN_Anular.UseVisualStyleBackColor = false;
+            this.BTN_Anular.Click += new System.EventHandler(this.BTN_Anular_Click);
+            //
             // FrmCompras
             //
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -243,5 +261,6 @@ namespace UI.Forms.Compras
         private System.Windows.Forms.Button BTN_Detalle;
         private System.Windows.Forms.Button BTN_Confirmar;
         private System.Windows.Forms.Button BTN_Cancelar;
+        private System.Windows.Forms.Button BTN_Anular;
     }
 }

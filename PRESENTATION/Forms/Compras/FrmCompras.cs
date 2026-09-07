@@ -76,6 +76,7 @@ namespace UI.Forms.Compras
             BTN_Detalle.Text = idiomaObservado.BuscarTraduccion(BTN_Detalle.Tag.ToString());
             BTN_Confirmar.Text = idiomaObservado.BuscarTraduccion(BTN_Confirmar.Tag.ToString());
             BTN_Cancelar.Text = idiomaObservado.BuscarTraduccion(BTN_Cancelar.Tag.ToString());
+            BTN_Anular.Text = idiomaObservado.BuscarTraduccion(BTN_Anular.Tag.ToString());
 
             CargarComboProveedores();
             CargarComboEstados();
@@ -115,6 +116,7 @@ namespace UI.Forms.Compras
             BTN_Detalle.Text = _sesionIdioma.idioma.BuscarTraduccion(BTN_Detalle.Tag.ToString());
             BTN_Confirmar.Text = _sesionIdioma.idioma.BuscarTraduccion(BTN_Confirmar.Tag.ToString());
             BTN_Cancelar.Text = _sesionIdioma.idioma.BuscarTraduccion(BTN_Cancelar.Tag.ToString());
+            BTN_Anular.Text = _sesionIdioma.idioma.BuscarTraduccion(BTN_Anular.Tag.ToString());
         }
 
         private void CargarProveedores()
@@ -432,6 +434,8 @@ namespace UI.Forms.Compras
 
         private void BTN_Cancelar_Click(object sender, EventArgs e)
         {
+            // Cancelar borrador -> Cancelada persistente (conserva cabecera + detalle).
+            // Permiso COMPRAS_CANCELAR (mismo codigo que Anular confirmada).
             if (!TienePermiso(CodigosPermiso.ComprasCancelar))
             {
                 MostrarAccesoDenegado();
@@ -467,6 +471,113 @@ namespace UI.Forms.Compras
             }
         }
 
+        private void BTN_Anular_Click(object sender, EventArgs e)
+        {
+            // Anular confirmada con motivo obligatorio -> Cancelada + reversion de stock.
+            // Permiso COMPRAS_CANCELAR (mismo codigo que Cancelar borrador).
+            if (!TienePermiso(CodigosPermiso.ComprasCancelar))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
+            FilaCompra seleccionada = CompraSeleccionada();
+
+            if (seleccionada == null)
+            {
+                MostrarAdvertencia("Mensaje.SeleccioneRegistro");
+                return;
+            }
+
+            if (seleccionada.EstadoRaw != EstadoCompra.Confirmada)
+            {
+                MostrarAdvertencia("Mensaje.CompraNoAnulable");
+                return;
+            }
+
+            string motivo = PedirMotivo();
+
+            if (motivo == null)
+                return;
+
+            if (string.IsNullOrWhiteSpace(motivo))
+            {
+                MostrarAdvertencia("Mensaje.CompraMotivoObligatorio");
+                return;
+            }
+
+            if (!Confirmar("Mensaje.ConfirmarAnularCompra", "Titulo.ConfirmarAnulacion"))
+                return;
+
+            try
+            {
+                _service.Anular(seleccionada.Id, motivo.Trim());
+                CargarCompras();
+                MostrarExito("Mensaje.OperacionExitosa");
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+        }
+
+        private string PedirMotivo()
+        {
+            // Dialogo simple con TextBox (sin ComboBox): motivo obligatorio para anular.
+            using (Form dialogo = new Form())
+            {
+                dialogo.Text = _sesionIdioma.idioma == null
+                    ? "Anular"
+                    : _sesionIdioma.idioma.BuscarTraduccion("Compras.Anular");
+                dialogo.FormBorderStyle = FormBorderStyle.FixedDialog;
+                dialogo.StartPosition = FormStartPosition.CenterParent;
+                dialogo.MaximizeBox = false;
+                dialogo.MinimizeBox = false;
+                dialogo.ShowInTaskbar = false;
+                dialogo.ClientSize = new System.Drawing.Size(400, 150);
+
+                Label lbl = new Label();
+                lbl.Text = _sesionIdioma.idioma == null
+                    ? "Motivo anulacion:"
+                    : _sesionIdioma.idioma.BuscarTraduccion("CompraDetalle.MotivoAnulacion");
+                lbl.AutoSize = true;
+                lbl.Location = new System.Drawing.Point(12, 12);
+                dialogo.Controls.Add(lbl);
+
+                TextBox txt = new TextBox();
+                txt.Multiline = true;
+                txt.Location = new System.Drawing.Point(12, 34);
+                txt.Size = new System.Drawing.Size(376, 66);
+                dialogo.Controls.Add(txt);
+
+                Button btnAceptar = new Button();
+                btnAceptar.Text = _sesionIdioma.idioma == null
+                    ? "Aceptar"
+                    : _sesionIdioma.idioma.BuscarTraduccion("Accion.Aceptar");
+                btnAceptar.DialogResult = DialogResult.OK;
+                btnAceptar.Location = new System.Drawing.Point(212, 108);
+                btnAceptar.Size = new System.Drawing.Size(85, 28);
+                dialogo.Controls.Add(btnAceptar);
+
+                Button btnCancelar = new Button();
+                btnCancelar.Text = _sesionIdioma.idioma == null
+                    ? "Cancelar"
+                    : _sesionIdioma.idioma.BuscarTraduccion("Accion.Cancelar");
+                btnCancelar.DialogResult = DialogResult.Cancel;
+                btnCancelar.Location = new System.Drawing.Point(303, 108);
+                btnCancelar.Size = new System.Drawing.Size(85, 28);
+                dialogo.Controls.Add(btnCancelar);
+
+                dialogo.AcceptButton = btnAceptar;
+                dialogo.CancelButton = btnCancelar;
+
+                if (dialogo.ShowDialog(this) != DialogResult.OK)
+                    return null;
+
+                return txt.Text;
+            }
+        }
+
         private bool Confirmar(string claveMensaje, string claveTitulo)
         {
             DialogResult confirmacion = MessageBox.Show(
@@ -486,16 +597,20 @@ namespace UI.Forms.Compras
             FilaCompra seleccionada = CompraSeleccionada();
             bool haySeleccion = seleccionada != null;
             bool esBorrador = haySeleccion && seleccionada.EstadoRaw == EstadoCompra.Borrador;
+            bool esConfirmada = haySeleccion && seleccionada.EstadoRaw == EstadoCompra.Confirmada;
 
             BTN_Crear.Visible = puedeCrear;
             BTN_Detalle.Visible = puedeVer;
             BTN_Confirmar.Visible = puedeCrear;
             BTN_Cancelar.Visible = puedeCancelar;
+            BTN_Anular.Visible = puedeCancelar;
 
             BTN_Crear.Enabled = puedeCrear;
             BTN_Detalle.Enabled = puedeVer && haySeleccion;
             BTN_Confirmar.Enabled = puedeCrear && esBorrador;
+            // Cancelada: terminal, sin acciones (solo lectura via Detalle).
             BTN_Cancelar.Enabled = puedeCancelar && esBorrador;
+            BTN_Anular.Enabled = puedeCancelar && esConfirmada;
         }
 
         private bool TienePermiso(string codigo)

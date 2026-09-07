@@ -17,7 +17,9 @@ namespace UI.Forms.Compras
 {
     // Dialogo modal: modo nuevo (idCompra 0, arma items en memoria + Guardar
     // borrador / Confirmar) o modo detalle (Borrador editable contra el service,
-    // Confirmada solo lectura). Cancelar elimina el borrador fisico.
+    // Confirmada editable solo via Anular con motivo, Cancelada solo lectura).
+    // Cancelar borrador pasa a Cancelada persistente (conserva cabecera + detalle).
+    // Permiso COMPRAS_CANCELAR cubre Cancelar borrador y Anular confirmada.
     public partial class FrmCompraDetalle : Form, IObservador
     {
         private class ItemProveedor
@@ -120,6 +122,8 @@ namespace UI.Forms.Compras
             Tag = claveTitulo;
             Text = idioma.BuscarTraduccion(Tag.ToString());
 
+            string idHeader = _esNuevo ? "0" : _idCompra.ToString();
+            LBL_Numero.Text = idioma.BuscarTraduccion(LBL_Numero.Tag.ToString()).Replace("{0}", idHeader);
             LBL_Proveedor.Text = idioma.BuscarTraduccion(LBL_Proveedor.Tag.ToString());
             LBL_Fecha.Text = idioma.BuscarTraduccion(LBL_Fecha.Tag.ToString());
             LBL_Estado.Text = idioma.BuscarTraduccion(LBL_Estado.Tag.ToString());
@@ -133,7 +137,9 @@ namespace UI.Forms.Compras
             BTN_GuardarBorrador.Text = idioma.BuscarTraduccion(BTN_GuardarBorrador.Tag.ToString());
             BTN_Confirmar.Text = idioma.BuscarTraduccion(BTN_Confirmar.Tag.ToString());
             BTN_CancelarCompra.Text = idioma.BuscarTraduccion(BTN_CancelarCompra.Tag.ToString());
+            BTN_AnularCompra.Text = idioma.BuscarTraduccion(BTN_AnularCompra.Tag.ToString());
             BTN_Cerrar.Text = idioma.BuscarTraduccion(BTN_Cerrar.Tag.ToString());
+            LBL_Motivo.Text = idioma.BuscarTraduccion(LBL_Motivo.Tag.ToString());
         }
 
         private void CargarCatalogos()
@@ -226,12 +232,21 @@ namespace UI.Forms.Compras
 
             CargarComboProveedores();
 
+            if (_sesionIdioma.idioma != null)
+                LBL_Numero.Text = _sesionIdioma.idioma.BuscarTraduccion(LBL_Numero.Tag.ToString()).Replace("{0}", _compra.Id.ToString());
             LBL_FechaValor.Text = _compra.Fecha.ToString("g");
             LBL_EstadoValor.Text = TraducirEstado(_compra.Estado);
             LBL_TotalValor.Text = _compra.Total.ToString("F2");
             TXT_Obs.Text = _compra.Observaciones;
             TXT_Obs.Enabled = false;
             CBO_Proveedor.Enabled = false;
+
+            // Motivo visible solo si la compra fue anulada (Confirmada->Cancelada con motivo).
+            bool anulada = _compra.Estado == EstadoCompra.Cancelada
+                && !string.IsNullOrWhiteSpace(_compra.MotivoAnulacion);
+            LBL_Motivo.Visible = anulada;
+            TXT_Motivo.Visible = anulada;
+            TXT_Motivo.Text = anulada ? _compra.MotivoAnulacion : "";
 
             MostrarDetalle(_detalleActual);
             AplicarPermisos();
@@ -240,10 +255,14 @@ namespace UI.Forms.Compras
         private void CargarModoNuevo()
         {
             _compra = null;
+            LBL_Numero.Text = _sesionIdioma.idioma == null ? "Compra" : _sesionIdioma.idioma.BuscarTraduccion(LBL_Numero.Tag.ToString()).Replace("{0}", "0");
             LBL_FechaValor.Text = DateTime.Now.ToString("g");
             LBL_EstadoValor.Text = TraducirEstado(EstadoCompra.Borrador);
             CBO_Proveedor.Enabled = true;
             TXT_Obs.Enabled = true;
+            LBL_Motivo.Visible = false;
+            TXT_Motivo.Visible = false;
+            TXT_Motivo.Text = "";
 
             MostrarDetalle(_itemsNuevo);
             AplicarPermisos();
@@ -526,6 +545,7 @@ namespace UI.Forms.Compras
 
         private void BTN_CancelarCompra_Click(object sender, EventArgs e)
         {
+            // Cancelar borrador -> Cancelada persistente (ya no elimina el borrador fisico).
             if (!TienePermiso(CodigosPermiso.ComprasCancelar))
             {
                 MostrarAccesoDenegado();
@@ -541,12 +561,110 @@ namespace UI.Forms.Compras
             try
             {
                 _service.Cancelar(_idCompra);
-                DialogResult = DialogResult.OK;
-                Close();
+                CargarCompra();
+                MostrarExito("Mensaje.OperacionExitosa");
             }
             catch (Exception ex)
             {
                 MostrarError(ex);
+            }
+        }
+
+        private void BTN_AnularCompra_Click(object sender, EventArgs e)
+        {
+            // Anular confirmada con motivo obligatorio -> Cancelada + reversion de stock.
+            if (!TienePermiso(CodigosPermiso.ComprasCancelar))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
+            if (_esNuevo || _compra == null || _compra.Estado != EstadoCompra.Confirmada)
+            {
+                MostrarAdvertencia("Mensaje.CompraNoAnulable");
+                return;
+            }
+
+            string motivo = PedirMotivo();
+
+            if (motivo == null)
+                return;
+
+            if (string.IsNullOrWhiteSpace(motivo))
+            {
+                MostrarAdvertencia("Mensaje.CompraMotivoObligatorio");
+                return;
+            }
+
+            if (!Confirmar("Mensaje.ConfirmarAnularCompra", "Titulo.ConfirmarAnulacion"))
+                return;
+
+            try
+            {
+                _service.Anular(_idCompra, motivo.Trim());
+                CargarCompra();
+                MostrarExito("Mensaje.OperacionExitosa");
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+        }
+
+        private string PedirMotivo()
+        {
+            // Dialogo simple con TextBox (sin ComboBox): motivo obligatorio para anular.
+            using (Form dialogo = new Form())
+            {
+                dialogo.Text = _sesionIdioma.idioma == null
+                    ? "Anular"
+                    : _sesionIdioma.idioma.BuscarTraduccion("CompraDetalle.Anular");
+                dialogo.FormBorderStyle = FormBorderStyle.FixedDialog;
+                dialogo.StartPosition = FormStartPosition.CenterParent;
+                dialogo.MaximizeBox = false;
+                dialogo.MinimizeBox = false;
+                dialogo.ShowInTaskbar = false;
+                dialogo.ClientSize = new System.Drawing.Size(400, 150);
+
+                Label lbl = new Label();
+                lbl.Text = _sesionIdioma.idioma == null
+                    ? "Motivo anulacion:"
+                    : _sesionIdioma.idioma.BuscarTraduccion("CompraDetalle.MotivoAnulacion");
+                lbl.AutoSize = true;
+                lbl.Location = new System.Drawing.Point(12, 12);
+                dialogo.Controls.Add(lbl);
+
+                TextBox txt = new TextBox();
+                txt.Multiline = true;
+                txt.Location = new System.Drawing.Point(12, 34);
+                txt.Size = new System.Drawing.Size(376, 66);
+                dialogo.Controls.Add(txt);
+
+                Button btnAceptar = new Button();
+                btnAceptar.Text = _sesionIdioma.idioma == null
+                    ? "Aceptar"
+                    : _sesionIdioma.idioma.BuscarTraduccion("Accion.Aceptar");
+                btnAceptar.DialogResult = DialogResult.OK;
+                btnAceptar.Location = new System.Drawing.Point(212, 108);
+                btnAceptar.Size = new System.Drawing.Size(85, 28);
+                dialogo.Controls.Add(btnAceptar);
+
+                Button btnCancelar = new Button();
+                btnCancelar.Text = _sesionIdioma.idioma == null
+                    ? "Cancelar"
+                    : _sesionIdioma.idioma.BuscarTraduccion("Accion.Cancelar");
+                btnCancelar.DialogResult = DialogResult.Cancel;
+                btnCancelar.Location = new System.Drawing.Point(303, 108);
+                btnCancelar.Size = new System.Drawing.Size(85, 28);
+                dialogo.Controls.Add(btnCancelar);
+
+                dialogo.AcceptButton = btnAceptar;
+                dialogo.CancelButton = btnCancelar;
+
+                if (dialogo.ShowDialog(this) != DialogResult.OK)
+                    return null;
+
+                return txt.Text;
             }
         }
 
@@ -566,6 +684,7 @@ namespace UI.Forms.Compras
             bool puedeCrear = TienePermiso(CodigosPermiso.ComprasCrear);
             bool puedeCancelar = TienePermiso(CodigosPermiso.ComprasCancelar);
             bool borrador = EsBorrador();
+            bool confirmada = !_esNuevo && _compra != null && _compra.Estado == EstadoCompra.Confirmada;
             bool hayItems = DGV_Detalle.Rows.Count > 0;
 
             CBO_Repuesto.Enabled = borrador && puedeCrear;
@@ -585,6 +704,10 @@ namespace UI.Forms.Compras
 
             BTN_CancelarCompra.Visible = !_esNuevo && puedeCancelar;
             BTN_CancelarCompra.Enabled = !_esNuevo && puedeCancelar && borrador;
+
+            // Anular: solo Confirmada con COMPRAS_CANCELAR; Cancelada terminal sin acciones.
+            BTN_AnularCompra.Visible = !_esNuevo && puedeCancelar;
+            BTN_AnularCompra.Enabled = !_esNuevo && puedeCancelar && confirmada;
         }
 
         private void DGV_Detalle_SelectionChanged(object sender, EventArgs e)

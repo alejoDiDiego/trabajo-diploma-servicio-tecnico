@@ -1220,6 +1220,8 @@ namespace REPOSITORY.Features.Idiomas
             AgregarSeed("Ingles", "CompraDetalle.TituloNuevo", "New purchase");
             AgregarSeed("Espanol", "CompraDetalle.TituloDetalle", "Detalle de compra");
             AgregarSeed("Ingles", "CompraDetalle.TituloDetalle", "Purchase detail");
+            AgregarSeed("Espanol", "CompraDetalle.Numero", "Compra #{0}");
+            AgregarSeed("Ingles", "CompraDetalle.Numero", "Purchase #{0}");
             AgregarSeed("Espanol", "CompraDetalle.Proveedor", "Proveedor:");
             AgregarSeed("Ingles", "CompraDetalle.Proveedor", "Supplier:");
             AgregarSeed("Espanol", "CompraDetalle.Fecha", "Fecha:");
@@ -1264,8 +1266,25 @@ namespace REPOSITORY.Features.Idiomas
             AgregarSeed("Ingles", "Mensaje.CompraNoCancelabe", "Only a draft purchase can be cancelled.");
             AgregarSeed("Espanol", "Mensaje.ConfirmarConfirmarCompra", "Confirma que desea confirmar la compra seleccionada? Se actualizara el stock.");
             AgregarSeed("Ingles", "Mensaje.ConfirmarConfirmarCompra", "Are you sure you want to confirm the selected purchase? Stock will be updated.");
-            AgregarSeed("Espanol", "Mensaje.ConfirmarCancelarCompra", "Confirma que desea cancelar la compra seleccionada? Se eliminara el borrador.");
-            AgregarSeed("Ingles", "Mensaje.ConfirmarCancelarCompra", "Are you sure you want to cancel the selected purchase? The draft will be deleted.");
+            AgregarSeed("Espanol", "Mensaje.ConfirmarCancelarCompra", "Confirma que desea cancelar la compra seleccionada? Quedara en estado Cancelada y se conservara para consulta.");
+            AgregarSeed("Ingles", "Mensaje.ConfirmarCancelarCompra", "Are you sure you want to cancel the selected purchase? It will remain as Cancelled for reference.");
+            // UPDATE idempotente: AgregarSeed es IF NOT EXISTS y no corrige el texto
+            // en BD ya creadas ("Se eliminara el borrador"); este UPDATE migra las
+            // filas existentes sin duplicar (mismo patron que Mensaje.ClienteCamposObligatorios).
+            ActualizarTraduccion("Espanol", "Mensaje.ConfirmarCancelarCompra", "Confirma que desea cancelar la compra seleccionada? Quedara en estado Cancelada y se conservara para consulta.");
+            ActualizarTraduccion("Ingles", "Mensaje.ConfirmarCancelarCompra", "Are you sure you want to cancel the selected purchase? It will remain as Cancelled for reference.");
+            AgregarSeed("Espanol", "Compras.Anular", "Anular");
+            AgregarSeed("Ingles", "Compras.Anular", "Void");
+            AgregarSeed("Espanol", "CompraDetalle.Anular", "Anular");
+            AgregarSeed("Ingles", "CompraDetalle.Anular", "Void");
+            AgregarSeed("Espanol", "CompraDetalle.MotivoAnulacion", "Motivo anulacion:");
+            AgregarSeed("Ingles", "CompraDetalle.MotivoAnulacion", "Void reason:");
+            AgregarSeed("Espanol", "Mensaje.CompraNoAnulable", "Solo se puede anular una compra confirmada.");
+            AgregarSeed("Ingles", "Mensaje.CompraNoAnulable", "Only a confirmed purchase can be voided.");
+            AgregarSeed("Espanol", "Mensaje.CompraMotivoObligatorio", "El motivo de la anulacion es obligatorio.");
+            AgregarSeed("Ingles", "Mensaje.CompraMotivoObligatorio", "The void reason is required.");
+            AgregarSeed("Espanol", "Mensaje.ConfirmarAnularCompra", "Confirma que desea anular la compra confirmada? Se revertira el stock. Esta accion no se puede deshacer.");
+            AgregarSeed("Ingles", "Mensaje.ConfirmarAnularCompra", "Are you sure you want to void the confirmed purchase? Stock will be reverted. This action cannot be undone.");
             AgregarSeed("Espanol", "Mensaje.ConfirmarConfirmacion", "Confirma que desea confirmar la compra? Se actualizara el stock.");
             AgregarSeed("Ingles", "Mensaje.ConfirmarConfirmacion", "Are you sure you want to confirm the purchase? Stock will be updated.");
             AgregarSeed("Espanol", "Titulo.ConfirmarConfirmacion", "Confirmar confirmacion");

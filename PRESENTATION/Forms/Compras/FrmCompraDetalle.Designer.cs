@@ -26,6 +26,8 @@ namespace UI.Forms.Compras
             this.CBO_Proveedor = new System.Windows.Forms.ComboBox();
             this.LBL_Obs = new System.Windows.Forms.Label();
             this.TXT_Obs = new System.Windows.Forms.TextBox();
+            this.LBL_Motivo = new System.Windows.Forms.Label();
+            this.TXT_Motivo = new System.Windows.Forms.TextBox();
             this.DGV_Detalle = new System.Windows.Forms.DataGridView();
             this.PNL_Agregar = new System.Windows.Forms.Panel();
             this.LBL_Repuesto = new System.Windows.Forms.Label();
@@ -40,6 +42,7 @@ namespace UI.Forms.Compras
             this.BTN_GuardarBorrador = new System.Windows.Forms.Button();
             this.BTN_Confirmar = new System.Windows.Forms.Button();
             this.BTN_CancelarCompra = new System.Windows.Forms.Button();
+            this.BTN_AnularCompra = new System.Windows.Forms.Button();
             this.BTN_Cerrar = new System.Windows.Forms.Button();
             this.PNL_Header.SuspendLayout();
             this.PNL_Encabezado.SuspendLayout();
@@ -75,6 +78,7 @@ namespace UI.Forms.Compras
             this.LBL_Numero.Name = "LBL_Numero";
             this.LBL_Numero.Size = new System.Drawing.Size(100, 25);
             this.LBL_Numero.TabIndex = 0;
+            this.LBL_Numero.Tag = "CompraDetalle.Numero";
             this.LBL_Numero.Text = "Compra";
             //
             // LBL_Estado
@@ -156,9 +160,11 @@ namespace UI.Forms.Compras
             this.PNL_Encabezado.Controls.Add(this.CBO_Proveedor);
             this.PNL_Encabezado.Controls.Add(this.LBL_Obs);
             this.PNL_Encabezado.Controls.Add(this.TXT_Obs);
+            this.PNL_Encabezado.Controls.Add(this.LBL_Motivo);
+            this.PNL_Encabezado.Controls.Add(this.TXT_Motivo);
             this.PNL_Encabezado.Location = new System.Drawing.Point(15, 100);
             this.PNL_Encabezado.Name = "PNL_Encabezado";
-            this.PNL_Encabezado.Size = new System.Drawing.Size(850, 90);
+            this.PNL_Encabezado.Size = new System.Drawing.Size(850, 120);
             this.PNL_Encabezado.TabIndex = 1;
             //
             // LBL_Proveedor
@@ -198,6 +204,27 @@ namespace UI.Forms.Compras
             this.TXT_Obs.Size = new System.Drawing.Size(735, 22);
             this.TXT_Obs.TabIndex = 3;
             //
+            // LBL_Motivo
+            //
+            this.LBL_Motivo.AutoSize = true;
+            this.LBL_Motivo.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.LBL_Motivo.Location = new System.Drawing.Point(10, 78);
+            this.LBL_Motivo.Name = "LBL_Motivo";
+            this.LBL_Motivo.Size = new System.Drawing.Size(87, 15);
+            this.LBL_Motivo.TabIndex = 4;
+            this.LBL_Motivo.Tag = "CompraDetalle.MotivoAnulacion";
+            this.LBL_Motivo.Text = "Motivo anulacion:";
+            this.LBL_Motivo.Visible = false;
+            //
+            // TXT_Motivo
+            //
+            this.TXT_Motivo.Location = new System.Drawing.Point(100, 75);
+            this.TXT_Motivo.Name = "TXT_Motivo";
+            this.TXT_Motivo.ReadOnly = true;
+            this.TXT_Motivo.Size = new System.Drawing.Size(735, 22);
+            this.TXT_Motivo.TabIndex = 5;
+            this.TXT_Motivo.Visible = false;
+            //
             // DGV_Detalle
             //
             this.DGV_Detalle.AllowUserToAddRows = false;
@@ -209,13 +236,13 @@ namespace UI.Forms.Compras
             this.DGV_Detalle.BackgroundColor = System.Drawing.Color.White;
             this.DGV_Detalle.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.DGV_Detalle.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.DGV_Detalle.Location = new System.Drawing.Point(15, 200);
+            this.DGV_Detalle.Location = new System.Drawing.Point(15, 230);
             this.DGV_Detalle.MultiSelect = false;
             this.DGV_Detalle.Name = "DGV_Detalle";
             this.DGV_Detalle.ReadOnly = true;
             this.DGV_Detalle.RowHeadersVisible = false;
             this.DGV_Detalle.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.DGV_Detalle.Size = new System.Drawing.Size(850, 200);
+            this.DGV_Detalle.Size = new System.Drawing.Size(850, 170);
             this.DGV_Detalle.TabIndex = 2;
             this.DGV_Detalle.SelectionChanged += new System.EventHandler(this.DGV_Detalle_SelectionChanged);
             //
@@ -353,6 +380,7 @@ namespace UI.Forms.Compras
             this.PNL_Botones.Controls.Add(this.BTN_GuardarBorrador);
             this.PNL_Botones.Controls.Add(this.BTN_Confirmar);
             this.PNL_Botones.Controls.Add(this.BTN_CancelarCompra);
+            this.PNL_Botones.Controls.Add(this.BTN_AnularCompra);
             this.PNL_Botones.Controls.Add(this.BTN_Cerrar);
             this.PNL_Botones.Location = new System.Drawing.Point(15, 490);
             this.PNL_Botones.Name = "PNL_Botones";
@@ -406,6 +434,22 @@ namespace UI.Forms.Compras
             this.BTN_CancelarCompra.Text = "Cancelar";
             this.BTN_CancelarCompra.UseVisualStyleBackColor = false;
             this.BTN_CancelarCompra.Click += new System.EventHandler(this.BTN_CancelarCompra_Click);
+            //
+            // BTN_AnularCompra
+            //
+            this.BTN_AnularCompra.BackColor = System.Drawing.Color.Maroon;
+            this.BTN_AnularCompra.FlatAppearance.BorderSize = 0;
+            this.BTN_AnularCompra.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.BTN_AnularCompra.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.BTN_AnularCompra.ForeColor = System.Drawing.Color.White;
+            this.BTN_AnularCompra.Location = new System.Drawing.Point(415, 10);
+            this.BTN_AnularCompra.Name = "BTN_AnularCompra";
+            this.BTN_AnularCompra.Size = new System.Drawing.Size(120, 30);
+            this.BTN_AnularCompra.TabIndex = 4;
+            this.BTN_AnularCompra.Tag = "CompraDetalle.Anular";
+            this.BTN_AnularCompra.Text = "Anular";
+            this.BTN_AnularCompra.UseVisualStyleBackColor = false;
+            this.BTN_AnularCompra.Click += new System.EventHandler(this.BTN_AnularCompra_Click);
             //
             // BTN_Cerrar
             //
@@ -470,6 +514,8 @@ namespace UI.Forms.Compras
         private System.Windows.Forms.ComboBox CBO_Proveedor;
         private System.Windows.Forms.Label LBL_Obs;
         private System.Windows.Forms.TextBox TXT_Obs;
+        private System.Windows.Forms.Label LBL_Motivo;
+        private System.Windows.Forms.TextBox TXT_Motivo;
         private System.Windows.Forms.DataGridView DGV_Detalle;
         private System.Windows.Forms.Panel PNL_Agregar;
         private System.Windows.Forms.Label LBL_Repuesto;
@@ -484,6 +530,7 @@ namespace UI.Forms.Compras
         private System.Windows.Forms.Button BTN_GuardarBorrador;
         private System.Windows.Forms.Button BTN_Confirmar;
         private System.Windows.Forms.Button BTN_CancelarCompra;
+        private System.Windows.Forms.Button BTN_AnularCompra;
         private System.Windows.Forms.Button BTN_Cerrar;
     }
 }
