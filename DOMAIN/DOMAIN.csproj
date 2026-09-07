@@ -60,6 +60,13 @@
     <Compile Include="Features\Ordenes\TipoItemPresupuesto.cs" />
     <Compile Include="Features\Ordenes\TipoPresupuesto.cs" />
     <Compile Include="Features\Ordenes\OrdenServicio.cs" />
+    <Compile Include="Features\Proveedores\Proveedor.cs" />
+    <Compile Include="Features\Compras\EstadoCompra.cs" />
+    <Compile Include="Features\Compras\Compra.cs" />
+    <Compile Include="Features\Compras\DetalleCompra.cs" />
+    <Compile Include="Features\Garantias\Garantia.cs" />
+    <Compile Include="Features\Garantias\EstadoEvaluacionGarantia.cs" />
+    <Compile Include="Features\Garantias\EvaluacionGarantia.cs" />
     <Compile Include="Features\Ordenes\HistorialEstadoOrden.cs" />
     <Compile Include="Features\Ordenes\Diagnostico.cs" />
     <Compile Include="Features\Ordenes\Presupuesto.cs" />

@@ -196,7 +196,10 @@ namespace REPOSITORY.Features.Usuarios
                 ('encargado', 'Gestion clientes'),
                 ('encargado', 'Gestion equipos'),
                 ('encargado', 'Gestion catalogos'),
-                ('encargado', 'Gestion ordenes');
+                ('encargado', 'Gestion ordenes'),
+                ('encargado', 'Gestion repuestos'),
+                ('encargado', 'Gestion proveedores'),
+                ('encargado', 'Gestion compras');
 
                 INSERT INTO UsuarioPermisos (id_usuario, id_permiso)
                 SELECT u.id_usuario, p.id_permiso
@@ -211,7 +214,8 @@ namespace REPOSITORY.Features.Usuarios
                 );
 
                 -- Simples directos: recepcionista/tecnico no usan familias para no heredar de mas;
-                -- encargado solo suma BITACORA_VER simple (sus 4 familias ya calzan exacto arriba).
+                -- encargado solo suma BITACORA_VER simple. Gestion repuestos se agrego en CP3
+                -- (las 4 familias base siguen exactas arriba para DBs legacy migradas a rol).
                 CREATE TABLE #AsignacionesSimples (
                     username nvarchar(100),
                     codigo nvarchar(100)
@@ -304,7 +308,7 @@ namespace REPOSITORY.Features.Usuarios
                 INNER JOIN Permisos p ON p.id_permiso = up.id_permiso
                 WHERE UPPER(u.username) = UPPER('encargado')
                   AND p.es_familia = 1
-                  AND UPPER(p.nombre) IN (UPPER('Gestion clientes'), UPPER('Gestion equipos'), UPPER('Gestion catalogos'), UPPER('Gestion ordenes'));
+                  AND UPPER(p.nombre) IN (UPPER('Gestion clientes'), UPPER('Gestion equipos'), UPPER('Gestion catalogos'), UPPER('Gestion ordenes'), UPPER('Gestion repuestos'), UPPER('Gestion proveedores'), UPPER('Gestion compras'));
 
                 SELECT 0;
             ";

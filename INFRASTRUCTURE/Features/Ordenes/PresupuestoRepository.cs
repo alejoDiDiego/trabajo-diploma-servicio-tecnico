@@ -136,6 +136,9 @@ namespace REPOSITORY.Features.Ordenes
                         subtotal decimal(18,2) NOT NULL,
                         CONSTRAINT FK_PresupuestoDetalle_Presupuesto FOREIGN KEY (id_presupuesto)
                             REFERENCES Presupuestos(id_presupuesto)
+                        -- CP4: la FK de id_repuesto hacia Repuestos se agrega en RepuestoRepository
+                        -- con guarda (igual que FK_MovimientosStock_Reparacion en ReparacionRepository):
+                        -- Ordenes se inicializa ANTES que Repuestos y en BD fresca Repuestos aun no existe.
                     );
                 END
                 ELSE
@@ -171,6 +174,12 @@ namespace REPOSITORY.Features.Ordenes
                         ADD CONSTRAINT FK_PresupuestoDetalle_Presupuesto FOREIGN KEY (id_presupuesto)
                             REFERENCES Presupuestos(id_presupuesto);
                     END
+
+                    -- CP4: infraestructura id_repuesto -> Repuestos (sin habilitar en Emitir:
+                    -- la validacion sigue siendo solo ManoObra/Servicio).
+                    -- La FK se crea en RepuestoRepository.Inicializar con guarda (corre despues,
+                    -- cuando Repuestos ya existe); aqui no se crea para no fallar en BD fresca
+                    -- donde Ordenes se inicializa antes que Repuestos.
                 END
 
                 SELECT 0;

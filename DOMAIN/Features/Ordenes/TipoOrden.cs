@@ -1,6 +1,6 @@
 namespace DOMAIN.Features.Ordenes
 {
-    // Tipo de orden. CP2 siempre crea Normal; Garantia queda reservado para CP4.
+    // Tipo de orden. CP2 siempre crea Normal; CP4 crea Garantia en reingresos.
     public static class TipoOrden
     {
         public const string Normal = "Normal";

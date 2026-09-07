@@ -460,7 +460,14 @@ namespace REPOSITORY.Features.Permisos
                 ('Ver repuestos', 'REPUESTOS_VER', NULL, NULL),
                 ('Crear repuestos', 'REPUESTOS_CREAR', NULL, NULL),
                 ('Editar repuestos', 'REPUESTOS_EDITAR', NULL, NULL),
-                ('Desactivar repuestos', 'REPUESTOS_DESACTIVAR', NULL, NULL);
+                ('Desactivar repuestos', 'REPUESTOS_DESACTIVAR', NULL, NULL),
+                ('Ver proveedores', 'PROVEEDORES_VER', NULL, NULL),
+                ('Crear proveedores', 'PROVEEDORES_CREAR', NULL, NULL),
+                ('Editar proveedores', 'PROVEEDORES_EDITAR', NULL, NULL),
+                ('Desactivar proveedores', 'PROVEEDORES_DESACTIVAR', NULL, NULL),
+                ('Ver compras', 'COMPRAS_VER', NULL, NULL),
+                ('Crear compras', 'COMPRAS_CREAR', NULL, NULL),
+                ('Cancelar compras', 'COMPRAS_CANCELAR', NULL, NULL);
 
                 UPDATE p
                 SET p.nombre = s.nombre,
@@ -521,6 +528,8 @@ namespace REPOSITORY.Features.Permisos
                 ('Gestion catalogos'),
                 ('Gestion ordenes'),
                 ('Gestion repuestos'),
+                ('Gestion proveedores'),
+                ('Gestion compras'),
                 ('Lectura general'),
                 ('Rol recepcionista'),
                 ('Rol tecnico'),
@@ -556,6 +565,8 @@ namespace REPOSITORY.Features.Permisos
                 ('Gestion catalogos'),
                 ('Gestion ordenes'),
                 ('Gestion repuestos'),
+                ('Gestion proveedores'),
+                ('Gestion compras'),
                 ('Lectura general'),
                 ('Rol recepcionista'),
                 ('Rol tecnico'),
@@ -627,6 +638,13 @@ namespace REPOSITORY.Features.Permisos
                 ('Gestion repuestos', 'REPUESTOS_CREAR', NULL),
                 ('Gestion repuestos', 'REPUESTOS_EDITAR', NULL),
                 ('Gestion repuestos', 'REPUESTOS_DESACTIVAR', NULL),
+                ('Gestion proveedores', 'PROVEEDORES_VER', NULL),
+                ('Gestion proveedores', 'PROVEEDORES_CREAR', NULL),
+                ('Gestion proveedores', 'PROVEEDORES_EDITAR', NULL),
+                ('Gestion proveedores', 'PROVEEDORES_DESACTIVAR', NULL),
+                ('Gestion compras', 'COMPRAS_VER', NULL),
+                ('Gestion compras', 'COMPRAS_CREAR', NULL),
+                ('Gestion compras', 'COMPRAS_CANCELAR', NULL),
                 ('Lectura general', 'USUARIOS_VER', NULL),
                 ('Lectura general', 'PERMISOS_VER', NULL),
                 ('Lectura general', 'IDIOMAS_VER', NULL),
@@ -638,6 +656,8 @@ namespace REPOSITORY.Features.Permisos
                 ('Lectura general', 'MARCAS_VER', NULL),
                 ('Lectura general', 'ORDENES_VER', NULL),
                 ('Lectura general', 'REPUESTOS_VER', NULL),
+                ('Lectura general', 'PROVEEDORES_VER', NULL),
+                ('Lectura general', 'COMPRAS_VER', NULL),
                 ('Administrador', NULL, 'Gestion usuarios'),
                 ('Administrador', NULL, 'Gestion permisos'),
                 ('Administrador', NULL, 'Gestion idiomas'),
@@ -647,6 +667,8 @@ namespace REPOSITORY.Features.Permisos
                 ('Administrador', NULL, 'Gestion catalogos'),
                 ('Administrador', NULL, 'Gestion ordenes'),
                 ('Administrador', NULL, 'Gestion repuestos'),
+                ('Administrador', NULL, 'Gestion proveedores'),
+                ('Administrador', NULL, 'Gestion compras'),
                 ('Administrador', 'INTEGRIDAD_RECALCULAR', NULL),
                 ('Administrador', 'BITACORA_VER', NULL),
                 ('Rol recepcionista', 'CLIENTES_VER', NULL),
@@ -673,7 +695,9 @@ namespace REPOSITORY.Features.Permisos
                 ('Rol encargado', NULL, 'Gestion equipos'),
                 ('Rol encargado', NULL, 'Gestion catalogos'),
                 ('Rol encargado', NULL, 'Gestion ordenes'),
-                ('Rol encargado', NULL, 'Gestion repuestos');
+                ('Rol encargado', NULL, 'Gestion repuestos'),
+                ('Rol encargado', NULL, 'Gestion proveedores'),
+                ('Rol encargado', NULL, 'Gestion compras');
 
                 INSERT INTO PermisoComposicion (id_permiso_padre, id_permiso_hijo)
                 SELECT padre.id_permiso, hijo.id_permiso
@@ -900,7 +924,11 @@ namespace REPOSITORY.Features.Permisos
                     ('Espanol', 'Bitacora.ORDENES', 'Ordenes'),
                     ('Ingles', 'Bitacora.ORDENES', 'Orders'),
                     ('Espanol', 'Bitacora.REPUESTOS', 'Repuestos'),
-                    ('Ingles', 'Bitacora.REPUESTOS', 'Spare parts');
+                    ('Ingles', 'Bitacora.REPUESTOS', 'Spare parts'),
+                    ('Espanol', 'Bitacora.PROVEEDORES', 'Proveedores'),
+                    ('Ingles', 'Bitacora.PROVEEDORES', 'Suppliers'),
+                    ('Espanol', 'Bitacora.COMPRAS', 'Compras'),
+                    ('Ingles', 'Bitacora.COMPRAS', 'Purchases');
 
                     INSERT INTO Idiomas (nombre)
                     SELECT DISTINCT s.idioma

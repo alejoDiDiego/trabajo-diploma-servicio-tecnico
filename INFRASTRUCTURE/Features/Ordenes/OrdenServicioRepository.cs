@@ -183,7 +183,7 @@ namespace REPOSITORY.Features.Ordenes
                     id_orden_origen, tipo_orden, estado, resultado, fecha_ingreso, problema_informado,
                     estado_fisico_ingreso, accesorios_ingreso, observaciones_ingreso,
                     observacion_resultado, id_usuario_alta)
-                VALUES (0, @IdCliente, @IdEquipo, @IdTecnico, NULL, @TipoOrden, @Estado, NULL,
+                VALUES (0, @IdCliente, @IdEquipo, @IdTecnico, @IdOrdenOrigen, @TipoOrden, @Estado, NULL,
                     @FechaIngreso, @Problema, @EstadoFisico, @Accesorios, @ObsIngreso, NULL, @IdUsuarioAlta);
 
                 DECLARE @Id int = CAST(SCOPE_IDENTITY() AS int);
@@ -201,6 +201,7 @@ namespace REPOSITORY.Features.Ordenes
                 new SqlParameter("@IdCliente", orden.IdCliente),
                 new SqlParameter("@IdEquipo", orden.IdEquipo),
                 new SqlParameter("@IdTecnico", orden.IdTecnicoAsignado.HasValue ? (object)orden.IdTecnicoAsignado.Value : DBNull.Value),
+                new SqlParameter("@IdOrdenOrigen", orden.IdOrdenOrigen.HasValue ? (object)orden.IdOrdenOrigen.Value : DBNull.Value),
                 new SqlParameter("@TipoOrden", orden.TipoOrden),
                 new SqlParameter("@Estado", orden.Estado),
                 new SqlParameter("@FechaIngreso", orden.FechaIngreso),

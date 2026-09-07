@@ -61,7 +61,9 @@ namespace APPLICATION.Features.Bitacora
                 "TIPOS_EQUIPO",
                 "MARCAS",
                 "ORDENES",
-                "REPUESTOS"
+                "REPUESTOS",
+                "PROVEEDORES",
+                "COMPRAS"
             };
         }
     }

@@ -2,7 +2,7 @@ namespace DOMAIN.Features.Ordenes
 {
     // Resultado final de una orden de servicio.
     // Reparado lo asigna FinalizarPruebas (todas aprobadas).
-    // Valor reservado: GarantiaNoCubierta no se asigna desde ningun metodo.
+    // CP4: GarantiaNoCubierta lo asigna MarcarGarantiaNoCubierta (reingreso rechazado sin pago).
     public static class ResultadoOrdenServicio
     {
         public const string Reparado = "Reparado";

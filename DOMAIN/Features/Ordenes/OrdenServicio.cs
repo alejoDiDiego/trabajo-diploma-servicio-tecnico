@@ -56,6 +56,22 @@ namespace DOMAIN.Features.Ordenes
             };
         }
 
+        public static OrdenServicio CrearNuevoGarantia(int idCliente, int idEquipo, int idOrdenOrigen,
+            string problema, string estadoFisico, string accesorios, string observacionesIngreso,
+            int idUsuarioAlta)
+        {
+            if (idOrdenOrigen <= 0)
+                throw new ReglaNegocioException("La orden origen del reingreso es obligatoria.");
+
+            OrdenServicio orden = CrearNuevo(idCliente, idEquipo, problema, estadoFisico,
+                accesorios, observacionesIngreso, idUsuarioAlta);
+
+            orden.IdOrdenOrigen = idOrdenOrigen;
+            orden.TipoOrden = Ordenes.TipoOrden.Garantia;
+
+            return orden;
+        }
+
         public static OrdenServicio CargarDesdeDB(int id, int numeroOrden, int idCliente, int idEquipo,
             int? idTecnicoAsignado, int? idOrdenOrigen, string tipoOrden, string estado, string resultado,
             DateTime fechaIngreso, string problemaInformado, string estadoFisicoIngreso,
@@ -118,8 +134,19 @@ namespace DOMAIN.Features.Ordenes
 
         public void MarcarPendientePresupuesto()
         {
-            if (Estado != EstadoOrdenServicio.EnDiagnostico)
+            if (Estado != EstadoOrdenServicio.EnDiagnostico
+                && Estado != EstadoOrdenServicio.PendienteEvaluacionGarantia)
                 throw new ReglaNegocioException("Solo se puede pedir presupuesto de una orden en diagnostico.");
+
+            Estado = EstadoOrdenServicio.PendientePresupuesto;
+        }
+
+        public void MarcarPendientePresupuestoDesdeEvaluacion()
+        {
+            // Rechazada con continuidad de pago: EnDiagnostico no aplica (ya salio a
+            // evaluacion); solo desde PendienteEvaluacionGarantia.
+            if (Estado != EstadoOrdenServicio.PendienteEvaluacionGarantia)
+                throw new ReglaNegocioException("Solo se puede pedir presupuesto de una orden pendiente de evaluacion.");
 
             Estado = EstadoOrdenServicio.PendientePresupuesto;
         }
@@ -271,6 +298,36 @@ namespace DOMAIN.Features.Ordenes
             {
                 Estado = EstadoOrdenServicio.ListoRetiro;
             }
+        }
+
+        public void MarcarPendienteEvaluacionGarantia()
+        {
+            if (Estado != EstadoOrdenServicio.EnDiagnostico)
+                throw new ReglaNegocioException("Solo se puede evaluar la garantia de una orden en diagnostico.");
+
+            Estado = EstadoOrdenServicio.PendienteEvaluacionGarantia;
+        }
+
+        public void AutorizarReparacionGarantia()
+        {
+            // Aceptada: sin presupuesto. Solo desde evaluacion pendiente de garantia.
+            if (Estado != EstadoOrdenServicio.PendienteEvaluacionGarantia)
+                throw new ReglaNegocioException("Solo se puede autorizar por garantia una orden pendiente de evaluacion.");
+
+            Estado = EstadoOrdenServicio.AutorizadoReparacion;
+        }
+
+        public void MarcarGarantiaNoCubierta(string motivo)
+        {
+            // Rechazada sin continuidad de pago: cierra a ListoRetiro con resultado GarantiaNoCubierta.
+            if (Estado != EstadoOrdenServicio.PendienteEvaluacionGarantia)
+                throw new ReglaNegocioException("Solo se puede cerrar por garantia no cubierta una orden pendiente de evaluacion.");
+            if (string.IsNullOrWhiteSpace(motivo))
+                throw new ReglaNegocioException("El motivo de garantia no cubierta es obligatorio.");
+
+            Estado = EstadoOrdenServicio.ListoRetiro;
+            Resultado = ResultadoOrdenServicio.GarantiaNoCubierta;
+            ObservacionResultado = motivo.Trim();
         }
 
         public void ReabrirPruebas()

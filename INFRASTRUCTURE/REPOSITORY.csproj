@@ -54,6 +54,10 @@
     <Compile Include="Features\Ordenes\DiagnosticoRepository.cs" />
     <Compile Include="Features\Ordenes\PresupuestoRepository.cs" />
     <Compile Include="Features\Ordenes\EntregaRepository.cs" />
+    <Compile Include="Features\Proveedores\ProveedorRepository.cs" />
+    <Compile Include="Features\Compras\CompraRepository.cs" />
+    <Compile Include="Features\Garantias\GarantiaRepository.cs" />
+    <Compile Include="Features\Garantias\EvaluacionGarantiaRepository.cs" />
     <Compile Include="Features\Repuestos\RepuestoRepository.cs" />
     <Compile Include="Features\Repuestos\MovimientoStockRepository.cs" />
     <Compile Include="Features\Reparaciones\ReparacionRepository.cs" />

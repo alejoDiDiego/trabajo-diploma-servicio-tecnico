@@ -62,5 +62,14 @@ namespace DOMAIN.Features.Permisos
         public const string RepuestosCrear = "REPUESTOS_CREAR";
         public const string RepuestosEditar = "REPUESTOS_EDITAR";
         public const string RepuestosDesactivar = "REPUESTOS_DESACTIVAR";
+
+        public const string ProveedoresVer = "PROVEEDORES_VER";
+        public const string ProveedoresCrear = "PROVEEDORES_CREAR";
+        public const string ProveedoresEditar = "PROVEEDORES_EDITAR";
+        public const string ProveedoresDesactivar = "PROVEEDORES_DESACTIVAR";
+
+        public const string ComprasVer = "COMPRAS_VER";
+        public const string ComprasCrear = "COMPRAS_CREAR";
+        public const string ComprasCancelar = "COMPRAS_CANCELAR";
     }
 }

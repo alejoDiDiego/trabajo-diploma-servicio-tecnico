@@ -2,10 +2,12 @@ using System;
 using System.Collections.Generic;
 using ABSTRACTIONS.Features.Permisos;
 using APPLICATION.Features.Bitacora;
+using APPLICATION.Features.Garantias;
 using APPLICATION.Features.Usuarios;
 using DOMAIN.Exceptions;
 using DOMAIN.Features.Clientes;
 using DOMAIN.Features.Equipos;
+using DOMAIN.Features.Garantias;
 using DOMAIN.Features.Ordenes;
 using DOMAIN.Features.Permisos;
 using DOMAIN.Features.Reparaciones;
@@ -13,6 +15,7 @@ using DOMAIN.Features.Repuestos;
 using DOMAIN.Features.Usuarios;
 using REPOSITORY.Features.Clientes;
 using REPOSITORY.Features.Equipos;
+using REPOSITORY.Features.Garantias;
 using REPOSITORY.Features.Ordenes;
 using REPOSITORY.Features.Reparaciones;
 using REPOSITORY.Features.Repuestos;
@@ -193,7 +196,10 @@ namespace APPLICATION.Features.Ordenes
 
                 if (esReparable)
                 {
-                    ordenDb.MarcarPendientePresupuesto();
+                    if (ordenDb.TipoOrden == TipoOrden.Garantia)
+                        ordenDb.MarcarPendienteEvaluacionGarantia();
+                    else
+                        ordenDb.MarcarPendientePresupuesto();
                 }
                 else
                 {
@@ -206,6 +212,13 @@ namespace APPLICATION.Features.Ordenes
                     diagnosticoToSave, estadoAnterior, ordenDb.Estado, idUsuario,
                     esReparable ? "Diagnostico reparable" : "Diagnostico no reparable",
                     resultado, observacionResultado);
+
+                if (esReparable && ordenDb.TipoOrden == TipoOrden.Garantia)
+                {
+                    // El reingreso en evaluacion registra su fila Pendiente (garantia vigente +
+                    // origen y equipo coherentes; valida dentro). Sin presupuesto hasta decidir.
+                    RegistrarEvaluacionPendienteReingreso(ordenDb, idUsuario);
+                }
 
                 BitacoraService bitacoraService = new BitacoraService();
                 bitacoraService.Registrar("Diagnostico finalizado",
@@ -233,6 +246,10 @@ namespace APPLICATION.Features.Ordenes
 
                 if (ordenDb.Estado != EstadoOrdenServicio.PendientePresupuesto)
                     throw new ReglaNegocioException("Solo se puede emitir el presupuesto de una orden pendiente de presupuesto.");
+
+                if (ordenDb.TipoOrden == TipoOrden.Garantia
+                    && ordenDb.Estado == EstadoOrdenServicio.PendienteEvaluacionGarantia)
+                    throw new ReglaNegocioException("El reingreso de garantia no emite presupuesto hasta resolver su evaluacion.");
 
                 Diagnostico diagnostico = _diagnosticoRepository.ObtenerPorOrden(idOrden);
 
@@ -987,6 +1004,169 @@ namespace APPLICATION.Features.Ordenes
             }
         }
 
+        public OrdenServicio CrearReingresoGarantia(int idOrdenOriginal, int idCliente,
+            string problema, string estadoFisico, string accesorios, string observacionesIngreso)
+        {
+            // Crea orden Tipo=Garantia, IdOrdenOrigen=original, Estado Recibido + historial.
+            // Valida: garantia vigente + original Entregada + Reparada + mismo IdEquipo
+            // (equipo del reingreso == equipo original) + cliente existe+activo.
+            try
+            {
+                int idUsuarioAlta = ObtenerIdUsuarioSesion();
+
+                OrdenServicio original = ObtenerOrdenExistente(idOrdenOriginal);
+
+                if (original.Estado != EstadoOrdenServicio.Entregado)
+                    throw new ReglaNegocioException("Solo se puede reingresar una orden entregada.");
+
+                if (original.Resultado != ResultadoOrdenServicio.Reparado)
+                    throw new ReglaNegocioException("Solo se puede reingresar una orden con resultado reparado.");
+
+                Cliente cliente = _clienteRepository.ObtenerPorId(idCliente);
+
+                if (cliente == null)
+                    throw new ReglaNegocioException("El cliente seleccionado no existe.");
+
+                if (!cliente.Activo)
+                    throw new ReglaNegocioException("El cliente seleccionado esta inactivo.");
+
+                Equipo equipo = _equipoRepository.ObtenerPorId(original.IdEquipo);
+
+                if (equipo == null)
+                    throw new ReglaNegocioException("El equipo de la orden original no existe.");
+
+                if (equipo.IdCliente != idCliente)
+                    throw new ReglaNegocioException("El equipo no pertenece al cliente seleccionado.");
+
+                if (original.IdEquipo != equipo.Id)
+                    throw new ReglaNegocioException("El equipo del reingreso debe ser el mismo de la orden original.");
+
+                GarantiaService garantiaService = new GarantiaService();
+
+                try
+                {
+                    garantiaService.ObtenerVigente(idOrdenOriginal);
+                }
+                catch (ReglaNegocioException)
+                {
+                    throw new ReglaNegocioException("La garantia de la orden no esta vigente.");
+                }
+
+                OrdenServicio reingresoToSave = OrdenServicio.CrearNuevoGarantia(
+                    idCliente, original.IdEquipo, idOrdenOriginal, problema, estadoFisico,
+                    accesorios, observacionesIngreso, idUsuarioAlta);
+
+                OrdenServicio reingresoDb = _ordenRepository.CrearConHistorial(
+                    reingresoToSave, idUsuarioAlta, "Reingreso por garantia");
+
+                BitacoraService bitacoraService = new BitacoraService();
+                bitacoraService.Registrar("Reingreso por garantia",
+                    "id=" + reingresoDb.Id + " | id_origen=" + idOrdenOriginal, "ORDENES");
+
+                return reingresoDb;
+            }
+            catch (ReglaNegocioException ex)
+            {
+                throw new ReglaNegocioException(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al crear reingreso por garantia", ex);
+            }
+        }
+
+        public void EvaluarReingreso(int idOrdenReingreso, bool aceptada, string motivo, string observaciones)
+        {
+            // Decide la evaluacion pendiente del reingreso (requiere PRESUPUESTOS_DECIDIR en UI;
+            // backend valida estado y coherencia). Aceptada -> AutorizadoReparacion sin presupuesto.
+            // Rechazada + motivo que indica continuidad de pago -> PendientePresupuesto (flujo normal).
+            // Rechazada sin continuidad -> ListoRetiro + GarantiaNoCubierta.
+            // Continuidad de pago = motivo no vacio que contenga "pago" (convencion simple CP4).
+            try
+            {
+                int idUsuario = ObtenerIdUsuarioSesion();
+
+                if (string.IsNullOrWhiteSpace(motivo))
+                    throw new ReglaNegocioException("El motivo de la evaluacion es obligatorio.");
+
+                OrdenServicio reingreso = ObtenerOrdenExistente(idOrdenReingreso);
+
+                if (reingreso.TipoOrden != TipoOrden.Garantia)
+                    throw new ReglaNegocioException("Solo se puede evaluar un reingreso de garantia.");
+
+                if (reingreso.Estado != EstadoOrdenServicio.PendienteEvaluacionGarantia)
+                    throw new ReglaNegocioException("Solo se puede evaluar un reingreso pendiente de evaluacion.");
+
+                if (!reingreso.IdOrdenOrigen.HasValue)
+                    throw new ReglaNegocioException("El reingreso no tiene orden origen.");
+
+                EvaluacionGarantiaRepository evaluacionRepository = new EvaluacionGarantiaRepository();
+                GarantiaRepository garantiaRepository = new GarantiaRepository();
+
+                EvaluacionGarantia evaluacion = evaluacionRepository.ObtenerPorReingreso(idOrdenReingreso);
+
+                if (evaluacion == null)
+                    throw new ReglaNegocioException("El reingreso no tiene una evaluacion pendiente.");
+
+                if (evaluacion.Estado != EstadoEvaluacionGarantia.Pendiente)
+                    throw new ReglaNegocioException("Solo se puede evaluar una evaluacion pendiente.");
+
+                OrdenServicio original = ObtenerOrdenExistente(reingreso.IdOrdenOrigen.Value);
+
+                Garantia garantia = garantiaRepository.ObtenerPorOrden(original.Id);
+
+                if (garantia == null || garantia.Id != evaluacion.IdGarantia)
+                    throw new ReglaNegocioException("La evaluacion no corresponde a la garantia de la orden origen.");
+
+                if (reingreso.IdEquipo != original.IdEquipo)
+                    throw new ReglaNegocioException("El equipo del reingreso debe ser el mismo de la orden original.");
+
+                string estadoAnterior = reingreso.Estado;
+                string estadoNuevo;
+                string resultado = null;
+                string observacionResultado = null;
+
+                if (aceptada)
+                {
+                    reingreso.AutorizarReparacionGarantia();
+                    estadoNuevo = reingreso.Estado;
+                }
+                else if (motivo.ToLower().Contains("pago"))
+                {
+                    // Rechazada con continuidad de pago: vuelve a PendientePresupuesto para seguir el flujo normal.
+                    reingreso.MarcarPendientePresupuestoDesdeEvaluacion();
+                    estadoNuevo = reingreso.Estado;
+                }
+                else
+                {
+                    reingreso.MarcarGarantiaNoCubierta(motivo);
+                    estadoNuevo = reingreso.Estado;
+                    resultado = reingreso.Resultado;
+                    observacionResultado = reingreso.ObservacionResultado;
+                }
+
+                evaluacionRepository.Evaluar(evaluacion.Id,
+                    aceptada ? EstadoEvaluacionGarantia.Aceptada : EstadoEvaluacionGarantia.Rechazada,
+                    motivo.Trim(), observaciones);
+
+                _ordenRepository.CambiarEstadoConHistorial(reingreso.Id, estadoAnterior, estadoNuevo,
+                    idUsuario, aceptada ? "Garantia aceptada" : "Garantia rechazada",
+                    resultado, observacionResultado, null);
+
+                BitacoraService bitacoraService = new BitacoraService();
+                bitacoraService.Registrar(aceptada ? "Garantia aceptada" : "Garantia rechazada",
+                    "id_orden=" + idOrdenReingreso + " | motivo=" + motivo.Trim(), "ORDENES");
+            }
+            catch (ReglaNegocioException ex)
+            {
+                throw new ReglaNegocioException(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al evaluar reingreso por garantia", ex);
+            }
+        }
+
         public void CancelarEntrega(int idOrden, string motivo)
         {
             try
@@ -1738,6 +1918,35 @@ namespace APPLICATION.Features.Ordenes
                 throw new ReglaNegocioException("La orden seleccionada no existe.");
 
             return orden;
+        }
+
+        private void RegistrarEvaluacionPendienteReingreso(OrdenServicio reingreso, int idUsuario)
+        {
+            // Crea la fila Pendiente de la evaluacion: valida reingreso Tipo=Garantia +
+            // origen existente + equipo == original.equipo + garantia vigente de la origen.
+            if (!reingreso.IdOrdenOrigen.HasValue)
+                throw new ReglaNegocioException("El reingreso no tiene orden origen.");
+
+            OrdenServicio original = ObtenerOrdenExistente(reingreso.IdOrdenOrigen.Value);
+
+            if (reingreso.IdEquipo != original.IdEquipo)
+                throw new ReglaNegocioException("El equipo del reingreso debe ser el mismo de la orden original.");
+
+            GarantiaRepository garantiaRepository = new GarantiaRepository();
+            EvaluacionGarantiaRepository evaluacionRepository = new EvaluacionGarantiaRepository();
+
+            Garantia garantia = garantiaRepository.ObtenerVigente(original.Id);
+
+            if (garantia == null)
+                throw new ReglaNegocioException("La garantia de la orden no esta vigente.");
+
+            if (evaluacionRepository.ObtenerPorReingreso(reingreso.Id) != null)
+                throw new ReglaNegocioException("El reingreso ya tiene una evaluacion registrada.");
+
+            EvaluacionGarantia evaluacionToSave = EvaluacionGarantia.CrearPendiente(
+                reingreso.Id, garantia.Id, idUsuario);
+
+            evaluacionRepository.Crear(evaluacionToSave);
         }
 
         private Reparacion ObtenerUltimaIntervencion(int idOrden)

@@ -101,7 +101,10 @@ namespace REPOSITORY.Features.Ordenes
         public Entrega CrearConTransicion(Entrega entrega, string estadoAnterior, string estadoNuevo,
             int idUsuarioHistorial, string observacionHistorial)
         {
-            // Batch atomico: INSERT entrega + UPDATE orden a Entregado + INSERT historial.
+            // Batch atomico: INSERT entrega + UPDATE orden a Entregado + INSERT historial
+            // + INSERT garantia condicional (solo Normal + Reparado + Original aprobado con DiasGarantia>0).
+            // DECISION CP4: DiasGarantia se toma del presupuesto Original aprobado (no MAX con adicionales);
+            // FechaInicio=fecha_entrega, FechaFin=DATEADD(day, dias, fecha_entrega). Si no cumple, sin garantia (sin error).
             string query = @"
                 INSERT INTO Entregas (id_orden, fecha_entrega, id_usuario, entregado_a, documento_receptor, observaciones)
                 VALUES (@IdOrden, @FechaEntrega, @IdUsuario, @EntregadoA, @Documento, @Observaciones);
@@ -114,6 +117,31 @@ namespace REPOSITORY.Features.Ordenes
 
                 INSERT INTO HistorialOrdenes (id_orden, estado_anterior, estado_nuevo, fecha_hora, id_usuario, observacion)
                 VALUES (@IdOrden, @EstadoAnterior, @EstadoNuevo, GETDATE(), @IdUsuarioHistorial, @ObservacionHistorial);
+
+                DECLARE @Tipo nvarchar(20);
+                DECLARE @Resultado nvarchar(50);
+                DECLARE @Dias int;
+
+                SELECT @Tipo = tipo_orden, @Resultado = resultado
+                FROM OrdenesServicio WHERE id_orden = @IdOrden;
+
+                SELECT @Dias = dias_garantia
+                FROM Presupuestos
+                WHERE id_orden = @IdOrden AND tipo = 'Original' AND estado = 'Aprobado';
+
+                -- Garantia automatica (CP4): solo si la tabla Garantias ya existe
+                -- (GarantiaService.Inicializar corre despues de Ordenes en Program.cs).
+                -- En BD fresca sin Garantias: entrega normal sin garantia (sin error).
+                IF (OBJECT_ID('Garantias', 'U') IS NOT NULL
+                    AND @Tipo = 'Normal' AND @Resultado = 'Reparado'
+                    AND @Dias IS NOT NULL AND @Dias > 0)
+                BEGIN
+                    IF NOT EXISTS (SELECT 1 FROM Garantias WHERE id_orden_original = @IdOrden)
+                    BEGIN
+                        INSERT INTO Garantias (id_orden_original, fecha_inicio, fecha_fin, observaciones, anulada)
+                        VALUES (@IdOrden, @FechaEntrega, DATEADD(day, @Dias, @FechaEntrega), 'Garantia automatica por entrega', 0);
+                    END
+                END
 
                 SELECT @E;
             ";

@@ -49,6 +49,9 @@
     <Compile Include="Features\Marcas\MarcaService.cs" />
     <Compile Include="Features\Equipos\EquipoService.cs" />
     <Compile Include="Features\Ordenes\OrdenServicioService.cs" />
+    <Compile Include="Features\Proveedores\ProveedorService.cs" />
+    <Compile Include="Features\Compras\CompraService.cs" />
+    <Compile Include="Features\Garantias\GarantiaService.cs" />
     <Compile Include="Features\Repuestos\RepuestoService.cs" />
     <Compile Include="Features\Usuarios\Exceptions\DatosUsuarioIncorrectosException.cs" />
     <Compile Include="Features\Usuarios\UsuarioPermisoService.cs" />

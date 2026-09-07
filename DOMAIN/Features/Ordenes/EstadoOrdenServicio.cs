@@ -1,7 +1,9 @@
 namespace DOMAIN.Features.Ordenes
 {
     // Estados del ciclo de vida de una orden de servicio.
-    // Reservado para checkpoints futuros: PendienteEvaluacionGarantia no se alcanza desde ningun metodo.
+    // CP4: PendienteEvaluacionGarantia se alcanza al finalizar el diagnostico de un
+    // reingreso de garantia (reparable); Aceptada -> AutorizadoReparacion,
+    // Rechazada -> PendientePresupuesto (sigue flujo pago) o ListoRetiro/GarantiaNoCubierta.
     public static class EstadoOrdenServicio
     {
         public const string Recibido = "Recibido";
