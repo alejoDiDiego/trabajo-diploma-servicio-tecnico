@@ -1168,19 +1168,44 @@ namespace UI.Forms.Ordenes
                 decimal total = 0;
 
                 foreach (ReparacionRepuesto c in consumidos)
-                {
-                    decimal subtotal = c.Cantidad * c.CostoUnitario;
-                    total += subtotal;
+                    total += c.Cantidad * c.CostoUnitario;
 
-                    filas.Add(new FilaConsumido
+                // F8: el backend devuelve una fila por consumo (mismo repuesto en N filas
+                // con costos distintos). Agrupar por (repuesto, costo): igual costo -> una
+                // fila con cantidad total; distinto costo -> una fila por costo. El total
+                // es la suma y cuadra con la suma de subtotales.
+                Dictionary<string, FilaConsumido> grupos = new Dictionary<string, FilaConsumido>();
+
+                foreach (ReparacionRepuesto c in consumidos)
+                {
+                    string clave = c.IdRepuesto + "|" + c.CostoUnitario.ToString("F2", System.Globalization.CultureInfo.InvariantCulture);
+                    FilaConsumido existente;
+
+                    if (!grupos.TryGetValue(clave, out existente))
                     {
-                        IdRepuesto = c.IdRepuesto,
-                        Repuesto = ResolverRepuesto(c.IdRepuesto),
-                        Cantidad = c.Cantidad,
-                        Costo = c.CostoUnitario,
-                        Subtotal = subtotal
-                    });
+                        existente = new FilaConsumido
+                        {
+                            IdRepuesto = c.IdRepuesto,
+                            Repuesto = ResolverRepuesto(c.IdRepuesto),
+                            Cantidad = 0,
+                            Costo = c.CostoUnitario,
+                            Subtotal = 0
+                        };
+                        grupos[clave] = existente;
+                    }
+
+                    existente.Cantidad += c.Cantidad;
+                    existente.Subtotal = existente.Cantidad * existente.Costo;
                 }
+
+                foreach (FilaConsumido f in grupos.Values)
+                    filas.Add(f);
+
+                filas.Sort((a, b) =>
+                {
+                    int porRepuesto = string.Compare(a.Repuesto, b.Repuesto, StringComparison.Ordinal);
+                    return porRepuesto != 0 ? porRepuesto : a.Costo.CompareTo(b.Costo);
+                });
 
                 DGV_Consumidos.DataSource = new BindingList<FilaConsumido>(filas);
                 ConfigurarColumnasConsumidos();
@@ -2754,10 +2779,33 @@ namespace UI.Forms.Ordenes
                 return;
             }
 
+            // F8: la grilla agrupa por (repuesto, costo), pero la devolucion es contra el
+            // TOTAL consumido del repuesto (el backend reparte FIFO entre sus filas).
+            int totalRepuesto = fila.Cantidad;
+
+            try
+            {
+                List<ReparacionRepuesto> consumidos = _service.ListarConsumidos(seleccionada.Id);
+
+                int suma = 0;
+
+                foreach (ReparacionRepuesto c in consumidos)
+                {
+                    if (c.IdRepuesto == fila.IdRepuesto)
+                        suma += c.Cantidad;
+                }
+
+                if (suma > 0)
+                    totalRepuesto = suma;
+            }
+            catch
+            {
+            }
+
             int cantidad = PedirCantidad(
                 T("OrdenDetalle.QuitarConsumo"),
                 T("OrdenDetalle.CantidadDevolver"),
-                fila.Cantidad);
+                totalRepuesto);
 
             if (cantidad <= 0)
                 return;
