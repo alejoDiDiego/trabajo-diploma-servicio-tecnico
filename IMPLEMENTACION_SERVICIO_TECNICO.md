@@ -1690,3 +1690,434 @@ historial (no se purga por trazabilidad).
    que `fecha_fin` se completa sin pisar las observaciones.
 5. Caso Rechazado->Entrega->Anular -> verificar que la anulacion se
    rechaza porque la orden ya fue entregada.
+
+## Checkpoint 4
+
+### Objetivo
+
+Incorporar proveedores con baja logica, compras de repuestos con ingreso
+de stock y garantias automaticas con reingreso y evaluacion, sobre la base
+de los checkpoints 1-3 (clientes, equipos, ordenes, reparaciones), con
+bitacora tipos `PROVEEDORES`/`COMPRAS`, 7 permisos nuevos y menus
+`Inventario`/`Gestion` visibles segun permisos.
+
+### Branch y origen
+
+- Branch: `checkpoint-4-proveedores-garantias` (trabajo local, sin upstream).
+- Origen: `checkpoint-3-reparaciones` en `e31014c`
+  ("docs(checkpoint-3): fixes F2/F5/F8/F9 con decisiones, pruebas y
+  checklist humano").
+- Commits del checkpoint (locales, sin push):
+  - `feat(proveedores-garantias): backend de proveedores, compras,
+    garantias y reingresos`
+  - `feat(ui): gestion de proveedores, compras, garantias y tab de
+    garantia`
+  - `docs(checkpoint-4): informe de implementacion de proveedores y
+    garantias` (este commit).
+- Working tree: limpio tras el commit (ver seccion GIT).
+- Estado local/remoto: `origin` no tiene la rama
+  `checkpoint-4-proveedores-garantias`; la rama solo existe en local. NO
+  se hizo push por decision del usuario.
+
+### Tablas nuevas y cambios en existentes
+
+Nuevas (creacion idempotente con `IF OBJECT_ID` + `ALTER`/`FK` defensivos;
+FKs sin accion en cascada para conservar historia):
+
+- `Proveedores` (`id_proveedor` PK identity, `razon_social` con indice
+  unico `UX_Proveedores_RazonSocial` (como Marcas), `cuit`, `telefono`,
+  `email`, `direccion`, `contacto`, `activo` bit default 1).
+- `Compras` (`id_compra` PK identity, `id_proveedor` FK a Proveedores,
+  `fecha` default `GETDATE()`, `estado` (`Borrador`/`Confirmada`/
+  `Cancelada`), `total` decimal(18,2), `id_usuario` FK a Usuarios,
+  `observaciones`; FKs `FK_Compras_Proveedor`, `FK_Compras_Usuario`).
+- `CompraDetalle` (`id_detalle` PK identity, `id_compra` FK a Compras,
+  `id_repuesto` FK a Repuestos, `cantidad`, `costo_unitario`
+  decimal(18,2), `subtotal`; FKs `FK_CompraDetalle_Compra`,
+  `FK_CompraDetalle_Repuesto`).
+- `Garantias` (`id_garantia` PK identity, `id_orden_original` FK a
+  OrdenesServicio con indice unico `UX_Garantias_OrdenOriginal` (una
+  orden genera como maximo una garantia), `fecha_inicio`, `fecha_fin`,
+  `observaciones`, `anulada` bit default 0).
+- `EvaluacionesGarantia` (`id_evaluacion` PK identity,
+  `id_orden_reingreso` FK a OrdenesServicio con indice unico
+  `UX_EvaluacionesGarantia_Reingreso` (un reingreso se evalua una sola
+  vez), `id_garantia` FK a Garantias, `estado`
+  (`Pendiente`/`Aceptada`/`Rechazada`), `fecha` default `GETDATE()`,
+  `id_usuario` FK a Usuarios, `motivo`, `observaciones`).
+
+Existentes modificadas:
+
+- `PresupuestoDetalle.id_repuesto`: columna de infraestructura con FK
+  `FK_PresupuestoDetalle_Repuesto` hacia Repuestos (creada con guarda en
+  `RepuestoRepository.Inicializar`, porque Ordenes se inicializa antes
+  que Repuestos). Solo infraestructura: `Emitir` sigue validando solo
+  `ManoObra`/`Servicio`.
+- `MovimientosStock.id_compra` (nullable) + FK
+  `FK_MovimientosStock_Compra` hacia Compras (creada con guarda en
+  `CompraRepository.Inicializar`); tipo `Compra` en movimientos de
+  confirmacion.
+- `OrdenesServicio.id_orden_origen`: `CrearConHistorial` persistia `NULL`
+  fijo; ahora persiste `@IdOrdenOrigen` (habilita reingresos
+  `Tipo=Garantia` con origen).
+
+### Esquema resumido
+
+```text
+Proveedores 1 ----< * Compras 1 ----< * CompraDetalle >---- 1 Repuestos
+Compras 1 ----< * MovimientosStock (tipo Compra, id_compra)
+OrdenesServicio 1 ---- 0..1 Garantias 1 ----< * EvaluacionesGarantia
+OrdenesServicio 1 ----< * OrdenesServicio (id_orden_origen, reingreso Garantia)
+OrdenesServicio (Garantia) 1 ---- 0..1 EvaluacionesGarantia (reingreso)
+Bitacora(tipo_actividad: ... + PROVEEDORES/COMPRAS; garantias bitacoran ORDENES)
+```
+
+Flujo de estados CP4 (sobre CP2/CP3):
+
+```text
+Entregado (Normal + Reparado + Dias>0) --auto--> Garantia vigente
+Entregado/Reparado --reingreso--> Recibido (Garantia, origen persistido)
+  -> EnDiagnostico --diagnostico reparable--> PendienteEvaluacionGarantia
+    +evaluacion Pendiente (fila unica por reingreso)
+Aceptada --> AutorizadoReparacion (sin presupuesto)
+Rechazada + pago --> PendientePresupuesto (flujo normal de pago)
+Rechazada + retiro --> ListoRetiro + GarantiaNoCubierta (retiro posterior)
+Compra: Borrador -> Confirmada (con stock) | Borrador eliminado fisico
+```
+
+### Capas
+
+- DOMAIN (`Features/Proveedores` 1 archivo + `Features/Compras`
+  3 archivos + `Features/Garantias` 3 archivos): `Proveedor`
+  (`CrearNuevo` con razon social obligatoria, `CargarDesdeDB`);
+  `Compra` (`CrearBorrador`), `DetalleCompra` (`CrearNuevo` con
+  repuesto/cantidad/costo validados, `Subtotal = cantidad * costo`;
+  `idCompra` no se valida como en `DetallePresupuesto`),
+  `EstadoCompra` (`Borrador`/`Confirmada`/`Cancelada`); `Garantia`
+  (`CrearNuevo` con fin >= inicio), `EvaluacionGarantia`
+  (`CrearPendiente`), `EstadoEvaluacionGarantia`
+  (`Pendiente`/`Aceptada`/`Rechazada`). `OrdenServicio` suma
+  `CrearNuevoGarantia` (origen obligatorio + `Tipo=Garantia`),
+  `MarcarPendienteEvaluacionGarantia` (desde `EnDiagnostico`),
+  `AutorizarReparacionGarantia` (aceptada, sin presupuesto),
+  `MarcarGarantiaNoCubierta(motivo)` (rechazada sin pago ->
+  `ListoRetiro` + `GarantiaNoCubierta`, motivo obligatorio),
+  `MarcarPendientePresupuestoDesdeEvaluacion` (rechazada con pago);
+  `MarcarPendientePresupuesto` acepta tambien
+  `PendienteEvaluacionGarantia` como origen. `TipoItemPresupuesto`
+  suma constante `Repuesto` (solo infraestructura, no habilitado en
+  emision). `CodigosPermiso` suma 7 codigos CP4.
+- APPLICATION: `ProveedorService.cs` (Crear/Modificar/Desactivar/
+  Reactivar/Listar/`ObtenerPorId`; bitacora `PROVEEDORES` por
+  operacion); `CompraService.cs` (`CrearBorrador` con proveedor
+  existente+activo e items validados contra repuestos activos,
+  AgregarItem/QuitarItem solo en `Borrador`, `Confirmar` via
+  `ConfirmarConStock`, `Cancelar` via `CancelarBorrador` fisico;
+  bitacora `COMPRAS`); `GarantiaService.cs` (Crear/ObtenerPorOrden/
+  `ObtenerVigente`/Anular/`ObtenerEvaluacionPorReingreso`; garantias
+  bitacoran `ORDENES`); `OrdenServicioService` extendido
+  (`CrearReingresoGarantia` con validaciones vigencia/entregada/
+  reparada/mismo equipo/cliente activo y original intacta,
+  `EvaluarReingreso` aceptada/rechazada con convencion "pago",
+  `RegistrarEvaluacionPendienteReingreso` al finalizar diagnostico
+  reparable de reingreso; diagnostico de reingreso va a evaluacion,
+  no a presupuesto; emision bloqueada en
+  `PendienteEvaluacionGarantia`); `BitacoraService` suma los tipos
+  `PROVEEDORES`, `COMPRAS`.
+- INFRASTRUCTURE: `ProveedorRepository` (idempotente, baja logica por
+  `UPDATE activo`, `UX_Proveedores_RazonSocial`, mapeo
+  `DBNull`-seguro); `CompraRepository` (CrearBorradorConDetalle,
+  AgregarItem/QuitarItem con `THROW` 50030/50031/50032 y recalculo de
+  total, `ConfirmarConStock` batch con cursor: `Borrador->Confirmada`
+  + stock += cantidad + `costo_actual` = ultimo costo + movimiento
+  `Compra` con `id_compra`, `CancelarBorrador` fisico detalle +
+  cabecera sin tocar stock); `GarantiaRepository` (`Crear` con
+  `THROW` 50040 por duplicado, `ObtenerVigente` con
+  `GETDATE() <= fecha_fin` y no anulada, Anular);
+  `EvaluacionGarantiaRepository` (`Crear`, `Evaluar` con `THROW`
+  50050/50051 exigiendo `Pendiente`); `EntregaRepository`
+  (`CrearConTransicion` suma garantia automatica condicional: solo
+  `Normal` + `Reparado` + Original aprobado con `DiasGarantia>0`,
+  `FechaInicio=fecha_entrega`, `FechaFin=DATEADD(day, dias,
+  fecha_entrega)`, `IF NOT EXISTS` por orden; sin garantia no falla);
+  `OrdenServicioRepository` (persiste `id_orden_origen`);
+  `PresupuestoRepository` (documenta que la FK de `id_repuesto` se
+  crea en Repuestos); `RepuestoRepository` (crea
+  `FK_PresupuestoDetalle_Repuesto` con guarda); `PermisoRepository`
+  (seed de 7 permisos, 2 familias nuevas, composiciones
+  Administrador/Lectura/encargado, traducciones
+  `Bitacora.PROVEEDORES/COMPRAS`); `IdiomaRepository` (206 seeds
+  ES/EN, ver Traducciones); `UsuarioPermisoRepository` (encargado
+  suma `Gestion repuestos/proveedores/compras`, mas limpieza de
+  redundantes).
+- UI: `Forms/Proveedores` (4 archivos: `FrmProveedores` +
+  `FrmProveedorEditar`, `.cs` + Designer; CRUD + baja con motivo UX
+  razon); `Forms/Compras` (4 archivos: `FrmCompras` +
+  `FrmCompraDetalle`, `.cs` + Designer; borrador/confirmar con stock/
+  cancelar fisico); `Forms/Garantias` (2 archivos: `FrmGarantias` +
+  Designer; filtros vigencia/orden); `FrmOrdenServicioDetalle` suma
+  `TAB_Garantia` (origen/vigencia/estado/evaluacion/motivo, Ver
+  original, Crear reingreso, Aceptar/Rechazar con dialogo de 2
+  opciones pago/retiro); `FrmOrdenesServicio` suma filtro `Tipo`
+  (Normal/Garantia); `FrmPrincipal` con `Inventario > Proveedores/
+  Compras` y `Gestion > Garantias` (garantias con gate
+  `ORDENES_VER`); `Program.Main` inicializa `ProveedorService`,
+  `CompraService` y `GarantiaService`.
+- ABSTRACTIONS: sin cambios.
+- SERVICES: sin cambios (se reutilizan `SessionManager` y
+  `SesionIdioma`).
+
+### Archivos existentes modificados
+
+- `APPLICATION/APPLICATION.csproj`
+- `APPLICATION/Features/Bitacora/BitacoraService.cs`
+- `APPLICATION/Features/Ordenes/OrdenServicioService.cs`
+- `DOMAIN/DOMAIN.csproj`
+- `DOMAIN/Features/Ordenes/EstadoOrdenServicio.cs`
+- `DOMAIN/Features/Ordenes/OrdenServicio.cs`
+- `DOMAIN/Features/Ordenes/ResultadoOrdenServicio.cs`
+- `DOMAIN/Features/Ordenes/TipoItemPresupuesto.cs`
+- `DOMAIN/Features/Ordenes/TipoOrden.cs`
+- `DOMAIN/Features/Permisos/CodigosPermiso.cs`
+- `INFRASTRUCTURE/REPOSITORY.csproj`
+- `INFRASTRUCTURE/Features/Idiomas/IdiomaRepository.cs`
+- `INFRASTRUCTURE/Features/Ordenes/EntregaRepository.cs`
+- `INFRASTRUCTURE/Features/Ordenes/OrdenServicioRepository.cs`
+- `INFRASTRUCTURE/Features/Ordenes/PresupuestoRepository.cs`
+- `INFRASTRUCTURE/Features/Permisos/PermisoRepository.cs`
+- `INFRASTRUCTURE/Features/Repuestos/RepuestoRepository.cs`
+- `INFRASTRUCTURE/Features/Usuarios/UsuarioPermisoRepository.cs`
+- `PRESENTATION/UI.csproj`
+- `PRESENTATION/Program.cs`
+- `PRESENTATION/Forms/FrmPrincipal.cs` + `FrmPrincipal.Designer.cs`
+- `PRESENTATION/Forms/Ordenes/FrmOrdenesServicio.cs` +
+  `FrmOrdenesServicio.Designer.cs` (filtro Tipo)
+- `PRESENTATION/Forms/Ordenes/FrmOrdenServicioDetalle.cs` +
+  `FrmOrdenServicioDetalle.Designer.cs` (`TAB_Garantia`)
+- `IMPLEMENTACION_SERVICIO_TECNICO.md` (este informe)
+
+### Archivos nuevos
+
+- `DOMAIN/Features/Proveedores/Proveedor.cs`
+- `DOMAIN/Features/Compras/Compra.cs`
+- `DOMAIN/Features/Compras/DetalleCompra.cs`
+- `DOMAIN/Features/Compras/EstadoCompra.cs`
+- `DOMAIN/Features/Garantias/Garantia.cs`
+- `DOMAIN/Features/Garantias/EvaluacionGarantia.cs`
+- `DOMAIN/Features/Garantias/EstadoEvaluacionGarantia.cs`
+- `APPLICATION/Features/Proveedores/ProveedorService.cs`
+- `APPLICATION/Features/Compras/CompraService.cs`
+- `APPLICATION/Features/Garantias/GarantiaService.cs`
+- `INFRASTRUCTURE/Features/Proveedores/ProveedorRepository.cs`
+- `INFRASTRUCTURE/Features/Compras/CompraRepository.cs`
+- `INFRASTRUCTURE/Features/Garantias/GarantiaRepository.cs`
+- `INFRASTRUCTURE/Features/Garantias/EvaluacionGarantiaRepository.cs`
+- `PRESENTATION/Forms/Proveedores/FrmProveedores.cs` (+ Designer)
+- `PRESENTATION/Forms/Proveedores/FrmProveedorEditar.cs` (+ Designer)
+- `PRESENTATION/Forms/Compras/FrmCompras.cs` (+ Designer)
+- `PRESENTATION/Forms/Compras/FrmCompraDetalle.cs` (+ Designer)
+- `PRESENTATION/Forms/Garantias/FrmGarantias.cs` (+ Designer)
+
+### Permisos (7 nuevos) y roles
+
+- `PROVEEDORES_VER/CREAR/EDITAR/DESACTIVAR`,
+  `COMPRAS_VER/CREAR/CANCELAR`.
+- Familias nuevas `Gestion proveedores`, `Gestion compras` (colgadas
+  de `Administrador`; `PROVEEDORES_VER`/`COMPRAS_VER` tambien cuelgan
+  de `Lectura general`).
+- `FrmGarantias` y `TAB_Garantia` usan `ORDENES_VER`/`ORDENES_EDITAR`
+  y `PRESUPUESTOS_DECIDIR` (sin permisos propios de garantia).
+- Rol encargado expandido: suma `Gestion repuestos` (CP3 pendiente en
+  asignacion directa) + `Gestion proveedores` + `Gestion compras`;
+  limpieza idempotente de asignaciones directas redundantes.
+- Tipos de bitacora `PROVEEDORES`/`COMPRAS` (+ traducciones ES/EN en
+  `PermisoRepository`); garantias y evaluaciones bitacoran `ORDENES`.
+
+### Traducciones (206 seeds ES/EN en IdiomaRepository + 4 en PermisoRepository)
+
+Menu (`Menu.Proveedores/Compras/Garantias`), `FrmProveedores` y
+filtros/botones (`Proveedores.*`, `ProveedorEditar.*`,
+`Campo.RazonSocial/Cuit/Contacto`, `Columna.RazonSocial/Cuit/
+Contacto/Direccion/Proveedor/Total/Vigencia`,
+`Mensaje.ProveedorCamposObligatorios`), compras
+(`FrmCompras.*`, `Compras.*`, `CompraDetalle.*`,
+`CompraEstado.Borrador/Confirmada/Cancelada`, mensajes de
+confirmacion/no-confirmable/no-cancelable), garantias
+(`FrmGarantias.*`, `Garantias.*`, `GarantiaVigencia.*`,
+`GarantiaEstado.*`, `Tipo.Garantia`,
+`Estado.PendienteEvaluacionGarantia`, `Resultado.GarantiaNoCubierta`,
+`OrdenDetalle.TabGarantia/Garantia*/VerOriginal/CrearReingreso/
+AceptarGarantia/RechazarGarantia/Evaluacion*/Reingreso*/RechazoPago/
+RechazoRetiro/EvaluarRechazo*`, mensajes de aceptar/crear/pago),
+filtro (`Ordenes.FiltroTipo`). Mas `Bitacora.PROVEEDORES/COMPRAS`
+(ES: "Proveedores"/"Compras" / EN: "Suppliers"/"Purchases") en
+`PermisoRepository`.
+
+### Decisiones
+
+- `costo_actual` = ultimo costo de compra del detalle (simple, sin
+  promedio ponderado) en `ConfirmarConStock`.
+- Dias de garantia = `dias_garantia` del Original aprobado (no MAX
+  con adicionales); `FechaFin = DATEADD(day, dias, fecha_entrega)`;
+  la garantia no se renueva (UNIQUE por orden + `IF NOT EXISTS`).
+- Compra en 1 batch (`ConfirmarConStock` con cursor): estado + stock
+  + movimientos + costo en la misma transaccion.
+- Reingreso multiple permitido (N4): una orden puede generar varios
+  reingresos; cada reingreso tiene una sola evaluacion (UNIQUE).
+- `Cancelada` inalcanzable (H1): `CancelarBorrador` es DELETE fisico
+  de detalle + cabecera; el estado `Cancelada` existe como constante
+  pero nunca se persiste.
+- Pago por convencion fragil (H2): `EvaluarReingreso` decide
+  pago/retiro por `motivo.ToLower().Contains("pago")`; la UI ofrece
+  las 2 opciones y registra el motivo con continuidad de pago.
+- Paquetes: ninguno nuevo.
+
+### Delegaciones
+
+- 4 exploradores (repo, esquema, permisos/idiomas, UI base): base del
+  disenio (OK).
+- Backend (proveedores, compras, garantias, reingreso, evaluacion,
+  permisos, bitacora, init): OK, verificado funcional (53/53
+  propios).
+- Dump de esquema (tablas/columnas/FKs desde SQL): OK, consistente
+  con los repositories.
+- UI (proveedores + compras + garantias + `TAB_Garantia` + filtro
+  Tipo + menus + seeds + init): OK, verificado visual.
+- Revision cruzada (backend/UI/DB): 11 hallazgos (ver Revisiones
+  cruzadas).
+- Testing (funcional 77/77 + regresion + visual 18/18): PASS.
+
+### Revisiones cruzadas
+
+- 11 hallazgos con severidad (verificados, pendientes salvo H2):
+  - H1: `EstadoCompra.Cancelada` inalcanzable (`CancelarBorrador`
+    es fisico; la constante nunca se persiste). Verificado
+    pendiente, documentado como decision.
+  - H2: convencion "pago" en motivo (`Contains("pago")`) es fragil;
+    confirmado como falso positivo "impago" (un motivo con "impago"
+    contiene "pago"). Verificado, documentado como limitacion.
+  - H3/H4/H7: verificados pendientes (detalle en reporte de
+    revision; sin cambio de codigo en este checkpoint).
+  - N1-N4 menores (incluye N4: reingreso multiple permitido,
+    documentado como decision).
+- 0 blockers para el commit (build 0 errores, testing PASS).
+
+### Pruebas funcionales (harness temporal fuera del repo): 77/77 PASS
+
+- Proveedor crear/modificar/desactivar/reactivar, razon social
+  unica, razon vacia rechazada: PASS.
+- Compra borrador (proveedor activo exigido, items contra repuestos
+  activos, total calculado), AgregarItem/QuitarItem solo en
+  `Borrador`, confirmar con stock (stock += cantidad, costo =
+  ultimo, movimientos `Compra` con `id_compra`), cancelar fisico
+  sin tocar stock, confirmar/cancelar fuera de `Borrador`
+  rechazados: PASS.
+- Garantia automatica al entregar (`Normal` + `Reparado` +
+  `Dias>0`): `DATEADD`, UNIQUE por origen, sin garantia si no
+  cumple (sin error), no renueva: PASS.
+- Reingreso (vigencia/entregada/reparada/mismo equipo/cliente
+  activo, origen persistido, original intacta): PASS.
+- Evaluacion: aceptada -> `AutorizadoReparacion` sin presupuesto;
+  rechazada + paga -> `PendientePresupuesto` (flujo normal);
+  rechazada + retiro -> `ListoRetiro` + `GarantiaNoCubierta`;
+  motivo obligatorio, evaluacion unica, coherencia
+  garantia-origen-equipo: PASS.
+- Bitacora tipos `PROVEEDORES`/`COMPRAS`/`ORDENES` en cada
+  operacion: PASS.
+
+### Pruebas visuales (harness STA + UI real): 18/18 PASS
+
+- `FrmProveedores`/`FrmProveedorEditar` (nuevo + editar con datos
+  reales), `FrmCompras`/`FrmCompraDetalle` (borrador + confirmar +
+  cancelar), `FrmGarantias` (filtros vigencia/orden),
+  `FrmOrdenServicioDetalle` `TAB_Garantia` (normal/reingreso/
+  evaluar 2 opciones/crear reingreso), filtro Tipo en
+  `FrmOrdenesServicio`, `DrawToBitmap` OK, resize OK.
+- ES->EN->ES sin excepcion; menus `Inventario`/`Gestion` visibles
+  por permiso; acceso denegado sin permiso.
+
+### Pruebas de regresion (CP1+CP2+CP3): PASS
+
+- Login valido/invalido/logout, ES<->EN por service y observer,
+  `VerificarIntegridadUsuarios`, CRUD clientes/equipos/catalogos/
+  repuestos, ciclo
+  ordenes/diagnostico/presupuesto/reparacion/pruebas/entrega:
+  PASS sin cambios.
+
+### Herramienta visual
+
+Harness STA temporal fuera del repo: instancia los forms reales de
+`UI.exe` con sesion admin, vuelca arbol de controles,
+`DrawToBitmap` a PNG, prueba de resize y `PerformClick` en
+Crear/Confirmar/Cancelar/Aceptar/Rechazar/CrearReingreso contra UI
+real. Mas smoke con `UI.exe` real (login admin/123, menus
+`Gestion > Inventario > Proveedores/Compras` y `Gestion >
+Garantias`).
+
+### Problemas encontrados y corregidos
+
+1. H2 confirmado (falso positivo "impago"): la convencion
+   `Contains("pago")` clasifica "impago" como pago. Sin cambio de
+   codigo en este checkpoint; queda documentado como fragil (ver
+   Limitaciones). Re-test: PASS con motivos canonicos de la UI.
+2. Menores N1-N4 (verificados pendientes, no bloquean): sin cambio
+   de codigo en este checkpoint.
+
+### Limitaciones
+
+- Atomicidad indirecta (heredada CP2/CP3): estado + historial +
+  stock/garantia van en el mismo batch SQL del repository, sin
+  UoW/transaccion formal a nivel service; un fallo entre batches
+  (p. ej. bitacora) no revierte la transicion.
+- Convencion "pago" fragil (H2): `motivo.Contains("pago")`
+  clasifica "impago" como pago; la UI mitiga con las 2 opciones
+  canonicas, pero un motivo libre puede fallar.
+- `Cancelada` inalcanzable (H1): el estado existe pero nunca se
+  persiste (cancelar es fisico).
+- Sin costo promedio: `costo_actual` pisa con el ultimo costo.
+- MDI y `RecalcularDV` por menu a prueba humana (harness cubre
+  service + smoke por permisos/handlers).
+- ES/EN por service + observer en pantallas tocadas, sin recorrido
+  exhaustivo control por control.
+- Orden de limpieza FK en testing (prefijo CP4T): `Pruebas` ->
+  `ReparacionRepuesto` -> `Reparaciones` -> `MovimientosStock` ->
+  `EvaluacionesGarantia` -> `Garantias` -> `CompraDetalle` ->
+  `Compras` -> `Proveedores` -> resto del ciclo.
+
+### Datos de prueba
+
+Limpieza posterior al testing: `DELETE` en una transaccion de todas
+las filas con prefijo CP4T (orden FK de arriba). Tablas CP4
+quedaron en 0 filas (0 restos). Bitacora conserva el historial (no
+se purga por trazabilidad).
+
+### Pruebas humanas pendientes
+
+1. Crear un proveedor desde `FrmProveedores` y verificar que aparece
+   en la grilla y en bitacora (`PROVEEDORES`); probar razon
+   duplicada (debe fallar) y desactivar/reactivar con motivo UX.
+2. Crear una compra en borrador (proveedor + items con costo),
+   agregar/quitar items y confirmar; verificar stock sumado,
+   `costo_actual` = ultimo costo y movimientos `Compra` en
+   `FrmMovimientosStock`; cancelar otro borrador y verificar
+   borrado fisico sin tocar stock.
+3. Entregar una orden `Normal` + `Reparado` con dias > 0 y verificar
+   la garantia automatica en `FrmGarantias` (vigencia y fechas
+   `DATEADD`); entregar sin dias y verificar que no genera
+   garantia.
+4. Crear un reingreso desde `TAB_Garantia` (verificar tipo
+   `Garantia`, origen persistido y Ver original); intentar con
+   garantia vencida o sin entregar (debe fallar).
+5. Aceptar la garantia del reingreso y verificar
+   `AutorizadoReparacion` sin presupuesto.
+6. Rechazar con opcion paga y verificar `PendientePresupuesto`;
+   emitir/aprobar el presupuesto normal (flujo pago).
+7. Rechazar con opcion retiro y verificar `ListoRetiro` +
+   `GarantiaNoCubierta`; entregar el retiro posterior.
+8. Verificar que la orden original queda intacta tras reingresos y
+   evaluaciones (mismo equipo, historial y garantia sin cambios).
+9. Cambiar idioma ES<->EN con proveedores/compras/garantias y
+   detalle abiertos y verificar traduccion completa.
+10. Regresion CP1+CP2+CP3: clientes/equipos/catalogos/repuestos,
+    ordenes/diagnostico/presupuesto/reparacion/pruebas/entrega,
+    bitacora e integridad (`Recalcular DV`).
