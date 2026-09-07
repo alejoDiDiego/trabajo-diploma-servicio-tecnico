@@ -35,6 +35,8 @@ namespace UI.Forms
             this.TSMI_Proveedores = new System.Windows.Forms.ToolStripMenuItem();
             this.TSMI_Compras = new System.Windows.Forms.ToolStripMenuItem();
             this.TSMI_Garantias = new System.Windows.Forms.ToolStripMenuItem();
+            this.TSMI_Dashboard = new System.Windows.Forms.ToolStripMenuItem();
+            this.TSMI_Reportes = new System.Windows.Forms.ToolStripMenuItem();
             this.TSMI_Idioma = new System.Windows.Forms.ToolStripMenuItem();
             this.TSMI_AdministrarTraducciones = new System.Windows.Forms.ToolStripMenuItem();
             this.TSMI_Gestion = new System.Windows.Forms.ToolStripMenuItem();
@@ -139,6 +141,8 @@ namespace UI.Forms
             this.TSMI_Equipos,
             this.TSMI_Ordenes,
             this.TSMI_Garantias,
+            this.TSMI_Dashboard,
+            this.TSMI_Reportes,
             this.TSMI_Catalogos,
             this.TSMI_Inventario});
             this.TSMI_Gestion.Name = "TSMI_Gestion";
@@ -248,6 +252,22 @@ namespace UI.Forms
             this.TSMI_Garantias.Text = "Garantias";
             this.TSMI_Garantias.Click += new System.EventHandler(this.TSMI_Garantias_Click);
             //
+            // TSMI_Dashboard
+            //
+            this.TSMI_Dashboard.Name = "TSMI_Dashboard";
+            this.TSMI_Dashboard.Size = new System.Drawing.Size(180, 22);
+            this.TSMI_Dashboard.Tag = "Menu.Dashboard";
+            this.TSMI_Dashboard.Text = "Dashboard";
+            this.TSMI_Dashboard.Click += new System.EventHandler(this.TSMI_Dashboard_Click);
+            //
+            // TSMI_Reportes
+            //
+            this.TSMI_Reportes.Name = "TSMI_Reportes";
+            this.TSMI_Reportes.Size = new System.Drawing.Size(180, 22);
+            this.TSMI_Reportes.Tag = "Menu.Reportes";
+            this.TSMI_Reportes.Text = "Reportes";
+            this.TSMI_Reportes.Click += new System.EventHandler(this.TSMI_Reportes_Click);
+            //
             // TSMI_Idioma
             //
             this.TSMI_Idioma.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -309,6 +329,8 @@ namespace UI.Forms
         private System.Windows.Forms.ToolStripMenuItem TSMI_Proveedores;
         private System.Windows.Forms.ToolStripMenuItem TSMI_Compras;
         private System.Windows.Forms.ToolStripMenuItem TSMI_Garantias;
+        private System.Windows.Forms.ToolStripMenuItem TSMI_Dashboard;
+        private System.Windows.Forms.ToolStripMenuItem TSMI_Reportes;
         private System.Windows.Forms.ToolStripMenuItem TSMI_Idioma;
         private System.Windows.Forms.ToolStripMenuItem TSMI_AdministrarTraducciones;
     }
