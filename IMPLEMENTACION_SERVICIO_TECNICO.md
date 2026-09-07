@@ -2181,3 +2181,325 @@ Checklist humano:
 3. Confirmada con stock consumido -> Anular -> verificar rechazo
    explicito sin cambios.
 4. Detalle con idioma EN -> verificar header `Purchase #N`.
+
+## Checkpoint 5
+
+### Objetivo
+
+Incorporar dashboard operativo con 6 KPIs y visor de 11
+reportes de solo lectura sobre la base de los checkpoints
+1-4 (clientes, equipos, ordenes, reparaciones, proveedores,
+compras, garantias), con 1 permiso nuevo (`REPORTES_VER`),
+menus `Gestion > Dashboard/Reportes` visibles segun permiso
+y seeds ES/EN. Sin tablas nuevas, sin escrituras y sin
+bitacora propia: el backend solo lee y calcula tasas y
+promedios en C# con division por cero protegida.
+
+### Branch y origen
+
+- Branch: `checkpoint-5-dashboard-reportes` (trabajo local,
+  sin upstream).
+- Origen: `checkpoint-4-proveedores-garantias` en `107fb08`
+  ("docs(checkpoint-4): fix compras con cancelar persistente
+  y anulacion").
+- Commits del checkpoint (locales, sin push):
+  - `feat(reportes): backend solo lectura con dashboard y 11
+    consultas`
+  - `feat(ui): dashboard con 6 KPIs y visor de 11 reportes
+    en Gestion`
+  - `fix(idiomas): seed ResultadoVacio con espacio para
+    evitar crash de init`
+  - `docs(checkpoint-5): informe de dashboard y reportes`
+    (este commit).
+- Working tree: limpio tras el commit (ver seccion GIT).
+- Estado local/remoto: `origin` no tiene la rama
+  `checkpoint-5-dashboard-reportes`; la rama solo existe en
+  local. NO se hizo push por decision del usuario.
+
+### Tablas nuevas y cambios en existentes
+
+Ninguna nueva. Solo lectura:
+
+- Sin `Inicializar()` en `ReporteRepository`: no hay nada
+  que crear, solo `SELECT`s parametrizados (`@Desde`,
+  `@Hasta`, `@Top`).
+- Sin escrituras, sin transacciones y sin objetos nuevos en
+  la DB.
+- Existentes solo leidas: `OrdenesServicio`, `Entregas`,
+  `Reparaciones`, `Usuarios`, `Presupuestos`,
+  `ReparacionRepuesto`, `Reparaciones`, `Repuestos`,
+  `Compras`, `Proveedores`, `EvaluacionesGarantia`.
+- `Repuestos bajo minimo` no usa query nueva: reutiliza
+  `RepuestoRepository.Listar()` y filtra en C#.
+
+### Esquema resumido
+
+```text
+Sin cambios de esquema en CP5 (solo lectura).
+OrdenesServicio >-- Entregas (promedio ingreso-entrega)
+Reparaciones >-- Usuarios (por tecnico)
+Presupuestos (conteos + monto aprobados)
+ReparacionRepuesto >-- Repuestos (mas utilizados / bajo minimo)
+Compras >-- Proveedores (confirmadas por proveedor)
+OrdenesServicio (tipo_orden=Garantia) + EvaluacionesGarantia
+Bitacora: sin tipo REPORTES (no hay escrituras que registrar)
+```
+
+### Capas
+
+- DOMAIN: `CodigosPermiso` suma 1 codigo CP5
+  (`REPORTES_VER`). Sin entidades nuevas (sin DTOs: se
+  devuelve `DataTable`).
+- APPLICATION (`Features/Reportes` 1 archivo):
+  `ReporteService.cs` delega al repositorio y calcula en C#
+  `TiempoPromedioIngresoEntrega`, `TasaAprobacionPresupuestos`
+  (aprobados / decididos), `TasaAceptacionGarantia`
+  (aceptadas / decididas) y `MontoPresupuestosAprobados`,
+  con division por cero protegida (0 si vacio);
+  `ValidarRango` (desde <= hasta) y `LeerCantidad`
+  (estado ausente = 0); `RepuestosBajoMinimo` filtra
+  `StockActual <= StockMinimo`; `DashboardResumen` en 1
+  fila.
+- INFRASTRUCTURE: `ReporteRepository` (11 `SELECT`s
+  parametrizados, ver Decisiones); `PermisoRepository`
+  (seed de 1 permiso + composiciones Administrador/
+  Lectura/encargado); `IdiomaRepository` (74 seeds ES/EN,
+  ver Traducciones).
+- UI: `Forms/Dashboard` (2 archivos: `FrmDashboard` + 
+  Designer; 6 cards, sin navegacion, solo `Actualizar`);
+  `Forms/Reportes` (2 archivos: `FrmReportes` + Designer;
+  11 tipos + filtros desde/hasta con check + top solo para
+  mas-utilizados + destacado en label; "Monto de
+  presupuestos aprobados", nunca facturacion); 
+  `FrmPrincipal` con `Gestion > Dashboard/Reportes` (gate
+  `REPORTES_VER` en menu y en cada form).
+- ABSTRACTIONS: sin cambios.
+- SERVICES: sin cambios (se reutilizan `SessionManager` y
+  `SesionIdioma` con patron observer).
+
+### Archivos existentes modificados
+
+- `APPLICATION/APPLICATION.csproj`
+- `DOMAIN/Features/Permisos/CodigosPermiso.cs`
+- `INFRASTRUCTURE/REPOSITORY.csproj`
+- `INFRASTRUCTURE/Features/Idiomas/IdiomaRepository.cs`
+- `INFRASTRUCTURE/Features/Permisos/PermisoRepository.cs`
+- `PRESENTATION/UI.csproj`
+- `PRESENTATION/Forms/FrmPrincipal.cs` +
+  `FrmPrincipal.Designer.cs`
+- `IMPLEMENTACION_SERVICIO_TECNICO.md` (este informe)
+
+### Archivos nuevos
+
+- `APPLICATION/Features/Reportes/ReporteService.cs`
+- `INFRASTRUCTURE/Features/Reportes/ReporteRepository.cs`
+- `PRESENTATION/Forms/Dashboard/FrmDashboard.cs` (+ Designer)
+- `PRESENTATION/Forms/Reportes/FrmReportes.cs` (+ Designer)
+
+### Permisos (1 nuevo) y roles
+
+- `REPORTES_VER` ("Ver reportes").
+- Composiciones: cuelga de `Lectura general` y de
+  `Administrador` (directo `REPORTES_VER`); `Rol encargado`
+  suma `REPORTES_VER` directo. Recepcionista y tecnico NO
+  lo reciben.
+- Gates: `FrmDashboard` y `FrmReportes` exigen
+  `REPORTES_VER` al abrir (acceso denegado + close);
+  `TSMI_Dashboard`/`TSMI_Reportes` visibles y habilitados
+  solo con permiso; `TSMI_Gestion` suma el permiso al OR.
+- Sin tipo de bitacora `REPORTES`: al ser solo lectura no
+  hay operaciones que registrar.
+
+### Traducciones (74 seeds ES/EN en IdiomaRepository)
+
+37 claves x 2 idiomas (`AgregarSeed` idempotente con
+`IF NOT EXISTS`):
+
+- Menu (`Menu.Dashboard`, `Menu.Reportes`).
+- Dashboard (`FrmDashboard.Text`, `Dashboard.Titulo/
+  Abiertas/EsperandoRespuesta/EnReparacion/ListasRetiro/
+  GarantiasAbiertas/BajoMinimo/Actualizar`).
+- Reportes (`FrmReportes.Text`, `Reportes.Titulo/Tipo/
+  Desde/Hasta/Top/Buscar/ResultadoVacio`,
+  `ReporteTipo.OrdenesEstado/OrdenesResultado/
+  ReparacionesTecnico/TiempoPromedio/TasaAprobacion/
+  RepuestosMasUtilizados/ComprasProveedor/Reingresos/
+  EvaluacionesEstado/TasaGarantia/MontoAprobados`,
+  `Reportes.TiempoPromedioResultado/
+  TasaAprobacionResultado/ReingresosResultado/
+  TasaGarantiaResultado/MontoAprobadosResultado`).
+- Columnas nuevas (`Columna.Codigo/Code`,
+  `Columna.Monto/Amount`); el resto (`Estado`, `Cantidad`,
+  `Resultado`, `Tecnico`, `Descripcion`, `Proveedor`) se
+  reutiliza.
+- `Reportes.ResultadoVacio` se siembra con `" "` (un
+  espacio), no `""`: ver Problemas (BLOCKER).
+
+### Decisiones
+
+- Dashboard en 1 query (`DashboardResumen`, 1 roundtrip,
+  1 fila): `abiertas_total` (estado <> Entregado),
+  `esperando_respuesta`, `en_reparacion` (EnReparacion +
+  EnPruebas), `listas_retiro`, `garantias_abiertas` (Tipo
+  Garantia no-Entregado), `bajo_minimo` (activo y
+  `stock_actual <= stock_minimo`).
+- `en_reparacion = EnReparacion + EnPruebas` (trabajo en
+  curso real, no Autorizado).
+- `garantias_abiertas = Tipo Garantia no-Entregado`
+  (reingresos abiertos, no evaluaciones pendientes).
+- `bajo_minimo` con `<=` (igual que `FrmRepuestos`).
+- Tasa de presupuestos solo sobre decididos
+  (aprobados / (aprobados + rechazados); pendientes se
+  informan pero no entran; 0 si no hay decididos).
+- Tasa de garantia sobre evaluaciones (aceptadas /
+  (aceptadas + rechazadas); 0 si vacio).
+- `AVG(CAST(... AS float))` obligatorio: `AVG(int)`
+  trunca a entero en SQL Server.
+- `DataTable` sin DTOs (lo que devuelve `ExecuteQuery`).
+- Cards del dashboard sin navegacion: abrir forms
+  filtrados complicaba sin beneficio y los filtros de
+  destino no existen; solo boton `Actualizar`.
+- Sin tipo de bitacora `REPORTES` (solo lectura).
+- Sin charting ni NuGet nuevo.
+- Paquetes: ninguno nuevo.
+
+### Delegaciones
+
+- 2 exploradores (repo/esquema y permisos/idiomas/UI
+  base): base del disenio (OK).
+- Backend (repositorio 11 SELECTs + service tasas/
+  promedios + permiso + seeds + init): OK, verificado
+  funcional.
+- UI (dashboard 6 cards + reportes 11 tipos + menus +
+  seeds + init): OK, verificado visual.
+- Revision cruzada (backend/UI/DB): 0 blockers + 3
+  pendientes (ver Revisiones cruzadas).
+- Testing (funcional CP5 + regresion 30 puntos + visual
+  30 forms + 48 PNG): 198/198 PASS.
+
+### Revisiones cruzadas
+
+- 0 blockers para el commit (build 0 errores, testing
+  PASS).
+- 3 pendientes verificados de revision (detalle en
+  reporte de revision; sin cambio de codigo en este
+  checkpoint; se recogen en Limitaciones):
+  - Rango envuelto en mensaje generico.
+  - Doble query en tasas (conteo + tasa).
+  - `hasta.Value.Date` sin fin de dia.
+- Mas 1 pendiente de UI (`BajoMinimo` sin uso en combo,
+  solo en dashboard).
+
+### Pruebas funcionales (harness temporal fuera del repo): 198/198 PASS
+
+- CP5: 11 consultas con filtros desde/hasta/top,
+  escalares en vacio = 0, tasas con division por cero
+  protegida, rango invalido rechazado, top <= 0
+  rechazado, `DashboardResumen` 6 KPIs en 1 fila: PASS.
+- Regresion CP1+CP2+CP3+CP4 (30 puntos): login,
+  clientes/equipos/catalogos/repuestos, ciclo
+  ordenes/diagnostico/presupuesto/reparacion/pruebas/
+  entrega, proveedores/compras/garantias: PASS sin
+  cambios.
+- Visual 30 forms + 48 PNG (`DrawToBitmap`, resize,
+  ES->EN->ES, gates por permiso): PASS.
+
+### Pruebas visuales (harness STA + UI real)
+
+- `FrmDashboard` (6 valores reales + `Actualizar`) y
+  `FrmReportes` (11 tipos, filtros desde/hasta/top,
+  grilla + destacado, `AutoResizeColumns`): PASS.
+- ES->EN->ES sin excepcion; menus `Gestion > Dashboard/
+  Reportes` visibles por permiso; acceso denegado sin
+  permiso.
+
+### Pruebas de regresion (CP1+CP2+CP3+CP4, 30 puntos): PASS
+
+- Sin cambios en flujos previos; dashboard/reportes no
+  escriben ni alteran stock, estados ni garantias.
+
+### Herramienta visual
+
+Harness STA temporal fuera del repo: instancia los forms
+reales de `UI.exe` con sesion admin, vuelca arbol de
+controles, `DrawToBitmap` a PNG (48), prueba de resize y
+`PerformClick` en `Actualizar/Buscar` contra UI real. Mas
+smoke con `UI.exe` real (login admin/123, menus `Gestion
+> Dashboard` y `Gestion > Reportes`).
+
+### Problemas encontrados y corregidos
+
+1. BLOCKER seed `ResultadoVacio ""` -> crash de init:
+   `Traduccion.Crear` rechaza `""` y `Listar()` lanzaba
+   al iniciar la app (`ObtenerIdiomaPorDefecto`).
+   Fix: seed con `" "` (un espacio) + `UPDATE` de la
+   fila existente en DBs ya sembradas. Re-test: init
+   OK, label inicial vacio visual. Corregido antes del
+   commit.
+2. Menores pendientes (4, no bloquean, sin cambio de
+   codigo en este checkpoint; ver Limitaciones):
+   `BajoMinimo` sin uso en combo, rango envuelto
+   generico, doble query en tasas, `hasta .Date` sin
+   fin de dia.
+
+### Limitaciones
+
+- `BajoMinimo` sin uso en combo (solo KPI en
+  dashboard; el service lo expone pero el combo de 11
+  tipos no lo lista).
+- Rango envuelto generico: `desde > hasta` lanza
+  `ReglaNegocioException` y la UI lo muestra como
+  "Error al..." sin mensaje especifico de rango.
+- Doble query en tasas: `TasaAprobacion` y
+  `TasaGarantia` re-consultan conteos (grilla + tasa =
+  2 queries al mismo SP logico).
+- `hasta .Date` sin fin de dia: el filtro `<= @Hasta`
+  con `.Date` excluye movimientos del dia `hasta`
+  despues de las 00:00.
+- Atomicidad indirecta (heredada CP2/CP3/CP4): no
+  aplica a CP5 (solo lectura), pero el resto del
+  sistema sigue sin UoW formal a nivel service.
+- MDI y `RecalcularDV` por menu a prueba humana
+  (harness cubre service + smoke por permisos/
+  handlers).
+- ES/EN por service + observer en pantallas tocadas,
+  sin recorrido exhaustivo control por control.
+- Orden de limpieza FK en testing (prefijo CP5T):
+  `Pruebas` -> `ReparacionRepuesto` -> `Reparaciones`
+  -> `MovimientosStock` -> `EvaluacionesGarantia` ->
+  `Garantias` -> `CompraDetalle` -> `Compras` ->
+  `Proveedores` -> resto del ciclo.
+
+### Datos de prueba
+
+Limpieza posterior al testing: `DELETE` en una
+transaccion de todas las filas con prefijo CP5T (orden
+FK de arriba). Tablas CP5: ninguna (solo lectura, 0
+restos posibles). Bitacora conserva el historial (no se
+purga por trazabilidad).
+
+### Pruebas humanas pendientes
+
+1. Abrir `Gestion > Dashboard` y verificar los 6 KPIs
+   (abiertas, esperando respuesta, en reparacion,
+   listas para retiro, garantias abiertas, bajo minimo)
+   contra datos reales; pulsar `Actualizar` y verificar
+   refresco.
+2. Abrir `Gestion > Reportes` y ejecutar los 11 tipos
+   con filtros desde/hasta (con y sin check) y top para
+   "Repuestos mas utilizados"; verificar grilla +
+   destacado (tasa/promedio/monto/reingresos) y que
+   "Monto de presupuestos aprobados" nunca dice
+   facturacion.
+3. Entrar con recepcionista y con tecnico y verificar
+   que `Gestion > Dashboard/Reportes` no aparecen y que
+   abrir por codigo niega acceso; entrar con encargado
+   y verificar acceso.
+4. Cambiar idioma ES<->EN con dashboard y reportes
+   abiertos y verificar traduccion completa (menus,
+   cards, tipos, columnas, destacados).
+5. Regresion total breve CP1-CP4:
+   clientes/equipos/catalogos/repuestos,
+   ordenes/diagnostico/presupuesto/reparacion/pruebas/
+   entrega, proveedores/compras/garantias, bitacora e
+   integridad (`Recalcular DV`).
