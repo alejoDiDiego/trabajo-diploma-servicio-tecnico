@@ -1626,3 +1626,67 @@ historial (no se purga por trazabilidad).
    resultado vacio, seguir probando y re-finalizar.
 2. Re-finalizar y entregar normal (verificar historial de reapertura y
    entrega posterior).
+
+### Fixes F2/F5/F8/F9: cancelar, anular rechazado, consumos por fila y observaciones
+
+- Contenido: F2: `Cancelar()` en dominio solo admite hasta
+  `AutorizadoReparacion` (`Recibido`, `EnDiagnostico`,
+  `PendientePresupuesto`, `EsperandoRespuesta`, `AutorizadoReparacion`);
+  `EnReparacion`/`EnPruebas`/`ListoRetiro`/`Entregado` rechazan con el
+  mismo mensaje y sin escribir en DB. `CancelarOrden` en service usa el
+  batch simple sin rama de cierre; UI alineada (solo ofrece cancelar en
+  esos estados). F5: anular `Original`/`Adicional` en `Rechazado` con
+  transicion coherente mediante `AnularRechazadoConTransicion`: exige
+  orden `ListoRetiro` + `Resultado = PresupuestoRechazado` + sin entrega
+  + el rechazado es el ultimo no-anulado relevante -> orden a
+  `PendientePresupuesto` con `Resultado = NULL` + historial; si no
+  cumple, `throw` explicito (nunca exito silencioso).
+  `ObservacionResultado` combinada (`existente + " | " + motivo
+  anulacion` via `CombineObservacion`). F9: no pisar observaciones:
+  `RechazarAdicionalConTransicion` solo escribe `fecha_fin` en la
+  reparacion abierta (sin tocar `observaciones`); `CerrarAbiertaYCancelar`
+  preserva con `CASE WHEN NULL/vacio` y combina `observacion_resultado`;
+  `AnularRechazadoConTransicion` recibe la observacion ya combinada desde
+  C#. F8: consumos por fila: `ReparacionRepuesto` suma `id_consumo
+  IDENTITY PK` + indice normal en `(id_reparacion, id_repuesto)` (sin
+  upsert); `RegistrarConsumo` inserta una fila por consumo;
+  `DevolverConsumo` reparte FIFO por `id_consumo` con un movimiento
+  `DevolucionConsumo` por fila tocada; listado ordenado por `id_consumo`.
+  Migracion en 2 fases idempotente (fase 1 crea `id_consumo` sin nombrarlo
+  en el mismo batch para evitar Error 207; fase 2 suelta la PK compuesta
+  legacy y crea la PK en `id_consumo`). UI agrupa por `(repuesto, costo)`
+  y valida el "quitar" contra el total consumido del repuesto (el backend
+  reparte FIFO). F6 no tocado en este grupo.
+- Decisiones: `CerrarAbiertaYCancelar` se conserva sin llamantes por
+  riesgo (batch ya corregido F9) y se documenta como codigo conservado.
+  Un `Borrador` adicional posterior bloquea el anular-rechazado (se trata
+  como actividad posterior no-anulada). FIFO por `id_consumo` como orden
+  de devolucion. Agrupado en UI por `(repuesto, costo)`: igual costo se
+  suma en una fila, distinto costo genera una fila por costo, y el total
+  cuadra con la suma de subtotales. F6 queda como concurrencia real
+  pendiente (solo secuencial probado; `UNIQUE`/transacciones como
+  proteccion).
+- Pruebas: B 12/12 (B4 parcial con proxies; el caso exacto
+  Rechazado->Entrega->Anular queda a prueba humana) + C 5/5 + D 22/22
+  (59/59 total) + visual 10/10, 0 bugs de producto. Datos WFIX de prueba
+  limpiados; bitacora conservada (no se purga por trazabilidad).
+  Delegaciones: backend, UI, revision (0 blockers), testing.
+- Limitaciones: B4-exacto a prueba humana (Rechazado->Entrega->Anular).
+  Visual cubre dialogos tocados sin recorrido exhaustivo control por
+  control. ES/EN parcial (pantallas y servicios tocados). Atomicidad
+  indirecta (heredada CP2/CP3): orden + historial van en el mismo batch
+  del repository, sin UoW formal; un fallo entre batches (p. ej. bitacora)
+  no revierte la transicion.
+
+### Checklist humano de fixes F2/F5/F8/F9
+
+1. Cancelar en `EnReparacion` -> verificar que falla con el mensaje de
+   estado no cancelable y sin cambios en DB.
+2. Anular rechazado (`ListoRetiro`/`PresupuestoRechazado`) -> verificar
+   `PendientePresupuesto` con resultado vacio y re-presupuestar normal.
+3. Consumir 100 + 150 del mismo repuesto -> verificar filas por consumo y
+   devolucion FIFO con movimientos por fila.
+4. Rechazar adicional con reparacion abierta con observaciones -> verificar
+   que `fecha_fin` se completa sin pisar las observaciones.
+5. Caso Rechazado->Entrega->Anular -> verificar que la anulacion se
+   rechaza porque la orden ya fue entregada.
