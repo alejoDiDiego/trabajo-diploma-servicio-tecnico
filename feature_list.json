@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "features": [
+    {
+      "id": "feat-001",
+      "name": "Minimal repository harness and visual workflow acceptance",
+      "description": "Add persistent task state, read-only Windows verification, and session lifecycle rules. Require visual form-based acceptance of affected state transitions and reversal cycles for future behavior changes.",
+      "type": "documentation",
+      "authorized_files": [
+        "AGENTS.md",
+        "docs/agents/README.md",
+        "docs/agents/development-and-testing.md",
+        "feature_list.json",
+        "progress.md",
+        "init.ps1"
+      ],
+      "dependencies": [],
+      "status": "done",
+      "acceptance_criteria": [
+        {
+          "description": "Startup routes to state and read-only verification; completion and session closure require recorded evidence.",
+          "verified": true
+        },
+        {
+          "description": "The verifier checks state, dependencies, completion evidence, visual scenario gates, and relative documentation links without building, launching, or accessing a database.",
+          "verified": true
+        },
+        {
+          "description": "Behavior acceptance prioritizes real desktop form flows, allowed and blocked transitions, reversals, repeated cycles, and persisted readback; missing visual evidence blocks completion.",
+          "verified": true
+        },
+        {
+          "description": "Checks and limitations are recorded; application files and preexisting local files are preserved.",
+          "verified": true
+        }
+      ],
+      "visual_scenarios": [],
+      "evidence": "2026-10-03: init.ps1 passed state/completion checks, 159 relative file links, and git diff --check. Fourteen isolated negative checks rejected invalid state/dependencies/scope and unsupported completion claims without changing repository harness hashes. Structural audit improved from 36 to 84/100. Source/content/diff review confirmed the six-file authorized scope and visual acceptance policy. See progress.md for commands, boundaries, and next action. No application build, launch, or database exercise was performed."
+    }
+  ]
+}

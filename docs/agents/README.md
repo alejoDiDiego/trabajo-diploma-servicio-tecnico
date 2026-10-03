@@ -4,6 +4,13 @@ Start with [root agent rules](../../AGENTS.md), then read only the detailed guid
 This documentation is self-contained: no prior transcript, local absolute path, Engram,
 Gentle AI installation, or special agent framework is needed.
 
+## Session state and verification
+
+- [Feature tracker](../../feature_list.json): authorized tasks, dependencies, acceptance criteria, and visual scenarios; one active task.
+- [Session progress](../../progress.md): current objective, checkout observation, evidence, blockers, and next step; also serves as the session handoff.
+- [PowerShell verifier](../../init.ps1): run `powershell -NoProfile -File ".\init.ps1"` from the repository root. It reads state and checks relative file links and `git diff --check`; it does not build, launch, or connect to a database.
+- For behavior changes, [visual state-machine acceptance](development-and-testing.md#primary-acceptance-visual-state-machine-flows) is the primary gate. Compilation and structural harness checks are supporting evidence.
+
 ## Quick reading path
 
 For a first visit, read [use-case navigation](use-case-navigation.md) for the product journey
@@ -24,7 +31,9 @@ All six project manifests, startup, service/repository method maps, relevant SQL
 domain transitions, and main order/purchase/warranty/report UI paths were surveyed.
 CodeGraph reported a malformed index and disabled auto-sync; direct source inspection was used.
 No build, application launch, live-schema query, or database mutation was performed.
-The docs remain local and uncommitted by explicit request.
+The guides were subsequently committed in `297b993`. Their original inspection date and
+source snapshot remain historical evidence; current session results are recorded separately
+in [progress.md](../../progress.md).
 
 **Intended policy** describes a requirement or recommendation, not an implemented guarantee.
 **Not re-tested** identifies a behavior needing a fresh desktop/database exercise.

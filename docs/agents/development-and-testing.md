@@ -1,8 +1,37 @@
 # Build and validate without damaging user data
 
-**Authorization boundary:** commands below are recipes for a separately approved development
-task. They were not executed to verify this documentation. A documentation-only task needs
-passive readback/link/status checks, not a build, desktop launch, database connection, or seed run.
+**Authorization boundary:** the read-only harness command below is suitable for documentation
+work. Build, application launch, and database exercises need their own authorized scope.
+A documentation-only task needs readback/link/status checks, not a desktop launch or seed run.
+
+## Read-only harness verification
+
+From the repository root, on Windows PowerShell 5.1 or later:
+
+```powershell
+powershell -NoProfile -File ".\init.ps1"
+git status --short
+```
+
+[init.ps1](../../init.ps1) fails on invalid task fields/status, multiple active tasks, missing or
+cyclic dependencies, unfinished dependencies of active/done tasks, missing completion evidence,
+incomplete visual scenario gates, broken inline relative file links, or `git diff --check` errors.
+It makes no file/Git writes, builds, application launches, package installations, or database calls.
+Link checking covers inline file destinations in root harness Markdown and `docs/agents/*.md`,
+not heading fragments, named C# methods, external URLs, or links inside code fences.
+Git whitespace checking covers tracked diffs; read back newly added files too.
+A pass verifies the harness structure, not the truth of recorded evidence or application behavior.
+
+### Task tracker conventions
+
+- `schema_version` is 1; `features` is an array. Follow the existing entry in [feature_list.json](../../feature_list.json).
+- Each task has `id`, `name`, `description`, `type`, `authorized_files`, `dependencies`, `status`, `acceptance_criteria`, `visual_scenarios`, and `evidence`.
+- `type` is `documentation` for harness/docs-only work or `behavior` for application changes. Use repository-relative paths for `authorized_files`; this records scope, not an automatic permission grant.
+- Status is `not-started`, `in-progress`, `blocked`, or `done`. At most one task is `in-progress`; dependency IDs must exist and form an acyclic graph.
+- Each acceptance criterion has a nonempty `description` and Boolean `verified`. Set it true only after the criterion is actually checked; all must be true for `done`.
+- Behavior tasks need a nonempty visual matrix before activation. Each scenario has `id`, `description`, `status` (`planned`, `passed`, `failed`, `blocked`), and text `evidence` linking to a run record in [progress.md](../../progress.md) or an approved evidence artifact.
+- `done` requires nonempty task evidence and all required scenarios `passed` with evidence. Missing desktop capability or DB authorization blocks acceptance; do not relabel a behavior task as documentation to bypass this gate.
+- Keep the tracker limited to authorized work. Do not convert historical checkpoints into newly verified features or select a new application task automatically.
 
 ## Prerequisites and portable build discovery
 
@@ -80,6 +109,73 @@ Avoid launching Main implicitly against default configuration.
 Check persisted results after each step through authorized read queries or repository reads.
 Use real clicks for wiring/hit-testing claims and PerformClick only with that evidence label.
 
+## Primary acceptance: visual state-machine flows
+
+**Intended policy:** for application behavior changes, the agent's primary acceptance method
+is interaction with the displayed WinForms forms through real desktop clicks and keyboard input.
+Source inspection, compilation, and service/STA exercises support this gate; they do not replace it.
+Check native desktop capability before promising autonomous execution. Browser Playwright is not
+a desktop driver; `PerformClick`, UI Automation Invoke alone, or bitmap capture alone cannot prove
+physical interaction. If the driver is unavailable, record the blocker. Human-assisted desktop
+execution must be explicitly labeled with operator, steps, and observations; never claim the agent
+performed those clicks. New tools/installations and scratch-DB writes need authorization.
+
+### Plan and execute an affected-transition matrix
+
+1. Inspect [business flows](business-flows.md), current form handlers/control guards, service/domain
+   transitions, and repository effects. Separate current implementation from intended corrected
+   behavior; record known discrepancies rather than inventing generic reversibility.
+2. List the affected states and edges before activation. Include starting state/result, request
+   origin, budget/repair/test/delivery/warranty state, permissions, and relevant stock/history.
+   Test affected branches and neighboring transitions, not every product flow for every small task.
+3. Reach starting states through the forms using owned scratch records. Direct DB setup or
+   service calls are supplemental fixtures with explicit provenance, not proof of the UI path.
+4. Observe labels, selected records, enabled/visible actions, and dialog behavior before clicking.
+   Run the action and verify destination state/result plus related-record and stock/amount effects.
+5. Dismiss each applicable confirmation with No/Cancel, cancel the reason dialog, and submit an
+   empty required reason. Check that the operation was not committed and the UI can continue.
+   Distinguish these abandoned attempts from a confirmed business cancellation or annulment.
+6. Exercise legal reversals, illegal/out-of-window reversals, and permission-denied paths. A
+   hidden/disabled action is valid UI blocking evidence; do not bypass it and call that a UI test.
+   Separately exercise backend guards when needed and authorized. After an error, inspect actual
+   persisted outcome before retrying: a post-commit error does not prove rollback.
+7. Close/reopen the detail to check persisted state, history, and related records; use authorized
+   read queries/repository readback for effects not visible in forms. Continue forward after the
+   reversal and repeat applicable cycles to find stale controls, wrong selection, duplicate
+   records, lost observations, or a stranded workflow.
+
+### Reversal and continuation scenarios
+
+These are scenario families, not a claim that every action is reversible. Confirm exact guards
+and expected outcomes from current source and the authorized requirement for each task. Consult
+[known limitations](known-limitations.md); the scenario list does not certify those defects as fixed.
+
+| Scenario family | Required observations when affected |
+| --- | --- |
+| Budget emit -> annul -> re-emit; approve/reject -> eligible annul | Order and document states, result clearing, observations, totals, and blocking after later activity |
+| Additional request -> cancel -> resume -> request again | All affected origins (authorization/repair/tests), draft removal, pending-document blocking, retained prior additions, correct continuation |
+| Additional approval after a tests-origin pause | Current flow returns to repair; do not assume approval restores tests or passes them automatically |
+| Register/annul tests -> finalize -> revision or ready for pickup | Valid current tests only, no-valid-test refusal, mixed results, annul a non-latest test, controls after each step |
+| Ready for pickup -> reopen tests -> finalize again | State/result reset, retained history, renewed forward progress |
+| Deliver -> cancel delivery -> continue -> re-deliver | Destination depends on result; delivery record, warranty/re-entry coexistence, no assumption that old coverage dates refresh |
+| Deactivate -> reactivate/reincorporate a master | Active-only selectors, independent customer/equipment flags, historical references, repeated cycles |
+| Purchase draft -> cancel; confirm -> eligible annul | Stock/movements, reversal attempts with insufficient aggregate stock and duplicate-part details, documented guard discrepancies, retained purchase history |
+| Warranty re-entry -> diagnosis -> accepted/rejected/paid continuation | New linked order and untouched original, branch-specific controls/results, repeat visits; re-entry does not reset the original order |
+
+### Visual run evidence and completion
+
+Record each required scenario in `visual_scenarios` and keep a run record in `progress.md`:
+
+| Scenario / run | Environment and fixture IDs | Initial state and controls | Clicks/keys/dialog choices | Expected state and side effects | Observed state, persistence, and continuation | Evidence / result |
+| --- | --- | --- | --- | --- | --- | --- |
+| Use the tracker scenario ID | Branch/commit and local diff, scratch DB identity without credentials, ES/EN, culture, permissions, DPI/window, driver/operator | Include origin and related document/intervention states | Reproducible sequence, including dismissed and confirmed operations | From source/approved requirement | Include reopen/readback and repeated-cycle observations | Actual screenshot/log references and passed/failed/blocked status |
+
+Capture critical before/after and blocked/dismissed states when desktop capture is available,
+without exposing secrets or real customer data. Screenshots support the action log; they are not
+standalone interaction evidence. Record failed and blocked scenarios as well as successful ones.
+Report exercised transitions, origins, legal/illegal reversals, and remaining gaps, not just a test
+count. Missing required visual evidence keeps the behavior task blocked, even if compilation passes.
+
 ### Minimum scenario matrix
 
 - Customer creation: missing phone/name/document; independent deactivation of customer/equipment.
@@ -123,12 +219,14 @@ authorized destructive action, not an automatic cleanup shortcut.
 
 ## Git checkpoint and documentation verification
 
-Checkpoints continue from the previously approved branch; current local tracking showed
-checkpoint 1 through checkpoint 5 aligned with their origin refs. Creating/switching a branch,
-committing, pushing, and merging to main each require approval. No force-push, published rebase,
-branch deletion, or dirty-tree cleanup is implied by a checkpoint request.
-For this onboarding handoff specifically: **new docs stay local; no add/commit/push/switch/merge**.
+Checkpoints continue from the previously approved branch. Inspect current branch/status rather
+than reusing the historical checkpoint-5 tracking observation. The original guides were committed
+in `297b993`; that is not a fresh runtime certification. Creating/switching a branch, committing,
+pushing, and merging to main each require approval. No force-push, published rebase, branch
+deletion, or dirty-tree cleanup is implied by a checkpoint or harness-state update.
 
 For docs-only review: read every new file, validate relative Markdown links and named anchors,
 scan for secrets/absolute machine paths, distinguish source facts from policy, and compare
 git status against the original dirty state. Report skipped runtime checks explicitly.
+Before ending, update [feature_list.json](../../feature_list.json) and [progress.md](../../progress.md)
+with checked criteria, actual evidence, blockers, and a concrete next step; re-run `init.ps1`.

@@ -4,14 +4,21 @@ This is a Windows desktop application for managing electronics repair services.
 Read these instructions before changing or running anything in the repository.
 They work with any AI harness; no memory service, plugin, or special framework is required.
 
-## Start here
+## Startup Workflow
 
 1. Resolve the checkout with `git rev-parse --show-toplevel`.
 2. Read `git status --short` and `git branch --show-current`.
-3. Read [the guide index](docs/agents/README.md).
-4. Read [architecture](docs/agents/architecture.md) and the guide for your task.
-5. Inspect the current source anchors before proposing a change.
-6. State the authorized scope and verification plan before executing mutations.
+3. Read [feature_list.json](feature_list.json) and [progress.md](progress.md); confirm the authorized task and next step.
+4. Run `powershell -NoProfile -File ".\init.ps1"` ([read-only checks](init.ps1)); this does not verify the application.
+5. Read [the guide index](docs/agents/README.md), [architecture](docs/agents/architecture.md), and the guide for your task.
+6. Inspect current source anchors; state the authorized scope and verification plan before mutations.
+
+## Task state and scope
+
+- **One feature at a time:** only one task may be `in-progress`; dependencies must be done first.
+- Record only authorized tasks, file scope, acceptance criteria, and applicable visual scenarios in `feature_list.json`.
+- Use `not-started`, `in-progress`, `blocked`, or `done`; record evidence and next action in `progress.md`.
+- A failed baseline check is a blocker to report, not authorization to repair unrelated files or install tools.
 
 ## Authorization comes before execution
 
@@ -26,15 +33,12 @@ They work with any AI harness; no memory service, plugin, or special framework i
 - Do not print connection credentials, password hashes, encryption secrets, or raw secrets.
 - If a file already exists, read it before editing; do not overwrite user instructions.
 
-## Current documentation handoff
+## Historical documentation evidence
 
-These guides were inspected on `checkpoint-5-dashboard-reportes` at `47a0bf8`.
-The local remote-tracking refs showed checkpoints 1 through 5 published.
-That is a source snapshot, not a new runtime test certification.
-The onboarding documents are intentionally LOCAL, UNCOMMITTED, and UNPUSHED.
-Do not stage, commit, push, switch, or merge them without separate approval.
-Preserve the preexisting deleted tracked temporary file and local tooling directories.
-Later tasks must re-check branch/status rather than assume this snapshot is still current.
+The application guides were inspected on `checkpoint-5-dashboard-reportes` at `47a0bf8`.
+They were committed in `297b993`; that does not renew their source/runtime certification.
+Current task evidence belongs in `progress.md`. Re-check branch/status at every restart;
+historical branch, remote, or dirty-state descriptions are not the current checkout state.
 
 ## Read by task
 
@@ -105,10 +109,26 @@ Later tasks must re-check branch/status rather than assume this snapshot is stil
 - Source inspection proves code paths, not live database contents or concurrency correctness.
 - No repository-owned formal automated test suite was found in this snapshot.
 - Historical ad hoc harness counts are not a reproducible current passing gate.
-- WinForms requires desktop/STA verification; browser Playwright is not its UI driver.
+- **Primary behavior acceptance:** exercise the real WinForms UI with clicks/keyboard; test affected forward, reverse, blocked, and repeated state-transition cycles using [the visual matrix](docs/agents/development-and-testing.md#primary-acceptance-visual-state-machine-flows).
+- Verify state/result, controls, related records, and persistence after reopening; distinguish dialog dismissal from a committed business reversal.
+- Build/service/STA checks support visual acceptance; screenshots or `PerformClick` alone do not prove real desktop interaction. Browser Playwright is not a WinForms driver.
+- Confirm native desktop capability and authorized scratch DB before execution. Missing visual evidence keeps behavior acceptance blocked; disclose assisted manual evidence explicitly.
 - Validate ES/EN, permissions, small/large windows, invalid input, and numeric culture behavior.
 - Ask the user to close the app if build outputs are locked; do not kill user or IDE processes.
 - For documentation-only changes, link/content/status checks suffice; do not launch the app.
+
+## Definition of Done
+
+- Authorized scope and acceptance criteria are satisfied; required checks actually ran and evidence is recorded.
+- Behavior tasks have passing evidence for every required visual scenario, including affected reversal/blocking paths; skipped or unavailable visual checks do not count as passes.
+- Relevant guides and task state are updated; preexisting user work is preserved and the next session is restartable.
+- `init.ps1` passes; its structural result does not certify runtime behavior or the truth of manually recorded evidence.
+
+## End of Session
+
+1. Update task status and verified criteria in `feature_list.json`; use `blocked` for missing required verification.
+2. Update `progress.md`: current objective, branch/commit, files, checks/results, blockers, and recommended next step. Keep older evidence dated or labeled historical.
+3. Re-run `init.ps1`, review the diff and Git status, and report checks skipped. A restartable handoff does not require a clean working tree or a commit.
 
 ## Git workflow
 
@@ -116,7 +136,7 @@ Later tasks must re-check branch/status rather than assume this snapshot is stil
 - Creation/switching of branches, commits, pushes, and merging to `main` need explicit approval.
 - Treat commit, push, and merge as separate approvals, not one implied action.
 - Never force-push, delete branches, rebase published checkpoints, or discard dirty changes.
-- Do not run `git add`, commit, push, switch, or merge for this local documentation handoff.
+- Updating harness state does not authorize `git add`, commit, push, switch, or merge.
 
 ## Keep these guides current
 
