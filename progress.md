@@ -5,8 +5,8 @@
 - Last Updated: 2026-10-03
 - Current Objective: `feat-003` done (scoped test policy + full business test catalogue). No active task.
 - Next objective: **execute business-flow sweeps on request, phase by phase, in a new session** (start with Phase A).
-- Checkout observed: `checkpoint-6-arreglos-y-mejoras`; harness committed in `479f279`; the documentation below is uncommitted pending owner approval.
-- Uncommitted files: `AGENTS.md`, `docs/agents/README.md`, `docs/agents/development-and-testing.md`, `docs/agents/desktop-testing.md`, `docs/agents/business-test-catalogue.md`, `feature_list.json`, `progress.md`.
+- Checkout observed: `checkpoint-6-arreglos-y-mejoras`; harness committed in `479f279`; testing documentation committed in `0c62412` and pushed to `origin/checkpoint-6-arreglos-y-mejoras`.
+- Working tree: no tracked changes; only the preexisting untracked entries below remain.
 - Preexisting untracked entries to preserve: `.codegraph/`, `.playwright-mcp/`, `skills-lock.json`.
 
 ## Handoff for the next session (execute sweeps)
@@ -40,6 +40,7 @@
 | Coverage audit | Compared `APPLICATION/Features` (16 folders) and `PRESENTATION/Forms` against the catalogue sections; re-read the orders and purchases lists and the part editor | All business modules covered; 6 administration folders excluded by owner decision; gaps closed: golden path, ORD-08/ENT-08 (cancel and quick-deliver from the list), COM-10 (list actions), PRE-13 (draft persistence), GAR-11 (view original), STK-01 (initial-stock fields), HIST-01/LIST-01/LANG-01 cross-cutting checks | Source inspection only; the audit checks coverage, not runtime behavior |
 | Policy wiring | Readback of AGENTS.md, development-and-testing.md, README.md | Scoped acceptance and on-demand sweep rules present; catalogue linked from all three | Documentation review only |
 | Diff and scope | `git diff`, `git status --short` | Only the authorized documentation files changed; preexisting untracked entries preserved | Manual review |
+| Commit and push | `git commit`, `git push -u origin checkpoint-6-arreglos-y-mejoras` | `0c62412` committed (7 files) and pushed; upstream tracking set | Remote branch published; no merge performed |
 
 Historical (2026-10-03, `feat-002`): the budget, repair/tests/reopen, delivery and warranty
 re-entry cycles were validated through the real forms against the non-production database;
@@ -48,8 +49,7 @@ orders 1002-1006 and `AGENT_` fixtures were intentionally kept. Detailed log and
 
 ## Blockers / Not Re-tested
 
-- No blocker. The documentation changes of this and the previous session are uncommitted;
-  committing needs separate approval.
+- No blocker. Documentation is committed and pushed; the sweeps themselves have not run yet.
 - The catalogue was written from source inspection and the guides; its expectations were not
   re-executed in this docs-only task.
 - Known tool limitation: Windows-MCP 0.8.7 omits controls with an empty accessible name
@@ -60,6 +60,6 @@ orders 1002-1006 and `AGENT_` fixtures were intentionally kept. Detailed log and
 ## Next Session / Recommended Next Step
 
 1. Re-read [AGENTS.md](AGENTS.md), resolve the checkout, and compare fresh Git state with this record.
-2. Ask the owner which phase to run (or whether to commit the pending documentation first).
-3. Run the requested phase from the catalogue, phase by phase, keeping records for review.
+2. Ask the owner which phase to run (A-F) from the catalogue.
+3. Run the requested phase, phase by phase, keeping records for review.
 4. Update this file and the tracker after each sweep with the observed results and next step.
