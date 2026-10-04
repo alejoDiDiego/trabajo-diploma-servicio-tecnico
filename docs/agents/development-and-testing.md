@@ -119,6 +119,12 @@ a desktop driver; `PerformClick`, UI Automation Invoke alone, or bitmap capture 
 physical interaction. If the driver is unavailable, record the blocker. Human-assisted desktop
 execution must be explicitly labeled with operator, steps, and observations; never claim the agent
 performed those clicks. New tools/installations and scratch-DB writes need authorization.
+An optional, machine-local driver setup is documented in
+[Desktop testing (local only)](desktop-testing.md); it is not part of the repository or the app.
+
+**Scope rule:** a feature task tests only the transitions and direct effects it changes; it does
+not sweep the whole product. Full or partial business-flow sweeps are separate, user-requested
+tasks executed from [the business test catalogue](business-test-catalogue.md) and its phases.
 
 ### Plan and execute an affected-transition matrix
 
@@ -149,6 +155,8 @@ performed those clicks. New tools/installations and scratch-DB writes need autho
 These are scenario families, not a claim that every action is reversible. Confirm exact guards
 and expected outcomes from current source and the authorized requirement for each task. Consult
 [known limitations](known-limitations.md); the scenario list does not certify those defects as fixed.
+The maintained version with scenario IDs, cross-module effects and execution phases is
+[the business test catalogue](business-test-catalogue.md).
 
 | Scenario family | Required observations when affected |
 | --- | --- |
@@ -177,6 +185,9 @@ Report exercised transitions, origins, legal/illegal reversals, and remaining ga
 count. Missing required visual evidence keeps the behavior task blocked, even if compilation passes.
 
 ### Minimum scenario matrix
+
+This list is a condensed extract for quick reference; the maintained, full catalogue is
+[the business test catalogue](business-test-catalogue.md).
 
 - Customer creation: missing phone/name/document; independent deactivation of customer/equipment.
 - Reception: active/customer-owned equipment; assignment to eligible/inactive/no-edit-permission user.

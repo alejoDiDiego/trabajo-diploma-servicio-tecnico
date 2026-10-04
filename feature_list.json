@@ -36,6 +36,112 @@
       ],
       "visual_scenarios": [],
       "evidence": "2026-10-03: init.ps1 passed state/completion checks, 159 relative file links, and git diff --check. Fourteen isolated negative checks rejected invalid state/dependencies/scope and unsupported completion claims without changing repository harness hashes. Structural audit improved from 36 to 84/100. Source/content/diff review confirmed the six-file authorized scope and visual acceptance policy. See progress.md for commands, boundaries, and next action. No application build, launch, or database exercise was performed."
+    },
+    {
+      "id": "feat-002",
+      "name": "Local desktop-testing environment and visual state-machine validation",
+      "description": "Install an optional machine-local toolset (Windows-MCP 0.8.7 + pywinauto 0.6.9 under %LOCALAPPDATA%, external OpenCode config and launcher), build the application, and validate the state machine through real form interaction against the authorized non-production database. Keep installs and detailed evidence outside the repository; document how to replicate them.",
+      "type": "documentation",
+      "authorized_files": [
+        "AGENTS.md",
+        "docs/agents/README.md",
+        "docs/agents/development-and-testing.md",
+        "docs/agents/desktop-testing.md",
+        "feature_list.json",
+        "progress.md"
+      ],
+      "dependencies": [
+        "feat-001"
+      ],
+      "status": "done",
+      "acceptance_criteria": [
+        {
+          "description": "External environments, pinned versions, launcher, and read-only environment check exist outside the repository; the app builds and runs without them.",
+          "verified": true
+        },
+        {
+          "description": "Both drivers were validated on a throwaway window with real input, including their documented limitations.",
+          "verified": true
+        },
+        {
+          "description": "Budget, repair, test, reopen, delivery, delivery-cancellation and warranty re-entry cycles were exercised through the forms with observed states and results.",
+          "verified": true
+        },
+        {
+          "description": "Replicable documentation was added and linked from the guides; test records were kept for owner review as requested.",
+          "verified": true
+        }
+      ],
+      "visual_scenarios": [
+        {
+          "id": "vis-budget-cycle",
+          "description": "Emit budget -> cancel the annulment dialog (regret) -> annul with reason -> re-emit -> approve.",
+          "status": "passed",
+          "evidence": "progress.md verification table and external evidence visual-validation-20261003.md; observed Esperando respuesta -> (unchanged) -> Pendiente presupuesto -> Esperando respuesta -> Autorizado reparacion on order 1004."
+        },
+        {
+          "id": "vis-repair-tests-cycle",
+          "description": "Start/finish repair, register approved and failed tests, annul the failed test, finalize, reopen tests, finalize again.",
+          "status": "passed",
+          "evidence": "External evidence visual-validation-20261003.md; observed En pruebas -> Listo retiro/Reparado -> En pruebas (result cleared) -> Listo retiro/Reparado."
+        },
+        {
+          "id": "vis-delivery-cycle",
+          "description": "Deliver -> cancel delivery with reason -> finalize -> deliver again; also on a NoReparable order.",
+          "status": "passed",
+          "evidence": "External evidence visual-validation-20261003.md; orders 1002 (No reparable result retained) and 1005 (repaired delivery returned to En pruebas, result cleared)."
+        },
+        {
+          "id": "vis-warranty-reentry",
+          "description": "Automatic 30-day warranty on delivery, then warranty re-entry from the delivered order, reparable diagnosis and acceptance.",
+          "status": "passed",
+          "evidence": "External evidence visual-validation-20261003.md; warranty row Vigente for order 1005; re-entry order 1006 Recibido -> Pendiente evaluacion garantia -> Autorizado reparacion with the original untouched."
+        }
+      ],
+      "evidence": "2026-10-03: MSBuild Debug/Any CPU build succeeded for all six projects. Windows-MCP and pywinauto validated on a throwaway WinForms window with real input. Five AGENT_ test orders (1002-1006) exercised the budget, repair, test-annulment, reopen, delivery, delivery-cancellation and warranty re-entry transitions through the forms; records intentionally kept for review. External tooling at %LOCALAPPDATA%\\ServicioTecnicoDesktopTests; detailed evidence in its evidence\\visual-validation-20261003.md. Repository changes: this tracker, progress.md, docs/agents/desktop-testing.md, and guide links only."
+    },
+    {
+      "id": "feat-003",
+      "name": "Scoped test policy and full business test catalogue",
+      "description": "Adopt scoped acceptance for feature tasks (only the affected transitions and direct effects) and restrict full or partial business-flow sweeps to explicit user requests. Add the maintained business test catalogue covering every business module with reversal, regret, blocked and repeated cycles, cross-module interactions, known-defect findings and execution phases A-F. Record the handoff for executing sweeps in a new session.",
+      "type": "documentation",
+      "authorized_files": [
+        "AGENTS.md",
+        "docs/agents/README.md",
+        "docs/agents/development-and-testing.md",
+        "docs/agents/business-test-catalogue.md",
+        "feature_list.json",
+        "progress.md"
+      ],
+      "dependencies": [
+        "feat-001",
+        "feat-002"
+      ],
+      "status": "done",
+      "acceptance_criteria": [
+        {
+          "description": "Policy scopes per-task acceptance and limits full sweeps to explicit user requests.",
+          "verified": true
+        },
+        {
+          "description": "The catalogue covers every business module with reversal/regret/blocked/repeat scenarios, cross-module effects, known defects and phases A-F.",
+          "verified": true
+        },
+        {
+          "description": "Guides and index link the catalogue; the harness verifier passes.",
+          "verified": true
+        },
+        {
+          "description": "A handoff for executing sweeps in a new chat is recorded.",
+          "verified": true
+        },
+        {
+          "description": "Coverage audit against the real module inventory closed gaps: golden path, list quick paths, cross-cutting checks and missing module scenarios.",
+          "verified": true
+        }
+      ],
+      "visual_scenarios": [],
+      "evidence": "2026-10-03: docs-only task. Added docs/agents/business-test-catalogue.md (18 sections: CLI, EQP, CAT, ORD, DIA, PRE, ADI, REP, PRU, ENT, STK, PRO, COM, GAR, DSH, INF, PERM-01, INT plus cross-cutting HIST/LIST/LANG; known defects marked as findings; phases A-F; golden path). Coverage audit compared APPLICATION/Features (16 folders; 6 administration excluded) and PRESENTATION/Forms against the catalogue: all business modules covered; gaps closed (golden path, ORD-08/ENT-08 cancellation and quick-delivery from the orders list, COM-10 purchase list actions, PRE-13 draft persistence, GAR-11 view original, STK-01 initial-stock fields, HIST-01/LIST-01/LANG-01 cross-cutting checks). Scoped-acceptance policy added to AGENTS.md and development-and-testing.md; catalogue linked from the index. Handoff recorded in progress.md. No application build, launch, or database write was performed; sweeps will run in a new session with the external environment."
     }
   ]
 }

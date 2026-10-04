@@ -50,6 +50,7 @@ historical branch, remote, or dirty-state descriptions are not the current check
 | Change SQL, constraints, snapshots, or transactions | [Persistence](docs/agents/persistence.md) |
 | Change permissions, login, translations, or integrity | [Security and localization](docs/agents/security-and-localization.md) |
 | Build, validate desktop behavior, or prepare a checkpoint | [Development and testing](docs/agents/development-and-testing.md) |
+| Prepare or run the optional local desktop-testing tools | [Desktop testing (local only)](docs/agents/desktop-testing.md) |
 | Assess risk or choose a future fix | [Known limitations](docs/agents/known-limitations.md) |
 
 ## Product boundaries
@@ -110,6 +111,8 @@ historical branch, remote, or dirty-state descriptions are not the current check
 - No repository-owned formal automated test suite was found in this snapshot.
 - Historical ad hoc harness counts are not a reproducible current passing gate.
 - **Primary behavior acceptance:** exercise the real WinForms UI with clicks/keyboard; test affected forward, reverse, blocked, and repeated state-transition cycles using [the visual matrix](docs/agents/development-and-testing.md#primary-acceptance-visual-state-machine-flows).
+- **Scope acceptance to the task:** verify only what the task changes/adds/removes and its direct effects. Do not sweep the whole product for every change.
+- **Full or partial flow sweeps run only when the user explicitly requests them**, using [the business test catalogue](docs/agents/business-test-catalogue.md) and its phases. A sweep is a separate authorized task, not part of routine feature work.
 - Verify state/result, controls, related records, and persistence after reopening; distinguish dialog dismissal from a committed business reversal.
 - Build/service/STA checks support visual acceptance; screenshots or `PerformClick` alone do not prove real desktop interaction. Browser Playwright is not a WinForms driver.
 - Confirm native desktop capability and authorized scratch DB before execution. Missing visual evidence keeps behavior acceptance blocked; disclose assisted manual evidence explicitly.
@@ -120,7 +123,7 @@ historical branch, remote, or dirty-state descriptions are not the current check
 ## Definition of Done
 
 - Authorized scope and acceptance criteria are satisfied; required checks actually ran and evidence is recorded.
-- Behavior tasks have passing evidence for every required visual scenario, including affected reversal/blocking paths; skipped or unavailable visual checks do not count as passes.
+- Behavior tasks have passing evidence for every required visual scenario (the affected ones, not the whole catalogue), including reversal/blocking paths; skipped or unavailable visual checks do not count as passes.
 - Relevant guides and task state are updated; preexisting user work is preserved and the next session is restartable.
 - `init.ps1` passes; its structural result does not certify runtime behavior or the truth of manually recorded evidence.
 

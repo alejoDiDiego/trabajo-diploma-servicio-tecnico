@@ -22,6 +22,8 @@ and screen-to-service entry points. Then select the relevant technical guide bel
 4. [Security and localization](security-and-localization.md): identities, permissions, ES/EN.
 5. [Development and testing](development-and-testing.md): safe setup and verification.
 6. [Known limitations](known-limitations.md): confirmed risks and unverified behavior.
+7. [Optional desktop-testing environment](desktop-testing.md): local-only agent tooling (not part of the app).
+8. [Business test catalogue](business-test-catalogue.md): on-demand flow, reversal and cross-module sweeps by phase.
 
 ## Evidence and scope
 

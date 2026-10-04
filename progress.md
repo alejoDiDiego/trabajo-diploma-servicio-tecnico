@@ -3,52 +3,63 @@
 ## Current State
 
 - Last Updated: 2026-10-03
-- Current Objective: `feat-001`, minimal repository harness with visual workflow acceptance.
-- Status: done; all four harness acceptance criteria verified. No active application task.
-- Checkout observed: `checkpoint-6-arreglos-y-mejoras`, HEAD `297b993`.
-- Authorization: create `feature_list.json`, `progress.md`, and `init.ps1`; edit `AGENTS.md`, `docs/agents/README.md`, and `docs/agents/development-and-testing.md`.
-- Required acceptance policy: behavior changes are primarily verified through real WinForms interaction, especially state transitions, annulments, cancellations, reopenings, reactivation, and warranty re-entry.
-- Preexisting untracked entries: `.codegraph/`, `.playwright-mcp/`, `skills-lock.json`. Preserve them and re-check Git at every restart.
+- Current Objective: `feat-003` done (scoped test policy + full business test catalogue). No active task.
+- Next objective: **execute business-flow sweeps on request, phase by phase, in a new session** (start with Phase A).
+- Checkout observed: `checkpoint-6-arreglos-y-mejoras`; harness committed in `479f279`; the documentation below is uncommitted pending owner approval.
+- Uncommitted files: `AGENTS.md`, `docs/agents/README.md`, `docs/agents/development-and-testing.md`, `docs/agents/desktop-testing.md`, `docs/agents/business-test-catalogue.md`, `feature_list.json`, `progress.md`.
+- Preexisting untracked entries to preserve: `.codegraph/`, `.playwright-mcp/`, `skills-lock.json`.
 
-## Files / Work This Session
+## Handoff for the next session (execute sweeps)
 
-- Created `feature_list.json`: only the authorized harness task, its six-file scope, criteria, status, and evidence. `visual_scenarios` is empty because this task changes no application behavior.
-- Created `progress.md`: restartable session handoff and dated verification evidence.
-- Created `init.ps1`: independent of local skills and Node; read-only metadata/completion/dependency/link checks and Git whitespace checking.
-- Updated `AGENTS.md`: state-based startup, one active task, completion gate, session closure, and primary visual acceptance.
-- Updated `docs/agents/README.md`: state/verifier routing and corrected historical documentation status.
-- Updated `docs/agents/development-and-testing.md`: tracker conventions, visual transition/reversal matrix, repeated cycles, dialog dismissal, blocked actions, persisted readback, and run-evidence format.
-- The existing guides were committed in `297b993`; their application source inspection remains the historical `47a0bf8` snapshot, not a runtime certification.
+1. Read [AGENTS.md](AGENTS.md); run `powershell -NoProfile -File ".\init.ps1"`.
+2. Read [the business test catalogue](docs/agents/business-test-catalogue.md): pick the phase the owner requests.
+   - Phase A: CLI, EQP, CAT, PRO, STK, PERM-01
+   - Phase B: COM (+stock/cost)
+   - Phase C: ORD, DIA, PRE, ADI, REP, PRU, ENT
+   - Phase D: GAR (warranty and re-entry)
+   - Phase E: DSH, INF
+   - Phase F: INT + closure
+3. Desktop driver: external environment at `%LOCALAPPDATA%\ServicioTecnicoDesktopTests`
+   (Windows-MCP 0.8.7 / pywinauto 0.6.9). Run its `check-environment.ps1`, then start the
+   session with `scripts\start-test-session.cmd` and restart OpenCode so the MCP tools load.
+   See [Desktop testing (local only)](docs/agents/desktop-testing.md).
+4. Fixtures: `AGENT_TEST_<run-id>` (masters `AGENT_`); record every ID; keep records unless the
+   owner asks for cleanup. `PERM-01` needs a read-only test user created via the admin forms
+   (fixture setup only; administration testing itself is out of scope).
+5. Evidence: per-step log and screenshots in the external `evidence\` directory; compact result
+   table in this file. Known defects are recorded as findings, not passes.
+6. One phase per session is recommended; each sweep is a separate authorized task, never part
+   of routine feature work.
 
 ## Verification Evidence
 
 | Check | Command or procedure | Result | Boundary |
 | --- | --- | --- | --- |
-| Baseline Git | `git status --short`, `git branch --show-current`, `git rev-parse --short HEAD` | No tracked changes; branch and preexisting untracked entries recorded above | Checkout metadata only |
-| Structural audit before changes | `node ".agents/skills/harness-creator/scripts/validate-harness.mjs" --target "." --json` | 36/100; instructions 2/5, state 1/5, verification 3/5, scope 2/5, lifecycle 1/5; exit 1 below default threshold | Local optional skill; recognizes fixed filenames/phrases, not linked guides or `init.ps1` |
-| Harness verification | `powershell -NoProfile -File ".\init.ps1"` | PASS: one task, state/completion gates, 159 relative file links, and `git diff --check` | Structural checks only; fail-fast assertions, no application or DB execution |
-| Negative verifier checks | Executed `harness-gates-20261003.mjs` with Node against disposable synthetic copies in the approved temporary tools directory | 14/14 expected rejections; SHA-256 hashes of all six repository harness files unchanged during checks | Session-local check script/fixtures, not a repository-owned formal test suite; no application records or DB used |
-| Structural audit after changes | `node ".agents/skills/harness-creator/scripts/validate-harness.mjs" --target "." --json` | 84/100; instructions 5/5, state 5/5, verification 3/5, scope 5/5, lifecycle 3/5; exit 0 | Remaining misses are `init.sh`/`set -e` and a separate `session-handoff.md`; this Windows harness intentionally uses `init.ps1` and this progress file |
-| Content and scope review | Readback, `git diff`, `git status --short`, and targeted addition scan | Only the six authorized harness files added/edited; preexisting untracked entries preserved; no added credentials, private keys, or machine-specific absolute paths found | Manual review plus targeted patterns, not a comprehensive security audit |
-| New heading links | Compared both `primary-acceptance-visual-state-machine-flows` links with the destination heading | PASS | Manual heading review; `init.ps1` checks file destinations, not fragments or C# method anchors |
+| Harness verification | `powershell -NoProfile -File ".\init.ps1"` | PASS: 3 tasks, state/completion gates, relative links, `git diff --check` | Structural checks only |
+| Catalogue coverage | Manual review against [business flows](docs/agents/business-flows.md) and the module list | 18 sections (17 business/admin-light + INT) with reversal/regret/blocked/repeat rows and cross-module effects | Source-based expectations; re-confirm guards per sweep |
+| Coverage audit | Compared `APPLICATION/Features` (16 folders) and `PRESENTATION/Forms` against the catalogue sections; re-read the orders and purchases lists and the part editor | All business modules covered; 6 administration folders excluded by owner decision; gaps closed: golden path, ORD-08/ENT-08 (cancel and quick-deliver from the list), COM-10 (list actions), PRE-13 (draft persistence), GAR-11 (view original), STK-01 (initial-stock fields), HIST-01/LIST-01/LANG-01 cross-cutting checks | Source inspection only; the audit checks coverage, not runtime behavior |
+| Policy wiring | Readback of AGENTS.md, development-and-testing.md, README.md | Scoped acceptance and on-demand sweep rules present; catalogue linked from all three | Documentation review only |
+| Diff and scope | `git diff`, `git status --short` | Only the authorized documentation files changed; preexisting untracked entries preserved | Manual review |
 
-The 14 negative cases were: invalid status, two active tasks, duplicate ID, unknown dependency,
-unfinished dependency, dependency cycle, unverified completion criterion, missing done evidence,
-missing behavior visual matrix, failed visual scenario at completion, passed scenario without
-evidence, non-Boolean criterion, file scope escaping the repository, and a broken relative link.
-These checks certify rejection of synthetic invalid harness state, not application workflows.
+Historical (2026-10-03, `feat-002`): the budget, repair/tests/reopen, delivery and warranty
+re-entry cycles were validated through the real forms against the non-production database;
+orders 1002-1006 and `AGENT_` fixtures were intentionally kept. Detailed log and screenshots:
+`%LOCALAPPDATA%\ServicioTecnicoDesktopTests\evidence\visual-validation-20261003.md`.
 
 ## Blockers / Not Re-tested
 
-- No unresolved blocker for this harness-only task.
-- No native desktop interaction driver is exposed in this session. Future behavior work must establish desktop capability and an authorized scratch database before visual execution.
-- Build, desktop flows, live schema, database contents, and concurrency were not re-tested in this harness-only task.
-- No application behavior fixes or new application backlog are authorized by this task.
-- HTML reporting and the skill benchmark/self-check were not run; the requested audit used the read-only validator. No tools were installed and no Git stage/commit/push/branch switch was performed.
+- No blocker. The documentation changes of this and the previous session are uncommitted;
+  committing needs separate approval.
+- The catalogue was written from source inspection and the guides; its expectations were not
+  re-executed in this docs-only task.
+- Known tool limitation: Windows-MCP 0.8.7 omits controls with an empty accessible name
+  (WinForms TextBoxes expose only AutomationId); use pywinauto or coordinates for those fields.
+- Known application defects are listed in [known limitations](docs/agents/known-limitations.md)
+  and marked inside the catalogue; sweeps must record them as findings.
 
 ## Next Session / Recommended Next Step
 
 1. Re-read [AGENTS.md](AGENTS.md), resolve the checkout, and compare fresh Git state with this record.
-2. Read [feature_list.json](feature_list.json) and this file; validate using `powershell -NoProfile -File ".\init.ps1"`.
-3. The harness task is complete. Ask for the next authorized application objective; do not infer one from historical limitations or checkpoint numbering.
-4. Before activating a behavior task, record its scope, criteria, visual scenario matrix, desktop capability, and scratch-database authorization. Test its affected forward/reverse/blocked/repeated cycles in the forms and label assisted manual evidence honestly.
+2. Ask the owner which phase to run (or whether to commit the pending documentation first).
+3. Run the requested phase from the catalogue, phase by phase, keeping records for review.
+4. Update this file and the tracker after each sweep with the observed results and next step.
