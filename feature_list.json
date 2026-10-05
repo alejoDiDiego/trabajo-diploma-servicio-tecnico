@@ -142,6 +142,143 @@
       ],
       "visual_scenarios": [],
       "evidence": "2026-10-03: docs-only task. Added docs/agents/business-test-catalogue.md (18 sections: CLI, EQP, CAT, ORD, DIA, PRE, ADI, REP, PRU, ENT, STK, PRO, COM, GAR, DSH, INF, PERM-01, INT plus cross-cutting HIST/LIST/LANG; known defects marked as findings; phases A-F; golden path). Coverage audit compared APPLICATION/Features (16 folders; 6 administration excluded) and PRESENTATION/Forms against the catalogue: all business modules covered; gaps closed (golden path, ORD-08/ENT-08 cancellation and quick-delivery from the orders list, COM-10 purchase list actions, PRE-13 draft persistence, GAR-11 view original, STK-01 initial-stock fields, HIST-01/LIST-01/LANG-01 cross-cutting checks). Scoped-acceptance policy added to AGENTS.md and development-and-testing.md; catalogue linked from the index. Handoff recorded in progress.md. No application build, launch, or database write was performed; sweeps will run in a new session with the external environment."
+    },
+    {
+      "id": "feat-004",
+      "name": "Business-flow sweep A-F on the authorized test database",
+      "description": "Execute the business test catalogue phases A-F through the real WinForms UI against the authorized non-production database, using the external pywinauto environment, and record passed, blocked and defective outcomes with evidence.",
+      "type": "behavior",
+      "authorized_files": [
+        "feature_list.json",
+        "progress.md",
+        "docs/agents/known-limitations.md"
+      ],
+      "dependencies": [
+        "feat-003"
+      ],
+      "status": "done",
+      "acceptance_criteria": [
+        {
+          "description": "The application builds and the external desktop environment is ready.",
+          "verified": true
+        },
+        {
+          "description": "The golden path (order reception through delivery and warranty) is exercised through the forms with readback.",
+          "verified": true
+        },
+        {
+          "description": "Budget, additional, repair, test, delivery, purchase and master reversals are exercised.",
+          "verified": true
+        },
+        {
+          "description": "The confirmed defects COM-07, GAR-08 and INF-11 are reproduced and recorded as findings, not passes.",
+          "verified": true
+        },
+        {
+          "description": "Every catalogue row is executed or explicitly recorded as not executed with the reason.",
+          "verified": true
+        }
+      ],
+      "visual_scenarios": [
+        {
+          "id": "vis-sweep-golden-path",
+          "description": "Order 2002: reception, assignment, reparable diagnosis, original budget emit+approve, repair with consumption, approved tests, delivery and automatic warranty.",
+          "status": "passed",
+          "evidence": "external evidence sweep-20261003B.md; observed Recibido -> AutorizadoReparacion -> EnReparacion (stock 10->8) -> EnPruebas -> ListoRetiro/Reparado -> Entregado; warranty id 3."
+        },
+        {
+          "id": "vis-sweep-budget-reversal",
+          "description": "Order 2005: emit original, regret the annulment, annul pending, re-emit and approve.",
+          "status": "passed",
+          "evidence": "external evidence sweep-20261003B.md; EsperandoRespuesta -> (unchanged) -> PendientePresupuesto -> EsperandoRespuesta -> AutorizadoReparacion."
+        },
+        {
+          "id": "vis-sweep-additional",
+          "description": "Order 2005: request additional, emit, approve and resume the repair origin.",
+          "status": "passed",
+          "evidence": "external evidence sweep-20261003B.md; Autorizado -> PendientePresupuesto -> EsperandoRespuesta -> AutorizadoReparacion."
+        },
+        {
+          "id": "vis-sweep-tests-reversal",
+          "description": "Order 2005: annul a non-latest test, finalize with a revision result, reopen, and block finalization with no valid tests.",
+          "status": "passed",
+          "evidence": "external evidence sweep-20261003B.md; EnReparacion/NULL after failure, EnPruebas/NULL after reopen, unchanged when no valid tests."
+        },
+        {
+          "id": "vis-sweep-delivery-warranty",
+          "description": "Deliver, cancel delivery, re-finalize tests, re-deliver, and re-entry by warranty with acceptance.",
+          "status": "passed",
+          "evidence": "external evidence sweep-20261003B.md; delivered order 2 and 2002 created warranties; re-entry 2003 accepted to AutorizadoReparacion."
+        },
+        {
+          "id": "vis-sweep-masters-purchases",
+          "description": "Masters create/duplicate/deactivate and purchases draft/confirm/cancel/annul with stock readback.",
+          "status": "passed",
+          "evidence": "external evidence sweep-20261003B.md; duplicate rejection, deactivate/reactivate cycles, stock 10->15->10 on annul."
+        },
+        {
+          "id": "vis-sweep-dashboard",
+          "description": "Six dashboard KPIs match the database.",
+          "status": "passed",
+          "evidence": "external evidence sweep-20261003B.md; abiertas 5, reparacion 0, esperando 0, listas 2, garantias 3, bajo minimo 1."
+        }
+      ],
+      "evidence": "2026-10-04: full sweep A-F run 20261003B on TPIntegrador completed. All 144 catalogue rows executed or explicitly recorded. PASS for CLI/EQP/CAT/PRO/STK, COM (except COM-07), ORD/DIA/PRE/ADI/REP (except REP-07 blocked)/PRU/ENT, GAR (except GAR-08), DSH, INF-01..10, HIST-01, LIST-01, LANG-01, PERM-01 and INT-01..05. Findings tracked for fixing in feat-005: COM-07 (per-row stock over-reversal), GAR-08 (retiro with reason containing 'pago' takes the paid branch), INF-11 (final-day report boundary). REP-07 partial return is BLOCKED (UI returns the whole part/cost group). Fixtures and full log at %LOCALAPPDATA%\\ServicioTecnicoDesktopTests; external sweep-20261003B.md."
+    },
+    {
+      "id": "feat-005",
+      "name": "Fix confirmed defects COM-07, GAR-08 and INF-11",
+      "description": "Correct the three defects confirmed by the business-flow sweep: purchase annulment stock over-reversal with repeated part rows, warranty rejection paid/withdrawal inference from the reason text, and the report final-day boundary.",
+      "type": "behavior",
+      "authorized_files": [
+        "INFRASTRUCTURE/Features/Compras/CompraRepository.cs",
+        "APPLICATION/Features/Ordenes/OrdenServicioService.cs",
+        "PRESENTATION/Forms/Ordenes/FrmOrdenServicioDetalle.cs",
+        "PRESENTATION/Forms/Reportes/FrmReportes.cs",
+        "INFRASTRUCTURE/Features/Reportes/ReporteRepository.cs",
+        "feature_list.json",
+        "progress.md",
+        "docs/agents/known-limitations.md"
+      ],
+      "dependencies": [
+        "feat-004"
+      ],
+      "status": "done",
+      "acceptance_criteria": [
+        {
+          "description": "COM-07: purchase annulment validates the aggregate quantity per part before reversing.",
+          "verified": true
+        },
+        {
+          "description": "GAR-08: warranty rejection uses an explicit paid/withdrawal decision instead of a reason substring.",
+          "verified": true
+        },
+        {
+          "description": "INF-11: reports include records made on the selected final day.",
+          "verified": true
+        }
+      ],
+      "visual_scenarios": [
+        {
+          "id": "vis-fix-com07",
+          "description": "Annul a confirmed purchase with repeated part rows and insufficient aggregate stock: must be blocked with no negative stock; with coverage it reverses exactly.",
+          "status": "passed",
+          "evidence": "UI + DB: aggregate 2 > stock 1 -> blocked, stock stays 1; coverage 2 -> Cancelada, stock 2->0, 2 movements; repeat annul rejected; COM-06 single-row still blocked."
+        },
+        {
+          "id": "vis-fix-gar08",
+          "description": "Reject a warranty re-entry choosing withdrawal with a reason containing 'pago': must end in ListoRetiro/GarantiaNoCubierta; paid and accept paths unchanged.",
+          "status": "passed",
+          "evidence": "UI + DB: withdrawal + 'pago' -> GarantiaNoCubierta; paid -> PendientePresupuesto; withdrawal without 'pago' -> GarantiaNoCubierta; accept -> AutorizadoReparacion."
+        },
+        {
+          "id": "vis-fix-inf11",
+          "description": "Report with the final date set to a day with records: those records must be included and later days excluded.",
+          "status": "passed",
+          "evidence": "UI + DB: Desde=Hasta=2026-10-04 report equals the DB for that day and excludes later records; INF-07/INF-09 range values match the DB."
+        }
+      ],
+      "evidence": "2026-10-05: fixes applied and verified through the real UI with database readback. COM-07 (CompraRepository aggregate guard), GAR-08 (EvaluarReingreso explicit continuarPago + UI destination), INF-11 (ReporteRepository < DATEADD(day,1,@Hasta)). Build Debug/Any CPU passed; affected rows and neighbours re-run; guides and tracker updated. External evidence: %LOCALAPPDATA%\\ServicioTecnicoDesktopTests\\evidence\\sweep-20261003B."
     }
   ]
 }

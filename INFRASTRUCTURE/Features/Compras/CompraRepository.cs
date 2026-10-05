@@ -384,9 +384,10 @@ namespace REPOSITORY.Features.Compras
         public void AnularConfirmadaConStock(int idCompra, string motivo, int idUsuario)
         {
             // Batch atomico: exige Confirmada + motivo no vacio; si el stock actual cubre
-            // la reversion completa por repuesto (stock >= cantidad comprada): UPDATE
-            // estado->Cancelada + motivo + por item UPDATE stock-= + INSERT AjusteNegativo
-            // con obs 'Anulacion compra N'. Si no cubre -> THROW 50035 sin cambios.
+            // la reversion completa por repuesto (stock >= SUMA de cantidades del repuesto,
+            // agregando renglones repetidos): UPDATE estado->Cancelada + motivo + por item
+            // UPDATE stock-= + INSERT AjusteNegativo con obs 'Anulacion compra N'.
+            // Si no cubre -> THROW 50035 sin cambios.
             string query = @"
                 DECLARE @Estado nvarchar(20);
 
@@ -406,10 +407,14 @@ namespace REPOSITORY.Features.Compras
 
                 IF EXISTS (
                     SELECT 1
-                    FROM CompraDetalle d
+                    FROM (
+                        SELECT id_repuesto, SUM(cantidad) AS total
+                        FROM CompraDetalle
+                        WHERE id_compra = @IdCompra
+                        GROUP BY id_repuesto
+                    ) d
                     INNER JOIN Repuestos r WITH (UPDLOCK, HOLDLOCK) ON r.id_repuesto = d.id_repuesto
-                    WHERE d.id_compra = @IdCompra
-                      AND r.stock_actual < d.cantidad
+                    WHERE r.stock_actual < d.total
                 )
                     THROW 50035, 'No se puede anular la compra porque el stock actual no cubre la reversion. Los repuestos ya fueron consumidos parcial o totalmente.', 1;
 

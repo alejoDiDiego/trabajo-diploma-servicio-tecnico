@@ -30,7 +30,7 @@ namespace REPOSITORY.Features.Reportes
                 FROM OrdenesServicio
                 WHERE estado <> 'Entregado'
                   AND (@Desde IS NULL OR fecha_ingreso >= @Desde)
-                  AND (@Hasta IS NULL OR fecha_ingreso <= @Hasta)
+                  AND (@Hasta IS NULL OR fecha_ingreso < DATEADD(day, 1, @Hasta))
                 GROUP BY estado
                 ORDER BY estado;
             ";
@@ -48,7 +48,7 @@ namespace REPOSITORY.Features.Reportes
                   AND resultado IS NOT NULL
                   AND LTRIM(RTRIM(resultado)) <> ''
                   AND (@Desde IS NULL OR fecha_ingreso >= @Desde)
-                  AND (@Hasta IS NULL OR fecha_ingreso <= @Hasta)
+                  AND (@Hasta IS NULL OR fecha_ingreso < DATEADD(day, 1, @Hasta))
                 GROUP BY resultado
                 ORDER BY resultado;
             ";
@@ -64,7 +64,7 @@ namespace REPOSITORY.Features.Reportes
                 FROM Reparaciones r
                 LEFT JOIN Usuarios u ON u.id_usuario = r.id_usuario_tecnico
                 WHERE (@Desde IS NULL OR r.fecha_inicio >= @Desde)
-                  AND (@Hasta IS NULL OR r.fecha_inicio <= @Hasta)
+                  AND (@Hasta IS NULL OR r.fecha_inicio < DATEADD(day, 1, @Hasta))
                 GROUP BY COALESCE(u.username, 'Sin asignar')
                 ORDER BY cantidad DESC, tecnico;
             ";
@@ -82,7 +82,7 @@ namespace REPOSITORY.Features.Reportes
                 INNER JOIN Entregas e ON e.id_orden = o.id_orden
                 WHERE o.estado = 'Entregado'
                   AND (@Desde IS NULL OR o.fecha_ingreso >= @Desde)
-                  AND (@Hasta IS NULL OR o.fecha_ingreso <= @Hasta);
+                  AND (@Hasta IS NULL OR o.fecha_ingreso < DATEADD(day, 1, @Hasta));
             ";
 
             return _db.ExecuteQuery(query, CrearParametrosRango(desde, hasta));
@@ -97,7 +97,7 @@ namespace REPOSITORY.Features.Reportes
                 FROM Presupuestos
                 WHERE estado IN ('Aprobado', 'Rechazado', 'Pendiente')
                   AND (@Desde IS NULL OR fecha_emision >= @Desde)
-                  AND (@Hasta IS NULL OR fecha_emision <= @Hasta)
+                  AND (@Hasta IS NULL OR fecha_emision < DATEADD(day, 1, @Hasta))
                 GROUP BY estado
                 ORDER BY estado;
             ";
@@ -115,7 +115,7 @@ namespace REPOSITORY.Features.Reportes
                 INNER JOIN Reparaciones rep ON rep.id_reparacion = rr.id_reparacion
                 INNER JOIN Repuestos r ON r.id_repuesto = rr.id_repuesto
                 WHERE (@Desde IS NULL OR rep.fecha_inicio >= @Desde)
-                  AND (@Hasta IS NULL OR rep.fecha_inicio <= @Hasta)
+                  AND (@Hasta IS NULL OR rep.fecha_inicio < DATEADD(day, 1, @Hasta))
                 GROUP BY r.codigo, r.descripcion
                 ORDER BY SUM(rr.cantidad) DESC, r.codigo;
             ";
@@ -140,7 +140,7 @@ namespace REPOSITORY.Features.Reportes
                 INNER JOIN Proveedores p ON p.id_proveedor = c.id_proveedor
                 WHERE c.estado = 'Confirmada'
                   AND (@Desde IS NULL OR c.fecha >= @Desde)
-                  AND (@Hasta IS NULL OR c.fecha <= @Hasta)
+                  AND (@Hasta IS NULL OR c.fecha < DATEADD(day, 1, @Hasta))
                 GROUP BY p.razon_social
                 ORDER BY p.razon_social;
             ";
@@ -156,7 +156,7 @@ namespace REPOSITORY.Features.Reportes
                 FROM OrdenesServicio
                 WHERE tipo_orden = 'Garantia'
                   AND (@Desde IS NULL OR fecha_ingreso >= @Desde)
-                  AND (@Hasta IS NULL OR fecha_ingreso <= @Hasta);
+                  AND (@Hasta IS NULL OR fecha_ingreso < DATEADD(day, 1, @Hasta));
             ";
 
             return _db.ExecuteQuery(query, CrearParametrosRango(desde, hasta));
@@ -170,7 +170,7 @@ namespace REPOSITORY.Features.Reportes
                 SELECT estado, COUNT(1) AS cantidad
                 FROM EvaluacionesGarantia
                 WHERE (@Desde IS NULL OR fecha >= @Desde)
-                  AND (@Hasta IS NULL OR fecha <= @Hasta)
+                  AND (@Hasta IS NULL OR fecha < DATEADD(day, 1, @Hasta))
                 GROUP BY estado
                 ORDER BY estado;
             ";
@@ -187,7 +187,7 @@ namespace REPOSITORY.Features.Reportes
                 FROM Presupuestos
                 WHERE estado = 'Aprobado'
                   AND (@Desde IS NULL OR fecha_emision >= @Desde)
-                  AND (@Hasta IS NULL OR fecha_emision <= @Hasta);
+                  AND (@Hasta IS NULL OR fecha_emision < DATEADD(day, 1, @Hasta));
             ";
 
             return _db.ExecuteQuery(query, CrearParametrosRango(desde, hasta));

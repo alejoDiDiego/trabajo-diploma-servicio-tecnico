@@ -235,7 +235,7 @@ regret and reversal branches of the modules it touches.
 | COM-04 | Confirm | Confirm draft | Stock increases; Compra movements; master cost set to purchase cost | STK, reports, consumption cost | — |
 | COM-05 | Annul confirmed | Reason + sufficient stock | Cancelada + negative adjustments linked to the purchase | Stock decreases; previous master cost is NOT restored | — |
 | COM-06 | Annul blocked | Insufficient stock | Blocked | — | — |
-| COM-07 | Duplicate-part aggregate | Repeated rows for one part, annul with enough stock for each row but not the total | Defect: per-row guard can over-reverse stock | — | Confirmed defect in `AnularConfirmadaConStock`; record as finding |
+| COM-07 | Duplicate-part aggregate | Repeated rows for one part, annul with enough stock for each row but not the total | Blocked; stock unchanged and never negative | — | Fixed (feat-005): `AnularConfirmadaConStock` validates the summed quantity per part |
 | COM-08 | Regret | Dismiss confirm / cancel reason | No change | — | — |
 | COM-09 | Reports | Read purchases-by-supplier after COM-04/05 | Counts/totals match confirmed purchases | INF | — |
 | COM-10 | List quick actions | Confirm, cancel and annul directly from the purchases list | Same behavior as the detail form | — | Alternative UI path |
@@ -249,9 +249,9 @@ regret and reversal branches of the modules it touches.
 | GAR-03 | Zero days / expired | Deliver with warranty days 0, or wait past end date | No warranty / `ObtenerVigente` false; re-entry blocked | — | Defect: no start-date check in `ObtenerVigente` |
 | GAR-04 | Owner changed | Change equipment owner, then re-entry from the delivered order | UI passes the historical customer; service validates current owner -> re-entry can fail | — | Confirmed source-path finding; do not claim a universal failure |
 | GAR-05 | Evaluate accepted | Re-entry + reparable diagnosis -> accept with reason | AutorizadoReparacion without commercial budget | Repair path | — |
-| GAR-06 | Evaluate rejected, paid | Reject with a reason containing `pago` | PendientePresupuesto (ordinary paid budget) | PRE flow | Defect: textual heuristic; UI destination buttons can contradict it |
+| GAR-06 | Evaluate rejected, paid | Choose the paid destination button | PendientePresupuesto (ordinary paid budget) | PRE flow | Decision is explicit (`continuarPago`), not text-based (feat-005) |
 | GAR-07 | Evaluate rejected, withdrawal | Reject with reason without `pago` | ListoRetiro + GarantiaNoCubierta | Delivery | — |
-| GAR-08 | Withdrawal reason containing `pago` | Choose withdrawal but include `pago` in the text | Paid branch taken | — | Confirmed defect; record as finding |
+| GAR-08 | Withdrawal reason containing `pago` | Choose withdrawal but include `pago` in the text | ListoRetiro + GarantiaNoCubierta | — | Fixed (feat-005): the explicit destination decides |
 | GAR-09 | Multiple re-entries | Create a second re-entry while warranty is valid | Confirm actual behavior in source | — | Warranty row is unique per original |
 | GAR-10 | Warranty order delivery | Deliver the warranty order after repair+tests | No new warranty is created | — | — |
 | GAR-11 | View original | From a re-entry, press Ver original | Shows the original delivered order; original unchanged | — | — |
@@ -281,7 +281,7 @@ regret and reversal branches of the modules it touches.
 | INF-08 | Re-entries / warranty rate | GAR fixtures | Re-entry count; accepted/(accepted+rejected) | — | Label vs definition mismatch noted |
 | INF-09 | Approved amount | PRE fixtures | Sum approved totals both types | — | Not billing/collection |
 | INF-10 | Low stock | STK-07 | Active parts stock <= minimum | — | — |
-| INF-11 | Final-day date boundary | Record on the selected final day after midnight filter | Defect: records later on the final day are excluded | — | Confirmed defect (`Hasta.Value.Date` + `<= @Hasta`); record as finding |
+| INF-11 | Final-day date boundary | Record on the selected final day with the date filter on | Included; later days excluded | — | Fixed (feat-005): `< DATEADD(day, 1, @Hasta)` |
 
 ## PERM-01 - Business permissions cross-check (light)
 

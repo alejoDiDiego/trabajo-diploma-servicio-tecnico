@@ -1075,13 +1075,12 @@ namespace APPLICATION.Features.Ordenes
             }
         }
 
-        public void EvaluarReingreso(int idOrdenReingreso, bool aceptada, string motivo, string observaciones)
+        public void EvaluarReingreso(int idOrdenReingreso, bool aceptada, string motivo, string observaciones, bool continuarPago)
         {
             // Decide la evaluacion pendiente del reingreso (requiere PRESUPUESTOS_DECIDIR en UI;
             // backend valida estado y coherencia). Aceptada -> AutorizadoReparacion sin presupuesto.
-            // Rechazada + motivo que indica continuidad de pago -> PendientePresupuesto (flujo normal).
+            // Rechazada + continuarPago (decision explicita de la UI) -> PendientePresupuesto (flujo normal).
             // Rechazada sin continuidad -> ListoRetiro + GarantiaNoCubierta.
-            // Continuidad de pago = motivo no vacio que contenga "pago" (convencion simple CP4).
             try
             {
                 int idUsuario = ObtenerIdUsuarioSesion();
@@ -1131,9 +1130,10 @@ namespace APPLICATION.Features.Ordenes
                     reingreso.AutorizarReparacionGarantia();
                     estadoNuevo = reingreso.Estado;
                 }
-                else if (motivo.ToLower().Contains("pago"))
+                else if (continuarPago)
                 {
-                    // Rechazada con continuidad de pago: vuelve a PendientePresupuesto para seguir el flujo normal.
+                    // Rechazada con continuidad de pago (decision explicita de la UI):
+                    // vuelve a PendientePresupuesto para seguir el flujo normal.
                     reingreso.MarcarPendientePresupuestoDesdeEvaluacion();
                     estadoNuevo = reingreso.Estado;
                 }

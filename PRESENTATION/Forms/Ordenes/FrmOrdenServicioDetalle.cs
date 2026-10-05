@@ -826,7 +826,7 @@ namespace UI.Forms.Ordenes
             try
             {
                 _service.EvaluarReingreso(_idOrden, true,
-                    TXT_GMotivo.Text.Trim(), TXT_GObs.Text.Trim());
+                    TXT_GMotivo.Text.Trim(), TXT_GObs.Text.Trim(), false);
                 CargarOrden();
                 MostrarExito("Mensaje.OperacionExitosa");
             }
@@ -853,10 +853,9 @@ namespace UI.Forms.Ordenes
                 return;
             }
 
-            // OJO CP4: el backend decide por motivo.Contains("pago"). La UI NO confia
-            // en el texto: pregunta explicita con DOS botones. "pago" => motivo con
-            // continuidad de pago (PendientePresupuesto); retiro => motivo tal cual
-            // (ListoRetiro + GarantiaNoCubierta).
+            // CP4/CP6: el backend decide por la decision explicita (continuarPago), no por el
+            // texto del motivo. La UI pregunta con DOS botones: pago => continuarPago=true
+            // (PendientePresupuesto); retiro => continuarPago=false (ListoRetiro + GarantiaNoCubierta).
             int destino = PedirDestinoRechazo();
 
             if (destino < 0)
@@ -878,7 +877,7 @@ namespace UI.Forms.Ordenes
 
             try
             {
-                _service.EvaluarReingreso(_idOrden, false, motivo, TXT_GObs.Text.Trim());
+                _service.EvaluarReingreso(_idOrden, false, motivo, TXT_GObs.Text.Trim(), destino == 0);
                 CargarOrden();
                 MostrarExito("Mensaje.OperacionExitosa");
             }

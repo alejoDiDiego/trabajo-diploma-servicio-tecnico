@@ -133,10 +133,10 @@ Confirmed annulment needs a reason and stock coverage; -> Cancelada + linked
 AjusteNegativo movements (`id_compra` and purchase ID in observation).
 It does **not** restore the previous master cost.
 
-**Confirmed defect:** [CompraRepository](../../INFRASTRUCTURE/Features/Compras/CompraRepository.cs),
-`AnularConfirmadaConStock`, checks stock against each detail row, not summed quantity per part.
-Repeated-part rows are allowed; their combined reversal can exceed stock even when each row
-passes the guard. Do not document the guard as full aggregate protection.
+**Fixed (feat-005):** [CompraRepository](../../INFRASTRUCTURE/Features/Compras/CompraRepository.cs),
+`AnularConfirmadaConStock`, validates the summed quantity per part (`SUM(cantidad)` grouped by
+`id_repuesto`) before reversing, so repeated-part rows cannot over-reverse stock. The reversal
+cursor still writes one movement per detail row.
 [ProveedorService](../../APPLICATION/Features/Proveedores/ProveedorService.cs), `Desactivar`,
 is soft deletion; purchase history remains.
 
@@ -161,17 +161,17 @@ or equipment Activo. Do not claim the normal-reception guard is identical here.
 `BTN_CrearReingreso_Click` passes the original order's historical `IdCliente`, not a selectable
 current owner. If equipment ownership changed, that UI path can fail the service's current-owner
 guard; the service accepting the current owner is not proof that the form supplies it.
-Reparable diagnosis registers Pendiente evaluation, then `EvaluarReingreso`:
+Reparable diagnosis registers Pendiente evaluation, then `EvaluarReingreso` (feat-005 takes an
+explicit `continuarPago` flag supplied by the UI destination dialog):
 
 | Decision | Destination |
 | --- | --- |
 | Accepted | AutorizadoReparacion without commercial budget |
-| Rejected, reason contains `pago` after lowercasing | PendientePresupuesto, ordinary paid-budget flow |
-| Rejected, no such substring | ListoRetiro + GarantiaNoCubierta |
+| Rejected, `continuarPago = true` (UI "Reparacion paga") | PendientePresupuesto, ordinary paid-budget flow |
+| Rejected, `continuarPago = false` (UI "No continua / retiro") | ListoRetiro + GarantiaNoCubierta |
 
-There is no reliable paid-continuation Boolean. UI asks for destination but appends a textual
-marker only for paid continuation; a withdrawal reason already containing `pago` still takes
-the paid backend branch. Acceptance needs ORDENES_EDITAR in UI; rejection needs
+The reason text no longer decides the branch; the UI asks with two buttons and passes the
+decision. Acceptance needs ORDENES_EDITAR in UI; rejection needs
 PRESUPUESTOS_DECIDIR, despite the broader service comment.
 Accepted warranties have no approved Original in the normal path, so commercial additions
 are blocked by the approved-Original prerequisite, not a universal TipoGarantia ban.
@@ -205,6 +205,6 @@ Low-stock data is an additional service query/dashboard KPI, not a twelfth selec
 | Approved budget amount | Sum approved totals across both types, emission filter; not billing or collection |
 | Low stock | Active parts with stock <= minimum; no date-range history |
 
-**Confirmed report boundary defect:** UI sends `Hasta.Value.Date` and SQL uses `<= @Hasta`;
-records later on the selected final day are excluded. Result-history and warranty-rate labels
-must not imply broader historical definitions than these queries implement.
+**Fixed (feat-005):** report queries use an exclusive upper bound
+(`< DATEADD(day, 1, @Hasta)`), so the whole selected final day is included. The UI keeps
+sending calendar dates and the desde > hasta validation is unchanged.
