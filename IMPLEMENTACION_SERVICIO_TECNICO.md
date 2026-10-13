@@ -1,5 +1,48 @@
 # Implementacion Servicio Tecnico - Checkpoint 1
 
+> **Alcance historico (leer antes de usar este documento).** Los informes por checkpoint que
+> siguen registran decisiones, pruebas y limitaciones **de su propia version**; no certifican el
+> comportamiento actual del codigo. En particular, las afirmaciones sobre repuestos
+> "reservados"/"no habilitados en emision", el gating anterior de la UI de pruebas y los
+> reingresos multiples sin restriccion quedaron **superadas por feat-007, feat-008 y feat-009**.
+> Las reglas vigentes y su evidencia de runtime estan en las secciones datadas del Checker en
+> [progress.md](progress.md); los informes de este archivo se conservan como evidencia historica.
+> La alineacion de feat-010 es **solo documental**: no repite pruebas de runtime ni modifica
+> codigo, SQL ni datos.
+
+## Reglas vigentes alineadas por feat-010 (2026-10-13)
+
+- **feat-006 - documento de cliente unico (activos e inactivos):** `Clientes.documento` es unico
+  para altas y ediciones contra clientes activos **e inactivos**; un conflicto se rechaza con un
+  mensaje de negocio que nombra al titular y no escribe la fila, y el caso inactivo indica marcar
+  "Ver inactivos". Telefono y email siguen siendo libres de compartir. La guarda vive en
+  `ClienteRepository.Agregar`/`Modificar`; `UX_Clientes_Documento` solo se instala si la base no
+  tiene grupos duplicados preexistentes (en la base actual el indice esta **ausente** por tres
+  grupos legados, que quedan intactos: la guarda transaccional es la via de cumplimiento).
+  Guardar el propio documento sin cambios sigue permitido.
+- **feat-007 - item de presupuesto Repuesto:** el selector de tipo ofrece Repuesto junto a Mano de
+  obra y Servicio (ES/EN); exige un repuesto existente y **activo**; `PrecioReferencia` precarga un
+  precio unitario editable; se admiten precios en cero y repuestos activos con stock cero; la
+  referencia, cantidad, precio y subtotal cotizados persisten. Borrador/emision/aprobacion/
+  anulacion/re-emision **nunca** reservan ni mueven stock; solo el consumo real de la reparacion
+  descuenta stock y fija el costo de ese momento. `PresupuestoDetalle.id_repuesto` es la linea
+  cotizada; `ReparacionRepuesto` es el consumo real, **sin vinculo automatico**.
+- **feat-008 - pruebas solo de la intervencion actual:** una intervencion historica (no actual) es
+  **solo consulta** en la etapa de pruebas: registrar, anular y finalizar no estan disponibles y
+  se muestra un motivo traducido visible; las pruebas historicas siguen adjuntas y visibles, y al
+  volver a la intervencion actual se restauran las acciones habilitadas. Las pruebas nuevas solo
+  apuntan a la intervencion actual (ultima finalizada). Las guardas del service y el mensaje
+  "Solo se puede registrar la prueba de la ultima intervencion finalizada." no cambian.
+- **feat-009 - un solo reingreso de garantia abierto por orden:** por orden original puede haber
+  **un** reingreso abierto. Un reingreso cierra cuando su orden esta `Entregado`, o su evaluacion
+  es `Rechazada` con destino comprometido; `Aceptada` y un `ListoRetiro` aceptado **no** lo
+  cierran. La cobertura sigue siendo 0..1 por original (indice unico conservado) y los reingresos
+  son 0..N ordenes a traves de `id_orden_origen`, con una sola evaluacion por reingreso. La guarda
+  es un predicado compartido que se evalua bajo lock de tabla dentro de la transaccion de creacion,
+  y el borde inverso (cancelar la entrega de un reingreso entregado con otro hermano abierto) se
+  guarda igual. La orden original lista sus reingresos en una grilla de solo lectura (numero,
+  fecha de recepcion, estado/resultado traducidos).
+
 ## Checkpoint 1
 
 ### Objetivo
@@ -1363,14 +1406,15 @@ historial (no se purga por trazabilidad).
      (UPDATE a `Anulada` + motivo, con reapertura a `EnPruebas` + historial
      si corresponde; `THROW` 50020/50021); nuevo `ListarPruebasPorOrden` +
      `MapearPrueba` centralizado (SELECTs incluyen `motivo_anulacion`).
-   - UI: `BTN_AnularPrueba` (visible solo con permiso `ORDENES_EDITAR`,
-     orden no nueva y ultima no-anulada en la vista actual; habilitado solo
-     si la fila seleccionada es esa ultima y la orden no esta `Entregado`;
-     confirmacion + motivo obligatorio); grilla de pruebas con columna
-     `Motivo` (motivo solo en filas anuladas) y resultado traducido
-     (`Anulada`/`Aprobada`/`Fallida`); `habilitaPrueba` incluye
-     `ListoRetiro`/`Reparado`; precarga de pruebas por reparacion con
-     fallback defensivo.
+   - UI (regla vigente desde feat-008, 2026-10-13; reemplaza el gating
+     historico "ultima no-anulada de la vista"): una intervencion historica
+     (no actual) es solo consulta y muestra un motivo traducido visible;
+     registrar exige `EnPruebas` + ultima intervencion finalizada + ninguna
+     intervencion abierta; anular exige una prueba no anulada seleccionada
+     de la intervencion actual; finalizar evalua las pruebas validas de la
+     intervencion actual y rechaza cuando no hay ninguna; registrar no mueve
+     el estado de la orden. `BTN_AnularPrueba` sigue exigiendo el permiso
+     `ORDENES_EDITAR` y la orden no `Entregado`.
    - Seeds ES/EN (`IdiomaRepository`): `OrdenDetalle.AnularPrueba`,
      `Resultado.Anulada`, `Columna.Motivo`,
      `Mensaje.ConfirmarAnularPrueba`.
@@ -1751,8 +1795,10 @@ Existentes modificadas:
 - `PresupuestoDetalle.id_repuesto`: columna de infraestructura con FK
   `FK_PresupuestoDetalle_Repuesto` hacia Repuestos (creada con guarda en
   `RepuestoRepository.Inicializar`, porque Ordenes se inicializa antes
-  que Repuestos). Solo infraestructura: `Emitir` sigue validando solo
-  `ManoObra`/`Servicio`.
+  que Repuestos). Corregido por feat-007 (2026-10-13): la columna es la
+  referencia del repuesto cotizado; `Emitir` valida `ManoObra`, `Servicio`
+  y `Repuesto`, exige un repuesto existente y activo y no reserva ni mueve
+  stock (ver "Reglas vigentes alineadas por feat-010").
 - `MovimientosStock.id_compra` (nullable) + FK
   `FK_MovimientosStock_Compra` hacia Compras (creada con guarda en
   `CompraRepository.Inicializar`); tipo `Compra` en movimientos de
@@ -1805,8 +1851,9 @@ Compra: Borrador -> Confirmada (con stock) | Borrador eliminado fisico
   `MarcarPendientePresupuestoDesdeEvaluacion` (rechazada con pago);
   `MarcarPendientePresupuesto` acepta tambien
   `PendienteEvaluacionGarantia` como origen. `TipoItemPresupuesto`
-  suma constante `Repuesto` (solo infraestructura, no habilitado en
-  emision). `CodigosPermiso` suma 7 codigos CP4.
+  suma constante `Repuesto` (por entonces solo infraestructura; feat-007 la
+  habilito en la emision como linea cotizada, ver "Reglas vigentes
+  alineadas por feat-010"). `CodigosPermiso` suma 7 codigos CP4.
 - APPLICATION: `ProveedorService.cs` (Crear/Modificar/Desactivar/
   Reactivar/Listar/`ObtenerPorId`; bitacora `PROVEEDORES` por
   operacion); `CompraService.cs` (`CrearBorrador` con proveedor
@@ -1962,8 +2009,14 @@ filtro (`Ordenes.FiltroTipo`). Mas `Bitacora.PROVEEDORES/COMPRAS`
   la garantia no se renueva (UNIQUE por orden + `IF NOT EXISTS`).
 - Compra en 1 batch (`ConfirmarConStock` con cursor): estado + stock
   + movimientos + costo en la misma transaccion.
-- Reingreso multiple permitido (N4): una orden puede generar varios
-  reingresos; cada reingreso tiene una sola evaluacion (UNIQUE).
+- Reingresos secuenciales (regla vigente desde feat-009, 2026-10-13;
+  reemplaza la decision historica N4 "reingreso multiple permitido"): la
+  cobertura es 0..1 por orden original (UNIQUE conservado) y los reingresos
+  son 0..N ordenes via `id_orden_origen`; cada reingreso tiene una sola
+  evaluacion (UNIQUE) y solo **uno puede estar abierto** por original. Un
+  reingreso cierra cuando su orden esta `Entregado`, o su evaluacion es
+  `Rechazada` con destino comprometido; `Aceptada` y un `ListoRetiro`
+  aceptado no lo cierran.
 - `Cancelada` inalcanzable (H1): `CancelarBorrador` es DELETE fisico
   de detalle + cabecera; el estado `Cancelada` existe como constante
   pero nunca se persiste.
@@ -1999,7 +2052,8 @@ filtro (`Ordenes.FiltroTipo`). Mas `Bitacora.PROVEEDORES/COMPRAS`
   - H3/H4/H7: verificados pendientes (detalle en reporte de
     revision; sin cambio de codigo en este checkpoint).
   - N1-N4 menores (incluye N4: reingreso multiple permitido,
-    documentado como decision).
+    documentado como decision; regla superada por feat-009, ver
+    "Reglas vigentes alineadas por feat-010").
 - 0 blockers para el commit (build 0 errores, testing PASS).
 
 ### Pruebas funcionales (harness temporal fuera del repo): 77/77 PASS
@@ -2345,8 +2399,10 @@ Bitacora: sin tipo REPORTES (no hay escrituras que registrar)
   `stock_actual <= stock_minimo`).
 - `en_reparacion = EnReparacion + EnPruebas` (trabajo en
   curso real, no Autorizado).
-- `garantias_abiertas = Tipo Garantia no-Entregado`
-  (reingresos abiertos, no evaluaciones pendientes).
+- `garantias_abiertas = Tipo Garantia no-Entregado`: es un conteo
+  operativo del dashboard (no evaluaciones pendientes) y **no** equivale
+  al predicado de reingreso abierto de feat-009, que ademas cierra un
+  reingreso con evaluacion `Rechazada` y destino comprometido.
 - `bajo_minimo` con `<=` (igual que `FrmRepuestos`).
 - Tasa de presupuestos solo sobre decididos
   (aprobados / (aprobados + rechazados); pendientes se

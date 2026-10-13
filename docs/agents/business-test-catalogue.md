@@ -74,8 +74,8 @@ regret and reversal branches of the modules it touches.
 | --- | --- | --- | --- | --- | --- |
 | CLI-01 | Create customer | Fill name, surname, document, phone | Record appears active in grid | Selectable for equipment/orders | — |
 | CLI-02 | Missing required fields | Try create with each of name/surname/document/phone empty | Blocked with message; no record | — | Confirm current field rules in source |
-| CLI-03 | Duplicate document | Create second customer with same document | Allowed; document is not unique | — | — |
-| CLI-04 | Edit customer | Change name/phone/email/address | Grid and combos update | Existing orders keep historical FK | — |
+| CLI-03 | Duplicate document | Create second customer with same document (active or inactive owner) | Blocked with a business message naming the owner; no record is created. An inactive owner blocks the creation too and its message directs the operator to tick Ver inactivos, because an inactive customer keeps reserving its document | — | Enforced by the guarded write in `ClienteRepository.Agregar` (feat-006); legacy duplicate groups are left untouched and `UX_Clientes_Documento` is installed only in a database with no pre-existing duplicate group |
+| CLI-04 | Edit customer | Change name/phone/email/address; also save the record's own unchanged document, or a document owned by another active or inactive customer | Grid and combos update. Its own unchanged document saves; a document owned by another active or inactive customer is blocked with the owner message and the record stays unchanged | Existing orders keep historical FK; telefono and email remain freely shareable | Blocked path shares the feat-006 guard in `ClienteRepository.Modificar`; the inactive-owner message points to Ver inactivos |
 | CLI-05 | Deactivate -> reactivate -> deactivate | Run the full cycle | Inactive hidden from new-equipment/order combos; grid keeps history; reactivation restores selectability | Equipment stays active (independent flags) | Repeat cycle twice |
 | CLI-06 | Deactivate with active equipment | Deactivate customer that owns active equipment | Customer inactive; equipment remains active; history intact | Order creation with that customer blocked | — |
 | CLI-07 | Regret on deactivate/reactivate | Dismiss confirmation | No state change | — | — |
@@ -134,7 +134,7 @@ regret and reversal branches of the modules it touches.
 
 | ID | Scenario | Steps | Expected | Cross-module effects | Notes |
 | --- | --- | --- | --- | --- | --- |
-| PRE-01 | Draft | Add Mano de obra/Servicio items, quantities, price, discount, warranty days | Draft in memory; save draft persists | — | Repuesto item type is reserved infrastructure, not emit-enabled |
+| PRE-01 | Draft | Add Mano de obra/Servicio/Repuesto items, quantities, price, discount, warranty days | Draft in memory; save draft persists. A Repuesto item requires an existing active part and the draft stores its part reference, quantity, unit price and subtotal | — | feat-007: the reference price prefills an editable unit price; zero prices and active zero-stock parts are allowed; the quoted line reserves no stock and causes no reservation, movement or automatic consumption |
 | PRE-02 | Remove item / delete draft | Remove an item; delete the draft | Draft detail updated; deletion removes only draft+detail | — | — |
 | PRE-03 | Emit | Emit a valid draft | Pendiente; order EsperandoRespuesta | Approved amount calculation starts here | — |
 | PRE-04 | Original uniqueness | Try a second non-annulled Original | Blocked | — | — |
@@ -183,7 +183,7 @@ regret and reversal branches of the modules it touches.
 
 | ID | Scenario | Steps | Expected | Cross-module effects | Notes |
 | --- | --- | --- | --- | --- | --- |
-| PRU-01 | Register | EnPruebas + latest finished intervention; approved/failed | Persisted; order state unchanged | — | — |
+| PRU-01 | Register | EnPruebas + latest finished intervention; approved/failed. With several interventions, select a historical one and try to register, annul or finalize | Persisted; order state unchanged. A historical intervention is consultation-only with a visible translated reason, those actions are unavailable, its tests stay displayed, and returning to the current intervention restores the eligible actions | — | feat-008: the service guards (`RegistrarPrueba`, `AnularPrueba`, `FinalizarPruebas`) are unchanged and new tests only target the current (latest finished) intervention |
 | PRU-02 | Annul any current test | Annul a non-latest, non-annulled test with reason | Annulled; excluded from finalization | — | Not only the most recent |
 | PRU-03 | Finalize without valid tests | Annul all and finalize | Error; state unchanged | — | — |
 | PRU-04 | Finalize all approved | One or more approved valid tests | ListoRetiro + Reparado | Delivery/warranty path | — |
@@ -198,7 +198,7 @@ regret and reversal branches of the modules it touches.
 | --- | --- | --- | --- | --- | --- |
 | ENT-01 | Deliver | ListoRetiro + receiver name | Entregado + delivery record | — | Receiver required |
 | ENT-02 | Warranty auto-creation | Normal + Reparado + approved Original with warranty days > 0 | Warranty created with delivery and end dates | GAR re-entry available | No warranty for other results, zero days, or warranty orders |
-| ENT-03 | Cancel delivery (repaired) | Reason | EnPruebas + NULL result; delivery physically deleted | Warranty/re-entries remain | Re-delivery skips warranty insertion; dates are not refreshed |
+| ENT-03 | Cancel delivery (repaired) | Reason; also on a delivered warranty re-entry whose original order has another open re-entry | EnPruebas + NULL result; delivery physically deleted. For that re-entry with an open sibling the cancellation is blocked with a business message and leaves the delivery, state/result and history unchanged | Warranty/re-entries remain | Re-delivery skips warranty insertion; dates are not refreshed; the sibling guard is the feat-009 reverse edge |
 | ENT-04 | Cancel delivery (other result) | Reason on a NoReparable delivery | ListoRetiro keeping its result | — | — |
 | ENT-05 | Re-deliver | Deliver again after cancel | Entregado again | — | — |
 | ENT-06 | Regret | Dismiss confirm / cancel reason | No change | — | — |
@@ -245,14 +245,14 @@ regret and reversal branches of the modules it touches.
 | ID | Scenario | Steps | Expected | Cross-module effects | Notes |
 | --- | --- | --- | --- | --- | --- |
 | GAR-01 | List/filter | Read after ENT-02 | Warranty row with dates; filter works | — | — |
-| GAR-02 | Re-entry | From a delivered Normal order with valid warranty, reason + confirm | New order Tipo Garantia, Recibido; original untouched | ORD/DIA/ENT on the new order | — |
+| GAR-02 | Re-entry | From a delivered Normal order with valid warranty and no open re-entry of that order, reason + confirm | New order Tipo Garantia, Recibido; original untouched | ORD/DIA/ENT on the new order | Requires no open warranty re-entry of the original order (feat-009) |
 | GAR-03 | Zero days / expired | Deliver with warranty days 0, or wait past end date | No warranty / `ObtenerVigente` false; re-entry blocked | — | Defect: no start-date check in `ObtenerVigente` |
 | GAR-04 | Owner changed | Change equipment owner, then re-entry from the delivered order | UI passes the historical customer; service validates current owner -> re-entry can fail | — | Confirmed source-path finding; do not claim a universal failure |
 | GAR-05 | Evaluate accepted | Re-entry + reparable diagnosis -> accept with reason | AutorizadoReparacion without commercial budget | Repair path | — |
 | GAR-06 | Evaluate rejected, paid | Choose the paid destination button | PendientePresupuesto (ordinary paid budget) | PRE flow | Decision is explicit (`continuarPago`), not text-based (feat-005) |
 | GAR-07 | Evaluate rejected, withdrawal | Reject with reason without `pago` | ListoRetiro + GarantiaNoCubierta | Delivery | — |
 | GAR-08 | Withdrawal reason containing `pago` | Choose withdrawal but include `pago` in the text | ListoRetiro + GarantiaNoCubierta | — | Fixed (feat-005): the explicit destination decides |
-| GAR-09 | Multiple re-entries | Create a second re-entry while warranty is valid | Confirm actual behavior in source | — | Warranty row is unique per original |
+| GAR-09 | Multiple re-entries | Request a second re-entry while one of the original order is open; then close the open one (deliver it, or reject its evaluation with a committed destination) and request another | While a sibling is open the request is blocked with a business message and no order is created; after the sibling closes the new re-entry is allowed and the original stays untouched | — | feat-009: coverage 0..1 per original (warranty row still unique), visits 0..N through `id_orden_origen`, only one open at a time; `Aceptada` and an accepted ListoRetiro do not close the visit; the original order's Garantia tab lists the re-entries in a read-only grid |
 | GAR-10 | Warranty order delivery | Deliver the warranty order after repair+tests | No new warranty is created | — | — |
 | GAR-11 | View original | From a re-entry, press Ver original | Shows the original delivered order; original unchanged | — | — |
 
