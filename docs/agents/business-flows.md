@@ -148,9 +148,48 @@ Anchor: [ReparacionRepository](../../INFRASTRUCTURE/Features/Reparaciones/Repara
 - `CancelarEntrega`: required reason; physically deletes Entrega. Repaired delivery ->
   EnPruebas/NULL; other results -> ListoRetiro retaining their result.
 
+**Implemented (feat-008, source verified; runtime acceptance pending):** the Pruebas tab is a
+selector over the order's interventions and only the **current** intervention - the latest by
+number, `ObtenerIdUltimaIntervencion` - admits mutations. In
+[FrmOrdenServicioDetalle](../../PRESENTATION/Forms/Ordenes/FrmOrdenServicioDetalle.cs),
+`ActualizarAccionesPruebas` resolves the combo through `IntervencionPruebaSeleccionada`, requires
+`EsIntervencionActual` plus `GrillaPruebasCoherente` (the intervention whose tests really loaded),
+and only then enables `BTN_RegistrarPrueba`, the description and observations boxes, the result
+radios and `BTN_FinalizarPruebas`. An earlier (non-current) intervention leaves those controls
+disabled, keeps `BTN_AnularPrueba` hidden through the existing `ActualizarBotonAnularPrueba`
+restriction (EnPruebas, edit permission, selected non-Anulada row of the latest intervention) and
+shows the `OrdenDetalle.PruebasIntervencionAnterior` reason, so the misleading
+`Mensaje.SeleccioneRegistro` answer is not reachable from that view. The intervention combo itself
+is gated only by the view permission, so a historical selection never disables navigation;
+returning to the current intervention restores the eligible controls and keeps unsaved
+registration text, which is a draft for the current intervention, never historical test data.
+`CargarPruebasDeCombo` clears `_pruebasActuales`, the previous binding, `CurrentCell` and the row
+selection before replacing the data and again after binding, records `_idIntervencionPruebaCargada`
+and recomputes the actions, so the grid, its selection and the enabled actions describe one
+intervention after every switch; while loading or after a failed readback the testing mutations
+stay disabled. `CargarTabPruebas` no longer caches a failed read as an empty list, so the selected
+intervention retries through the service and a failure leaves that grid empty with the existing
+error message. The handlers refuse a missing or historical selection with
+`Mensaje.PruebaIntervencionObligatoria` and `Mensaje.PruebasSoloIntervencionActual`, and
+`BTN_FinalizarPruebas_Click` re-checks current-view eligibility before its confirmation dialog.
+
+**Service guards unchanged by feat-008:**
+[OrdenServicioService](../../APPLICATION/Features/Ordenes/OrdenServicioService.cs),
+`RegistrarPrueba` still requires EnPruebas, no open intervention, a finished latest intervention
+and that intervention as the target (`Solo se puede registrar la prueba de la ultima intervencion
+finalizada.`); `AnularPrueba` still requires a non-Anulada test of the latest intervention;
+`FinalizarPruebas` still ignores Anulada rows, rejects a finalization with no valid test and
+returns ListoRetiro/Reparado or EnReparacion/NULL. `ReparacionRepository` and
+[Prueba](../../DOMAIN/Features/Reparaciones/Prueba.cs) were intentionally left untouched. The
+historical-intervention refusals are UI-only text; `Mensaje.SeleccioneRegistro` keeps its other
+uses, and registering a test still does not finish testing.
+
 **Confirmed caveat:** delivery cancellation neither annuls/deletes the generated warranty nor
 blocks existing re-entries. Re-delivery skips warranty insertion if that order already has one,
-so it does not refresh the original warranty dates. Read
+so it does not refresh the original warranty dates. **Updated by feat-009 (source verified,
+runtime acceptance pending):** cancelling the delivery of a warranty re-entry is now refused
+while a sibling re-entry of the same original order is still open, and coverage rows are still
+neither annulled nor deleted by that cancellation. Read
 [EntregaRepository](../../INFRASTRUCTURE/Features/Ordenes/EntregaRepository.cs),
 `CrearConTransicion`, `CancelarEntregaConTransicion` before extending this coexistence.
 

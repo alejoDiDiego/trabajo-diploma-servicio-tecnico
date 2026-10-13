@@ -1153,6 +1153,12 @@ namespace REPOSITORY.Features.Idiomas
             AgregarSeed("Ingles", "Mensaje.PruebasFinalizadasListo", "Tests finalized. The order is ready for pickup (result: {0}).");
             AgregarSeed("Espanol", "Mensaje.PruebasDevueltasReparacion", "Pruebas finalizadas. La orden volvio a reparacion para revision.");
             AgregarSeed("Ingles", "Mensaje.PruebasDevueltasReparacion", "Tests finalized. The order returned to repair for review.");
+            AgregarSeed("Espanol", "OrdenDetalle.PruebasIntervencionAnterior", "Intervencion anterior: solo consulta. Seleccione la actual para registrar, anular o finalizar pruebas.");
+            AgregarSeed("Ingles", "OrdenDetalle.PruebasIntervencionAnterior", "Previous intervention: view only. Select the current one to register, void or finalize tests.");
+            AgregarSeed("Espanol", "Mensaje.PruebaIntervencionObligatoria", "Seleccione la intervencion actual para registrar una prueba.");
+            AgregarSeed("Ingles", "Mensaje.PruebaIntervencionObligatoria", "Select the current intervention to register a test.");
+            AgregarSeed("Espanol", "Mensaje.PruebasSoloIntervencionActual", "Esta accion solo esta disponible para la intervencion actual (ultima finalizada).");
+            AgregarSeed("Ingles", "Mensaje.PruebasSoloIntervencionActual", "This action is only available for the current intervention (latest completed).");
             AgregarSeed("Espanol", "Columna.FechaAnulacion", "Fecha anulacion");
             AgregarSeed("Ingles", "Columna.FechaAnulacion", "Void date");
             AgregarSeed("Espanol", "Columna.UsuarioAnulacion", "Usuario anulacion");

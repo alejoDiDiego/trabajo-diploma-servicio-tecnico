@@ -176,6 +176,7 @@ namespace UI.Forms.Ordenes
             _esNuevo = idOrden <= 0;
             _tabInicial = tabInicial;
             InitializeComponent();
+            CrearAvisoPruebasIntervencion();
         }
 
         public void Actualizar(IIdioma idiomaObservado)
@@ -312,7 +313,12 @@ namespace UI.Forms.Ordenes
             BTN_RegistrarPrueba.Text = idioma.BuscarTraduccion(BTN_RegistrarPrueba.Tag.ToString());
             BTN_AnularPrueba.Text = idioma.BuscarTraduccion(BTN_AnularPrueba.Tag.ToString());
             BTN_FinalizarPruebas.Text = idioma.BuscarTraduccion(BTN_FinalizarPruebas.Tag.ToString());
+            LBL_PruebaIntervencionAviso.Text = idioma.BuscarTraduccion(LBL_PruebaIntervencionAviso.Tag.ToString());
             BTN_Cerrar.Text = idioma.BuscarTraduccion(BTN_Cerrar.Tag.ToString());
+
+            // La lista de reingresos re-traduce cabeceras y valores desde la copia cacheada:
+            // no vuelve a leer la base ni puede fallar por idioma.
+            RefrescarGrillaReingresos();
         }
 
         private void CargarCatalogos()
@@ -663,11 +669,15 @@ namespace UI.Forms.Ordenes
             _entrega = null;
             _pruebasPorReparacion = new Dictionary<int, List<Prueba>>();
             _pruebasActuales = new List<Prueba>();
+            _idIntervencionPruebaCargada = 0;
             _garantia = null;
             _garantiaVigente = false;
             _evaluacion = null;
+            _reingresos = new List<OrdenServicio>();
 
             LBL_MontoAutorizado.Text = "";
+
+            RefrescarGrillaReingresos();
 
             LBL_Numero.Text = T("OrdenDetalle.TituloNuevo");
             LBL_Estado.Text = "";
@@ -852,6 +862,76 @@ namespace UI.Forms.Ordenes
             BTN_CrearReingreso.Visible = !_esNuevo && puedeEditar
                 && _orden != null && _orden.TipoOrden == TipoOrden.Normal;
             BTN_CrearReingreso.Enabled = puedeReingresar && puedeEditar;
+        }
+
+        // Reingresos de garantia que tienen a la orden mostrada como origen
+        // (OrdenesServicio.id_orden_origen). Incluye reingresos ya entregados y sin evaluacion.
+        // Una lista vacia es un resultado valido; una lectura fallida muestra el error y deja la
+        // grilla vacia en lugar de fabricar un resultado.
+        private void CargarReingresosGarantia()
+        {
+            _reingresos = new List<OrdenServicio>();
+
+            if (!_esNuevo && _orden != null)
+            {
+                try
+                {
+                    List<OrdenServicio> reingresos = _service.ListarReingresosGarantia(_orden.Id);
+
+                    if (reingresos != null)
+                        _reingresos = reingresos;
+                }
+                catch (Exception ex)
+                {
+                    _reingresos = new List<OrdenServicio>();
+                    MostrarError(ex);
+                }
+            }
+
+            RefrescarGrillaReingresos();
+        }
+
+        private void RefrescarGrillaReingresos()
+        {
+            if (DGV_ReingresosGarantia == null)
+                return;
+
+            List<FilaReingreso> filas = new List<FilaReingreso>();
+
+            foreach (OrdenServicio reingreso in _reingresos)
+            {
+                if (reingreso == null)
+                    continue;
+
+                filas.Add(new FilaReingreso
+                {
+                    Id = reingreso.Id,
+                    Numero = reingreso.NumeroOrden,
+                    Fecha = reingreso.FechaIngreso,
+                    Estado = TraducirEstado(reingreso.Estado),
+                    Resultado = TraducirResultado(reingreso.Resultado)
+                });
+            }
+
+            DGV_ReingresosGarantia.DataSource = new BindingList<FilaReingreso>(filas);
+            DGV_ReingresosGarantia.ClearSelection();
+            ConfigurarColumnasReingresos();
+        }
+
+        private void ConfigurarColumnasReingresos()
+        {
+            if (DGV_ReingresosGarantia == null || DGV_ReingresosGarantia.Columns.Count == 0)
+                return;
+
+            ConfigurarColumnaGrid(DGV_ReingresosGarantia, "Numero", "Columna.Numero");
+            ConfigurarColumnaGrid(DGV_ReingresosGarantia, "Fecha", "Columna.Fecha");
+            ConfigurarColumnaGrid(DGV_ReingresosGarantia, "Estado", "Columna.Estado");
+            ConfigurarColumnaGrid(DGV_ReingresosGarantia, "Resultado", "Columna.Resultado");
+
+            if (DGV_ReingresosGarantia.Columns.Contains("Id"))
+                DGV_ReingresosGarantia.Columns["Id"].Visible = false;
+
+            DGV_ReingresosGarantia.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells);
         }
 
         private void BTN_VerOriginal_Click(object sender, EventArgs e)
@@ -1723,14 +1803,53 @@ namespace UI.Forms.Ordenes
             }
         }
 
+        // El aviso de "intervencion anterior" no vive en el Designer: se crea aca para
+        // reservar ~34 px logicos del alto de DGV_Pruebas. La reserva se deriva del alto real
+        // de la grilla (no de coordenadas fijas) para acompanar el escalado por fuente/DPI,
+        // de modo que el borde inferior de la grilla y los controles de entrada no se muevan.
+        private void CrearAvisoPruebasIntervencion()
+        {
+            const int altoGrillaDiseno = 180;
+            const int reservaDiseno = 34;
+
+            int reserva = (int)Math.Round(DGV_Pruebas.Height * (double)reservaDiseno / altoGrillaDiseno);
+            int altoMinimo = DGV_Pruebas.Font.Height + 4;
+
+            if (reserva < altoMinimo)
+                reserva = altoMinimo;
+
+            if (reserva > DGV_Pruebas.Height / 2)
+                reserva = DGV_Pruebas.Height / 2;
+
+            int bordeInferior = DGV_Pruebas.Bottom;
+
+            LBL_PruebaIntervencionAviso = new Label();
+            LBL_PruebaIntervencionAviso.Name = "LBL_PruebaIntervencionAviso";
+            LBL_PruebaIntervencionAviso.Tag = "OrdenDetalle.PruebasIntervencionAnterior";
+            LBL_PruebaIntervencionAviso.AutoSize = false;
+            LBL_PruebaIntervencionAviso.Font = DGV_Pruebas.Font;
+            LBL_PruebaIntervencionAviso.ForeColor = Color.FromArgb(192, 57, 43);
+            LBL_PruebaIntervencionAviso.TextAlign = ContentAlignment.MiddleLeft;
+            LBL_PruebaIntervencionAviso.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            LBL_PruebaIntervencionAviso.Location = new Point(DGV_Pruebas.Left, DGV_Pruebas.Top + 2);
+            LBL_PruebaIntervencionAviso.Size = new Size(DGV_Pruebas.Width, reserva - 4);
+            LBL_PruebaIntervencionAviso.Visible = false;
+
+            TAB_Pruebas.Controls.Add(LBL_PruebaIntervencionAviso);
+
+            DGV_Pruebas.Top = DGV_Pruebas.Top + reserva;
+            DGV_Pruebas.Height = bordeInferior - DGV_Pruebas.Top;
+        }
+
         private void CargarTabPruebas()
         {
             _cargandoCombos = true;
+            _cargandoPruebas = true;
 
             try
             {
                 _pruebasPorReparacion = new Dictionary<int, List<Prueba>>();
-                _pruebasActuales = new List<Prueba>();
+                LimpiarGrillaPruebas();
 
                 if (_reparaciones != null)
                 {
@@ -1742,7 +1861,8 @@ namespace UI.Forms.Ordenes
                         }
                         catch
                         {
-                            _pruebasPorReparacion[r.Id] = new List<Prueba>();
+                            // Una lectura fallida no se cachea como lista vacia: la intervencion
+                            // seleccionada reintenta contra el service en CargarPruebasDeCombo.
                         }
                     }
                 }
@@ -1774,6 +1894,7 @@ namespace UI.Forms.Ordenes
             finally
             {
                 _cargandoCombos = false;
+                _cargandoPruebas = false;
             }
 
             CargarPruebasDeCombo();
@@ -1781,74 +1902,108 @@ namespace UI.Forms.Ordenes
 
         private void CargarPruebasDeCombo()
         {
-            if (CBO_PruebaReparacion.DataSource == null)
-                return;
-
-            int idReparacion = 0;
-
-            if (CBO_PruebaReparacion.SelectedValue is int)
-                idReparacion = (int)CBO_PruebaReparacion.SelectedValue;
-
-            if (idReparacion <= 0)
-            {
-                _pruebasActuales = new List<Prueba>();
-                DGV_Pruebas.DataSource = new BindingList<FilaPrueba>(new List<FilaPrueba>());
-                ActualizarBotonAnularPrueba();
-                return;
-            }
+            _cargandoPruebas = true;
 
             try
             {
-                string intervencion = "";
+                // La grilla se vacia antes de reemplazar los datos (tambien en los caminos de
+                // seleccion nula o invalida y de error) para que nunca muestre filas de otra
+                // intervencion ni conserve una seleccion que habilite anular.
+                LimpiarGrillaPruebas();
 
-                if (_reparaciones != null)
+                if (CBO_PruebaReparacion.DataSource == null)
+                    return;
+
+                int idReparacion = 0;
+
+                if (CBO_PruebaReparacion.SelectedValue is int)
+                    idReparacion = (int)CBO_PruebaReparacion.SelectedValue;
+
+                if (idReparacion <= 0)
+                    return;
+
+                try
                 {
-                    foreach (Reparacion r in _reparaciones)
+                    string intervencion = "";
+
+                    if (_reparaciones != null)
                     {
-                        if (r.Id == idReparacion)
+                        foreach (Reparacion r in _reparaciones)
                         {
-                            intervencion = "N° " + r.NumeroIntervencion;
-                            break;
+                            if (r.Id == idReparacion)
+                            {
+                                intervencion = "N° " + r.NumeroIntervencion;
+                                break;
+                            }
                         }
                     }
-                }
 
-                List<Prueba> pruebas = null;
+                    List<Prueba> pruebas = null;
 
-                if (_pruebasPorReparacion != null && _pruebasPorReparacion.ContainsKey(idReparacion))
-                    pruebas = _pruebasPorReparacion[idReparacion];
-                else
-                    pruebas = _service.ListarPruebas(idReparacion);
+                    if (_pruebasPorReparacion != null && _pruebasPorReparacion.ContainsKey(idReparacion))
+                        pruebas = _pruebasPorReparacion[idReparacion];
+                    else
+                        pruebas = _service.ListarPruebas(idReparacion);
 
-                _pruebasActuales = pruebas != null ? new List<Prueba>(pruebas) : new List<Prueba>();
-                List<FilaPrueba> filas = new List<FilaPrueba>();
+                    _pruebasActuales = pruebas != null ? new List<Prueba>(pruebas) : new List<Prueba>();
+                    List<FilaPrueba> filas = new List<FilaPrueba>();
 
-                foreach (Prueba p in _pruebasActuales)
-                {
-                    filas.Add(new FilaPrueba
+                    foreach (Prueba p in _pruebasActuales)
                     {
-                        Id = p.Id,
-                        Fecha = p.Fecha,
-                        Intervencion = intervencion,
-                        Descripcion = p.Descripcion,
-                        Resultado = TraducirResultadoPrueba(p.Resultado),
-                        Motivo = p.Resultado == ResultadoPrueba.Anulada ? (p.MotivoAnulacion ?? "") : "",
-                        FechaAnulacion = p.Resultado == ResultadoPrueba.Anulada && p.FechaAnulacion.HasValue
-                            ? p.FechaAnulacion.Value.ToString("g") : "",
-                        UsuarioAnulacion = p.Resultado == ResultadoPrueba.Anulada && p.IdUsuarioAnulacion.HasValue
-                            ? ResolverTecnico(p.IdUsuarioAnulacion) : "",
-                        Usuario = ResolverTecnico(p.IdUsuarioTecnico)
-                    });
-                }
+                        filas.Add(new FilaPrueba
+                        {
+                            Id = p.Id,
+                            Fecha = p.Fecha,
+                            Intervencion = intervencion,
+                            Descripcion = p.Descripcion,
+                            Resultado = TraducirResultadoPrueba(p.Resultado),
+                            Motivo = p.Resultado == ResultadoPrueba.Anulada ? (p.MotivoAnulacion ?? "") : "",
+                            FechaAnulacion = p.Resultado == ResultadoPrueba.Anulada && p.FechaAnulacion.HasValue
+                                ? p.FechaAnulacion.Value.ToString("g") : "",
+                            UsuarioAnulacion = p.Resultado == ResultadoPrueba.Anulada && p.IdUsuarioAnulacion.HasValue
+                                ? ResolverTecnico(p.IdUsuarioAnulacion) : "",
+                            Usuario = ResolverTecnico(p.IdUsuarioTecnico)
+                        });
+                    }
 
-                DGV_Pruebas.DataSource = new BindingList<FilaPrueba>(filas);
-                ConfigurarColumnasPruebas();
-                ActualizarBotonAnularPrueba();
+                    DGV_Pruebas.DataSource = new BindingList<FilaPrueba>(filas);
+                    ConfigurarColumnasPruebas();
+                    _idIntervencionPruebaCargada = idReparacion;
+
+                    // La grilla no debe quedar con una fila seleccionada automaticamente:
+                    // anular exige elegir la fila de forma explicita.
+                    LimpiarSeleccionGrillaPruebas();
+                }
+                catch (Exception ex)
+                {
+                    // La lectura fallo: la grilla queda vacia y sin intervencion cargada, de
+                    // modo que las acciones de prueba quedan deshabilitadas.
+                    LimpiarGrillaPruebas();
+                    MostrarError(ex);
+                }
             }
-            catch (Exception ex)
+            finally
             {
-                MostrarError(ex);
+                _cargandoPruebas = false;
             }
+
+            ActualizarAccionesPruebas();
+        }
+
+        // Vacia la grilla de pruebas y descarta la intervencion cargada, la celda actual y la
+        // seleccion de filas.
+        private void LimpiarGrillaPruebas()
+        {
+            _pruebasActuales = new List<Prueba>();
+            _idIntervencionPruebaCargada = 0;
+            DGV_Pruebas.DataSource = new BindingList<FilaPrueba>(new List<FilaPrueba>());
+            LimpiarSeleccionGrillaPruebas();
+        }
+
+        private void LimpiarSeleccionGrillaPruebas()
+        {
+            DGV_Pruebas.CurrentCell = null;
+            DGV_Pruebas.ClearSelection();
         }
 
         private string TraducirResultadoPrueba(string resultado)
@@ -1923,6 +2078,94 @@ namespace UI.Forms.Ordenes
             return ultima.Id;
         }
 
+        // Intervencion elegida en el combo del tab Pruebas, resuelta contra las intervenciones
+        // de la orden. Null si no hay seleccion valida.
+        private Reparacion IntervencionPruebaSeleccionada()
+        {
+            int idReparacion = 0;
+
+            if (CBO_PruebaReparacion.SelectedValue is int)
+                idReparacion = (int)CBO_PruebaReparacion.SelectedValue;
+
+            if (idReparacion <= 0 || _reparaciones == null)
+                return null;
+
+            foreach (Reparacion r in _reparaciones)
+            {
+                if (r.Id == idReparacion)
+                    return r;
+            }
+
+            return null;
+        }
+
+        // "Actual" es la ultima intervencion por numero: solo ella admite registrar, anular o
+        // finalizar pruebas nuevas. Las intervenciones anteriores quedan de consulta.
+        private bool EsIntervencionActual(Reparacion intervencion)
+        {
+            return intervencion != null && intervencion.Id == ObtenerIdUltimaIntervencion();
+        }
+
+        // La grilla describe exactamente la intervencion seleccionada y su lectura termino
+        // bien: mientras carga o si la lectura fallo no hay vista valida para operar.
+        private bool GrillaPruebasCoherente(Reparacion intervencion)
+        {
+            return !_cargandoPruebas && intervencion != null
+                && intervencion.Id == _idIntervencionPruebaCargada;
+        }
+
+        private bool HayIntervencionAbierta()
+        {
+            return _reparaciones != null && _reparaciones.Any(r => !r.FechaFin.HasValue);
+        }
+
+        // Acciones del tab Pruebas: registrar, finalizar y anular solo aplican a la
+        // intervencion actual con su grilla cargada. Una seleccion historica deja el tab en
+        // modo consulta (entradas y acciones deshabilitadas) y muestra el motivo; el selector
+        // de intervencion sigue navegable porque solo depende del permiso de ver la orden.
+        private void ActualizarAccionesPruebas()
+        {
+            if (BTN_RegistrarPrueba == null || BTN_FinalizarPruebas == null
+                || LBL_PruebaIntervencionAviso == null)
+                return;
+
+            bool puedeEditar = TienePermiso(CodigosPermiso.OrdenesEditar);
+            bool editable = !_esNuevo && _orden != null && puedeEditar
+                && _orden.Estado != EstadoOrdenServicio.Entregado;
+            bool enPruebas = editable && _orden.Estado == EstadoOrdenServicio.EnPruebas;
+
+            Reparacion intervencion = IntervencionPruebaSeleccionada();
+            bool vistaActual = EsIntervencionActual(intervencion);
+            bool grillaCoherente = GrillaPruebasCoherente(intervencion);
+            bool intervencionFinalizada = intervencion != null && intervencion.FechaFin.HasValue;
+
+            bool habilitaRegistro = enPruebas && vistaActual && grillaCoherente
+                && intervencionFinalizada && !HayIntervencionAbierta();
+            bool habilitaFinalizar = enPruebas && vistaActual && grillaCoherente;
+
+            TXT_PruebaDesc.Enabled = habilitaRegistro;
+            RDO_Aprobada.Enabled = habilitaRegistro;
+            RDO_Fallida.Enabled = habilitaRegistro;
+            TXT_PruebaObs.Enabled = habilitaRegistro;
+            BTN_RegistrarPrueba.Visible = !_esNuevo && puedeEditar;
+            BTN_RegistrarPrueba.Enabled = habilitaRegistro;
+            BTN_FinalizarPruebas.Visible = !_esNuevo && puedeEditar;
+            BTN_FinalizarPruebas.Enabled = habilitaFinalizar;
+
+            // El selector de intervencion no depende de la seleccion: una vista historica
+            // nunca lo deshabilita.
+            CBO_PruebaReparacion.Enabled = !_esNuevo && TienePermiso(CodigosPermiso.OrdenesVer)
+                && _reparaciones != null && _reparaciones.Count > 0;
+
+            bool historica = intervencion != null && !vistaActual;
+            LBL_PruebaIntervencionAviso.Visible = historica;
+
+            if (historica)
+                LBL_PruebaIntervencionAviso.Text = T(LBL_PruebaIntervencionAviso.Tag.ToString());
+
+            ActualizarBotonAnularPrueba();
+        }
+
         private void ActualizarBotonAnularPrueba()
         {
             if (BTN_AnularPrueba == null)
@@ -1964,7 +2207,7 @@ namespace UI.Forms.Ordenes
             if (_esNuevo)
                 return;
 
-            ActualizarBotonAnularPrueba();
+            ActualizarAccionesPruebas();
         }
 
         private void BTN_AnularPrueba_Click(object sender, EventArgs e)
@@ -1994,7 +2237,7 @@ namespace UI.Forms.Ordenes
 
             if (seleccionada.IdReparacion != ObtenerIdUltimaIntervencion())
             {
-                MostrarAdvertencia("Mensaje.SeleccioneRegistro");
+                MostrarAdvertencia("Mensaje.PruebasSoloIntervencionActual");
                 return;
             }
 
@@ -2042,6 +2285,14 @@ namespace UI.Forms.Ordenes
 
             if (_orden == null || _orden.Estado != EstadoOrdenServicio.EnPruebas)
                 return;
+
+            // Defensivo: finalizar evalua las pruebas validas de la intervencion actual (el
+            // service tambien lo exige por su cuenta); una vista historica no puede finalizar.
+            if (!EsIntervencionActual(IntervencionPruebaSeleccionada()))
+            {
+                MostrarAdvertencia("Mensaje.PruebasSoloIntervencionActual");
+                return;
+            }
 
             DialogResult confirmacion = MessageBox.Show(
                 T("Mensaje.ConfirmarFinalizarPruebas"),
@@ -3427,14 +3678,28 @@ namespace UI.Forms.Ordenes
                 return;
             }
 
-            int idReparacion = 0;
+            // La seleccion y la actualidad de la intervencion se validan antes que la
+            // descripcion para no responder con un aviso generico de "seleccione un registro".
+            Reparacion intervencion = IntervencionPruebaSeleccionada();
 
-            if (CBO_PruebaReparacion.SelectedValue is int)
-                idReparacion = (int)CBO_PruebaReparacion.SelectedValue;
-
-            if (idReparacion <= 0)
+            if (intervencion == null)
             {
-                MostrarAdvertencia("Mensaje.SeleccioneRegistro");
+                MostrarAdvertencia("Mensaje.PruebaIntervencionObligatoria");
+                return;
+            }
+
+            if (!EsIntervencionActual(intervencion))
+            {
+                MostrarAdvertencia("Mensaje.PruebasSoloIntervencionActual");
+                return;
+            }
+
+            if (_orden == null || _orden.Estado != EstadoOrdenServicio.EnPruebas)
+                return;
+
+            if (!intervencion.FechaFin.HasValue || HayIntervencionAbierta())
+            {
+                MostrarAdvertencia("Mensaje.PruebasSoloIntervencionActual");
                 return;
             }
 
@@ -3444,18 +3709,9 @@ namespace UI.Forms.Ordenes
                 return;
             }
 
-            if (_orden == null || _orden.Estado != EstadoOrdenServicio.EnPruebas)
-                return;
-
-            if (idReparacion != ObtenerIdUltimaIntervencion())
-            {
-                MostrarAdvertencia("Mensaje.SeleccioneRegistro");
-                return;
-            }
-
             try
             {
-                _service.RegistrarPrueba(idReparacion, TXT_PruebaDesc.Text.Trim(),
+                _service.RegistrarPrueba(intervencion.Id, TXT_PruebaDesc.Text.Trim(),
                     RDO_Aprobada.Checked, TXT_PruebaObs.Text.Trim());
                 TXT_PruebaDesc.Text = "";
                 TXT_PruebaObs.Text = "";
@@ -3621,16 +3877,10 @@ namespace UI.Forms.Ordenes
             TXT_FObs.Enabled = habilitaConsumo;
             BTN_FinalizarReparacion.Visible = !_esNuevo && puedeEditar;
             BTN_FinalizarReparacion.Enabled = habilitaConsumo;
-            CBO_PruebaReparacion.Enabled = habilitaPrueba;
-            TXT_PruebaDesc.Enabled = habilitaPrueba;
-            RDO_Aprobada.Enabled = habilitaPrueba;
-            RDO_Fallida.Enabled = habilitaPrueba;
-            TXT_PruebaObs.Enabled = habilitaPrueba;
-            BTN_RegistrarPrueba.Visible = !_esNuevo && puedeEditar;
-            BTN_RegistrarPrueba.Enabled = habilitaPrueba;
-            BTN_FinalizarPruebas.Visible = !_esNuevo && puedeEditar;
-            BTN_FinalizarPruebas.Enabled = puedeFinalizarPruebas;
-            ActualizarBotonAnularPrueba();
+
+            // Controles del tab Pruebas: delegan en el helper, que exige que la intervencion
+            // seleccionada sea la actual y que su grilla este cargada.
+            ActualizarAccionesPruebas();
             AplicarPermisosGarantia();
         }
 
