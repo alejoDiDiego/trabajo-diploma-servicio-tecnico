@@ -226,6 +226,8 @@ UI also compares DateTime.Now, so full-calendar-day inclusion is not guaranteed.
 
 `CrearReingresoGarantia` creates a new Recibido order of Tipo Garantia with origin FK,
 same equipment, active current owner customer, and existing valid warranty; original untouched.
+Since feat-009 it also refuses creation while a sibling re-entry of the same original order is
+open (see the single-open-re-entry section below).
 UI limits creation to a Normal original; service does not explicitly check original TipoOrden
 or equipment Activo. Do not claim the normal-reception guard is identical here.
 `BTN_CrearReingreso_Click` passes the original order's historical `IdCliente`, not a selectable
@@ -247,6 +249,57 @@ Accepted warranties have no approved Original in the normal path, so commercial 
 are blocked by the approved-Original prerequisite, not a universal TipoGarantia ban.
 Diagnosis/state transition and pending evaluation creation are separate transactions;
 evaluation decision and order transition are also separate, with partial-success risk.
+
+### One open warranty re-entry at a time, plus its list (feat-009)
+
+**Implemented policy, source verified; runtime acceptance pending.** A warranty re-entry is a
+visit, not a second coverage document: the coverage row in `Garantias` stays 0..1 per original
+order and every re-entry is a new `OrdenesServicio` row of type `Garantia` whose
+`id_orden_origen` points back at the original. Several re-entries per warranty are acceptable,
+but only one may be **open** at a time.
+
+The boundary lives in one shared predicate,
+[OrdenServicioRepository](../../INFRASTRUCTURE/Features/Ordenes/OrdenServicioRepository.cs),
+`PredicadoReingresoAbierto`: a re-entry is **closed** when its order state is `Entregado`, or
+when its evaluation is `Rechazada` **and** the order has already committed to a
+post-evaluation destination (`PendientePresupuesto`, `EsperandoRespuesta`,
+`AutorizadoReparacion`, `EnReparacion`, `EnPruebas`, `ListoRetiro`). Everything else is
+**open**, including an accepted `ListoRetiro`/`Reparado` re-entry, which stays open until it
+is delivered, and any unknown or inconsistent state, which is treated conservatively as open.
+`EstadoEvaluacionGarantia.Aceptada` therefore closes the evaluation, not the visit.
+
+- `CrearReingresoGarantia` pre-checks that predicate through
+  `ObtenerReingresoGarantiaAbierto` for a friendly refusal and then relies on the guarded
+  write. `OrdenServicioRepository.CrearConHistorial` repeats the same predicate under
+  `TABLOCKX,HOLDLOCK` **before any INSERT in the same batch**; on conflict it inserts nothing,
+  leaves the original order untouched and returns `-1`, and the service converts that sentinel
+  into `ReingresoGarantiaAbiertoException` (`Mensaje.GarantiaReingresoAbierto`), which the
+  form translates by exception type. The sentinel is not a SQL error and no partial order is
+  written.
+- `BTN_CrearReingreso_Click` runs the same pre-check and shows the translated business warning
+  **before** prompting for the problem text; the repository stays authoritative for a stale or
+  racing attempt, and after a conflict the form refreshes the list.
+- **Reverse edge:** cancelling the delivery of a re-entry would return it to a non-terminal
+  state. [EntregaRepository](../../INFRASTRUCTURE/Features/Ordenes/EntregaRepository.cs),
+  `CancelarEntregaConTransicion`, therefore repeats the same guard (the shared predicate text)
+  inside its existing delete/update/history transaction and returns `-1` without DML while a
+  sibling is open; the service shows `Mensaje.GarantiaReaperturaBloqueada`.
+- **Re-entry list:** `ListarReingresosGarantia` returns every `Garantia` order whose
+  `id_orden_origen` is the shown order, ordered by reception timestamp then id, including
+  delivered re-entries and re-entries without evaluation. The Garantia tab renders it in the
+  permanent read-only `DGV_ReingresosGarantia` (number, **reception** date, translated state
+  and translated result) through
+  [FrmOrdenServicioDetalle](../../PRESENTATION/Forms/Ordenes/FrmOrdenServicioDetalle.cs),
+  `CargarReingresosGarantia`, `RefrescarGrillaReingresos` and
+  `ConfigurarColumnasReingresos`, with the `OrdenDetalle.ReingresosGarantia` caption and the
+  shared `Columna.Numero`/`Columna.Fecha`/`Columna.Estado`/`Columna.Resultado` headers.
+  An order without re-entries shows an empty list and no error; a failed read shows the error
+  instead of a fabricated empty result.
+
+**Not verified (runtime acceptance pending):** parallel creation, legacy databases that already
+hold two open siblings (they stay visible and untouched; further creation is blocked until they
+close), the reception-timestamp meaning of the date column, and the ES/EN rendering at other
+window sizes.
 
 ## Dashboard and report definitions
 

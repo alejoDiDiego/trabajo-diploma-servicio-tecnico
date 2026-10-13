@@ -165,25 +165,56 @@ namespace REPOSITORY.Features.Ordenes
             return ObtenerPorOrden(entrega.IdOrden);
         }
 
-        public void CancelarEntregaConTransicion(int idOrden, string estadoAnterior, string estadoNuevo,
+        public int CancelarEntregaConTransicion(int idOrden, string estadoAnterior, string estadoNuevo,
             bool limpiarResultado, int idUsuarioHistorial, string observacionHistorial)
         {
-            // Batch atomico: DELETE fisico entrega + UPDATE orden + INSERT historial.
+            // Batch atomico: guard de hermanos (borde inverso), DELETE fisico entrega + UPDATE
+            // orden + INSERT historial.
             // El DELETE fisico es obligatorio: la UNIQUE UX_Entrega_Orden impediria re-entregar.
             // Si el destino es EnPruebas (era Reparado) el resultado se lleva a NULL explicito;
             // en otro caso el resultado se conserva intacto.
+            // Reabrir la entrega de un reingreso lo devuelve a un estado no terminal, asi que no
+            // puede ejecutarse mientras otro reingreso de la misma orden original siga abierto:
+            // en conflicto no se ejecuta DML y el lote devuelve -1 (el service lanza la excepcion
+            // de negocio). Reutiliza el predicado compartido de OrdenServicioRepository.
             string query = @"
-                DELETE FROM Entregas WHERE id_orden = @IdOrden;
+                SET NOCOUNT ON;
 
-                UPDATE OrdenesServicio
-                SET estado = @EstadoNuevo,
-                    resultado = CASE WHEN @LimpiarResultado = 1 THEN NULL ELSE resultado END
+                DECLARE @IdOrdenOrigen int = NULL;
+                DECLARE @TipoOrden nvarchar(20) = NULL;
+
+                SELECT @TipoOrden = tipo_orden, @IdOrdenOrigen = id_orden_origen
+                FROM OrdenesServicio WITH (TABLOCKX, HOLDLOCK)
                 WHERE id_orden = @IdOrden;
 
-                INSERT INTO HistorialOrdenes (id_orden, estado_anterior, estado_nuevo, fecha_hora, id_usuario, observacion)
-                VALUES (@IdOrden, @EstadoAnterior, @EstadoNuevo, GETDATE(), @IdUsuarioHistorial, @ObservacionHistorial);
+                DECLARE @Conflicto int = 0;
 
-                SELECT 0;
+                IF @TipoOrden = 'Garantia' AND @IdOrdenOrigen IS NOT NULL
+                BEGIN
+                    SELECT @Conflicto = COUNT(*)
+                    FROM OrdenesServicio o
+                    WHERE o.id_orden <> @IdOrden
+                      AND " + OrdenServicioRepository.PredicadoReingresoAbierto + @";
+                END
+
+                IF @Conflicto > 0
+                BEGIN
+                    SELECT -1;
+                END
+                ELSE
+                BEGIN
+                    DELETE FROM Entregas WHERE id_orden = @IdOrden;
+
+                    UPDATE OrdenesServicio
+                    SET estado = @EstadoNuevo,
+                        resultado = CASE WHEN @LimpiarResultado = 1 THEN NULL ELSE resultado END
+                    WHERE id_orden = @IdOrden;
+
+                    INSERT INTO HistorialOrdenes (id_orden, estado_anterior, estado_nuevo, fecha_hora, id_usuario, observacion)
+                    VALUES (@IdOrden, @EstadoAnterior, @EstadoNuevo, GETDATE(), @IdUsuarioHistorial, @ObservacionHistorial);
+
+                    SELECT 0;
+                END
             ";
 
             SqlParameter[] sqlParameters = new SqlParameter[]
@@ -196,7 +227,7 @@ namespace REPOSITORY.Features.Ordenes
                 new SqlParameter("@ObservacionHistorial", (object)observacionHistorial ?? DBNull.Value)
             };
 
-            _db.ExecuteTransaction(query, sqlParameters);
+            return _db.ExecuteTransaction(query, sqlParameters);
         }
 
         public Entrega ObtenerPorOrden(int idOrden)

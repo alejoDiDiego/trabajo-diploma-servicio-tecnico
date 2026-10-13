@@ -1065,6 +1065,15 @@ namespace APPLICATION.Features.Ordenes
                     throw new ReglaNegocioException("La garantia de la orden no esta vigente.");
                 }
 
+                // Preconsulta del mismo predicado que aplica el guard transaccional: aviso
+                // temprano con la clave de traduccion. La autoridad frente a intentos paralelos
+                // o datos ya obsoletos sigue siendo CrearConHistorial.
+                OrdenServicio reingresoAbierto = _ordenRepository.ObtenerReingresoGarantiaAbierto(idOrdenOriginal);
+
+                if (reingresoAbierto != null)
+                    throw new ReingresoGarantiaAbiertoException("Mensaje.GarantiaReingresoAbierto",
+                        "La orden ya tiene un reingreso de garantia abierto (#" + reingresoAbierto.NumeroOrden + ").");
+
                 OrdenServicio reingresoToSave = OrdenServicio.CrearNuevoGarantia(
                     idCliente, original.IdEquipo, idOrdenOriginal, problema, estadoFisico,
                     accesorios, observacionesIngreso, idUsuarioAlta);
@@ -1072,15 +1081,23 @@ namespace APPLICATION.Features.Ordenes
                 OrdenServicio reingresoDb = _ordenRepository.CrearConHistorial(
                     reingresoToSave, idUsuarioAlta, "Reingreso por garantia");
 
+                // Sentinela del guard bloqueado: no se inserto ninguna orden y el bloqueo es de
+                // negocio, no un error tecnico.
+                if (reingresoDb == null)
+                    throw new ReingresoGarantiaAbiertoException("Mensaje.GarantiaReingresoAbierto",
+                        "La orden ya tiene un reingreso de garantia abierto.");
+
                 BitacoraService bitacoraService = new BitacoraService();
                 bitacoraService.Registrar("Reingreso por garantia",
                     "id=" + reingresoDb.Id + " | id_origen=" + idOrdenOriginal, "ORDENES");
 
                 return reingresoDb;
             }
-            catch (ReglaNegocioException ex)
+            catch (ReglaNegocioException)
             {
-                throw new ReglaNegocioException(ex.Message);
+                // Se conserva el tipo concreto (ReingresoGarantiaAbiertoException) para que la UI
+                // lo reconozca por tipo y traduzca su clave.
+                throw;
             }
             catch (Exception ex)
             {
@@ -1197,20 +1214,40 @@ namespace APPLICATION.Features.Ordenes
                 if (entregaDb == null)
                     throw new ReglaNegocioException("La orden no tiene una entrega registrada para cancelar.");
 
+                // Borde inverso: deshacer la entrega de un reingreso lo devuelve a un estado no
+                // terminal. Si otro reingreso de la misma orden original sigue abierto, la accion
+                // se rechaza con el mismo predicado que usa el guard transaccional del repositorio.
+                if (ordenDb.TipoOrden == TipoOrden.Garantia && ordenDb.IdOrdenOrigen.HasValue)
+                {
+                    OrdenServicio hermanoAbierto = _ordenRepository.ObtenerReingresoGarantiaAbierto(
+                        ordenDb.IdOrdenOrigen.Value);
+
+                    if (hermanoAbierto != null && hermanoAbierto.Id != ordenDb.Id)
+                        throw new ReingresoGarantiaAbiertoException("Mensaje.GarantiaReaperturaBloqueada",
+                            "La orden original ya tiene otro reingreso de garantia abierto (#"
+                            + hermanoAbierto.NumeroOrden + ").");
+                }
+
                 ordenDb.CancelarEntrega();
 
                 bool limpiarResultado = ordenDb.Estado == EstadoOrdenServicio.EnPruebas;
 
-                _entregaRepository.CancelarEntregaConTransicion(ordenDb.Id, estadoAnterior, ordenDb.Estado,
-                    limpiarResultado, idUsuario, "Entrega cancelada. Motivo: " + motivo.Trim());
+                int resultadoCancelacion = _entregaRepository.CancelarEntregaConTransicion(
+                    ordenDb.Id, estadoAnterior, ordenDb.Estado, limpiarResultado, idUsuario,
+                    "Entrega cancelada. Motivo: " + motivo.Trim());
+
+                if (resultadoCancelacion < 0)
+                    throw new ReingresoGarantiaAbiertoException("Mensaje.GarantiaReaperturaBloqueada",
+                        "La orden original ya tiene otro reingreso de garantia abierto.");
 
                 BitacoraService bitacoraService = new BitacoraService();
                 bitacoraService.Registrar("ENTREGA_CANCELADA",
                     "id_orden=" + idOrden + " | motivo=" + motivo.Trim(), "ORDENES");
             }
-            catch (ReglaNegocioException ex)
+            catch (ReglaNegocioException)
             {
-                throw new ReglaNegocioException(ex.Message);
+                // Se conserva el tipo concreto (ReingresoGarantiaAbiertoException) para la UI.
+                throw;
             }
             catch (Exception ex)
             {
@@ -1266,6 +1303,30 @@ namespace APPLICATION.Features.Ordenes
             catch (Exception ex)
             {
                 throw new Exception("Error al listar ordenes del cliente", ex);
+            }
+        }
+
+        public OrdenServicio ObtenerReingresoGarantiaAbierto(int idOrdenOriginal)
+        {
+            try
+            {
+                return _ordenRepository.ObtenerReingresoGarantiaAbierto(idOrdenOriginal);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al consultar el reingreso de garantia abierto", ex);
+            }
+        }
+
+        public List<OrdenServicio> ListarReingresosGarantia(int idOrdenOriginal)
+        {
+            try
+            {
+                return _ordenRepository.ListarReingresosGarantia(idOrdenOriginal);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al listar reingresos de garantia", ex);
             }
         }
 

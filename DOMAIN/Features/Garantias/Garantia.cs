@@ -3,6 +3,11 @@ using DOMAIN.Exceptions;
 
 namespace DOMAIN.Features.Garantias
 {
+    // Cardinalidad de la garantia: la COBERTURA es 0..1 por orden original (una sola fila en
+    // Garantias, unica por UX_Garantias_OrdenOriginal e incluida la anulada), mientras que los
+    // reingresos son VISITAS 0..N de esa misma cobertura: cada reingreso es una orden nueva de
+    // tipo Garantia enlazada por OrdenesServicio.id_orden_origen. Varios reingresos por garantia
+    // son validos, pero secuenciales: solo uno puede estar abierto a la vez.
     public class Garantia
     {
         public int Id { get; private set; }
@@ -44,6 +49,21 @@ namespace DOMAIN.Features.Garantias
                 Observaciones = observaciones ?? "",
                 Anulada = anulada
             };
+        }
+    }
+
+    // Se intento crear (o reabrir) un reingreso de garantia mientras la orden original ya tiene
+    // otro reingreso abierto. La UI la reconoce por tipo de excepcion (nunca por el texto del
+    // mensaje) y traduce ClaveMensaje; hereda de ReglaNegocioException para no alterar los
+    // manejos existentes.
+    public class ReingresoGarantiaAbiertoException : ReglaNegocioException
+    {
+        public string ClaveMensaje { get; private set; }
+
+        public ReingresoGarantiaAbiertoException(string claveMensaje, string mensaje)
+            : base(mensaje)
+        {
+            ClaveMensaje = claveMensaje;
         }
     }
 }

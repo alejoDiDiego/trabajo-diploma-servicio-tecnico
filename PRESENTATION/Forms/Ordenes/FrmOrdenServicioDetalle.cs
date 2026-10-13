@@ -113,6 +113,17 @@ namespace UI.Forms.Ordenes
             public string Usuario { get; set; }
         }
 
+        // Fila de la lista de reingresos de garantia de la orden mostrada: numero, fecha de
+        // recepcion (no la de evaluacion), estado y resultado ya traducidos.
+        private class FilaReingreso
+        {
+            public int Id { get; set; }
+            public int Numero { get; set; }
+            public DateTime Fecha { get; set; }
+            public string Estado { get; set; }
+            public string Resultado { get; set; }
+        }
+
         private readonly SesionIdioma _sesionIdioma;
         private readonly OrdenServicioService _service;
         private readonly GarantiaService _garantiaService;
@@ -247,6 +258,7 @@ namespace UI.Forms.Ordenes
             BTN_AceptarGarantia.Text = idioma.BuscarTraduccion(BTN_AceptarGarantia.Tag.ToString());
             BTN_RechazarGarantia.Text = idioma.BuscarTraduccion(BTN_RechazarGarantia.Tag.ToString());
             BTN_CrearReingreso.Text = idioma.BuscarTraduccion(BTN_CrearReingreso.Tag.ToString());
+            LBL_ReingresosGarantia.Text = idioma.BuscarTraduccion(LBL_ReingresosGarantia.Tag.ToString());
 
             LBL_RCliente.Text = idioma.BuscarTraduccion(LBL_RCliente.Tag.ToString());
             LBL_REquipo.Text = idioma.BuscarTraduccion(LBL_REquipo.Tag.ToString());
@@ -651,6 +663,7 @@ namespace UI.Forms.Ordenes
             ConfigurarColumnasConsumidos();
             ConfigurarColumnasPruebas();
             ConfigurarColumnasHistorial();
+            ConfigurarColumnasReingresos();
         }
 
         private void CargarModoNuevo()
@@ -731,6 +744,10 @@ namespace UI.Forms.Ordenes
             TXT_GObs.Text = "";
             TXT_GMotivo.Enabled = false;
             TXT_GObs.Enabled = false;
+
+            // La lista de reingresos es independiente de la cobertura: se limpia y se re-bindea
+            // siempre, y una orden sin reingresos muestra la grilla vacia sin error.
+            CargarReingresosGarantia();
 
             if (_esNuevo || _orden == null)
                 return;
@@ -964,6 +981,22 @@ namespace UI.Forms.Ordenes
             if (_esNuevo || _orden == null || _orden.TipoOrden != TipoOrden.Normal)
                 return;
 
+            // Preconsulta con el mismo predicado del guard transaccional: avisa antes de pedir el
+            // problema. El repositorio sigue siendo la autoridad ante intentos paralelos.
+            try
+            {
+                if (_service.ObtenerReingresoGarantiaAbierto(_orden.Id) != null)
+                {
+                    MostrarAdvertencia("Mensaje.GarantiaReingresoAbierto");
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+                return;
+            }
+
             string problema = PedirTexto(
                 T("OrdenDetalle.CrearReingreso"),
                 T("OrdenDetalle.ReingresoProblema"));
@@ -1000,6 +1033,11 @@ namespace UI.Forms.Ordenes
             catch (Exception ex)
             {
                 MostrarError(ex);
+
+                // Un rechazo del guard puede deberse a un hermano abierto que esta vista aun no
+                // mostraba: la lista se refresca tambien en el camino bloqueado.
+                if (BuscarReingresoAbierto(ex) != null)
+                    CargarReingresosGarantia();
             }
         }
 
@@ -3918,12 +3956,58 @@ namespace UI.Forms.Ordenes
 
         private void MostrarError(Exception ex)
         {
+            ReingresoGarantiaAbiertoException reingresoAbierto = BuscarReingresoAbierto(ex);
+
+            if (reingresoAbierto != null)
+            {
+                MostrarAdvertencia(reingresoAbierto.ClaveMensaje);
+                return;
+            }
+
+            DetallePresupuestoInvalidoException invalido = BuscarDetalleInvalido(ex);
+
+            if (invalido != null)
+            {
+                MostrarAdvertencia(invalido.ClaveMensaje);
+                return;
+            }
+
             string detalle = ex != null ? ex.Message : "";
             MessageBox.Show(
                 T("Mensaje.ErrorOperacion").Replace("{0}", detalle),
                 T("Titulo.Error"),
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error);
+        }
+
+        // El detalle invalido se reconoce por tipo de excepcion y se traduce por clave,
+        // nunca por el texto del mensaje.
+        private static DetallePresupuestoInvalidoException BuscarDetalleInvalido(Exception ex)
+        {
+            for (Exception actual = ex; actual != null; actual = actual.InnerException)
+            {
+                DetallePresupuestoInvalidoException invalido = actual as DetallePresupuestoInvalidoException;
+
+                if (invalido != null)
+                    return invalido;
+            }
+
+            return null;
+        }
+
+        // El bloqueo de reingreso se reconoce por tipo de excepcion, nunca por el texto del
+        // mensaje ni por el resultado de una consulta SQL.
+        private static ReingresoGarantiaAbiertoException BuscarReingresoAbierto(Exception ex)
+        {
+            for (Exception actual = ex; actual != null; actual = actual.InnerException)
+            {
+                ReingresoGarantiaAbiertoException abierto = actual as ReingresoGarantiaAbiertoException;
+
+                if (abierto != null)
+                    return abierto;
+            }
+
+            return null;
         }
 
         protected override void OnFormClosed(FormClosedEventArgs e)

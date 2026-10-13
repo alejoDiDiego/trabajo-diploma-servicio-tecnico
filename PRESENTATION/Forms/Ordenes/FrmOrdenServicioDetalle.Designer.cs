@@ -148,6 +148,8 @@ namespace UI.Forms.Ordenes
             this.BTN_AceptarGarantia = new System.Windows.Forms.Button();
             this.BTN_RechazarGarantia = new System.Windows.Forms.Button();
             this.BTN_CrearReingreso = new System.Windows.Forms.Button();
+            this.LBL_ReingresosGarantia = new System.Windows.Forms.Label();
+            this.DGV_ReingresosGarantia = new System.Windows.Forms.DataGridView();
             this.BTN_Cerrar = new System.Windows.Forms.Button();
             this.PNL_Header.SuspendLayout();
             this.TAB_Detalle.SuspendLayout();
@@ -170,6 +172,7 @@ namespace UI.Forms.Ordenes
             ((System.ComponentModel.ISupportInitialize)(this.DGV_Pruebas)).BeginInit();
             this.TAB_Entrega.SuspendLayout();
             this.TAB_Garantia.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.DGV_ReingresosGarantia)).BeginInit();
             this.SuspendLayout();
             //
             // PNL_Header
@@ -1725,6 +1728,9 @@ namespace UI.Forms.Ordenes
             this.TAB_Garantia.Controls.Add(this.BTN_AceptarGarantia);
             this.TAB_Garantia.Controls.Add(this.BTN_RechazarGarantia);
             this.TAB_Garantia.Controls.Add(this.BTN_CrearReingreso);
+            this.TAB_Garantia.Controls.Add(this.LBL_ReingresosGarantia);
+            this.TAB_Garantia.Controls.Add(this.DGV_ReingresosGarantia);
+            this.TAB_Garantia.AutoScroll = true;
             this.TAB_Garantia.Location = new System.Drawing.Point(4, 22);
             this.TAB_Garantia.Name = "TAB_Garantia";
             this.TAB_Garantia.Size = new System.Drawing.Size(888, 454);
@@ -1918,6 +1924,37 @@ namespace UI.Forms.Ordenes
             this.BTN_CrearReingreso.UseVisualStyleBackColor = false;
             this.BTN_CrearReingreso.Click += new System.EventHandler(this.BTN_CrearReingreso_Click);
             //
+            // LBL_ReingresosGarantia
+            //
+            this.LBL_ReingresosGarantia.AutoSize = true;
+            this.LBL_ReingresosGarantia.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.LBL_ReingresosGarantia.Location = new System.Drawing.Point(12, 280);
+            this.LBL_ReingresosGarantia.Name = "LBL_ReingresosGarantia";
+            this.LBL_ReingresosGarantia.Size = new System.Drawing.Size(140, 15);
+            this.LBL_ReingresosGarantia.TabIndex = 16;
+            this.LBL_ReingresosGarantia.Tag = "OrdenDetalle.ReingresosGarantia";
+            this.LBL_ReingresosGarantia.Text = "Reingresos de garantia";
+            //
+            // DGV_ReingresosGarantia
+            //
+            this.DGV_ReingresosGarantia.AllowUserToAddRows = false;
+            this.DGV_ReingresosGarantia.AllowUserToDeleteRows = false;
+            this.DGV_ReingresosGarantia.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.DGV_ReingresosGarantia.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.DGV_ReingresosGarantia.BackgroundColor = System.Drawing.Color.White;
+            this.DGV_ReingresosGarantia.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.DGV_ReingresosGarantia.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.DGV_ReingresosGarantia.Location = new System.Drawing.Point(12, 305);
+            this.DGV_ReingresosGarantia.MultiSelect = false;
+            this.DGV_ReingresosGarantia.Name = "DGV_ReingresosGarantia";
+            this.DGV_ReingresosGarantia.ReadOnly = true;
+            this.DGV_ReingresosGarantia.RowHeadersVisible = false;
+            this.DGV_ReingresosGarantia.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.DGV_ReingresosGarantia.Size = new System.Drawing.Size(864, 137);
+            this.DGV_ReingresosGarantia.TabIndex = 17;
+            //
             // BTN_Cerrar
             //
             this.BTN_Cerrar.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
@@ -1983,6 +2020,7 @@ namespace UI.Forms.Ordenes
             this.TAB_Entrega.PerformLayout();
             this.TAB_Garantia.ResumeLayout(false);
             this.TAB_Garantia.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.DGV_ReingresosGarantia)).EndInit();
             this.ResumeLayout(false);
         }
 
@@ -2121,6 +2159,8 @@ namespace UI.Forms.Ordenes
         private System.Windows.Forms.Button BTN_AceptarGarantia;
         private System.Windows.Forms.Button BTN_RechazarGarantia;
         private System.Windows.Forms.Button BTN_CrearReingreso;
+        private System.Windows.Forms.Label LBL_ReingresosGarantia;
+        private System.Windows.Forms.DataGridView DGV_ReingresosGarantia;
         private System.Windows.Forms.Button BTN_Cerrar;
     }
 }

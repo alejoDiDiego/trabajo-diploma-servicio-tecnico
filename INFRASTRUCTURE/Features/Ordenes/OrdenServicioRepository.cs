@@ -21,6 +21,22 @@ namespace REPOSITORY.Features.Ordenes
             _db = new SqlHelper(cadenaConexion);
         }
 
+        // Predicado compartido por la preconsulta del service (ObtenerReingresoGarantiaAbierto)
+        // y por el guard bloqueado del alta (CrearConHistorial): un reingreso de garantia esta
+        // ABIERTO mientras su orden no este Entregada y no haya cerrado su evaluacion con un
+        // destino posterior ya comprometido. Cualquier estado desconocido o incoherente cuenta
+        // como ABIERTO. El alias de la orden evaluada es o y la orden original llega en
+        // @IdOrdenOrigen. El mismo texto se reutiliza en EntregaRepository (borde inverso).
+        public const string PredicadoReingresoAbierto = @"
+                  o.id_orden_origen = @IdOrdenOrigen
+                  AND o.tipo_orden = 'Garantia'
+                  AND o.estado <> 'Entregado'
+                  AND NOT (o.estado IN ('PendientePresupuesto', 'EsperandoRespuesta', 'AutorizadoReparacion',
+                                        'EnReparacion', 'EnPruebas', 'ListoRetiro')
+                           AND EXISTS (SELECT 1 FROM EvaluacionesGarantia e
+                                       WHERE e.id_orden_reingreso = o.id_orden
+                                         AND e.estado = 'Rechazada'))";
+
         public void Inicializar()
         {
             // Crea la tabla OrdenesServicio de forma idempotente. FKs con NO ACTION para conservar historia.
@@ -177,23 +193,44 @@ namespace REPOSITORY.Features.Ordenes
 
         public OrdenServicio CrearConHistorial(OrdenServicio orden, int idUsuario, string observacion)
         {
-            // Batch atomico: INSERT orden con numero temporal, numero=id, INSERT historial.
+            // Batch atomico: guard de hermanos (solo reingresos de garantia, antes de cualquier
+            // INSERT), INSERT orden con numero temporal, numero=id, INSERT historial. En conflicto
+            // no se ejecuta ningun INSERT, la orden original nunca se modifica y el lote devuelve
+            // -1; el service lo convierte en la excepcion de negocio tipada.
             string query = @"
-                INSERT INTO OrdenesServicio (numero_orden, id_cliente, id_equipo, id_tecnico_asignado,
-                    id_orden_origen, tipo_orden, estado, resultado, fecha_ingreso, problema_informado,
-                    estado_fisico_ingreso, accesorios_ingreso, observaciones_ingreso,
-                    observacion_resultado, id_usuario_alta)
-                VALUES (0, @IdCliente, @IdEquipo, @IdTecnico, @IdOrdenOrigen, @TipoOrden, @Estado, NULL,
-                    @FechaIngreso, @Problema, @EstadoFisico, @Accesorios, @ObsIngreso, NULL, @IdUsuarioAlta);
+                SET NOCOUNT ON;
 
-                DECLARE @Id int = CAST(SCOPE_IDENTITY() AS int);
+                DECLARE @Conflicto int = 0;
 
-                UPDATE OrdenesServicio SET numero_orden = @Id WHERE id_orden = @Id;
+                IF @TipoOrden = 'Garantia' AND @IdOrdenOrigen IS NOT NULL
+                BEGIN
+                    SELECT @Conflicto = COUNT(*)
+                    FROM OrdenesServicio o WITH (TABLOCKX, HOLDLOCK)
+                    WHERE " + PredicadoReingresoAbierto + @";
+                END
 
-                INSERT INTO HistorialOrdenes (id_orden, estado_anterior, estado_nuevo, fecha_hora, id_usuario, observacion)
-                VALUES (@Id, NULL, @EstadoNuevo, GETDATE(), @IdUsuario, @Observacion);
+                IF @Conflicto > 0
+                BEGIN
+                    SELECT -1;
+                END
+                ELSE
+                BEGIN
+                    INSERT INTO OrdenesServicio (numero_orden, id_cliente, id_equipo, id_tecnico_asignado,
+                        id_orden_origen, tipo_orden, estado, resultado, fecha_ingreso, problema_informado,
+                        estado_fisico_ingreso, accesorios_ingreso, observaciones_ingreso,
+                        observacion_resultado, id_usuario_alta)
+                    VALUES (0, @IdCliente, @IdEquipo, @IdTecnico, @IdOrdenOrigen, @TipoOrden, @Estado, NULL,
+                        @FechaIngreso, @Problema, @EstadoFisico, @Accesorios, @ObsIngreso, NULL, @IdUsuarioAlta);
 
-                SELECT @Id;
+                    DECLARE @Id int = CAST(SCOPE_IDENTITY() AS int);
+
+                    UPDATE OrdenesServicio SET numero_orden = @Id WHERE id_orden = @Id;
+
+                    INSERT INTO HistorialOrdenes (id_orden, estado_anterior, estado_nuevo, fecha_hora, id_usuario, observacion)
+                    VALUES (@Id, NULL, @EstadoNuevo, GETDATE(), @IdUsuario, @Observacion);
+
+                    SELECT @Id;
+                END
             ";
 
             SqlParameter[] sqlParameters = new SqlParameter[]
@@ -216,6 +253,9 @@ namespace REPOSITORY.Features.Ordenes
             };
 
             int id = _db.ExecuteTransaction(query, sqlParameters);
+
+            if (id <= 0)
+                return null;
 
             return ObtenerPorId(id);
         }
@@ -398,6 +438,63 @@ namespace REPOSITORY.Features.Ordenes
                 ordenes.Add(Mapear(fila));
 
             return ordenes;
+        }
+
+        public OrdenServicio ObtenerReingresoGarantiaAbierto(int idOrdenOrigen)
+        {
+            // Preconsulta de solo lectura con el MISMO predicado que el guard transaccional del
+            // alta. Recorre todos los hermanos de la orden original, no una evaluacion ni una
+            // garantia concreta.
+            string query = @"
+                SELECT TOP 1 id_orden, numero_orden, id_cliente, id_equipo, id_tecnico_asignado,
+                       id_orden_origen, tipo_orden, estado, resultado, fecha_ingreso,
+                       problema_informado, estado_fisico_ingreso, accesorios_ingreso,
+                       observaciones_ingreso, observacion_resultado, id_usuario_alta
+                FROM OrdenesServicio o
+                WHERE " + PredicadoReingresoAbierto + @"
+                ORDER BY o.fecha_ingreso, o.id_orden;
+            ";
+
+            SqlParameter[] sqlParameters = new SqlParameter[]
+            {
+                new SqlParameter("@IdOrdenOrigen", idOrdenOrigen)
+            };
+
+            DataTable dt = _db.ExecuteQuery(query, sqlParameters);
+
+            if (dt.Rows.Count <= 0)
+                return null;
+
+            return Mapear(dt.Rows[0]);
+        }
+
+        public List<OrdenServicio> ListarReingresosGarantia(int idOrdenOrigen)
+        {
+            // Hijos de garantia de la orden original, en orden de recepcion. Incluye reingresos
+            // ya entregados y reingresos sin evaluacion: no filtra por estado ni une evaluaciones.
+            string query = @"
+                SELECT id_orden, numero_orden, id_cliente, id_equipo, id_tecnico_asignado,
+                       id_orden_origen, tipo_orden, estado, resultado, fecha_ingreso,
+                       problema_informado, estado_fisico_ingreso, accesorios_ingreso,
+                       observaciones_ingreso, observacion_resultado, id_usuario_alta
+                FROM OrdenesServicio
+                WHERE id_orden_origen = @IdOrdenOrigen
+                  AND tipo_orden = 'Garantia'
+                ORDER BY fecha_ingreso, id_orden;
+            ";
+
+            SqlParameter[] sqlParameters = new SqlParameter[]
+            {
+                new SqlParameter("@IdOrdenOrigen", idOrdenOrigen)
+            };
+
+            DataTable dt = _db.ExecuteQuery(query, sqlParameters);
+            List<OrdenServicio> reingresos = new List<OrdenServicio>();
+
+            foreach (DataRow fila in dt.Rows)
+                reingresos.Add(Mapear(fila));
+
+            return reingresos;
         }
 
         private OrdenServicio Mapear(DataRow fila)

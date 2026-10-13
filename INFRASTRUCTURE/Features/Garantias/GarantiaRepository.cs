@@ -22,7 +22,10 @@ namespace REPOSITORY.Features.Garantias
 
         public void Inicializar()
         {
-            // Crea Garantias de forma idempotente. UNIQUE en id_orden_original: una orden genera como maximo una garantia.
+            // Crea Garantias de forma idempotente. UNIQUE en id_orden_original: la COBERTURA es
+            // 0..1 por orden original (una sola fila, anulada incluida). Los reingresos son
+            // VISITAS 0..N de esa cobertura y NO crean filas aqui: viven como ordenes nuevas en
+            // OrdenesServicio.id_orden_origen. Sin cambio de DDL ni de indices.
             string query = @"
                 IF OBJECT_ID('Garantias', 'U') IS NULL
                 BEGIN

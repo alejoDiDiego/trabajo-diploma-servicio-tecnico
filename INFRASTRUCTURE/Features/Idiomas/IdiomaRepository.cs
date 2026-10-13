@@ -1365,6 +1365,8 @@ namespace REPOSITORY.Features.Idiomas
             AgregarSeed("Ingles", "OrdenDetalle.GarantiaVencida", "Expired");
             AgregarSeed("Espanol", "OrdenDetalle.GarantiaAnulada", "Anulada");
             AgregarSeed("Ingles", "OrdenDetalle.GarantiaAnulada", "Voided");
+            AgregarSeed("Espanol", "OrdenDetalle.ReingresosGarantia", "Reingresos de garantia");
+            AgregarSeed("Ingles", "OrdenDetalle.ReingresosGarantia", "Warranty re-entries");
             AgregarSeed("Espanol", "OrdenDetalle.VerOriginal", "Ver original");
             AgregarSeed("Ingles", "OrdenDetalle.VerOriginal", "View source");
             AgregarSeed("Espanol", "OrdenDetalle.CrearReingreso", "Crear reingreso");
@@ -1401,6 +1403,10 @@ namespace REPOSITORY.Features.Idiomas
             AgregarSeed("Ingles", "Mensaje.ReingresoCreado", "Reentry created: order #{0}.");
             AgregarSeed("Espanol", "Mensaje.GarantiaPagoInfo", "Se continuara como reparacion paga: el motivo se registrara con continuidad de pago.");
             AgregarSeed("Ingles", "Mensaje.GarantiaPagoInfo", "It will continue as a paid repair: the reason will be recorded with payment continuity.");
+            AgregarSeed("Espanol", "Mensaje.GarantiaReingresoAbierto", "Ya existe un reingreso de garantia abierto para esta orden. Cierre el reingreso existente antes de crear otro.");
+            AgregarSeed("Ingles", "Mensaje.GarantiaReingresoAbierto", "This order already has an open warranty re-entry. Close the existing re-entry before creating another.");
+            AgregarSeed("Espanol", "Mensaje.GarantiaReaperturaBloqueada", "No se puede reabrir este reingreso porque ya existe otro reingreso de garantia abierto para la orden original.");
+            AgregarSeed("Ingles", "Mensaje.GarantiaReaperturaBloqueada", "This re-entry cannot be reopened because another warranty re-entry is already open for the original order.");
 
             AgregarSeed("Espanol", "Ordenes.FiltroTipo", "Tipo:");
             AgregarSeed("Ingles", "Ordenes.FiltroTipo", "Type:");

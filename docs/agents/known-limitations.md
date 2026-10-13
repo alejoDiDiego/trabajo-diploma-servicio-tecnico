@@ -37,8 +37,10 @@ The UI keeps sending calendar dates; the `desde > hasta` validation is unchanged
   `ObtenerVigente`, compares current timestamp with end timestamp and ignores start date.
   Calendar-day inclusive coverage is intended policy, not the implemented date predicate.
 - [EntregaRepository](../../INFRASTRUCTURE/Features/Ordenes/EntregaRepository.cs),
-  `CancelarEntregaConTransicion`, leaves existing warranty/re-entries in place;
-  `CrearConTransicion` does not regenerate an existing warranty on re-delivery.
+  `CancelarEntregaConTransicion`, still leaves the coverage row and unrelated re-entries in
+  place, and since feat-009 it is refused while another re-entry of the same original order is
+  open (see the feat-009 section above); `CrearConTransicion` does not regenerate an existing
+  warranty on re-delivery.
 - [FrmOrdenServicioDetalle](../../PRESENTATION/Forms/Ordenes/FrmOrdenServicioDetalle.cs),
   `BTN_CrearReingreso_Click`, submits the original order's historical customer. The service
   validates current equipment ownership, so changing the owner can block re-entry from this UI.
