@@ -29,6 +29,12 @@ DDL uses existence/column/index guards, but guards do not certify migration succ
 `Inicializar`, adds `id_consumo` first, then migrates the legacy composite PK/index in a second batch.
 Keep these phases: SQL Server can compile column references before an earlier ALTER executes
 and raise SQL error 207 on legacy schemas. The phases commit separately.
+[ClienteRepository](../../INFRASTRUCTURE/Features/Clientes/ClienteRepository.cs), `Inicializar`,
+also uses a second batch after the defensive ALTERs: it installs `UX_Clientes_Documento` only when
+the index is absent **and** no `GROUP BY documento HAVING COUNT(*) > 1` group exists, inactive rows
+included. A database that already holds duplicate documents keeps starting normally: the index
+stays absent there, nothing is deleted, merged or rewritten, and the transactional guard described
+below remains the enforcement path.
 The two old SQL files under [Scripts](../../INFRASTRUCTURE/Scripts) are project `None` items;
 current initialization lives in repositories, not execution of those scripts.
 
@@ -42,7 +48,7 @@ Every `id_*` PK listed here is an integer identity. FK columns use the reference
 | --- | --- | --- | --- |
 | TiposEquipo | id_tipo_equipo | None | nombre |
 | Marcas | id_marca | None | nombre |
-| Clientes | id_cliente | None | None; documento is not unique |
+| Clientes | id_cliente | None | UX_Clientes_Documento on documento, unfiltered (active + inactive); installed only when no duplicate group exists |
 | Equipos | id_equipo | id_cliente -> Clientes; id_tipo_equipo -> TiposEquipo; id_marca -> Marcas | None; no serial uniqueness claim |
 | OrdenesServicio | id_orden | id_cliente -> Clientes; id_equipo -> Equipos; id_tecnico_asignado? -> Usuarios; id_orden_origen? -> same table; id_usuario_alta -> Usuarios | numero_orden |
 | HistorialOrdenes | id_historial | id_orden -> OrdenesServicio; id_usuario -> Usuarios | None |
@@ -102,6 +108,84 @@ Owners: [UsuarioRepository](../../INFRASTRUCTURE/Features/Usuarios/UsuarioReposi
 `CrearTablas`; [BitacoraRepository](../../INFRASTRUCTURE/Features/Bitacora/BitacoraRepository.cs),
 [ControlCambioRepository](../../INFRASTRUCTURE/Features/ControlCambios/ControlCambioRepository.cs),
 [IntegridadRepository](../../INFRASTRUCTURE/Features/Integridad/IntegridadRepository.cs), `Inicializar`.
+[UsuarioRepository](../../INFRASTRUCTURE/Features/Usuarios/UsuarioRepository.cs),
+`Agregar`/`Modificar`, map unique-index errors 2601/2627 on `UX_Usuarios_Username` to
+`UsuarioYaExisteException`; [UsuarioService](../../APPLICATION/Features/Usuarios/UsuarioService.cs),
+`Crear`/`Modificar`, pre-check `ObtenerPorUsername` (which also returns inactive accounts) and
+exclude the edited id. Usuarios stores only username/password/activo/dvh: unlike Clientes it holds
+no personal identity data that could be duplicated.
+
+## Customer document uniqueness (feat-006)
+
+**Verified implementation (source inspection, not re-executed against a database in this scope).**
+`Clientes.documento` is a customer identity that active and inactive rows reserve equally.
+[ClienteRepository](../../INFRASTRUCTURE/Features/Clientes/ClienteRepository.cs), `Agregar` and
+`Modificar`, run the ownership check and the DML in the same `SqlHelper.ExecuteTransaction` batch:
+`SELECT ... FROM Clientes WITH (TABLOCKX, HOLDLOCK)` holds the table lock for that batch,
+`Agregar` refuses any row with the proposed documento, and `Modificar` refuses only when the
+proposed documento differs (SQL equality, database collation) from the edited row's current value
+and belongs to another `id_cliente`. A conflict executes no DML; the batch returns the conflicting
+id negated and the repository converts it into `ClienteDocumentoDuplicadoException`
+([Cliente](../../DOMAIN/Features/Clientes/Cliente.cs)). Unique-index errors 2601/2627 on
+`UX_Clientes_Documento` map to the same exception without exposing SQL text.
+`ObtenerConflictoDocumento(documento, idExcluir)` is the read-side lookup over all rows; it returns
+no conflict when `idExcluir` already owns the proposed documento, which grandfathers legacy
+duplicate groups so those rows stay visible and editable with unchanged identity.
+[ClienteService](../../APPLICATION/Features/Clientes/ClienteService.cs), `Crear`/`Modificar`,
+pre-check before any write or audit and rethrow the concrete exception type.
+`Desactivar`/`Reactivar` only toggle `activo`: an inactive row keeps reserving its documento, and
+`Listar` still includes inactive rows only when `incluirInactivos` is requested. `telefono` and
+`email` carry no constraint and stay freely shareable. Uniqueness compares the factory-trimmed
+string exactly as the database collation compares it; there is no digit-only, punctuation,
+numeric or leading-zero normalisation.
+
+## Warranty coverage versus re-entry visits (feat-009)
+
+**Verified implementation (source inspection, not re-executed against a database in this scope).
+No DDL changed: no new table, column, constraint or index was added or altered.**
+
+Cardinality, already expressed by the existing schema and now documented explicitly:
+
+- An original order has **0..1** warranty **coverage** rows: `Garantias.id_orden_original` is
+  unique through `UX_Garantias_OrdenOriginal`, annulled rows included.
+- An original order has **0..N** warranty **visits** (re-entries): each one is a new
+  `OrdenesServicio` row of type `Garantia` whose `id_orden_origen` references the original,
+  and each re-entry has 0..1 `EvaluacionesGarantia` row (`id_orden_reingreso` unique).
+- Creating a re-entry writes no `Garantias` row and never updates, resets or re-delivers the
+  original order. The delivery batch keeps skipping warranty insertion when a coverage row
+  already exists.
+
+**Single shared predicate.** [OrdenServicioRepository](../../INFRASTRUCTURE/Features/Ordenes/OrdenServicioRepository.cs),
+`PredicadoReingresoAbierto`, is a public `const` SQL fragment (table alias `o`, original
+order in `@IdOrdenOrigen`) that defines a re-entry as **closed** only when `o.estado =
+'Entregado'` or when `o.estado` is one of `PendientePresupuesto`, `EsperandoRespuesta`,
+`AutorizadoReparacion`, `EnReparacion`, `EnPruebas` or `ListoRetiro` **and** the re-entry
+has a `Rechazada` evaluation; every other state counts as open. It is used verbatim by the read
+pre-check (`ObtenerReingresoGarantiaAbierto`), by the transactional guard of
+`CrearConHistorial` and, through the same constant, by
+[EntregaRepository](../../INFRASTRUCTURE/Features/Ordenes/EntregaRepository.cs),
+`CancelarEntregaConTransicion`, so the three paths cannot drift apart. The fragment reads the
+`EvaluacionesGarantia` table, which startup creates through
+[EvaluacionGarantiaRepository](../../INFRASTRUCTURE/Features/Garantias/EvaluacionGarantiaRepository.cs),
+`Inicializar`.
+
+**Locked guard placement.** In `CrearConHistorial` the guard is the first statement of the
+batch, runs only for `@TipoOrden = 'Garantia' AND @IdOrdenOrigen IS NOT NULL`, takes
+`TABLOCKX, HOLDLOCK` on `OrdenesServicio`, and the single `INSERT` (plus `numero_orden`
+update and history insert) happens inside the `ELSE` branch, so a conflict executes no DML at
+all; the batch returns `-1` and the repository method returns `null` for the service to
+convert into the typed business exception. Normal order creation is untouched: the guard branch
+is skipped, and the success path still returns the new identity. In
+`CancelarEntregaConTransicion` the same predicate is evaluated inside the existing
+delete/update/history transaction, after that transaction has already taken
+`TABLOCKX, HOLDLOCK` and read the order's `tipo_orden`/`id_orden_origen`; a conflict
+returns `-1` and the delivery row, the order state and the history stay unchanged. The
+original order is only ever read.
+
+`ListarReingresosGarantia` reads the visits with `id_orden_origen = @IdOrdenOrigen AND
+tipo_orden = 'Garantia'` ordered by `fecha_ingreso, id_orden`: it deliberately filters no
+state and joins no evaluation, so delivered re-entries and re-entries without evaluations are
+listed. Both reads reuse the repository's existing `Mapear` mapper.
 
 ## Snapshots, history, and atomicity
 
@@ -118,4 +202,8 @@ An audit/readback failure can therefore return an error after successful busines
 do not blindly retry and create duplicates. Warranty diagnosis/evaluation has additional
 multi-transaction boundaries described in [business flows](business-flows.md).
 Stock batches use UPDLOCK/HOLDLOCK, but other state validations occur before writes.
+Customer document writes additionally hold TABLOCKX/HOLDLOCK for their whole batch
+(see the document-uniqueness section above). The warranty re-entry guard holds
+TABLOCKX/HOLDLOCK on `OrdenesServicio` for its whole batch as well (see the
+coverage-versus-visit section above); that is inspected SQL, not proof of parallel correctness.
 No universal optimistic-concurrency guard or proven parallel safety should be inferred.

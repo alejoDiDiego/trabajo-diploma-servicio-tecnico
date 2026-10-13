@@ -238,6 +238,12 @@ namespace APPLICATION.Features.Usuarios
                 if (usuarioDb == null)
                     throw new UsuarioNoExisteException();
 
+                // El username lo reserva tambien una cuenta inactiva: excluye la propia fila.
+                Usuario usuarioConUsername = _usuarioRepository.ObtenerPorUsername(username);
+
+                if (usuarioConUsername != null && usuarioConUsername.Id != id)
+                    throw new UsuarioYaExisteException();
+
                 string passwordHashed = _passwordHasher.HashPassword(password);
 
                 Usuario usuarioToUpdate = Usuario.CargarDesdeDB(
@@ -262,6 +268,10 @@ namespace APPLICATION.Features.Usuarios
                 return usuarioToUpdate;
             }
             catch (UsuarioNoExisteException ex)
+            {
+                throw new Exception(ex.Message, ex);
+            }
+            catch (UsuarioYaExisteException ex)
             {
                 throw new Exception(ex.Message, ex);
             }

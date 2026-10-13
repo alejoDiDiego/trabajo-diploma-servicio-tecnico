@@ -337,12 +337,52 @@ namespace UI.Forms.Clientes
 
         private void MostrarError(Exception ex)
         {
+            ClienteDocumentoDuplicadoException conflicto = BuscarConflictoDocumento(ex);
+
+            if (conflicto != null && conflicto.TienePropietario)
+            {
+                MostrarDocumentoDuplicado(conflicto);
+                return;
+            }
+
             string detalle = ex != null ? ex.Message : "";
             MessageBox.Show(
                 _sesionIdioma.idioma.BuscarTraduccion("Mensaje.ErrorOperacion").Replace("{0}", detalle),
                 _sesionIdioma.idioma.BuscarTraduccion("Titulo.Error"),
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error);
+        }
+
+        // El documento duplicado se reconoce por tipo de excepcion, nunca por texto ni SQL.
+        private void MostrarDocumentoDuplicado(ClienteDocumentoDuplicadoException conflicto)
+        {
+            string clave = conflicto.ActivoExistente
+                ? "Mensaje.ClienteDocumentoDuplicado"
+                : "Mensaje.ClienteDocumentoDuplicadoInactivo";
+
+            string mensaje = _sesionIdioma.idioma.BuscarTraduccion(clave)
+                .Replace("{0}", conflicto.Documento)
+                .Replace("{1}", conflicto.NombrePropietario)
+                .Replace("{2}", conflicto.IdClienteExistente.ToString());
+
+            MessageBox.Show(
+                mensaje,
+                _sesionIdioma.idioma.BuscarTraduccion("Titulo.Error"),
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
+        }
+
+        private static ClienteDocumentoDuplicadoException BuscarConflictoDocumento(Exception ex)
+        {
+            for (Exception actual = ex; actual != null; actual = actual.InnerException)
+            {
+                ClienteDocumentoDuplicadoException conflicto = actual as ClienteDocumentoDuplicadoException;
+
+                if (conflicto != null)
+                    return conflicto;
+            }
+
+            return null;
         }
 
         protected override void OnFormClosed(FormClosedEventArgs e)

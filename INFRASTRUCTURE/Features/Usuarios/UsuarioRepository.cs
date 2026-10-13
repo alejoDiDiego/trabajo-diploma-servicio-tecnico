@@ -214,7 +214,15 @@ namespace REPOSITORY.Features.Usuarios
                 new SqlParameter("@Activo", usuario.Activo)
             };
 
-            _db.ExecuteTransaction(query, sqlParameters);
+            try
+            {
+                _db.ExecuteTransaction(query, sqlParameters);
+            }
+            catch (SqlException ex) when (ex.Number == 2601 || ex.Number == 2627)
+            {
+                // Respaldo de UX_Usuarios_Username: mensaje de negocio, sin texto SQL.
+                throw new UsuarioYaExisteException();
+            }
         }
 
         public List<UserDVH> ObtenerTodosDVH()

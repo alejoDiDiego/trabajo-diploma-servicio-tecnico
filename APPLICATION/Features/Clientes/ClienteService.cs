@@ -29,6 +29,13 @@ namespace APPLICATION.Features.Clientes
                 Cliente clienteToSave = Cliente.CrearNuevo(
                     nombre, apellido, documento, telefono, email, direccion, observaciones);
 
+                // El documento lo reserva tambien un cliente inactivo: se rechaza antes de escribir.
+                Cliente conflicto = _clienteRepository.ObtenerConflictoDocumento(clienteToSave.Documento);
+
+                if (conflicto != null)
+                    throw new ClienteDocumentoDuplicadoException(
+                        conflicto.Id, conflicto.Nombre, conflicto.Apellido, conflicto.Documento, conflicto.Activo);
+
                 Cliente clienteDb = _clienteRepository.Agregar(clienteToSave);
 
                 BitacoraService bitacoraService = new BitacoraService();
@@ -37,9 +44,10 @@ namespace APPLICATION.Features.Clientes
 
                 return clienteDb;
             }
-            catch (ReglaNegocioException ex)
+            catch (ReglaNegocioException)
             {
-                throw new ReglaNegocioException(ex.Message);
+                // Conserva el tipo concreto (ClienteDocumentoDuplicadoException) hasta la UI.
+                throw;
             }
             catch (Exception ex)
             {
@@ -59,6 +67,13 @@ namespace APPLICATION.Features.Clientes
 
                 Cliente clienteToUpdate = Cliente.CrearNuevo(
                     nombre, apellido, documento, telefono, email, direccion, observaciones);
+
+                // idExcluir deja guardar el propio documento sin cambios (duplicados historicos).
+                Cliente conflicto = _clienteRepository.ObtenerConflictoDocumento(clienteToUpdate.Documento, clienteDb.Id);
+
+                if (conflicto != null)
+                    throw new ClienteDocumentoDuplicadoException(
+                        conflicto.Id, conflicto.Nombre, conflicto.Apellido, conflicto.Documento, conflicto.Activo);
 
                 Cliente actualizado = Cliente.CargarDesdeDB(
                     clienteDb.Id,
@@ -81,9 +96,10 @@ namespace APPLICATION.Features.Clientes
 
                 return actualizado;
             }
-            catch (ReglaNegocioException ex)
+            catch (ReglaNegocioException)
             {
-                throw new ReglaNegocioException(ex.Message);
+                // Conserva el tipo concreto (ClienteDocumentoDuplicadoException) hasta la UI.
+                throw;
             }
             catch (Exception ex)
             {

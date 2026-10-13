@@ -9,9 +9,20 @@ Method names in the tables are source anchors. There is no free-form state editi
 ## Masters, reception, and diagnosis
 
 - [Cliente](../../DOMAIN/Features/Clientes/Cliente.cs), `CrearNuevo`, requires name, surname,
-  document, and phone. Email/address/observations are optional; do not infer document uniqueness.
+  document, and phone. Email/address/observations are optional.
+- **Implemented (feat-006, source verified; runtime acceptance pending):** documento is a unique
+  customer identity across active **and** inactive rows. `CrearNuevo` still only validates and
+  trims; [ClienteService](../../APPLICATION/Features/Clientes/ClienteService.cs), `Crear`/`Modificar`,
+  pre-check with `ObtenerConflictoDocumento` and reject a duplicate with
+  `ClienteDocumentoDuplicadoException`, and
+  [ClienteRepository](../../INFRASTRUCTURE/Features/Clientes/ClienteRepository.cs),
+  `Agregar`/`Modificar`, repeat the ownership check under `TABLOCKX,HOLDLOCK` inside the write
+  batch, so the guard is not only a UI/service check. Editing a row that keeps its own unchanged
+  documento still succeeds, which grandfathers pre-existing duplicate groups instead of rewriting
+  them. Telefono and email remain non-unique and freely shareable.
 - [ClienteService](../../APPLICATION/Features/Clientes/ClienteService.cs), `Desactivar`, only
-  deactivates the customer. Customer and equipment active flags are independent, not cascading.
+  deactivates the customer: the inactive row keeps reserving its documento, and reactivating it is
+  the way to reuse that identity. Customer and equipment active flags are independent, not cascading.
 - [EquipoService](../../APPLICATION/Features/Equipos/EquipoService.cs),
   `ValidarReferenciasExistentesYActivas`, validates customer/type/brand for creation/editing.
 - `CrearOrden` requires an existing active customer and active equipment belonging to it.

@@ -62,4 +62,61 @@ namespace DOMAIN.Features.Clientes
             };
         }
     }
+
+    // Excepcion de identidad: el documento propuesto ya pertenece a otro cliente
+    // (activo o inactivo). La UI lo muestra con Mensaje.ClienteDocumentoDuplicado*.
+    public class ClienteDocumentoDuplicadoException : ReglaNegocioException
+    {
+        public string Documento { get; private set; }
+        public int IdClienteExistente { get; private set; }
+        public string NombreExistente { get; private set; }
+        public string ApellidoExistente { get; private set; }
+        public bool ActivoExistente { get; private set; }
+
+        // Respaldo del indice unico: conflicto sin la fila propietaria localizada.
+        public ClienteDocumentoDuplicadoException(string documento)
+            : this(0, "", "", documento, true)
+        {
+        }
+
+        public ClienteDocumentoDuplicadoException(int idClienteExistente, string nombreExistente,
+            string apellidoExistente, string documento, bool activoExistente)
+            : base(ConstruirMensaje(idClienteExistente, nombreExistente, apellidoExistente, documento))
+        {
+            IdClienteExistente = idClienteExistente;
+            NombreExistente = nombreExistente == null ? "" : nombreExistente;
+            ApellidoExistente = apellidoExistente == null ? "" : apellidoExistente;
+            Documento = documento == null ? "" : documento;
+            ActivoExistente = activoExistente;
+        }
+
+        // true cuando el mensaje puede nombrar al cliente que ya tiene el documento.
+        public bool TienePropietario
+        {
+            get { return IdClienteExistente > 0; }
+        }
+
+        public string NombrePropietario
+        {
+            get { return (NombreExistente + " " + ApellidoExistente).Trim(); }
+        }
+
+        private static string ConstruirMensaje(int idClienteExistente, string nombreExistente,
+            string apellidoExistente, string documento)
+        {
+            string documentoTexto = documento == null ? "" : documento;
+
+            if (idClienteExistente > 0)
+            {
+                string propietario = ((nombreExistente == null ? "" : nombreExistente) + " "
+                    + (apellidoExistente == null ? "" : apellidoExistente)).Trim();
+
+                return "El documento '" + documentoTexto + "' ya pertenece a " + propietario
+                    + " (ID " + idClienteExistente + "). Edite el registro existente.";
+            }
+
+            return "El documento '" + documentoTexto + "' ya esta registrado por otro cliente. "
+                + "Edite el registro existente.";
+        }
+    }
 }

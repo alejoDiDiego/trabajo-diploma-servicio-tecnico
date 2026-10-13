@@ -472,6 +472,8 @@ namespace REPOSITORY.Features.Idiomas
             AgregarSeed("Ingles", "Mensaje.UsuarioEditado", "User edited successfully.");
             AgregarSeed("Espanol", "Mensaje.ErrorEditarUsuario", "Error al editar usuario: {0}");
             AgregarSeed("Ingles", "Mensaje.ErrorEditarUsuario", "Error editing user: {0}");
+            AgregarSeed("Espanol", "Mensaje.UsuarioYaExiste", "El nombre de usuario '{0}' ya existe, incluso si la cuenta esta inactiva. Edite o reactive la cuenta existente.");
+            AgregarSeed("Ingles", "Mensaje.UsuarioYaExiste", "Username '{0}' already exists, even if the account is inactive. Edit or reactivate the existing account.");
             AgregarSeed("Espanol", "Mensaje.TraduccionCreada", "Traduccion creada exitosamente.");
             AgregarSeed("Ingles", "Mensaje.TraduccionCreada", "Translation created successfully.");
             AgregarSeed("Espanol", "Mensaje.TraduccionEditada", "Traduccion editada exitosamente.");
@@ -512,6 +514,10 @@ namespace REPOSITORY.Features.Idiomas
             // en BD ya creadas; este UPDATE migra las filas existentes sin duplicar.
             ActualizarTraduccion("Espanol", "Mensaje.ClienteCamposObligatorios", "Nombre, apellido, documento y telefono son obligatorios.");
             ActualizarTraduccion("Ingles", "Mensaje.ClienteCamposObligatorios", "First name, last name, document and phone are required.");
+            AgregarSeed("Espanol", "Mensaje.ClienteDocumentoDuplicado", "El documento '{0}' ya pertenece a {1} (ID {2}). Edite el registro existente.");
+            AgregarSeed("Ingles", "Mensaje.ClienteDocumentoDuplicado", "Document '{0}' already belongs to {1} (ID {2}). Edit the existing record.");
+            AgregarSeed("Espanol", "Mensaje.ClienteDocumentoDuplicadoInactivo", "El documento '{0}' ya pertenece a {1} (ID {2}), un cliente inactivo. Marque 'Ver inactivos' para editarlo o reactivarlo.");
+            AgregarSeed("Ingles", "Mensaje.ClienteDocumentoDuplicadoInactivo", "Document '{0}' already belongs to {1} (ID {2}), an inactive customer. Tick 'Show inactive' to edit or reactivate it.");
             AgregarSeed("Espanol", "Mensaje.EquipoCamposObligatorios", "Cliente, tipo y marca son obligatorios.");
             AgregarSeed("Ingles", "Mensaje.EquipoCamposObligatorios", "Customer, type and brand are required.");
             AgregarSeed("Espanol", "Mensaje.NombreObligatorio", "El nombre es obligatorio.");

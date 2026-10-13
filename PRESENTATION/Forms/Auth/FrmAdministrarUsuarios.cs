@@ -5,6 +5,7 @@ using ABSTRACTIONS.Features.Idiomas;
 using APPLICATION.Features.Usuarios;
 using DOMAIN.Features.Permisos;
 using DOMAIN.Features.Usuarios;
+using DOMAIN.Features.Usuarios.Exceptions;
 using SERVICES.Auth;
 using SERVICES.Idiomas;
 
@@ -107,6 +108,9 @@ namespace UI.Forms.Auth
             }
             catch (Exception ex)
             {
+                if (MostrarUsuarioDuplicado(ex, TBX_Username.Text))
+                    return;
+
                 MessageBox.Show(
                     _sesionIdioma.idioma.BuscarTraduccion("Mensaje.ErrorCrearUsuario").Replace("{0}", ex.Message),
                     _sesionIdioma.idioma.BuscarTraduccion("Titulo.Error"),
@@ -284,6 +288,9 @@ namespace UI.Forms.Auth
             }
             catch (Exception ex)
             {
+                if (MostrarUsuarioDuplicado(ex, TBX_Username.Text))
+                    return;
+
                 MessageBox.Show(
                     _sesionIdioma.idioma.BuscarTraduccion("Mensaje.ErrorEditarUsuario").Replace("{0}", ex.Message),
                     _sesionIdioma.idioma.BuscarTraduccion("Titulo.Error"),
@@ -291,6 +298,35 @@ namespace UI.Forms.Auth
                     MessageBoxIcon.Error);
             }
 
+        }
+
+        // Username duplicado (incluye cuentas inactivas): se reconoce por tipo de excepcion,
+        // nunca por texto ni por errores SQL.
+        private bool MostrarUsuarioDuplicado(Exception ex, string usernamePropuesto)
+        {
+            if (!EsUsuarioYaExiste(ex))
+                return false;
+
+            string username = usernamePropuesto == null ? "" : usernamePropuesto.Trim();
+
+            MessageBox.Show(
+                _sesionIdioma.idioma.BuscarTraduccion("Mensaje.UsuarioYaExiste").Replace("{0}", username),
+                _sesionIdioma.idioma.BuscarTraduccion("Titulo.Error"),
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
+
+            return true;
+        }
+
+        private static bool EsUsuarioYaExiste(Exception ex)
+        {
+            for (Exception actual = ex; actual != null; actual = actual.InnerException)
+            {
+                if (actual is UsuarioYaExisteException)
+                    return true;
+            }
+
+            return false;
         }
 
         private void ActualizarDatosSesion()

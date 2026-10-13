@@ -74,14 +74,55 @@ namespace REPOSITORY.Features.Clientes
             ";
 
             _db.ExecuteTransaction(query);
+
+            // Lote separado: nunca referenciar columnas nuevas en el mismo lote que su ALTER.
+            // UX_Clientes_Documento es la barrera de persistencia del documento (activos e
+            // inactivos). Si ya existen duplicados historicos no se instala y el guard
+            // transaccional de Agregar/Modificar sigue validando, sin borrar ni fusionar filas.
+            string queryIndiceDocumento = @"
+                IF OBJECT_ID('Clientes', 'U') IS NOT NULL
+                   AND NOT EXISTS (
+                        SELECT 1 FROM sys.indexes
+                        WHERE name = 'UX_Clientes_Documento'
+                          AND object_id = OBJECT_ID('Clientes')
+                   )
+                   AND NOT EXISTS (
+                        SELECT 1 FROM Clientes GROUP BY documento HAVING COUNT(*) > 1
+                   )
+                BEGIN
+                    CREATE UNIQUE INDEX UX_Clientes_Documento ON Clientes(documento);
+                END
+
+                SELECT 0;
+            ";
+
+            _db.ExecuteTransaction(queryIndiceDocumento);
         }
 
         public Cliente Agregar(Cliente cliente)
         {
+            // Un solo lote: TABLOCKX+HOLDLOCK serializa el alta, revisa el documento en toda la
+            // tabla (activos e inactivos) y recien entonces inserta. En conflicto no ejecuta DML
+            // y devuelve -id del cliente que ya tiene el documento.
             string query = @"
-                INSERT INTO Clientes (nombre, apellido, documento, telefono, email, direccion, observaciones, activo)
-                VALUES (@Nombre, @Apellido, @Documento, @Telefono, @Email, @Direccion, @Observaciones, 1);
-                SELECT CAST(SCOPE_IDENTITY() AS int);
+                SET NOCOUNT ON;
+
+                DECLARE @Conflicto int = 0;
+
+                SELECT @Conflicto = ISNULL(MIN(id_cliente), 0)
+                FROM Clientes WITH (TABLOCKX, HOLDLOCK)
+                WHERE documento = @Documento;
+
+                IF @Conflicto > 0
+                BEGIN
+                    SELECT -@Conflicto;
+                END
+                ELSE
+                BEGIN
+                    INSERT INTO Clientes (nombre, apellido, documento, telefono, email, direccion, observaciones, activo)
+                    VALUES (@Nombre, @Apellido, @Documento, @Telefono, @Email, @Direccion, @Observaciones, 1);
+                    SELECT CAST(SCOPE_IDENTITY() AS int);
+                END
             ";
 
             SqlParameter[] sqlParameters = new SqlParameter[]
@@ -95,19 +136,57 @@ namespace REPOSITORY.Features.Clientes
                 new SqlParameter("@Observaciones", (object)cliente.Observaciones ?? DBNull.Value)
             };
 
-            int id = _db.ExecuteTransaction(query, sqlParameters);
+            try
+            {
+                int resultado = _db.ExecuteTransaction(query, sqlParameters);
 
-            return ObtenerPorId(id);
+                if (resultado < 0)
+                    throw CrearConflictoDocumento(-resultado, cliente.Documento);
+
+                return ObtenerPorId(resultado);
+            }
+            catch (SqlException ex) when (ex.Number == 2601 || ex.Number == 2627)
+            {
+                // Respaldo de UX_Clientes_Documento: mensaje de negocio, sin texto SQL.
+                throw new ClienteDocumentoDuplicadoException(cliente.Documento);
+            }
         }
 
         public void Modificar(Cliente cliente)
         {
+            // Mismo lote: si el documento no cambia se permite guardar aunque existan duplicados
+            // historicos (comparacion SQL); si cambia, no puede pertenecer a otro id_cliente.
             string query = @"
-                UPDATE Clientes
-                SET nombre=@Nombre, apellido=@Apellido, documento=@Documento,
-                    telefono=@Telefono, email=@Email, direccion=@Direccion,
-                    observaciones=@Observaciones
-                WHERE id_cliente=@Id;
+                SET NOCOUNT ON;
+
+                DECLARE @DocumentoActual nvarchar(50);
+                DECLARE @Conflicto int = 0;
+
+                SELECT TOP 1 @DocumentoActual = documento
+                FROM Clientes WITH (TABLOCKX, HOLDLOCK)
+                WHERE id_cliente = @Id;
+
+                IF @DocumentoActual IS NOT NULL AND @DocumentoActual <> @Documento
+                BEGIN
+                    SELECT @Conflicto = ISNULL(MIN(id_cliente), 0)
+                    FROM Clientes WITH (TABLOCKX, HOLDLOCK)
+                    WHERE documento = @Documento AND id_cliente <> @Id;
+                END
+
+                IF @Conflicto > 0
+                BEGIN
+                    SELECT -@Conflicto;
+                END
+                ELSE
+                BEGIN
+                    UPDATE Clientes
+                    SET nombre=@Nombre, apellido=@Apellido, documento=@Documento,
+                        telefono=@Telefono, email=@Email, direccion=@Direccion,
+                        observaciones=@Observaciones
+                    WHERE id_cliente=@Id;
+
+                    SELECT 0;
+                END
             ";
 
             SqlParameter[] sqlParameters = new SqlParameter[]
@@ -122,7 +201,18 @@ namespace REPOSITORY.Features.Clientes
                 new SqlParameter("@Observaciones", (object)cliente.Observaciones ?? DBNull.Value)
             };
 
-            _db.ExecuteTransaction(query, sqlParameters);
+            try
+            {
+                int resultado = _db.ExecuteTransaction(query, sqlParameters);
+
+                if (resultado < 0)
+                    throw CrearConflictoDocumento(-resultado, cliente.Documento);
+            }
+            catch (SqlException ex) when (ex.Number == 2601 || ex.Number == 2627)
+            {
+                // Respaldo de UX_Clientes_Documento: mensaje de negocio, sin texto SQL.
+                throw new ClienteDocumentoDuplicadoException(cliente.Documento);
+            }
         }
 
         public void Desactivar(int id)
@@ -174,6 +264,45 @@ namespace REPOSITORY.Features.Clientes
             return Mapear(dt.Rows[0]);
         }
 
+        // Busca quien ya ocupa el documento propuesto, en activos e inactivos.
+        // idExcluir > 0 excluye la fila editada y, si esa fila conserva su propio documento
+        // (igualdad SQL, collation de la base), no hay conflicto: los duplicados historicos
+        // siguen siendo visibles y editables sin reescribir su identidad.
+        public Cliente ObtenerConflictoDocumento(string documento, int idExcluir = 0)
+        {
+            string query = @"
+                DECLARE @MismoDocumento bit = 0;
+
+                IF @IdExcluir > 0
+                   AND EXISTS (
+                        SELECT 1 FROM Clientes
+                        WHERE id_cliente = @IdExcluir AND documento = @Documento
+                   )
+                    SET @MismoDocumento = 1;
+
+                SELECT TOP 1 id_cliente, nombre, apellido, documento, telefono, email,
+                       direccion, observaciones, activo, fecha_alta
+                FROM Clientes
+                WHERE @MismoDocumento = 0
+                  AND documento = @Documento
+                  AND id_cliente <> @IdExcluir
+                ORDER BY id_cliente;
+            ";
+
+            SqlParameter[] sqlParameters = new SqlParameter[]
+            {
+                new SqlParameter("@Documento", (object)documento ?? DBNull.Value),
+                new SqlParameter("@IdExcluir", idExcluir)
+            };
+
+            DataTable dt = _db.ExecuteQuery(query, sqlParameters);
+
+            if (dt.Rows.Count <= 0)
+                return null;
+
+            return Mapear(dt.Rows[0]);
+        }
+
         public List<Cliente> Listar(bool incluirInactivos = false)
         {
             string query = @"
@@ -196,6 +325,17 @@ namespace REPOSITORY.Features.Clientes
                 clientes.Add(Mapear(fila));
 
             return clientes;
+        }
+
+        private ClienteDocumentoDuplicadoException CrearConflictoDocumento(int idConflicto, string documento)
+        {
+            Cliente existente = ObtenerPorId(idConflicto);
+
+            if (existente == null)
+                return new ClienteDocumentoDuplicadoException(documento);
+
+            return new ClienteDocumentoDuplicadoException(
+                existente.Id, existente.Nombre, existente.Apellido, existente.Documento, existente.Activo);
         }
 
         private Cliente Mapear(DataRow fila)
