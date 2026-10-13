@@ -138,13 +138,22 @@ namespace UI.Forms.Ordenes
         private List<Equipo> _equipos = new List<Equipo>();
         private List<Usuario> _tecnicos = new List<Usuario>();
         private List<DetallePresupuesto> _itemsNuevo = new List<DetallePresupuesto>();
+        private List<Repuesto> _repuestosPresupuesto = new List<Repuesto>();
+        private Dictionary<int, string> _nombresRepuestosPresupuesto = new Dictionary<int, string>();
         private List<Reparacion> _reparaciones = new List<Reparacion>();
         private Dictionary<int, List<Prueba>> _pruebasPorReparacion = new Dictionary<int, List<Prueba>>();
         private List<Prueba> _pruebasActuales = new List<Prueba>();
+        // Intervencion cuyas pruebas quedaron efectivamente en DGV_Pruebas; 0 mientras la
+        // grilla esta cargando o cuando su lectura fallo. El aviso de intervencion anterior
+        // se crea en codigo (no vive en el Designer).
+        private int _idIntervencionPruebaCargada = 0;
+        private bool _cargandoPruebas = false;
+        private Label LBL_PruebaIntervencionAviso;
         private Dictionary<int, string> _nombresRepuestos = new Dictionary<int, string>();
         private Garantia _garantia = null;
         private bool _garantiaVigente = false;
         private EvaluacionGarantia _evaluacion = null;
+        private List<OrdenServicio> _reingresos = new List<OrdenServicio>();
 
         public FrmOrdenServicioDetalle()
             : this(0, null)
@@ -199,6 +208,7 @@ namespace UI.Forms.Ordenes
             }
 
             CargarCatalogos();
+            CargarComboRepuestosPresupuesto();
             CargarComboTiposItem();
             ActualizarTextos();
             CargarOrden();
@@ -332,17 +342,133 @@ namespace UI.Forms.Ordenes
                 List<ItemTipoItem> items = new List<ItemTipoItem>();
                 items.Add(new ItemTipoItem { Id = TipoItemPresupuesto.ManoObra, Nombre = TraducirTipoItem(TipoItemPresupuesto.ManoObra) });
                 items.Add(new ItemTipoItem { Id = TipoItemPresupuesto.Servicio, Nombre = TraducirTipoItem(TipoItemPresupuesto.Servicio) });
+                items.Add(new ItemTipoItem { Id = TipoItemPresupuesto.Repuesto, Nombre = TraducirTipoItem(TipoItemPresupuesto.Repuesto) });
 
                 CBO_PTipo.DataSource = null;
                 CBO_PTipo.DisplayMember = "Nombre";
                 CBO_PTipo.ValueMember = "Id";
                 CBO_PTipo.DataSource = items;
                 CBO_PTipo.SelectedValue = seleccionado;
+                AplicarTipoItemSeleccionado();
             }
             finally
             {
                 _cargandoCombos = false;
             }
+        }
+
+        // Repuestos del item de presupuesto: el selector solo ofrece repuestos activos
+        // (tambien con stock 0: cotizar no reserva stock) y arranca sin seleccion para exigir
+        // una eleccion explicita. El diccionario resuelve tambien repuestos inactivos que ya
+        // esten referenciados por presupuestos existentes.
+        private void CargarComboRepuestosPresupuesto()
+        {
+            _cargandoCombos = true;
+
+            try
+            {
+                List<ItemSelectorPresupuesto> items = new List<ItemSelectorPresupuesto>();
+                _repuestosPresupuesto.Clear();
+                _nombresRepuestosPresupuesto.Clear();
+
+                try
+                {
+                    RepuestoService repuestoService = new RepuestoService();
+
+                    foreach (Repuesto r in repuestoService.Listar(true))
+                    {
+                        _nombresRepuestosPresupuesto[r.Id] = DescribirRepuesto(r);
+
+                        if (!r.Activo)
+                            continue;
+
+                        _repuestosPresupuesto.Add(r);
+                        items.Add(new ItemSelectorPresupuesto { Id = r.Id, Nombre = DescribirRepuesto(r) });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MostrarError(ex);
+                }
+
+                CBO_PRepuesto.DataSource = null;
+                CBO_PRepuesto.DisplayMember = "Nombre";
+                CBO_PRepuesto.ValueMember = "Id";
+                CBO_PRepuesto.DataSource = items;
+                CBO_PRepuesto.SelectedIndex = -1;
+            }
+            finally
+            {
+                _cargandoCombos = false;
+            }
+        }
+
+        private static string DescribirRepuesto(Repuesto repuesto)
+        {
+            return repuesto.Codigo + " - " + repuesto.Descripcion;
+        }
+
+        private Repuesto BuscarRepuestoPresupuesto(int idRepuesto)
+        {
+            return _repuestosPresupuesto.FirstOrDefault(r => r.Id == idRepuesto);
+        }
+
+        private string TipoItemSeleccionado()
+        {
+            if (CBO_PTipo.SelectedValue is string)
+                return (string)CBO_PTipo.SelectedValue;
+
+            return TipoItemPresupuesto.ManoObra;
+        }
+
+        private void CBO_PTipo_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (_cargandoCombos)
+                return;
+
+            AplicarTipoItemSeleccionado();
+            AplicarPermisosDetalle();
+        }
+
+        // TXT_PDesc y CBO_PRepuesto comparten el lugar del tab Presupuesto: el tipo de item
+        // decide cual se muestra y la etiqueta LBL_PDesc cambia de clave de traduccion.
+        private void AplicarTipoItemSeleccionado()
+        {
+            bool esRepuesto = TipoItemSeleccionado() == TipoItemPresupuesto.Repuesto;
+
+            TXT_PDesc.Visible = !esRepuesto;
+            CBO_PRepuesto.Visible = esRepuesto;
+            LBL_PDesc.Tag = esRepuesto ? "OrdenDetalle.Repuesto" : "OrdenDetalle.DescripcionItem";
+
+            if (_sesionIdioma.idioma != null)
+                LBL_PDesc.Text = T(LBL_PDesc.Tag.ToString());
+        }
+
+        private void CBO_PRepuesto_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (_cargandoCombos)
+                return;
+
+            if (!(CBO_PRepuesto.SelectedValue is int))
+                return;
+
+            Repuesto repuesto = BuscarRepuestoPresupuesto((int)CBO_PRepuesto.SelectedValue);
+
+            if (repuesto == null)
+                return;
+
+            // El precio de referencia solo precarga el campo editable: el valor que queda en el
+            // detalle es el snapshot comercial que confirma el operador. Un precio de referencia
+            // fuera del rango del control no se recorta: se avisa y se deja el campo en cero.
+            if (repuesto.PrecioReferencia < NUM_PPrecio.Minimum
+                || repuesto.PrecioReferencia > NUM_PPrecio.Maximum)
+            {
+                NUM_PPrecio.Value = NUM_PPrecio.Minimum;
+                MostrarAdvertencia("Mensaje.PresupuestoPrecioInvalido");
+                return;
+            }
+
+            NUM_PPrecio.Value = repuesto.PrecioReferencia;
         }
 
         private void CargarCombosRecepcion()
@@ -2191,6 +2317,7 @@ namespace UI.Forms.Ordenes
 
             ConfigurarColumnaDetalle("Descripcion", "Columna.Descripcion");
             ConfigurarColumnaDetalle("TipoItem", "Columna.Tipo");
+            ConfigurarColumnaDetalle("IdRepuesto", "Columna.Repuesto");
             ConfigurarColumnaDetalle("Cantidad", "Columna.Cantidad");
             ConfigurarColumnaDetalle("PrecioUnitario", "Columna.Precio");
             ConfigurarColumnaDetalle("Subtotal", "Columna.Subtotal");
@@ -2199,8 +2326,6 @@ namespace UI.Forms.Ordenes
                 DGV_Detalle.Columns["Id"].Visible = false;
             if (DGV_Detalle.Columns.Contains("IdPresupuesto"))
                 DGV_Detalle.Columns["IdPresupuesto"].Visible = false;
-            if (DGV_Detalle.Columns.Contains("IdRepuesto"))
-                DGV_Detalle.Columns["IdRepuesto"].Visible = false;
 
             DGV_Detalle.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells);
         }
@@ -2242,11 +2367,35 @@ namespace UI.Forms.Ordenes
             if (DGV_Detalle.Columns.Count == 0)
                 return;
 
-            if (DGV_Detalle.Columns[e.ColumnIndex].Name != "TipoItem")
-                return;
+            string columna = DGV_Detalle.Columns[e.ColumnIndex].Name;
 
-            if (e.Value is string)
+            if (columna == "TipoItem" && e.Value is string)
+            {
                 e.Value = TraducirTipoItem((string)e.Value);
+                return;
+            }
+
+            // La columna Repuesto muestra el codigo/descripcion capturado y queda en blanco en
+            // las filas de mano de obra o servicio; debajo sigue el id de repuesto (FK).
+            if (columna == "IdRepuesto")
+            {
+                e.Value = DescribirRepuestoItem(e.Value);
+                e.FormattingApplied = true;
+            }
+        }
+
+        private string DescribirRepuestoItem(object valor)
+        {
+            if (valor == null || valor == DBNull.Value)
+                return "";
+
+            int idRepuesto = Convert.ToInt32(valor);
+            string nombre;
+
+            if (_nombresRepuestosPresupuesto.TryGetValue(idRepuesto, out nombre))
+                return nombre;
+
+            return "#" + idRepuesto;
         }
 
         private void NUM_PDescuento_ValueChanged(object sender, EventArgs e)
@@ -2451,23 +2600,43 @@ namespace UI.Forms.Ordenes
             if (_presupuesto != null)
                 return;
 
-            if (string.IsNullOrWhiteSpace(TXT_PDesc.Text))
+            string tipo = TipoItemSeleccionado();
+            string descripcion = TXT_PDesc.Text.Trim();
+            int? idRepuesto = null;
+
+            if (tipo == TipoItemPresupuesto.Repuesto)
+            {
+                if (!(CBO_PRepuesto.SelectedValue is int) || (int)CBO_PRepuesto.SelectedValue <= 0)
+                {
+                    MostrarAdvertencia("Mensaje.PresupuestoRepuestoObligatorio");
+                    return;
+                }
+
+                Repuesto repuesto = BuscarRepuestoPresupuesto((int)CBO_PRepuesto.SelectedValue);
+
+                if (repuesto == null)
+                {
+                    MostrarAdvertencia("Mensaje.PresupuestoRepuestoNoValido");
+                    return;
+                }
+
+                idRepuesto = repuesto.Id;
+                // Snapshot comercial del repuesto elegido: el item guarda codigo + descripcion.
+                descripcion = DescribirRepuesto(repuesto);
+            }
+            else if (string.IsNullOrWhiteSpace(descripcion))
             {
                 MostrarAdvertencia("Mensaje.ItemCamposObligatorios");
                 return;
             }
 
-            string tipo = TipoItemPresupuesto.ManoObra;
-
-            if (CBO_PTipo.SelectedValue is string)
-                tipo = (string)CBO_PTipo.SelectedValue;
-
             try
             {
                 DetallePresupuesto item = DetallePresupuesto.CrearNuevo(0, tipo,
-                    TXT_PDesc.Text.Trim(), (int)NUM_PCant.Value, NUM_PPrecio.Value);
+                    descripcion, (int)NUM_PCant.Value, NUM_PPrecio.Value, idRepuesto);
                 _itemsNuevo.Add(item);
                 TXT_PDesc.Text = "";
+                CBO_PRepuesto.SelectedIndex = -1;
                 NUM_PCant.Value = 1;
                 NUM_PPrecio.Value = 0;
                 DGV_Detalle.DataSource = new BindingList<DetallePresupuesto>(_itemsNuevo);
@@ -2558,6 +2727,7 @@ namespace UI.Forms.Ordenes
 
                 _itemsNuevo.Clear();
                 TXT_PDesc.Text = "";
+                CBO_PRepuesto.SelectedIndex = -1;
                 CargarOrden();
                 MostrarExito("Mensaje.OperacionExitosa");
             }
@@ -2594,6 +2764,7 @@ namespace UI.Forms.Ordenes
 
                 _itemsNuevo.Clear();
                 TXT_PDesc.Text = "";
+                CBO_PRepuesto.SelectedIndex = -1;
                 NUM_PCant.Value = 1;
                 NUM_PPrecio.Value = 0;
                 _idSeleccionPreferida = borrador.Id;
@@ -3355,8 +3526,11 @@ namespace UI.Forms.Ordenes
                 && _orden.Estado == EstadoOrdenServicio.PendientePresupuesto;
 
             CBO_SelectorPresupuesto.Enabled = !_esNuevo && !entregado;
+            bool itemRepuesto = TipoItemSeleccionado() == TipoItemPresupuesto.Repuesto;
+
             CBO_PTipo.Enabled = editaItems;
-            TXT_PDesc.Enabled = editaItems;
+            TXT_PDesc.Enabled = editaItems && !itemRepuesto;
+            CBO_PRepuesto.Enabled = editaItems && itemRepuesto;
             NUM_PCant.Enabled = editaItems;
             NUM_PPrecio.Enabled = editaItems;
             BTN_AgregarItem.Visible = !_esNuevo && puedeEditar;
@@ -3435,11 +3609,6 @@ namespace UI.Forms.Ordenes
             bool habilitaConsumo = editable && _orden != null
                 && _orden.Estado == EstadoOrdenServicio.EnReparacion
                 && hayAbiertaSeleccionada;
-            bool habilitaPrueba = editable && _orden != null
-                && _orden.Estado == EstadoOrdenServicio.EnPruebas;
-            bool puedeFinalizarPruebas = editable && _orden != null
-                && _orden.Estado == EstadoOrdenServicio.EnPruebas;
-
             BTN_IniciarReparacion.Visible = !_esNuevo && puedeEditar;
             BTN_IniciarReparacion.Enabled = puedeIniciarReparacion;
             CBO_ConsumoRepuesto.Enabled = habilitaConsumo;

@@ -83,6 +83,17 @@ DDL owner anchors (`Inicializar` unless otherwise named):
 [GarantiaRepository](../../INFRASTRUCTURE/Features/Garantias/GarantiaRepository.cs),
 [EvaluacionGarantiaRepository](../../INFRASTRUCTURE/Features/Garantias/EvaluacionGarantiaRepository.cs).
 PresupuestoRepository owns budget/detail DDL; RepuestoRepository later adds its part FK.
+
+Budget detail carries the quoted catalogue part: `EmitirConDetalle` and `CrearBorrador` bind one
+nullable `@IdRepuesto<i>` parameter per line and store `NULL` for labour/service lines; the same
+single transaction still inserts the header, all detail rows and, on emission, the order-state
+update plus its history row. Readback uses `ListarDetalle`, which already hydrates nullable
+`id_repuesto`. No `Repuestos` or `MovimientosStock` statement, lock or movement belongs to that
+batch: a budget line is a quotation that neither reserves nor deducts stock, and only
+`ReparacionRepository.ConsumirRepuesto` deducts it with its own cost snapshot.
+`OrdenServicioService.PublicarBorrador` revalidates the stored detail and rejects a stored
+subtotal that does not match it instead of rewriting persisted economics. Runtime acceptance
+pending (feat-007 `in-progress`).
 ReparacionRepository owns all three repair tables and adds the movement repair FK;
 CompraRepository adds the movement purchase FK.
 

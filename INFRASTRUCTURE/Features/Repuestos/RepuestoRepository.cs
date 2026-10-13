@@ -72,9 +72,10 @@ namespace REPOSITORY.Features.Repuestos
                     ON Repuestos(codigo);
                 END
 
-                -- CP4: infraestructura id_repuesto de PresupuestoDetalle -> Repuestos
+                -- CP4: FK id_repuesto de PresupuestoDetalle -> Repuestos
                 -- (guarda por orden de init: PresupuestoDetalle puede no existir aun).
-                -- Solo infraestructura: Emitir sigue validando solo ManoObra/Servicio.
+                -- El item Repuesto del presupuesto ya escribe esta referencia como linea
+                -- comercial cotizada: no reserva ni mueve stock.
                 IF OBJECT_ID('PresupuestoDetalle', 'U') IS NOT NULL
                     AND COL_LENGTH('PresupuestoDetalle', 'id_repuesto') IS NOT NULL
                 BEGIN

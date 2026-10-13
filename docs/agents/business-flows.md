@@ -71,7 +71,7 @@ See [PresupuestoRepository](../../INFRASTRUCTURE/Features/Ordenes/PresupuestoRep
 | Action | Window and effect |
 | --- | --- |
 | `CrearBorrador` | PendientePresupuesto; validate Original uniqueness or approved Original for an Adicional |
-| `PublicarBorrador` | Borrador -> Pendiente; order -> EsperandoRespuesta; Original needs reparable diagnosis |
+| `PublicarBorrador` | Borrador -> Pendiente; order -> EsperandoRespuesta; Original needs reparable diagnosis; the stored detail is revalidated (active part reference, quantity/price/subtotal) and an inconsistent stored subtotal is rejected instead of rewritten |
 | `EliminarBorrador` | Physical deletion of draft and detail only; not deletion of emitted history |
 | `AnularPresupuesto` pending | Required reason; EsperandoRespuesta -> PendientePresupuesto |
 | Annul approved Original | Only AutorizadoReparacion, with no repair interventions started |
@@ -103,8 +103,28 @@ not a dedicated request ID. Changing those history strings can change workflow b
 ### Price is not cost
 
 Budget rows contain selling price/subtotal; consumption rows snapshot part cost.
-`ValidarItemsYCalcularSubtotal` accepts only ManoObra and Servicio. The Repuesto type constant
-and nullable detail FK are reserved infrastructure, not an emit-enabled budget item type.
+`ValidarItemsYCalcularSubtotal` accepts ManoObra, Servicio and Repuesto and validates **every**
+line through [DetallePresupuesto](../../DOMAIN/Features/Ordenes/DetallePresupuesto.cs),
+`ValidarParaGuardar` (positive `cantidad`, non-negative `precio` with at most two decimals and a
+`decimal(18,2)`-representable amount, `subtotal = cantidad * precio`) before any budget write.
+A Repuesto item also needs a `PresupuestoDetalle.id_repuesto` that
+[RepuestoRepository](../../INFRASTRUCTURE/Features/Repuestos/RepuestoRepository.cs),
+`ObtenerPorId`, resolves to an **active** catalogue part; available stock is not required, so an
+active part with zero stock stays quotable. Selecting a part in
+[FrmOrdenServicioDetalle](../../PRESENTATION/Forms/Ordenes/FrmOrdenServicioDetalle.cs),
+`CBO_PRepuesto_SelectedIndexChanged`, prefills the editable unit price from `PrecioReferencia` and
+snapshots `codigo - descripcion` into the line; the operator's value is the commercial snapshot
+and the master cost is neither substituted nor re-read later.
+
+**Implemented rule, runtime acceptance pending (feat-007 in-progress):** saving, emitting,
+publishing, approving or annulling a budget line neither reserves nor moves stock. Stock changes
+only through explicit repair consumption (`ReparacionRepository.ConsumirRepuesto`, with its own
+`id_consumo` and cost snapshot) or a purchase/stock-adjustment path. `PresupuestoDetalle` and
+`ReparacionRepuesto` remain separate: there is no automatic budget-detail-to-consumption link,
+reservation, reconciliation or auto-consumption. Annulment keeps the previously quoted part,
+quantity and price with no stock reversal and re-emission stores newly entered snapshots; the
+rollback windows in the table above are unchanged. Zero-price lines are allowed
+(`precio >= 0`).
 There is no general budget revision/version graph.
 
 ## Repairs, consumption, and explicit testing

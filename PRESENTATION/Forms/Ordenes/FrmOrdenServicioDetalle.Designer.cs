@@ -62,6 +62,7 @@ namespace UI.Forms.Ordenes
             this.CBO_PTipo = new System.Windows.Forms.ComboBox();
             this.LBL_PDesc = new System.Windows.Forms.Label();
             this.TXT_PDesc = new System.Windows.Forms.TextBox();
+            this.CBO_PRepuesto = new System.Windows.Forms.ComboBox();
             this.LBL_PCant = new System.Windows.Forms.Label();
             this.NUM_PCant = new System.Windows.Forms.NumericUpDown();
             this.LBL_PPrecio = new System.Windows.Forms.Label();
@@ -655,6 +656,7 @@ namespace UI.Forms.Ordenes
             this.TAB_Presupuesto.Controls.Add(this.CBO_PTipo);
             this.TAB_Presupuesto.Controls.Add(this.LBL_PDesc);
             this.TAB_Presupuesto.Controls.Add(this.TXT_PDesc);
+            this.TAB_Presupuesto.Controls.Add(this.CBO_PRepuesto);
             this.TAB_Presupuesto.Controls.Add(this.LBL_PCant);
             this.TAB_Presupuesto.Controls.Add(this.NUM_PCant);
             this.TAB_Presupuesto.Controls.Add(this.LBL_PPrecio);
@@ -773,6 +775,7 @@ namespace UI.Forms.Ordenes
             this.CBO_PTipo.Name = "CBO_PTipo";
             this.CBO_PTipo.Size = new System.Drawing.Size(130, 21);
             this.CBO_PTipo.TabIndex = 2;
+            this.CBO_PTipo.SelectedIndexChanged += new System.EventHandler(this.CBO_PTipo_SelectedIndexChanged);
             //
             // LBL_PDesc
             //
@@ -791,6 +794,18 @@ namespace UI.Forms.Ordenes
             this.TXT_PDesc.Name = "TXT_PDesc";
             this.TXT_PDesc.Size = new System.Drawing.Size(270, 22);
             this.TXT_PDesc.TabIndex = 4;
+            //
+            // CBO_PRepuesto
+            //
+            // Selector de repuesto del item de presupuesto: comparte el lugar de TXT_PDesc y
+            // solo se muestra cuando el tipo de item es Repuesto.
+            this.CBO_PRepuesto.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.CBO_PRepuesto.Location = new System.Drawing.Point(288, 175);
+            this.CBO_PRepuesto.Name = "CBO_PRepuesto";
+            this.CBO_PRepuesto.Size = new System.Drawing.Size(270, 22);
+            this.CBO_PRepuesto.TabIndex = 4;
+            this.CBO_PRepuesto.Visible = false;
+            this.CBO_PRepuesto.SelectedIndexChanged += new System.EventHandler(this.CBO_PRepuesto_SelectedIndexChanged);
             //
             // LBL_PCant
             //
@@ -2020,6 +2035,7 @@ namespace UI.Forms.Ordenes
         private System.Windows.Forms.ComboBox CBO_PTipo;
         private System.Windows.Forms.Label LBL_PDesc;
         private System.Windows.Forms.TextBox TXT_PDesc;
+        private System.Windows.Forms.ComboBox CBO_PRepuesto;
         private System.Windows.Forms.Label LBL_PCant;
         private System.Windows.Forms.NumericUpDown NUM_PCant;
         private System.Windows.Forms.Label LBL_PPrecio;

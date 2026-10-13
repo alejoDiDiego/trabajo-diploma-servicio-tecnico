@@ -139,6 +139,8 @@ namespace REPOSITORY.Features.Ordenes
                         -- CP4: la FK de id_repuesto hacia Repuestos se agrega en RepuestoRepository
                         -- con guarda (igual que FK_MovimientosStock_Reparacion en ReparacionRepository):
                         -- Ordenes se inicializa ANTES que Repuestos y en BD fresca Repuestos aun no existe.
+                        -- id_repuesto es la referencia comercial de un item Repuesto emitido: no
+                        -- reserva ni mueve stock (el stock solo cambia por consumo de reparacion).
                     );
                 END
                 ELSE
@@ -175,11 +177,10 @@ namespace REPOSITORY.Features.Ordenes
                             REFERENCES Presupuestos(id_presupuesto);
                     END
 
-                    -- CP4: infraestructura id_repuesto -> Repuestos (sin habilitar en Emitir:
-                    -- la validacion sigue siendo solo ManoObra/Servicio).
-                    -- La FK se crea en RepuestoRepository.Inicializar con guarda (corre despues,
-                    -- cuando Repuestos ya existe); aqui no se crea para no fallar en BD fresca
-                    -- donde Ordenes se inicializa antes que Repuestos.
+                    -- id_repuesto -> Repuestos: el item Repuesto ya persiste su referencia en
+                    -- EmitirConDetalle/CrearBorrador. La FK se crea en RepuestoRepository.Inicializar
+                    -- con guarda (corre despues, cuando Repuestos ya existe); aqui no se crea para no
+                    -- fallar en BD fresca donde Ordenes se inicializa antes que Repuestos.
                 END
 
                 SELECT 0;
@@ -233,8 +234,9 @@ namespace REPOSITORY.Features.Ordenes
             {
                 sb.Append(@"
                 INSERT INTO PresupuestoDetalle (id_presupuesto, id_repuesto, tipo_item, descripcion, cantidad, precio_unitario, subtotal)
-                VALUES (@P, NULL, @Tipo" + i + ", @Desc" + i + ", @Cant" + i + ", @Precio" + i + ", @Sub" + i + ");");
+                VALUES (@P, @IdRepuesto" + i + ", @Tipo" + i + ", @Desc" + i + ", @Cant" + i + ", @Precio" + i + ", @Sub" + i + ");");
 
+                parametros.Add(new SqlParameter("@IdRepuesto" + i, (object)items[i].IdRepuesto ?? DBNull.Value));
                 parametros.Add(new SqlParameter("@Tipo" + i, items[i].TipoItem));
                 parametros.Add(new SqlParameter("@Desc" + i, items[i].Descripcion));
                 parametros.Add(new SqlParameter("@Cant" + i, items[i].Cantidad));
@@ -600,8 +602,9 @@ namespace REPOSITORY.Features.Ordenes
             {
                 sb.Append(@"
                 INSERT INTO PresupuestoDetalle (id_presupuesto, id_repuesto, tipo_item, descripcion, cantidad, precio_unitario, subtotal)
-                VALUES (@P, NULL, @Tipo" + i + ", @Desc" + i + ", @Cant" + i + ", @Precio" + i + ", @Sub" + i + ");");
+                VALUES (@P, @IdRepuesto" + i + ", @Tipo" + i + ", @Desc" + i + ", @Cant" + i + ", @Precio" + i + ", @Sub" + i + ");");
 
+                parametros.Add(new SqlParameter("@IdRepuesto" + i, (object)items[i].IdRepuesto ?? DBNull.Value));
                 parametros.Add(new SqlParameter("@Tipo" + i, items[i].TipoItem));
                 parametros.Add(new SqlParameter("@Desc" + i, items[i].Descripcion));
                 parametros.Add(new SqlParameter("@Cant" + i, items[i].Cantidad));

@@ -850,6 +850,8 @@ namespace REPOSITORY.Features.Idiomas
             AgregarSeed("Ingles", "TipoItem.ManoObra", "Labor");
             AgregarSeed("Espanol", "TipoItem.Servicio", "Servicio");
             AgregarSeed("Ingles", "TipoItem.Servicio", "Service");
+            AgregarSeed("Espanol", "TipoItem.Repuesto", "Repuesto");
+            AgregarSeed("Ingles", "TipoItem.Repuesto", "Spare part");
             AgregarSeed("Espanol", "PresupuestoEstado.Pendiente", "Pendiente");
             AgregarSeed("Ingles", "PresupuestoEstado.Pendiente", "Pending");
             AgregarSeed("Espanol", "PresupuestoEstado.Aprobado", "Aprobado");
@@ -904,6 +906,16 @@ namespace REPOSITORY.Features.Idiomas
             AgregarSeed("Ingles", "Mensaje.OrdenCamposObligatorios", "Complete the required order fields.");
             AgregarSeed("Espanol", "Mensaje.ItemCamposObligatorios", "Agregue al menos un item con descripcion para el presupuesto.");
             AgregarSeed("Ingles", "Mensaje.ItemCamposObligatorios", "Add at least one item with a description for the estimate.");
+            AgregarSeed("Espanol", "Mensaje.PresupuestoRepuestoObligatorio", "Seleccione un repuesto para el item del presupuesto.");
+            AgregarSeed("Ingles", "Mensaje.PresupuestoRepuestoObligatorio", "Select a spare part for the estimate item.");
+            AgregarSeed("Espanol", "Mensaje.PresupuestoRepuestoNoValido", "El repuesto seleccionado no existe o esta inactivo. Seleccione un repuesto activo.");
+            AgregarSeed("Ingles", "Mensaje.PresupuestoRepuestoNoValido", "The selected spare part does not exist or is inactive. Select an active spare part.");
+            AgregarSeed("Espanol", "Mensaje.PresupuestoCantidadInvalida", "La cantidad del item debe ser mayor a cero.");
+            AgregarSeed("Ingles", "Mensaje.PresupuestoCantidadInvalida", "The item quantity must be greater than zero.");
+            AgregarSeed("Espanol", "Mensaje.PresupuestoPrecioInvalido", "Ingrese un precio unitario valido, no negativo y con hasta dos decimales.");
+            AgregarSeed("Ingles", "Mensaje.PresupuestoPrecioInvalido", "Enter a valid non-negative unit price with up to two decimal places.");
+            AgregarSeed("Espanol", "Mensaje.PresupuestoDetalleInvalido", "El detalle del presupuesto no es valido. Revise los items y sus importes.");
+            AgregarSeed("Ingles", "Mensaje.PresupuestoDetalleInvalido", "The estimate detail is invalid. Check its items and amounts.");
 
             AgregarSeed("Espanol", "Titulo.ConfirmarCancelacion", "Confirmar cancelacion");
             AgregarSeed("Ingles", "Titulo.ConfirmarCancelacion", "Confirm cancellation");

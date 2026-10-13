@@ -278,9 +278,10 @@ namespace APPLICATION.Features.Ordenes
 
                 return presupuestoDb;
             }
-            catch (ReglaNegocioException ex)
+            catch (ReglaNegocioException)
             {
-                throw new ReglaNegocioException(ex.Message);
+                // Se conserva el tipo concreto (p. ej. DetallePresupuestoInvalidoException).
+                throw;
             }
             catch (Exception ex)
             {
@@ -432,9 +433,10 @@ namespace APPLICATION.Features.Ordenes
 
                 return presupuestoDb;
             }
-            catch (ReglaNegocioException ex)
+            catch (ReglaNegocioException)
             {
-                throw new ReglaNegocioException(ex.Message);
+                // Se conserva el tipo concreto (p. ej. DetallePresupuestoInvalidoException).
+                throw;
             }
             catch (Exception ex)
             {
@@ -572,9 +574,10 @@ namespace APPLICATION.Features.Ordenes
 
                 return borradorDb;
             }
-            catch (ReglaNegocioException ex)
+            catch (ReglaNegocioException)
             {
-                throw new ReglaNegocioException(ex.Message);
+                // Se conserva el tipo concreto (p. ej. DetallePresupuestoInvalidoException).
+                throw;
             }
             catch (Exception ex)
             {
@@ -634,15 +637,25 @@ namespace APPLICATION.Features.Ordenes
                     }
                 }
 
+                // El borrador se publica con el detalle ya almacenado: se revalida cada item y
+                // se rechaza un subtotal que no coincida en vez de corregir economicos persistidos.
+                List<DetallePresupuesto> detalleDb = _presupuestoRepository.ListarDetalle(borradorDb.Id);
+                decimal subtotalDetalle = ValidarItemsYCalcularSubtotal(detalleDb);
+
+                if (subtotalDetalle != borradorDb.Subtotal)
+                    throw new DetallePresupuestoInvalidoException("Mensaje.PresupuestoDetalleInvalido",
+                        "El subtotal del borrador no coincide con el detalle almacenado.");
+
                 _presupuestoRepository.PublicarBorrador(borradorDb.Id, idUsuario);
 
                 BitacoraService bitacoraService = new BitacoraService();
                 bitacoraService.Registrar("PRESUPUESTO_BORRADOR_PUBLICADO",
                     "id_orden=" + ordenDb.Id + " | id_presupuesto=" + borradorDb.Id, "ORDENES");
             }
-            catch (ReglaNegocioException ex)
+            catch (ReglaNegocioException)
             {
-                throw new ReglaNegocioException(ex.Message);
+                // Se conserva el tipo concreto (p. ej. DetallePresupuestoInvalidoException).
+                throw;
             }
             catch (Exception ex)
             {
@@ -1900,14 +1913,31 @@ namespace APPLICATION.Features.Ordenes
 
             foreach (DetallePresupuesto item in items)
             {
-                if (item.TipoItem != TipoItemPresupuesto.ManoObra
-                    && item.TipoItem != TipoItemPresupuesto.Servicio)
-                    throw new ReglaNegocioException("El tipo de item solo puede ser mano de obra o servicio.");
+                if (item == null)
+                    throw new DetallePresupuestoInvalidoException("Mensaje.PresupuestoDetalleInvalido",
+                        "El detalle del presupuesto contiene un item invalido.");
+
+                item.ValidarParaGuardar();
+
+                if (item.TipoItem == TipoItemPresupuesto.Repuesto)
+                    ValidarRepuestoDelItem(item);
 
                 subtotal += item.Subtotal;
             }
 
             return subtotal;
+        }
+
+        // Un item de repuesto cotiza un repuesto activo del catalogo: se exige que exista y
+        // este activo, sin exigir stock disponible y sin recalcular el precio de venta
+        // (snapshot comercial capturado en el item).
+        private void ValidarRepuestoDelItem(DetallePresupuesto item)
+        {
+            Repuesto repuestoDb = _repuestoRepository.ObtenerPorId(item.IdRepuesto.Value);
+
+            if (repuestoDb == null || !repuestoDb.Activo)
+                throw new DetallePresupuestoInvalidoException("Mensaje.PresupuestoRepuestoNoValido",
+                    "El repuesto seleccionado no existe o esta inactivo.");
         }
 
         private OrdenServicio ObtenerOrdenExistente(int idOrden)
