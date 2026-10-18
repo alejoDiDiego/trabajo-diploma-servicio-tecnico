@@ -1,4 +1,13 @@
 # Session Progress
+## Publication handoff (2026-10-18)
+
+- Owner explicitly authorised commit and push on the current branch, excluding the three local-tool entries. This supersedes historical no-Git-authorization statements below for this publication only; no branch switch, merge, rebase or force push was authorised or performed.
+- Published project commit: c2adddeba934398c9878c50cc0f56b3e153bb527, branch checkpoint-6-arreglos-y-mejoras, 36 project files (17 previously tracked modifications and 19 G06 documentation files). Remote branch and local HEAD were independently confirmed equal with git ls-remote after push.
+- Completed scope remains feat-001 through feat-012, all done; no passing feature was reopened. The current N01 request is a chat-only academic draft, not a new repository implementation task or backlog.
+- Checks before publication: init.ps1 PASS (12 tasks, 292 links, git diff --check); staged diff --check PASS; exact 36-file publication scope; high-signal credential-pattern scan of additions clean. No new build, application launch, database access or runtime certification.
+- Preserved locally and excluded from both commits: .codegraph/, .playwright-mcp/, skills-lock.json. No content in those entries was modified.
+- This handoff-only follow-up commit records the publication; no application or G06 artifact is changed by this note. Future source work remains subject to the repository harness and a newly authorised feature.
+
 
 ## G06 documentation round (feat-012, 2026-10-17)
 
