@@ -301,6 +301,64 @@ hold two open siblings (they stay visible and untouched; further creation is blo
 close), the reception-timestamp meaning of the date column, and the ES/EN rendering at other
 window sizes.
 
+### Original order read-only once it has warranty re-entries (feat-011)
+
+**Implemented policy, source verified; runtime acceptance pending.** Two different warranty rules
+coexist and must never be conflated:
+
+| Rule | Predicate | Effect |
+| --- | --- | --- |
+| Only one **open** re-entry (feat-009) | `PredicadoReingresoAbierto`, state and evaluation aware | Refuses creating another re-entry while a sibling is open, and refuses cancelling the delivery of a re-entry while a sibling is open |
+| Original order **read-only** (feat-011) | `TieneReingresosGarantia`, the pure **existence** of a child order with `id_orden_origen` = the original and `tipo_orden = 'Garantia'` | Refuses every mutation of that order - delivery cancellation included - regardless of the child's state, of the coverage validity or of the child being closed |
+
+Once the first re-entry exists the original simply stays as it ended; the freeze is not a state and
+never rewrites the order. **Still allowed:** inspection (header, history, budgets, repairs, tests,
+delivery, warranty and the re-entry grid), `Ver original`, and creating another re-entry, which
+keeps the feat-009 single-open precondition and its own pre-check. **Orders without any warranty
+re-entry keep the previous behaviour**, including ENT-03 delivery cancellation and the delivered
+read-only lock.
+
+Guard inventory in [OrdenServicioService](../../APPLICATION/Features/Ordenes/OrdenServicioService.cs):
+every existing-order mutator loads its order through the new `ObtenerOrdenParaModificar`
+(existence plus `EsSoloConsultaPorReingresos`, the repository read) and refuses with
+`OrdenOriginalSoloConsultaException` before any domain mutation, repository write or audit:
+`AsignarTecnico`, `IniciarDiagnostico`, `FinalizarDiagnostico`, `EmitirPresupuesto`,
+`RegistrarAprobacionPresupuesto`, `RegistrarRechazoPresupuesto`, `SolicitarAdicional`,
+`EmitirAdicional`, `RegistrarAprobacionAdicional`, `RegistrarRechazoAdicional`, `CrearBorrador`,
+`PublicarBorrador`, `EliminarBorrador` (which previously did not load its owning order at all),
+`AnularPresupuesto` (before the document or the order is touched), `CancelarSolicitudAdicional`,
+`QuitarConsumo`, `CancelarOrden`, `EntregarOrden`, `CancelarEntrega`, `ModificarRecepcion`,
+`IniciarReparacion`, `ConsumirRepuesto`, `FinalizarReparacion`, `RegistrarPrueba`,
+`FinalizarPruebas`, `ReabrirPruebas` and `AnularPrueba`. `EvaluarReingreso` guards the **target**
+re-entry only; reading its frozen original for coherence stays allowed. `CrearOrden`,
+`CrearReingresoGarantia` (new child, never a mutation of the original) and every read
+(`ObtenerPorId`, `ObtenerDiagnostico`, `ObtenerPresupuesto*`, `Listar*`, `ObtenerEntrega`,
+`PuedeCancelarSolicitud`, `ListarHistorial`, the re-entry reads) keep using
+`ObtenerOrdenExistente`. `GarantiaService.Crear` and `GarantiaService.Anular` validate their target
+original before writing coverage. Guarded methods rethrow `ReglaNegocioException` with `throw;`
+so the concrete type (and its `ClaveMensaje`) survives to the form.
+
+**Persistence edge:** the guards above are the friendly, application-level refusal.
+[OrdenServicioRepository](../../INFRASTRUCTURE/Features/Ordenes/OrdenServicioRepository.cs)
+and [EntregaRepository](../../INFRASTRUCTURE/Features/Ordenes/EntregaRepository.cs) repeat the
+existence test inside the locked batches that can bypass a service call
+(`CancelarEntregaConTransicion`, `CambiarEstadoConHistorial`, `ReabrirPruebasConTransicion`), and
+`CrearConHistorial` re-reads the origin eligibility before inserting a re-entry. See
+[persistence](persistence.md) for the sentinels and the lock invariant.
+
+**UI affordance (feat-011):** `FrmOrdenServicioDetalle` reads the predicate together with the order
+in `CargarOrden` (a failed read shows the error and closes the detail instead of defaulting to
+editable), resets it in `CargarModoNuevo`, shows the wrapping `LBL_OrdenSoloConsulta` banner above
+the tabs and intersects every mutation in `AplicarPermisosDetalle`,
+`ActualizarAccionesPruebas`, `ActualizarBotonAnularPrueba` and `AplicarPermisosGarantia` with the
+freeze. Tabs, read-only grids, history, `Ver original`, `Cerrar` and the existing-budget selector
+stay usable; `CargarSelectorPresupuesto` omits the "new document" pseudo entries while frozen.
+`BTN_CrearReingreso` deliberately keeps its permission, coverage and single-open rules.
+`FrmOrdenesServicio` revalidates the selected row before enabling `Cancelar`/`Entregar` and shows
+`Mensaje.OrdenOriginalSoloConsulta` from a fresh check before its prompts. There is still no
+cancel-delivery action in the orders list; cancellation of a delivery is reached through the order
+detail.
+
 ## Dashboard and report definitions
 
 Source: [ReporteRepository](../../INFRASTRUCTURE/Features/Reportes/ReporteRepository.cs), named

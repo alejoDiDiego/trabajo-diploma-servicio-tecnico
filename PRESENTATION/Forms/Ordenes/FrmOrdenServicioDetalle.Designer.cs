@@ -151,6 +151,7 @@ namespace UI.Forms.Ordenes
             this.LBL_ReingresosGarantia = new System.Windows.Forms.Label();
             this.DGV_ReingresosGarantia = new System.Windows.Forms.DataGridView();
             this.BTN_Cerrar = new System.Windows.Forms.Button();
+            this.LBL_OrdenSoloConsulta = new System.Windows.Forms.Label();
             this.PNL_Header.SuspendLayout();
             this.TAB_Detalle.SuspendLayout();
             this.TAB_Recepcion.SuspendLayout();
@@ -295,7 +296,7 @@ namespace UI.Forms.Ordenes
             this.TAB_Detalle.Controls.Add(this.TAB_Historial);
             this.TAB_Detalle.Controls.Add(this.TAB_Entrega);
             this.TAB_Detalle.Controls.Add(this.TAB_Garantia);
-            this.TAB_Detalle.Location = new System.Drawing.Point(12, 112);
+            this.TAB_Detalle.Location = new System.Drawing.Point(12, 142);
             this.TAB_Detalle.Name = "TAB_Detalle";
             this.TAB_Detalle.SelectedIndex = 0;
             this.TAB_Detalle.Size = new System.Drawing.Size(896, 480);
@@ -1955,6 +1956,26 @@ namespace UI.Forms.Ordenes
             this.DGV_ReingresosGarantia.Size = new System.Drawing.Size(864, 137);
             this.DGV_ReingresosGarantia.TabIndex = 17;
             //
+            // LBL_OrdenSoloConsulta
+            //
+            // Aviso de solo consulta de la orden original: va entre el encabezado y las pestanas,
+            // con dos lineas de alto (AutoSize=false) para que el texto traducido se envuelva sin
+            // tapar el encabezado ni los datos de las pestanas. Su alto esta reservado en el
+            // diseno: las pestanas bajan 30 px y la ventana crece lo mismo, de modo que el borde
+            // inferior de cada pestana y BTN_Cerrar quedan donde estaban.
+            this.LBL_OrdenSoloConsulta.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.LBL_OrdenSoloConsulta.AutoSize = false;
+            this.LBL_OrdenSoloConsulta.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(57)))), ((int)(((byte)(43)))));
+            this.LBL_OrdenSoloConsulta.Location = new System.Drawing.Point(12, 106);
+            this.LBL_OrdenSoloConsulta.Name = "LBL_OrdenSoloConsulta";
+            this.LBL_OrdenSoloConsulta.Size = new System.Drawing.Size(896, 32);
+            this.LBL_OrdenSoloConsulta.TabIndex = 3;
+            this.LBL_OrdenSoloConsulta.Tag = "OrdenDetalle.OrdenOriginalSoloConsulta";
+            this.LBL_OrdenSoloConsulta.Text = "Solo consulta";
+            this.LBL_OrdenSoloConsulta.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.LBL_OrdenSoloConsulta.Visible = false;
+            //
             // BTN_Cerrar
             //
             this.BTN_Cerrar.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
@@ -1964,7 +1985,7 @@ namespace UI.Forms.Ordenes
             this.BTN_Cerrar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.BTN_Cerrar.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.BTN_Cerrar.ForeColor = System.Drawing.Color.White;
-            this.BTN_Cerrar.Location = new System.Drawing.Point(793, 610);
+            this.BTN_Cerrar.Location = new System.Drawing.Point(793, 640);
             this.BTN_Cerrar.Name = "BTN_Cerrar";
             this.BTN_Cerrar.Size = new System.Drawing.Size(115, 32);
             this.BTN_Cerrar.TabIndex = 2;
@@ -1978,8 +1999,9 @@ namespace UI.Forms.Ordenes
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(236)))), ((int)(((byte)(240)))), ((int)(((byte)(241)))));
             this.CancelButton = this.BTN_Cerrar;
-            this.ClientSize = new System.Drawing.Size(920, 654);
+            this.ClientSize = new System.Drawing.Size(920, 684);
             this.Controls.Add(this.BTN_Cerrar);
+            this.Controls.Add(this.LBL_OrdenSoloConsulta);
             this.Controls.Add(this.TAB_Detalle);
             this.Controls.Add(this.PNL_Header);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
@@ -2162,5 +2184,6 @@ namespace UI.Forms.Ordenes
         private System.Windows.Forms.Label LBL_ReingresosGarantia;
         private System.Windows.Forms.DataGridView DGV_ReingresosGarantia;
         private System.Windows.Forms.Button BTN_Cerrar;
+        private System.Windows.Forms.Label LBL_OrdenSoloConsulta;
     }
 }

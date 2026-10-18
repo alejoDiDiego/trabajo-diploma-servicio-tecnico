@@ -9,6 +9,14 @@ namespace REPOSITORY.Features.Ordenes
 {
     public class OrdenServicioRepository
     {
+        // Codigos que devuelven los lotes bloqueados. El service los traduce a la excepcion de
+        // negocio correspondiente; los literales SQL de cada lote deben coincidir con estas
+        // constantes.
+        public const int ResultadoOk = 0;
+        public const int ResultadoReingresoAbierto = -1;
+        public const int ResultadoOrdenSoloConsulta = -2;
+        public const int ResultadoOrigenNoDisponible = -3;
+
         private readonly SqlHelper _db;
 
         public OrdenServicioRepository()
@@ -191,12 +199,16 @@ namespace REPOSITORY.Features.Ordenes
             _db.ExecuteTransaction(query);
         }
 
-        public OrdenServicio CrearConHistorial(OrdenServicio orden, int idUsuario, string observacion)
+        public OrdenServicio CrearConHistorial(OrdenServicio orden, int idUsuario, string observacion,
+            out int codigoResultado)
         {
-            // Batch atomico: guard de hermanos (solo reingresos de garantia, antes de cualquier
-            // INSERT), INSERT orden con numero temporal, numero=id, INSERT historial. En conflicto
-            // no se ejecuta ningun INSERT, la orden original nunca se modifica y el lote devuelve
-            // -1; el service lo convierte en la excepcion de negocio tipada.
+            // Batch atomico: elegibilidad del origen + guard de hermanos (solo reingresos de
+            // garantia, antes de cualquier INSERT), INSERT orden con numero temporal, numero=id,
+            // INSERT historial. No se escribe nada y la orden original nunca se modifica cuando el
+            // origen dejo de estar Entregado + Reparado con entrega registrada (-3) o cuando ya
+            // hay un reingreso abierto (-1); el service convierte cada codigo en su excepcion
+            // tipada. La elegibilidad se RE-LEE bajo el mismo bloqueo que la cancelacion de
+            // entrega y las transiciones del original: el lote que llega segundo se rechaza.
             string query = @"
                 SET NOCOUNT ON;
 
@@ -204,6 +216,24 @@ namespace REPOSITORY.Features.Ordenes
 
                 IF @TipoOrden = 'Garantia' AND @IdOrdenOrigen IS NOT NULL
                 BEGIN
+                    DECLARE @EstadoOrigen nvarchar(50) = NULL;
+                    DECLARE @ResultadoOrigen nvarchar(50) = NULL;
+
+                    SELECT @EstadoOrigen = estado, @ResultadoOrigen = resultado
+                    FROM OrdenesServicio WITH (TABLOCKX, HOLDLOCK)
+                    WHERE id_orden = @IdOrdenOrigen;
+
+                    IF @EstadoOrigen IS NULL
+                        OR @EstadoOrigen <> 'Entregado'
+                        OR @ResultadoOrigen IS NULL
+                        OR @ResultadoOrigen <> 'Reparado'
+                        OR OBJECT_ID('Entregas', 'U') IS NULL
+                        OR NOT EXISTS (SELECT 1 FROM Entregas WHERE id_orden = @IdOrdenOrigen)
+                    BEGIN
+                        SELECT -3;
+                        RETURN;
+                    END
+
                     SELECT @Conflicto = COUNT(*)
                     FROM OrdenesServicio o WITH (TABLOCKX, HOLDLOCK)
                     WHERE " + PredicadoReingresoAbierto + @";
@@ -254,28 +284,48 @@ namespace REPOSITORY.Features.Ordenes
 
             int id = _db.ExecuteTransaction(query, sqlParameters);
 
+            codigoResultado = id;
+
             if (id <= 0)
                 return null;
 
             return ObtenerPorId(id);
         }
 
-        public void CambiarEstadoConHistorial(int idOrden, string estadoAnterior, string estadoNuevo,
+        public int CambiarEstadoConHistorial(int idOrden, string estadoAnterior, string estadoNuevo,
             int idUsuario, string observacion, string resultado, string observacionResultado, int? idTecnico)
         {
-            // Batch atomico: UPDATE orden + INSERT historial. Si falla el historial, rollback total.
+            // Batch atomico: guard del bloqueo por reingresos + UPDATE orden + INSERT historial.
+            // Si el guard detecta que la orden ya tiene reingresos de garantia (-2) o si falla el
+            // historial, no queda ninguna escritura y la transaccion hace rollback total.
             string query = @"
-                UPDATE OrdenesServicio
-                SET estado = @EstadoNuevo,
-                    resultado = COALESCE(@Resultado, resultado),
-                    observacion_resultado = COALESCE(@ObservacionResultado, observacion_resultado),
-                    id_tecnico_asignado = COALESCE(@IdTecnico, id_tecnico_asignado)
-                WHERE id_orden = @Id;
+                SET NOCOUNT ON;
 
-                INSERT INTO HistorialOrdenes (id_orden, estado_anterior, estado_nuevo, fecha_hora, id_usuario, observacion)
-                VALUES (@Id, @EstadoAnterior, @EstadoNuevo, GETDATE(), @IdUsuario, @Observacion);
+                DECLARE @HijosGarantia int = 0;
 
-                SELECT 0;
+                SELECT @HijosGarantia = COUNT(*)
+                FROM OrdenesServicio o WITH (TABLOCKX, HOLDLOCK)
+                WHERE o.id_orden_origen = @Id
+                  AND o.tipo_orden = 'Garantia';
+
+                IF @HijosGarantia > 0
+                BEGIN
+                    SELECT -2;
+                END
+                ELSE
+                BEGIN
+                    UPDATE OrdenesServicio
+                    SET estado = @EstadoNuevo,
+                        resultado = COALESCE(@Resultado, resultado),
+                        observacion_resultado = COALESCE(@ObservacionResultado, observacion_resultado),
+                        id_tecnico_asignado = COALESCE(@IdTecnico, id_tecnico_asignado)
+                    WHERE id_orden = @Id;
+
+                    INSERT INTO HistorialOrdenes (id_orden, estado_anterior, estado_nuevo, fecha_hora, id_usuario, observacion)
+                    VALUES (@Id, @EstadoAnterior, @EstadoNuevo, GETDATE(), @IdUsuario, @Observacion);
+
+                    SELECT 0;
+                END
             ";
 
             SqlParameter[] sqlParameters = new SqlParameter[]
@@ -290,24 +340,42 @@ namespace REPOSITORY.Features.Ordenes
                 new SqlParameter("@IdTecnico", idTecnico.HasValue ? (object)idTecnico.Value : DBNull.Value)
             };
 
-            _db.ExecuteTransaction(query, sqlParameters);
+            return _db.ExecuteTransaction(query, sqlParameters);
         }
 
-        public void ReabrirPruebasConTransicion(int idOrden, string estadoAnterior, string estadoNuevo,
+        public int ReabrirPruebasConTransicion(int idOrden, string estadoAnterior, string estadoNuevo,
             int idUsuario, string observacion)
         {
-            // Batch atomico: UPDATE orden (ListoRetiro/Reparado -> EnPruebas/NULL) + INSERT historial.
-            // Metodo propio porque CambiarEstadoConHistorial usa COALESCE y no puede escribir NULL explicito.
+            // Batch atomico: guard del bloqueo por reingresos + UPDATE orden
+            // (ListoRetiro/Reparado -> EnPruebas/NULL) + INSERT historial. Metodo propio porque
+            // CambiarEstadoConHistorial usa COALESCE y no puede escribir NULL explicito. Con
+            // reingresos de garantia ya creados el lote devuelve -2 y no escribe nada.
             string query = @"
-                UPDATE OrdenesServicio
-                SET estado = @EstadoNuevo,
-                    resultado = NULL
-                WHERE id_orden = @Id;
+                SET NOCOUNT ON;
 
-                INSERT INTO HistorialOrdenes (id_orden, estado_anterior, estado_nuevo, fecha_hora, id_usuario, observacion)
-                VALUES (@Id, @EstadoAnterior, @EstadoNuevo, GETDATE(), @IdUsuario, @Observacion);
+                DECLARE @HijosGarantia int = 0;
 
-                SELECT 0;
+                SELECT @HijosGarantia = COUNT(*)
+                FROM OrdenesServicio o WITH (TABLOCKX, HOLDLOCK)
+                WHERE o.id_orden_origen = @Id
+                  AND o.tipo_orden = 'Garantia';
+
+                IF @HijosGarantia > 0
+                BEGIN
+                    SELECT -2;
+                END
+                ELSE
+                BEGIN
+                    UPDATE OrdenesServicio
+                    SET estado = @EstadoNuevo,
+                        resultado = NULL
+                    WHERE id_orden = @Id;
+
+                    INSERT INTO HistorialOrdenes (id_orden, estado_anterior, estado_nuevo, fecha_hora, id_usuario, observacion)
+                    VALUES (@Id, @EstadoAnterior, @EstadoNuevo, GETDATE(), @IdUsuario, @Observacion);
+
+                    SELECT 0;
+                END
             ";
 
             SqlParameter[] sqlParameters = new SqlParameter[]
@@ -319,7 +387,7 @@ namespace REPOSITORY.Features.Ordenes
                 new SqlParameter("@Observacion", (object)observacion ?? DBNull.Value)
             };
 
-            _db.ExecuteTransaction(query, sqlParameters);
+            return _db.ExecuteTransaction(query, sqlParameters);
         }
 
         public void AsignarTecnico(int idOrden, int idTecnico)
@@ -495,6 +563,31 @@ namespace REPOSITORY.Features.Ordenes
                 reingresos.Add(Mapear(fila));
 
             return reingresos;
+        }
+
+        public bool TieneReingresosGarantia(int idOrdenOrigen)
+        {
+            // Exclusivamente la EXISTENCIA de ordenes hijas de garantia: no filtra por estado del
+            // hijo ni evalua cobertura, vigencia o cierre de la evaluacion. Es el predicado del
+            // bloqueo de la orden original (pasa a solo consulta), no el de "reingreso abierto".
+            string query = @"
+                SELECT COUNT(*)
+                FROM OrdenesServicio
+                WHERE id_orden_origen = @IdOrdenOrigen
+                  AND tipo_orden = 'Garantia';
+            ";
+
+            SqlParameter[] sqlParameters = new SqlParameter[]
+            {
+                new SqlParameter("@IdOrdenOrigen", idOrdenOrigen)
+            };
+
+            DataTable dt = _db.ExecuteQuery(query, sqlParameters);
+
+            if (dt.Rows.Count <= 0 || dt.Rows[0][0] == DBNull.Value)
+                return false;
+
+            return Convert.ToInt32(dt.Rows[0][0]) > 0;
         }
 
         private OrdenServicio Mapear(DataRow fila)

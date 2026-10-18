@@ -1,0 +1,97 @@
+@startuml G06.5-services
+
+' G06.5 - Diagrama de clases del modulo SERVICES (estado actual del repositorio)
+' Fuente: los 4 tipos propios declarados en los archivos Compile de SERVICES\SERVICES.csproj.
+' SessionManager y SesionIdioma son singletons en memoria; EncryptionService y PasswordHasher
+' implementan los contratos de ABSTRACTIONS.Services.
+
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+package "SERVICES.Auth" as PKG_AUTH {
+  class SessionManager {
+    - _lock : object <<static>>
+    - _session : SessionManager <<static>>
+    - _permisos : List<IPermisoComponent>
+    + Usuario : IUsuario
+    + FechaInicio : DateTime
+    + IntegridadComprometida : bool
+    - SessionManager()
+    + GetInstance() : SessionManager
+    + HaySesionActiva() : bool
+    + ObtenerUsuarioActual() : IUsuario
+    + Login(usuario : IUsuario) : void
+    + Login(usuario : IUsuario, permisos : IEnumerable<IPermisoComponent>) : void
+    + TienePermiso(codigo : string) : bool
+    + TieneAlgunPermiso(codigos : string[]) : bool
+    + ListarPermisos() : List<IPermisoComponent>
+    + Logout() : void
+    - ContieneCodigo(permiso : IPermisoComponent, codigo : string) : bool
+    - MismoPermiso(permisoA : IPermisoComponent, permisoB : IPermisoComponent) : bool
+  }
+}
+
+package "SERVICES.Idiomas" as PKG_IDIOMAS {
+  class SesionIdioma {
+    - sesionIdioma : SesionIdioma <<static>>
+    + idioma : IIdioma
+    + ObservadoresRegistrados : IList<IObservador>
+    - SesionIdioma()
+    + GetInstance() : SesionIdioma
+    + CambiarIdioma(idiomaSeleccionado : IIdioma) : void
+    + ActualizarObservadores(idiomaSeleccionado : IIdioma) : void
+    + RegistrarObservador(observador : IObservador) : void
+    + DesregistrarObservador(observador : IObservador) : void
+  }
+}
+
+package "SERVICES.Security" as PKG_SECURITY {
+  class EncryptionService {
+    - Passphrase : string <<const>>
+    - Salt : byte[] <<static>>
+    + Encrypt(plainText : string) : string
+    + Decrypt(cipherText : string) : string
+  }
+  class PasswordHasher {
+    - SaltSize = 16 <<const>>
+    - KeySize = 32 <<const>>
+    - Iterations = 10000 <<const>>
+    - _hashAlgorithm : HashAlgorithmName <<static>>
+    + HashPassword(password : string) : string
+    + VerifyHashedPassword(hashedPassword : string, password : string) : bool
+  }
+}
+
+' --- Implementaciones de los contratos de ABSTRACTIONS ---
+IObservado <|.. SesionIdioma
+IEncryptionService <|.. EncryptionService
+IPasswordHasher <|.. PasswordHasher
+SesionIdioma o-- IObservador : ObservadoresRegistrados
+
+' --- Consumidores en otras capas (referencia externa) ---
+SessionManager <.. OrdenServicioService : consulta usuario y permisos efectivos
+SessionManager <.. UsuarioService : Login y Logout
+SesionIdioma <.. FrmPrincipal : CambiarIdioma y registro de observadores
+
+note right of SessionManager
+  Singleton con bloqueo. GetInstance falla si nadie inicio sesion;
+  ObtenerUsuarioActual devuelve null sin excepcion. TienePermiso recorre
+  el Composite de permisos efectivos.
+end note
+
+note right of SesionIdioma
+  Publica el idioma vigente y notifica a los formularios
+  registrados como IObservador. No persiste nada.
+end note
+
+note bottom of EncryptionService
+  Cifra y descifra con AES y clave derivada por PBKDF2.
+  La frase y la sal no se reproducen en la documentacion.
+end note
+
+note bottom of PasswordHasher
+  Devuelve sal + hash en Base64 y verifica con comparacion
+  de secuencias; no expone la contrasena.
+end note
+
+@enduml

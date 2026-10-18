@@ -97,8 +97,9 @@ namespace APPLICATION.Features.Ordenes
                     idCliente, idEquipo, problema, estadoFisico, accesorios,
                     observacionesIngreso, idUsuarioAlta);
 
+                int codigoAlta;
                 OrdenServicio ordenDb = _ordenRepository.CrearConHistorial(
-                    ordenToSave, idUsuarioAlta, "Orden creada");
+                    ordenToSave, idUsuarioAlta, "Orden creada", out codigoAlta);
 
                 BitacoraService bitacoraService = new BitacoraService();
                 bitacoraService.Registrar("Orden creada",
@@ -121,7 +122,7 @@ namespace APPLICATION.Features.Ordenes
             try
             {
                 int idUsuario = ObtenerIdUsuarioSesion();
-                OrdenServicio ordenDb = ObtenerOrdenExistente(idOrden);
+                OrdenServicio ordenDb = ObtenerOrdenParaModificar(idOrden);
 
                 Usuario tecnico = ValidarTecnicoElegible(idTecnico);
 
@@ -132,9 +133,10 @@ namespace APPLICATION.Features.Ordenes
                 bitacoraService.Registrar("Tecnico asignado",
                     "id_orden=" + idOrden + " | id_tecnico=" + tecnico.Id, "ORDENES");
             }
-            catch (ReglaNegocioException ex)
+            catch (ReglaNegocioException)
             {
-                throw new ReglaNegocioException(ex.Message);
+                // Se conserva el tipo concreto (p. ej. OrdenOriginalSoloConsultaException).
+                throw;
             }
             catch (Exception ex)
             {
@@ -147,20 +149,22 @@ namespace APPLICATION.Features.Ordenes
             try
             {
                 int idUsuario = ObtenerIdUsuarioSesion();
-                OrdenServicio ordenDb = ObtenerOrdenExistente(idOrden);
+                OrdenServicio ordenDb = ObtenerOrdenParaModificar(idOrden);
                 string estadoAnterior = ordenDb.Estado;
 
                 ordenDb.IniciarDiagnostico();
 
-                _ordenRepository.CambiarEstadoConHistorial(ordenDb.Id, estadoAnterior, ordenDb.Estado,
-                    idUsuario, "Diagnostico iniciado", null, null, null);
+                ValidarBloqueoSoloConsulta(_ordenRepository.CambiarEstadoConHistorial(
+                    ordenDb.Id, estadoAnterior, ordenDb.Estado,
+                    idUsuario, "Diagnostico iniciado", null, null, null));
 
                 BitacoraService bitacoraService = new BitacoraService();
                 bitacoraService.Registrar("Diagnostico iniciado", "id_orden=" + idOrden, "ORDENES");
             }
-            catch (ReglaNegocioException ex)
+            catch (ReglaNegocioException)
             {
-                throw new ReglaNegocioException(ex.Message);
+                // Se conserva el tipo concreto (p. ej. OrdenOriginalSoloConsultaException).
+                throw;
             }
             catch (Exception ex)
             {
@@ -174,7 +178,7 @@ namespace APPLICATION.Features.Ordenes
             try
             {
                 int idUsuario = ObtenerIdUsuarioSesion();
-                OrdenServicio ordenDb = ObtenerOrdenExistente(idOrden);
+                OrdenServicio ordenDb = ObtenerOrdenParaModificar(idOrden);
 
                 if (ordenDb.Estado != EstadoOrdenServicio.EnDiagnostico)
                     throw new ReglaNegocioException("Solo se puede finalizar el diagnostico de una orden en diagnostico.");
@@ -226,9 +230,10 @@ namespace APPLICATION.Features.Ordenes
 
                 return diagnosticoDb;
             }
-            catch (ReglaNegocioException ex)
+            catch (ReglaNegocioException)
             {
-                throw new ReglaNegocioException(ex.Message);
+                // Se conserva el tipo concreto (p. ej. OrdenOriginalSoloConsultaException).
+                throw;
             }
             catch (Exception ex)
             {
@@ -242,7 +247,7 @@ namespace APPLICATION.Features.Ordenes
             try
             {
                 int idUsuario = ObtenerIdUsuarioSesion();
-                OrdenServicio ordenDb = ObtenerOrdenExistente(idOrden);
+                OrdenServicio ordenDb = ObtenerOrdenParaModificar(idOrden);
 
                 if (ordenDb.Estado != EstadoOrdenServicio.PendientePresupuesto)
                     throw new ReglaNegocioException("Solo se puede emitir el presupuesto de una orden pendiente de presupuesto.");
@@ -294,7 +299,7 @@ namespace APPLICATION.Features.Ordenes
             try
             {
                 int idUsuario = ObtenerIdUsuarioSesion();
-                OrdenServicio ordenDb = ObtenerOrdenExistente(idOrden);
+                OrdenServicio ordenDb = ObtenerOrdenParaModificar(idOrden);
 
                 Presupuesto presupuestoDb = _presupuestoRepository.ObtenerPorOrden(idOrden);
 
@@ -316,9 +321,10 @@ namespace APPLICATION.Features.Ordenes
                 BitacoraService bitacoraService = new BitacoraService();
                 bitacoraService.Registrar("Presupuesto aprobado", "id_orden=" + idOrden, "ORDENES");
             }
-            catch (ReglaNegocioException ex)
+            catch (ReglaNegocioException)
             {
-                throw new ReglaNegocioException(ex.Message);
+                // Se conserva el tipo concreto (p. ej. OrdenOriginalSoloConsultaException).
+                throw;
             }
             catch (Exception ex)
             {
@@ -331,7 +337,7 @@ namespace APPLICATION.Features.Ordenes
             try
             {
                 int idUsuario = ObtenerIdUsuarioSesion();
-                OrdenServicio ordenDb = ObtenerOrdenExistente(idOrden);
+                OrdenServicio ordenDb = ObtenerOrdenParaModificar(idOrden);
 
                 Presupuesto presupuestoDb = _presupuestoRepository.ObtenerPorOrden(idOrden);
 
@@ -351,9 +357,10 @@ namespace APPLICATION.Features.Ordenes
                 BitacoraService bitacoraService = new BitacoraService();
                 bitacoraService.Registrar("Presupuesto rechazado", "id_orden=" + idOrden, "ORDENES");
             }
-            catch (ReglaNegocioException ex)
+            catch (ReglaNegocioException)
             {
-                throw new ReglaNegocioException(ex.Message);
+                // Se conserva el tipo concreto (p. ej. OrdenOriginalSoloConsultaException).
+                throw;
             }
             catch (Exception ex)
             {
@@ -370,7 +377,7 @@ namespace APPLICATION.Features.Ordenes
                 if (string.IsNullOrWhiteSpace(motivo))
                     throw new ReglaNegocioException("El motivo de la solicitud es obligatorio.");
 
-                OrdenServicio ordenDb = ObtenerOrdenExistente(idOrden);
+                OrdenServicio ordenDb = ObtenerOrdenParaModificar(idOrden);
 
                 Presupuesto original = _presupuestoRepository.ObtenerOriginal(idOrden);
 
@@ -384,15 +391,17 @@ namespace APPLICATION.Features.Ordenes
 
                 ordenDb.SolicitarAdicional();
 
-                _ordenRepository.CambiarEstadoConHistorial(ordenDb.Id, estadoAnterior, ordenDb.Estado,
-                    idUsuario, motivo.Trim(), null, null, null);
+                ValidarBloqueoSoloConsulta(_ordenRepository.CambiarEstadoConHistorial(
+                    ordenDb.Id, estadoAnterior, ordenDb.Estado,
+                    idUsuario, motivo.Trim(), null, null, null));
 
                 BitacoraService bitacoraService = new BitacoraService();
                 bitacoraService.Registrar("ADICIONAL_SOLICITADO", "id_orden=" + idOrden, "ORDENES");
             }
-            catch (ReglaNegocioException ex)
+            catch (ReglaNegocioException)
             {
-                throw new ReglaNegocioException(ex.Message);
+                // Se conserva el tipo concreto (p. ej. OrdenOriginalSoloConsultaException).
+                throw;
             }
             catch (Exception ex)
             {
@@ -406,7 +415,7 @@ namespace APPLICATION.Features.Ordenes
             try
             {
                 int idUsuario = ObtenerIdUsuarioSesion();
-                OrdenServicio ordenDb = ObtenerOrdenExistente(idOrden);
+                OrdenServicio ordenDb = ObtenerOrdenParaModificar(idOrden);
 
                 if (ordenDb.Estado != EstadoOrdenServicio.PendientePresupuesto)
                     throw new ReglaNegocioException("Solo se puede emitir el presupuesto adicional de una orden pendiente de presupuesto.");
@@ -458,7 +467,7 @@ namespace APPLICATION.Features.Ordenes
                 if (presupuestoDb.Tipo != TipoPresupuesto.Adicional)
                     throw new ReglaNegocioException("Solo se puede aprobar un presupuesto adicional por este medio.");
 
-                OrdenServicio ordenDb = ObtenerOrdenExistente(presupuestoDb.IdOrden);
+                OrdenServicio ordenDb = ObtenerOrdenParaModificar(presupuestoDb.IdOrden);
 
                 if (ordenDb.Estado != EstadoOrdenServicio.EsperandoRespuesta)
                     throw new ReglaNegocioException("Solo se puede aprobar el adicional de una orden en espera de respuesta.");
@@ -484,9 +493,10 @@ namespace APPLICATION.Features.Ordenes
                 bitacoraService.Registrar("ADICIONAL_APROBADO",
                     "id_orden=" + ordenDb.Id + " | id_presupuesto=" + presupuestoDb.Id, "ORDENES");
             }
-            catch (ReglaNegocioException ex)
+            catch (ReglaNegocioException)
             {
-                throw new ReglaNegocioException(ex.Message);
+                // Se conserva el tipo concreto (p. ej. OrdenOriginalSoloConsultaException).
+                throw;
             }
             catch (Exception ex)
             {
@@ -508,7 +518,7 @@ namespace APPLICATION.Features.Ordenes
                 if (presupuestoDb.Tipo != TipoPresupuesto.Adicional)
                     throw new ReglaNegocioException("Solo se puede rechazar un presupuesto adicional por este medio.");
 
-                OrdenServicio ordenDb = ObtenerOrdenExistente(presupuestoDb.IdOrden);
+                OrdenServicio ordenDb = ObtenerOrdenParaModificar(presupuestoDb.IdOrden);
 
                 presupuestoDb.Rechazar(motivo, medioRespuesta, observaciones);
                 ordenDb.MarcarPresupuestoRechazado(motivo);
@@ -521,9 +531,10 @@ namespace APPLICATION.Features.Ordenes
                 bitacoraService.Registrar("ADICIONAL_RECHAZADO",
                     "id_orden=" + ordenDb.Id + " | id_presupuesto=" + presupuestoDb.Id, "ORDENES");
             }
-            catch (ReglaNegocioException ex)
+            catch (ReglaNegocioException)
             {
-                throw new ReglaNegocioException(ex.Message);
+                // Se conserva el tipo concreto (p. ej. OrdenOriginalSoloConsultaException).
+                throw;
             }
             catch (Exception ex)
             {
@@ -537,7 +548,7 @@ namespace APPLICATION.Features.Ordenes
             try
             {
                 ObtenerIdUsuarioSesion();
-                OrdenServicio ordenDb = ObtenerOrdenExistente(idOrden);
+                OrdenServicio ordenDb = ObtenerOrdenParaModificar(idOrden);
 
                 if (ordenDb.Estado != EstadoOrdenServicio.PendientePresupuesto)
                     throw new ReglaNegocioException("Solo se puede crear el borrador de una orden pendiente de presupuesto.");
@@ -599,7 +610,7 @@ namespace APPLICATION.Features.Ordenes
                 if (borradorDb.Estado != EstadoPresupuesto.Borrador)
                     throw new ReglaNegocioException("Solo se puede publicar un presupuesto en borrador.");
 
-                OrdenServicio ordenDb = ObtenerOrdenExistente(borradorDb.IdOrden);
+                OrdenServicio ordenDb = ObtenerOrdenParaModificar(borradorDb.IdOrden);
 
                 if (ordenDb.Estado != EstadoOrdenServicio.PendientePresupuesto)
                     throw new ReglaNegocioException("Solo se puede publicar el borrador de una orden pendiente de presupuesto.");
@@ -677,15 +688,20 @@ namespace APPLICATION.Features.Ordenes
                 if (borradorDb.Estado != EstadoPresupuesto.Borrador)
                     throw new ReglaNegocioException("Solo se puede eliminar un presupuesto en borrador.");
 
+                // La orden duena del borrador se resuelve y se valida antes de borrar: si ya tiene
+                // reingresos de garantia queda en solo consulta.
+                ObtenerOrdenParaModificar(borradorDb.IdOrden);
+
                 _presupuestoRepository.EliminarBorrador(borradorDb.Id);
 
                 BitacoraService bitacoraService = new BitacoraService();
                 bitacoraService.Registrar("PRESUPUESTO_ELIMINADO",
                     "id_orden=" + borradorDb.IdOrden + " | id_presupuesto=" + borradorDb.Id, "ORDENES");
             }
-            catch (ReglaNegocioException ex)
+            catch (ReglaNegocioException)
             {
-                throw new ReglaNegocioException(ex.Message);
+                // Se conserva el tipo concreto (p. ej. OrdenOriginalSoloConsultaException).
+                throw;
             }
             catch (Exception ex)
             {
@@ -707,12 +723,14 @@ namespace APPLICATION.Features.Ordenes
                 if (presupuestoDb == null)
                     throw new ReglaNegocioException("El presupuesto seleccionado no existe.");
 
+                // La orden duena se resuelve y se valida ANTES de tocar el documento o la orden:
+                // una orden original con reingresos de garantia queda en solo consulta.
+                OrdenServicio ordenDb = ObtenerOrdenParaModificar(presupuestoDb.IdOrden);
+                string estadoOrdenAnterior = ordenDb.Estado;
+
                 string estadoAnterior = presupuestoDb.Estado;
 
                 presupuestoDb.Anular(motivo.Trim());
-
-                OrdenServicio ordenDb = ObtenerOrdenExistente(presupuestoDb.IdOrden);
-                string estadoOrdenAnterior = ordenDb.Estado;
                 string nuevoEstadoOrden = null;
 
                 if (presupuestoDb.Tipo == TipoPresupuesto.Original)
@@ -816,9 +834,10 @@ namespace APPLICATION.Features.Ordenes
                     "id_orden=" + ordenDb.Id + " | id_presupuesto=" + presupuestoDb.Id
                     + " | tipo=" + presupuestoDb.Tipo + " | estado_anterior=" + estadoAnterior, "ORDENES");
             }
-            catch (ReglaNegocioException ex)
+            catch (ReglaNegocioException)
             {
-                throw new ReglaNegocioException(ex.Message);
+                // Se conserva el tipo concreto (p. ej. OrdenOriginalSoloConsultaException).
+                throw;
             }
             catch (Exception ex)
             {
@@ -831,7 +850,7 @@ namespace APPLICATION.Features.Ordenes
             try
             {
                 int idUsuario = ObtenerIdUsuarioSesion();
-                OrdenServicio ordenDb = ObtenerOrdenExistente(idOrden);
+                OrdenServicio ordenDb = ObtenerOrdenParaModificar(idOrden);
 
                 if (ordenDb.Estado != EstadoOrdenServicio.PendientePresupuesto)
                     throw new ReglaNegocioException("Solo se puede cancelar la solicitud adicional de una orden pendiente de presupuesto.");
@@ -859,9 +878,10 @@ namespace APPLICATION.Features.Ordenes
                 BitacoraService bitacoraService = new BitacoraService();
                 bitacoraService.Registrar("SOLICITUD_ADICIONAL_CANCELADA", "id_orden=" + idOrden, "ORDENES");
             }
-            catch (ReglaNegocioException ex)
+            catch (ReglaNegocioException)
             {
-                throw new ReglaNegocioException(ex.Message);
+                // Se conserva el tipo concreto (p. ej. OrdenOriginalSoloConsultaException).
+                throw;
             }
             catch (Exception ex)
             {
@@ -917,7 +937,7 @@ namespace APPLICATION.Features.Ordenes
                 if (reparacionDb.FechaFin.HasValue)
                     throw new ReglaNegocioException("La reparacion ya fue finalizada.");
 
-                OrdenServicio ordenDb = ObtenerOrdenExistente(reparacionDb.IdOrden);
+                OrdenServicio ordenDb = ObtenerOrdenParaModificar(reparacionDb.IdOrden);
 
                 if (ordenDb.Estado != EstadoOrdenServicio.EnReparacion)
                     throw new ReglaNegocioException("Solo se puede quitar consumo de una orden en reparacion.");
@@ -947,9 +967,10 @@ namespace APPLICATION.Features.Ordenes
                 bitacoraService.Registrar("CONSUMO_DEVUELTO",
                     "id_reparacion=" + idReparacion + " | id_repuesto=" + idRepuesto + " | cantidad=" + cantidad, "ORDENES");
             }
-            catch (ReglaNegocioException ex)
+            catch (ReglaNegocioException)
             {
-                throw new ReglaNegocioException(ex.Message);
+                // Se conserva el tipo concreto (p. ej. OrdenOriginalSoloConsultaException).
+                throw;
             }
             catch (Exception ex)
             {
@@ -962,7 +983,7 @@ namespace APPLICATION.Features.Ordenes
             try
             {
                 int idUsuario = ObtenerIdUsuarioSesion();
-                OrdenServicio ordenDb = ObtenerOrdenExistente(idOrden);
+                OrdenServicio ordenDb = ObtenerOrdenParaModificar(idOrden);
                 string estadoAnterior = ordenDb.Estado;
 
                 ordenDb.Cancelar(motivo);
@@ -970,15 +991,17 @@ namespace APPLICATION.Features.Ordenes
                 // F2: Cancelar() solo admite hasta AutorizadoReparacion, donde nunca hay
                 // intervencion abierta (se crea recien al IniciarReparacion desde Autorizado).
                 // Se mantiene el batch simple sin rama CerrarAbiertaYCancelar.
-                _ordenRepository.CambiarEstadoConHistorial(ordenDb.Id, estadoAnterior, ordenDb.Estado,
-                    idUsuario, "Orden cancelada", ordenDb.Resultado, ordenDb.ObservacionResultado, null);
+                ValidarBloqueoSoloConsulta(_ordenRepository.CambiarEstadoConHistorial(
+                    ordenDb.Id, estadoAnterior, ordenDb.Estado,
+                    idUsuario, "Orden cancelada", ordenDb.Resultado, ordenDb.ObservacionResultado, null));
 
                 BitacoraService bitacoraService = new BitacoraService();
                 bitacoraService.Registrar("Orden cancelada", "id_orden=" + idOrden, "ORDENES");
             }
-            catch (ReglaNegocioException ex)
+            catch (ReglaNegocioException)
             {
-                throw new ReglaNegocioException(ex.Message);
+                // Se conserva el tipo concreto (p. ej. OrdenOriginalSoloConsultaException).
+                throw;
             }
             catch (Exception ex)
             {
@@ -991,7 +1014,7 @@ namespace APPLICATION.Features.Ordenes
             try
             {
                 int idUsuario = ObtenerIdUsuarioSesion();
-                OrdenServicio ordenDb = ObtenerOrdenExistente(idOrden);
+                OrdenServicio ordenDb = ObtenerOrdenParaModificar(idOrden);
                 string estadoAnterior = ordenDb.Estado;
 
                 ordenDb.Entregar();
@@ -1007,9 +1030,10 @@ namespace APPLICATION.Features.Ordenes
 
                 return entregaDb;
             }
-            catch (ReglaNegocioException ex)
+            catch (ReglaNegocioException)
             {
-                throw new ReglaNegocioException(ex.Message);
+                // Se conserva el tipo concreto (p. ej. OrdenOriginalSoloConsultaException).
+                throw;
             }
             catch (Exception ex)
             {
@@ -1078,8 +1102,16 @@ namespace APPLICATION.Features.Ordenes
                     idCliente, original.IdEquipo, idOrdenOriginal, problema, estadoFisico,
                     accesorios, observacionesIngreso, idUsuarioAlta);
 
+                int codigoAltaReingreso;
                 OrdenServicio reingresoDb = _ordenRepository.CrearConHistorial(
-                    reingresoToSave, idUsuarioAlta, "Reingreso por garantia");
+                    reingresoToSave, idUsuarioAlta, "Reingreso por garantia", out codigoAltaReingreso);
+
+                // El lote bloqueado re-lee la elegibilidad del origen: si la orden original dejo de
+                // estar Entregada con resultado Reparado y entrega registrada, no se inserto nada.
+                if (reingresoDb == null
+                    && codigoAltaReingreso == OrdenServicioRepository.ResultadoOrigenNoDisponible)
+                    throw new ReingresoGarantiaOrigenNoDisponibleException("Mensaje.GarantiaOrigenNoDisponible",
+                        "La orden original ya no esta entregada con resultado reparado.");
 
                 // Sentinela del guard bloqueado: no se inserto ninguna orden y el bloqueo es de
                 // negocio, no un error tecnico.
@@ -1118,7 +1150,7 @@ namespace APPLICATION.Features.Ordenes
                 if (string.IsNullOrWhiteSpace(motivo))
                     throw new ReglaNegocioException("El motivo de la evaluacion es obligatorio.");
 
-                OrdenServicio reingreso = ObtenerOrdenExistente(idOrdenReingreso);
+                OrdenServicio reingreso = ObtenerOrdenParaModificar(idOrdenReingreso);
 
                 if (reingreso.TipoOrden != TipoOrden.Garantia)
                     throw new ReglaNegocioException("Solo se puede evaluar un reingreso de garantia.");
@@ -1179,17 +1211,19 @@ namespace APPLICATION.Features.Ordenes
                     aceptada ? EstadoEvaluacionGarantia.Aceptada : EstadoEvaluacionGarantia.Rechazada,
                     motivo.Trim(), observaciones);
 
-                _ordenRepository.CambiarEstadoConHistorial(reingreso.Id, estadoAnterior, estadoNuevo,
+                ValidarBloqueoSoloConsulta(_ordenRepository.CambiarEstadoConHistorial(
+                    reingreso.Id, estadoAnterior, estadoNuevo,
                     idUsuario, aceptada ? "Garantia aceptada" : "Garantia rechazada",
-                    resultado, observacionResultado, null);
+                    resultado, observacionResultado, null));
 
                 BitacoraService bitacoraService = new BitacoraService();
                 bitacoraService.Registrar(aceptada ? "Garantia aceptada" : "Garantia rechazada",
                     "id_orden=" + idOrdenReingreso + " | motivo=" + motivo.Trim(), "ORDENES");
             }
-            catch (ReglaNegocioException ex)
+            catch (ReglaNegocioException)
             {
-                throw new ReglaNegocioException(ex.Message);
+                // Se conserva el tipo concreto (p. ej. OrdenOriginalSoloConsultaException).
+                throw;
             }
             catch (Exception ex)
             {
@@ -1206,7 +1240,7 @@ namespace APPLICATION.Features.Ordenes
                 if (string.IsNullOrWhiteSpace(motivo))
                     throw new ReglaNegocioException("El motivo de la cancelacion de la entrega es obligatorio.");
 
-                OrdenServicio ordenDb = ObtenerOrdenExistente(idOrden);
+                OrdenServicio ordenDb = ObtenerOrdenParaModificar(idOrden);
                 string estadoAnterior = ordenDb.Estado;
 
                 Entrega entregaDb = _entregaRepository.ObtenerPorOrden(idOrden);
@@ -1236,7 +1270,15 @@ namespace APPLICATION.Features.Ordenes
                     ordenDb.Id, estadoAnterior, ordenDb.Estado, limpiarResultado, idUsuario,
                     "Entrega cancelada. Motivo: " + motivo.Trim());
 
-                if (resultadoCancelacion < 0)
+                // Borde directo del lote bloqueado: si la orden ya tiene reingresos de garantia su
+                // entrega no se cancela y no se escribio nada.
+                if (resultadoCancelacion == OrdenServicioRepository.ResultadoOrdenSoloConsulta)
+                    throw new OrdenOriginalSoloConsultaException("Mensaje.OrdenOriginalSoloConsulta",
+                        "La orden original es de solo consulta porque ya tiene reingresos de garantia. No se puede modificar ni cancelar su entrega.");
+
+                // Borde inverso del lote bloqueado: otro reingreso de la misma orden original sigue
+                // abierto.
+                if (resultadoCancelacion == OrdenServicioRepository.ResultadoReingresoAbierto)
                     throw new ReingresoGarantiaAbiertoException("Mensaje.GarantiaReaperturaBloqueada",
                         "La orden original ya tiene otro reingreso de garantia abierto.");
 
@@ -1260,7 +1302,7 @@ namespace APPLICATION.Features.Ordenes
         {
             try
             {
-                OrdenServicio ordenDb = ObtenerOrdenExistente(idOrden);
+                OrdenServicio ordenDb = ObtenerOrdenParaModificar(idOrden);
 
                 ordenDb.ActualizarRecepcion(problema, estadoFisico, accesorios, observacionesIngreso);
 
@@ -1272,9 +1314,10 @@ namespace APPLICATION.Features.Ordenes
 
                 return ordenDb;
             }
-            catch (ReglaNegocioException ex)
+            catch (ReglaNegocioException)
             {
-                throw new ReglaNegocioException(ex.Message);
+                // Se conserva el tipo concreto (p. ej. OrdenOriginalSoloConsultaException).
+                throw;
             }
             catch (Exception ex)
             {
@@ -1560,7 +1603,7 @@ namespace APPLICATION.Features.Ordenes
             try
             {
                 int idUsuario = ObtenerIdUsuarioSesion();
-                OrdenServicio ordenDb = ObtenerOrdenExistente(idOrden);
+                OrdenServicio ordenDb = ObtenerOrdenParaModificar(idOrden);
 
                 if (!ordenDb.IdTecnicoAsignado.HasValue)
                     throw new ReglaNegocioException("La orden debe tener un tecnico asignado para iniciar la reparacion.");
@@ -1595,9 +1638,10 @@ namespace APPLICATION.Features.Ordenes
 
                 return _reparacionRepository.ObtenerPorId(idReparacion);
             }
-            catch (ReglaNegocioException ex)
+            catch (ReglaNegocioException)
             {
-                throw new ReglaNegocioException(ex.Message);
+                // Se conserva el tipo concreto (p. ej. OrdenOriginalSoloConsultaException).
+                throw;
             }
             catch (Exception ex)
             {
@@ -1619,7 +1663,7 @@ namespace APPLICATION.Features.Ordenes
                 if (reparacionDb.FechaFin.HasValue)
                     throw new ReglaNegocioException("La reparacion ya fue finalizada.");
 
-                OrdenServicio ordenDb = ObtenerOrdenExistente(reparacionDb.IdOrden);
+                OrdenServicio ordenDb = ObtenerOrdenParaModificar(reparacionDb.IdOrden);
 
                 if (ordenDb.Estado != EstadoOrdenServicio.EnReparacion)
                     throw new ReglaNegocioException("Solo se puede consumir repuestos de una orden en reparacion.");
@@ -1642,9 +1686,10 @@ namespace APPLICATION.Features.Ordenes
                 bitacoraService.Registrar("Repuesto consumido",
                     "id_reparacion=" + idReparacion + " | id_repuesto=" + idRepuesto + " | cantidad=" + cantidad, "ORDENES");
             }
-            catch (ReglaNegocioException ex)
+            catch (ReglaNegocioException)
             {
-                throw new ReglaNegocioException(ex.Message);
+                // Se conserva el tipo concreto (p. ej. OrdenOriginalSoloConsultaException).
+                throw;
             }
             catch (Exception ex)
             {
@@ -1666,7 +1711,7 @@ namespace APPLICATION.Features.Ordenes
                 if (reparacionDb.FechaFin.HasValue)
                     throw new ReglaNegocioException("La reparacion ya fue finalizada.");
 
-                OrdenServicio ordenDb = ObtenerOrdenExistente(reparacionDb.IdOrden);
+                OrdenServicio ordenDb = ObtenerOrdenParaModificar(reparacionDb.IdOrden);
 
                 if (ordenDb.Estado != EstadoOrdenServicio.EnReparacion)
                     throw new ReglaNegocioException("Solo se puede finalizar la reparacion de una orden en reparacion.");
@@ -1681,9 +1726,10 @@ namespace APPLICATION.Features.Ordenes
                 bitacoraService.Registrar("Reparacion finalizada",
                     "id_reparacion=" + idReparacion + " | id_orden=" + reparacionDb.IdOrden, "ORDENES");
             }
-            catch (ReglaNegocioException ex)
+            catch (ReglaNegocioException)
             {
-                throw new ReglaNegocioException(ex.Message);
+                // Se conserva el tipo concreto (p. ej. OrdenOriginalSoloConsultaException).
+                throw;
             }
             catch (Exception ex)
             {
@@ -1702,7 +1748,7 @@ namespace APPLICATION.Features.Ordenes
                 if (reparacionDb == null)
                     throw new ReglaNegocioException("La reparacion seleccionada no existe.");
 
-                OrdenServicio ordenDb = ObtenerOrdenExistente(reparacionDb.IdOrden);
+                OrdenServicio ordenDb = ObtenerOrdenParaModificar(reparacionDb.IdOrden);
 
                 if (ordenDb.Estado != EstadoOrdenServicio.EnPruebas)
                     throw new ReglaNegocioException("Solo se puede registrar la prueba de una orden en pruebas.");
@@ -1734,9 +1780,10 @@ namespace APPLICATION.Features.Ordenes
 
                 return _reparacionRepository.ObtenerPruebaPorId(idPrueba);
             }
-            catch (ReglaNegocioException ex)
+            catch (ReglaNegocioException)
             {
-                throw new ReglaNegocioException(ex.Message);
+                // Se conserva el tipo concreto (p. ej. OrdenOriginalSoloConsultaException).
+                throw;
             }
             catch (Exception ex)
             {
@@ -1749,7 +1796,7 @@ namespace APPLICATION.Features.Ordenes
             try
             {
                 int idUsuario = ObtenerIdUsuarioSesion();
-                OrdenServicio ordenDb = ObtenerOrdenExistente(idOrden);
+                OrdenServicio ordenDb = ObtenerOrdenParaModificar(idOrden);
 
                 if (ordenDb.Estado != EstadoOrdenServicio.EnPruebas)
                     throw new ReglaNegocioException("Solo se pueden finalizar las pruebas de una orden en pruebas.");
@@ -1797,9 +1844,10 @@ namespace APPLICATION.Features.Ordenes
                     "id_orden=" + idOrden + " | pruebas=" + validas.Count
                     + " | resultado=" + (todasAprobadas ? "TodasAprobadas" : "RequiereRevision"), "ORDENES");
             }
-            catch (ReglaNegocioException ex)
+            catch (ReglaNegocioException)
             {
-                throw new ReglaNegocioException(ex.Message);
+                // Se conserva el tipo concreto (p. ej. OrdenOriginalSoloConsultaException).
+                throw;
             }
             catch (Exception ex)
             {
@@ -1816,21 +1864,23 @@ namespace APPLICATION.Features.Ordenes
                 if (string.IsNullOrWhiteSpace(motivo))
                     throw new ReglaNegocioException("El motivo de la reapertura de pruebas es obligatorio.");
 
-                OrdenServicio ordenDb = ObtenerOrdenExistente(idOrden);
+                OrdenServicio ordenDb = ObtenerOrdenParaModificar(idOrden);
                 string estadoAnterior = ordenDb.Estado;
 
                 ordenDb.ReabrirPruebas();
 
-                _ordenRepository.ReabrirPruebasConTransicion(ordenDb.Id, estadoAnterior, ordenDb.Estado,
-                    idUsuario, "Pruebas reabiertas. Motivo: " + motivo.Trim());
+                ValidarBloqueoSoloConsulta(_ordenRepository.ReabrirPruebasConTransicion(
+                    ordenDb.Id, estadoAnterior, ordenDb.Estado,
+                    idUsuario, "Pruebas reabiertas. Motivo: " + motivo.Trim()));
 
                 BitacoraService bitacoraService = new BitacoraService();
                 bitacoraService.Registrar("PRUEBAS_REABIERTAS",
                     "id_orden=" + idOrden + " | motivo=" + motivo.Trim(), "ORDENES");
             }
-            catch (ReglaNegocioException ex)
+            catch (ReglaNegocioException)
             {
-                throw new ReglaNegocioException(ex.Message);
+                // Se conserva el tipo concreto (p. ej. OrdenOriginalSoloConsultaException).
+                throw;
             }
             catch (Exception ex)
             {
@@ -1860,7 +1910,7 @@ namespace APPLICATION.Features.Ordenes
                 if (reparacionDb == null)
                     throw new ReglaNegocioException("La reparacion seleccionada no existe.");
 
-                OrdenServicio ordenDb = ObtenerOrdenExistente(reparacionDb.IdOrden);
+                OrdenServicio ordenDb = ObtenerOrdenParaModificar(reparacionDb.IdOrden);
 
                 if (ordenDb.Estado != EstadoOrdenServicio.EnPruebas)
                     throw new ReglaNegocioException("Solo se puede anular la prueba de una orden en pruebas.");
@@ -1879,9 +1929,10 @@ namespace APPLICATION.Features.Ordenes
                 bitacoraService.Registrar("PRUEBA_ANULADA",
                     "id_orden=" + ordenDb.Id + " | id_prueba=" + idPrueba, "ORDENES");
             }
-            catch (ReglaNegocioException ex)
+            catch (ReglaNegocioException)
             {
-                throw new ReglaNegocioException(ex.Message);
+                // Se conserva el tipo concreto (p. ej. OrdenOriginalSoloConsultaException).
+                throw;
             }
             catch (Exception ex)
             {
@@ -2009,6 +2060,45 @@ namespace APPLICATION.Features.Ordenes
                 throw new ReglaNegocioException("La orden seleccionada no existe.");
 
             return orden;
+        }
+
+        // Una orden con al menos un reingreso de garantia creado es de SOLO CONSULTA: se conserva
+        // la inspeccion (y el alta de nuevos reingresos), pero toda mutacion se rechaza sin
+        // escribir. Solo lectura; la usan los formularios para habilitar o bloquear acciones y
+        // para mostrar el aviso de solo consulta.
+        public bool EsSoloConsultaPorReingresos(int idOrden)
+        {
+            try
+            {
+                return _ordenRepository.TieneReingresosGarantia(idOrden);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al consultar el bloqueo por reingresos de garantia", ex);
+            }
+        }
+
+        // Carga de la orden para un metodo que la va a modificar: existencia + bloqueo por
+        // reingresos. ObtenerOrdenExistente se conserva para lecturas, para el alta del reingreso
+        // y para la inspeccion de la orden original.
+        private OrdenServicio ObtenerOrdenParaModificar(int idOrden)
+        {
+            OrdenServicio orden = ObtenerOrdenExistente(idOrden);
+
+            if (EsSoloConsultaPorReingresos(orden.Id))
+                throw new OrdenOriginalSoloConsultaException("Mensaje.OrdenOriginalSoloConsulta",
+                    "La orden original es de solo consulta porque ya tiene reingresos de garantia.");
+
+            return orden;
+        }
+
+        // Traduce el sentinela que devuelven los lotes bloqueados del repositorio: -2 significa
+        // que la orden ya tiene reingresos de garantia y el lote no escribio nada.
+        private void ValidarBloqueoSoloConsulta(int resultado)
+        {
+            if (resultado == OrdenServicioRepository.ResultadoOrdenSoloConsulta)
+                throw new OrdenOriginalSoloConsultaException("Mensaje.OrdenOriginalSoloConsulta",
+                    "La orden original es de solo consulta porque ya tiene reingresos de garantia. No se puede modificar ni cancelar su entrega.");
         }
 
         private void RegistrarEvaluacionPendienteReingreso(OrdenServicio reingreso, int idUsuario)

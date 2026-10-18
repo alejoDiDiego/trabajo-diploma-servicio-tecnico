@@ -165,6 +165,7 @@ namespace UI.Forms.Ordenes
         private bool _garantiaVigente = false;
         private EvaluacionGarantia _evaluacion = null;
         private List<OrdenServicio> _reingresos = new List<OrdenServicio>();
+        private bool _soloConsulta = false;
 
         public FrmOrdenServicioDetalle()
             : this(0, null)
@@ -259,6 +260,7 @@ namespace UI.Forms.Ordenes
             BTN_RechazarGarantia.Text = idioma.BuscarTraduccion(BTN_RechazarGarantia.Tag.ToString());
             BTN_CrearReingreso.Text = idioma.BuscarTraduccion(BTN_CrearReingreso.Tag.ToString());
             LBL_ReingresosGarantia.Text = idioma.BuscarTraduccion(LBL_ReingresosGarantia.Tag.ToString());
+            LBL_OrdenSoloConsulta.Text = idioma.BuscarTraduccion(LBL_OrdenSoloConsulta.Tag.ToString());
 
             LBL_RCliente.Text = idioma.BuscarTraduccion(LBL_RCliente.Tag.ToString());
             LBL_REquipo.Text = idioma.BuscarTraduccion(LBL_REquipo.Tag.ToString());
@@ -620,6 +622,10 @@ namespace UI.Forms.Ordenes
             try
             {
                 _orden = _service.ObtenerPorId(_idOrden);
+
+                // El bloqueo por reingresos de garantia se resuelve junto con la orden y ANTES de
+                // cargar cualquier pestana: una lectura fallida no puede dejar la vista editable.
+                _soloConsulta = _service.EsSoloConsultaPorReingresos(_idOrden);
             }
             catch (Exception ex)
             {
@@ -658,6 +664,7 @@ namespace UI.Forms.Ordenes
             CargarTabEntrega();
             CargarTabGarantia();
             AplicarPermisosDetalle();
+            ActualizarAvisoSoloConsulta();
             ConfigurarColumnasDetalle();
             ConfigurarColumnasReparaciones();
             ConfigurarColumnasConsumidos();
@@ -687,6 +694,7 @@ namespace UI.Forms.Ordenes
             _garantiaVigente = false;
             _evaluacion = null;
             _reingresos = new List<OrdenServicio>();
+            _soloConsulta = false;
 
             LBL_MontoAutorizado.Text = "";
 
@@ -716,6 +724,17 @@ namespace UI.Forms.Ordenes
             TAB_Detalle.SelectedTab = TAB_Recepcion;
 
             AplicarPermisosDetalle();
+            ActualizarAvisoSoloConsulta();
+        }
+
+        // El aviso de solo consulta se muestra unicamente cuando la orden ya tiene reingresos de
+        // garantia; su texto se traduce por la clave de Tag en ActualizarTextos.
+        private void ActualizarAvisoSoloConsulta()
+        {
+            if (LBL_OrdenSoloConsulta == null)
+                return;
+
+            LBL_OrdenSoloConsulta.Visible = _soloConsulta;
         }
 
         private void CargarEncabezado()
@@ -853,7 +872,7 @@ namespace UI.Forms.Ordenes
             bool esReingreso = !_esNuevo && _orden != null && _orden.TipoOrden == TipoOrden.Garantia;
             bool tieneOrigen = esReingreso && _orden.IdOrdenOrigen.HasValue;
 
-            bool pendienteEvaluacion = esReingreso && _orden != null
+            bool pendienteEvaluacion = esReingreso && _orden != null && !_soloConsulta
                 && _orden.Estado == EstadoOrdenServicio.PendienteEvaluacionGarantia
                 && (_evaluacion == null || _evaluacion.Estado == EstadoEvaluacionGarantia.Pendiente);
 
@@ -1036,7 +1055,9 @@ namespace UI.Forms.Ordenes
 
                 // Un rechazo del guard puede deberse a un hermano abierto que esta vista aun no
                 // mostraba: la lista se refresca tambien en el camino bloqueado.
-                if (BuscarReingresoAbierto(ex) != null)
+                if (BuscarOrigenNoDisponible(ex) != null)
+                    CargarOrden();
+                else if (BuscarReingresoAbierto(ex) != null)
                     CargarReingresosGarantia();
             }
         }
@@ -1272,12 +1293,17 @@ namespace UI.Forms.Ordenes
                 originales.Sort((a, b) => a.Id.CompareTo(b.Id));
                 adicionales.Sort((a, b) => a.Id.CompareTo(b.Id));
 
+                // Con la orden en solo consulta el selector no ofrece documentos nuevos: queda
+                // limitado a los presupuestos ya existentes.
                 if (originales.Count == 0)
-                    items.Add(new ItemSelectorPresupuesto
-                    {
-                        Id = 0,
-                        Nombre = TraducirTipoPresupuesto(TipoPresupuesto.Original) + " " + T("OrdenDetalle.PresupuestoNuevo")
-                    });
+                {
+                    if (!_soloConsulta)
+                        items.Add(new ItemSelectorPresupuesto
+                        {
+                            Id = 0,
+                            Nombre = TraducirTipoPresupuesto(TipoPresupuesto.Original) + " " + T("OrdenDetalle.PresupuestoNuevo")
+                        });
+                }
                 else if (originales.Count == 1)
                     items.Add(new ItemSelectorPresupuesto
                     {
@@ -1308,12 +1334,12 @@ namespace UI.Forms.Ordenes
                     });
                 }
 
-                if (_original != null && _original.Estado == EstadoPresupuesto.Aprobado)
+                if (!_soloConsulta && _original != null && _original.Estado == EstadoPresupuesto.Aprobado)
                     items.Add(new ItemSelectorPresupuesto { Id = -1, Nombre = T("OrdenDetalle.NuevoAdicional") });
 
                 // Nuevo Original tras anulacion: sin Original activo, en PendientePresupuesto
                 // y sin pausa por solicitud de adicional (pausada => solo nuevo adicional).
-                if (_original == null && originales.Count > 0 && _orden != null
+                if (!_soloConsulta && _original == null && originales.Count > 0 && _orden != null
                     && _orden.Estado == EstadoOrdenServicio.PendientePresupuesto
                     && !_puedeCancelarSolicitud)
                     items.Add(new ItemSelectorPresupuesto { Id = -2, Nombre = T("OrdenDetalle.NuevoOriginal") });
@@ -2168,7 +2194,7 @@ namespace UI.Forms.Ordenes
                 return;
 
             bool puedeEditar = TienePermiso(CodigosPermiso.OrdenesEditar);
-            bool editable = !_esNuevo && _orden != null && puedeEditar
+            bool editable = !_esNuevo && _orden != null && puedeEditar && !_soloConsulta
                 && _orden.Estado != EstadoOrdenServicio.Entregado;
             bool enPruebas = editable && _orden.Estado == EstadoOrdenServicio.EnPruebas;
 
@@ -2210,7 +2236,8 @@ namespace UI.Forms.Ordenes
                 return;
 
             bool puedeEditar = TienePermiso(CodigosPermiso.OrdenesEditar);
-            bool enPruebas = !_esNuevo && _orden != null && _orden.Estado == EstadoOrdenServicio.EnPruebas;
+            bool enPruebas = !_esNuevo && _orden != null && !_soloConsulta
+                && _orden.Estado == EstadoOrdenServicio.EnPruebas;
 
             int idReparacionActual = 0;
 
@@ -3428,6 +3455,26 @@ namespace UI.Forms.Ordenes
             if (_orden == null || _orden.Estado != EstadoOrdenServicio.Entregado)
                 return;
 
+            // El bloqueo por reingresos se revalida antes de confirmar y de pedir el motivo: el
+            // estado pudo cambiar desde que se cargo la vista.
+            try
+            {
+                _soloConsulta = _service.EsSoloConsultaPorReingresos(_idOrden);
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+                return;
+            }
+
+            if (_soloConsulta)
+            {
+                ActualizarAvisoSoloConsulta();
+                AplicarPermisosDetalle();
+                MostrarAdvertencia("Mensaje.OrdenOriginalSoloConsulta");
+                return;
+            }
+
             DialogResult confirmacion = MessageBox.Show(
                 T("Mensaje.ConfirmarCancelarEntrega"),
                 T("Titulo.ConfirmarCancelarEntrega"),
@@ -3771,7 +3818,7 @@ namespace UI.Forms.Ordenes
             bool puedeEntregar = TienePermiso(CodigosPermiso.OrdenesEntregar);
 
             bool entregado = !_esNuevo && _orden != null && _orden.Estado == EstadoOrdenServicio.Entregado;
-            bool editable = !_esNuevo && !entregado && puedeEditar;
+            bool editable = !_esNuevo && !entregado && puedeEditar && !_soloConsulta;
 
             BTN_CrearOrden.Visible = _esNuevo && puedeCrear;
             BTN_CrearOrden.Enabled = _esNuevo && puedeCrear;
@@ -3819,7 +3866,10 @@ namespace UI.Forms.Ordenes
             bool ordenPendientePresupuesto = _orden != null
                 && _orden.Estado == EstadoOrdenServicio.PendientePresupuesto;
 
-            CBO_SelectorPresupuesto.Enabled = !_esNuevo && !entregado;
+            // Con la orden entregada el selector solo se habilita en la vista de solo consulta:
+            // permite inspeccionar los presupuestos existentes (las entradas de documento nuevo
+            // se omiten en CargarSelectorPresupuesto).
+            CBO_SelectorPresupuesto.Enabled = !_esNuevo && (!entregado || _soloConsulta);
             bool itemRepuesto = TipoItemSeleccionado() == TipoItemPresupuesto.Repuesto;
 
             CBO_PTipo.Enabled = editaItems;
@@ -3859,15 +3909,15 @@ namespace UI.Forms.Ordenes
             BTN_CancelarSolicitud.Visible = !_esNuevo && puedeEditar && _puedeCancelarSolicitud;
             BTN_CancelarSolicitud.Enabled = editable && _puedeCancelarSolicitud;
 
-            TXT_PMedio.Enabled = !_esNuevo && !entregado && (editaItems || (puedeDecidir && presupuestoPendiente));
-            TXT_PMotivo.Enabled = !_esNuevo && !entregado && puedeDecidir && presupuestoPendiente;
-            TXT_PObs.Enabled = !_esNuevo && !entregado && (editaItems || (puedeDecidir && presupuestoPendiente));
+            TXT_PMedio.Enabled = !_esNuevo && !entregado && !_soloConsulta && (editaItems || (puedeDecidir && presupuestoPendiente));
+            TXT_PMotivo.Enabled = !_esNuevo && !entregado && !_soloConsulta && puedeDecidir && presupuestoPendiente;
+            TXT_PObs.Enabled = !_esNuevo && !entregado && !_soloConsulta && (editaItems || (puedeDecidir && presupuestoPendiente));
             BTN_Aprobar.Visible = !_esNuevo && puedeDecidir;
-            BTN_Aprobar.Enabled = puedeDecidir && presupuestoPendiente;
+            BTN_Aprobar.Enabled = puedeDecidir && presupuestoPendiente && !_soloConsulta;
             BTN_Rechazar.Visible = !_esNuevo && puedeDecidir;
-            BTN_Rechazar.Enabled = puedeDecidir && presupuestoPendiente;
+            BTN_Rechazar.Enabled = puedeDecidir && presupuestoPendiente && !_soloConsulta;
             BTN_Anular.Visible = !_esNuevo && puedeDecidir && esAnulable;
-            BTN_Anular.Enabled = puedeDecidir && esAnulable && !entregado;
+            BTN_Anular.Enabled = puedeDecidir && esAnulable && !entregado && !_soloConsulta;
 
             bool puedeEntregarAhora = editable && puedeEntregar && _orden != null
                 && _orden.Estado == EstadoOrdenServicio.ListoRetiro
@@ -3879,14 +3929,14 @@ namespace UI.Forms.Ordenes
             BTN_Entregar.Visible = !_esNuevo && puedeEntregar;
             BTN_Entregar.Enabled = puedeEntregarAhora;
 
-            bool puedeCancelarEntrega = !_esNuevo && puedeEntregar && _orden != null
+            bool puedeCancelarEntrega = !_esNuevo && puedeEntregar && !_soloConsulta && _orden != null
                 && _orden.Estado == EstadoOrdenServicio.Entregado
                 && _entrega != null;
 
             BTN_CancelarEntrega.Visible = puedeCancelarEntrega;
             BTN_CancelarEntrega.Enabled = puedeCancelarEntrega;
 
-            bool puedeReabrirPruebas = !_esNuevo && puedeEditar && _orden != null
+            bool puedeReabrirPruebas = !_esNuevo && puedeEditar && !_soloConsulta && _orden != null
                 && _orden.Estado == EstadoOrdenServicio.ListoRetiro
                 && _orden.Resultado == ResultadoOrdenServicio.Reparado;
 
@@ -3956,6 +4006,22 @@ namespace UI.Forms.Ordenes
 
         private void MostrarError(Exception ex)
         {
+            OrdenOriginalSoloConsultaException soloConsulta = BuscarSoloConsulta(ex);
+
+            if (soloConsulta != null)
+            {
+                MostrarAdvertencia(soloConsulta.ClaveMensaje);
+                return;
+            }
+
+            ReingresoGarantiaOrigenNoDisponibleException origenNoDisponible = BuscarOrigenNoDisponible(ex);
+
+            if (origenNoDisponible != null)
+            {
+                MostrarAdvertencia(origenNoDisponible.ClaveMensaje);
+                return;
+            }
+
             ReingresoGarantiaAbiertoException reingresoAbierto = BuscarReingresoAbierto(ex);
 
             if (reingresoAbierto != null)
@@ -4005,6 +4071,35 @@ namespace UI.Forms.Ordenes
 
                 if (abierto != null)
                     return abierto;
+            }
+
+            return null;
+        }
+
+        // El bloqueo de la orden original se reconoce por tipo de excepcion, nunca por el texto
+        // del mensaje ni por el resultado de una consulta SQL.
+        private static OrdenOriginalSoloConsultaException BuscarSoloConsulta(Exception ex)
+        {
+            for (Exception actual = ex; actual != null; actual = actual.InnerException)
+            {
+                OrdenOriginalSoloConsultaException soloConsulta = actual as OrdenOriginalSoloConsultaException;
+
+                if (soloConsulta != null)
+                    return soloConsulta;
+            }
+
+            return null;
+        }
+
+        // Origen que dejo de estar entregado + reparado al momento de crear el reingreso.
+        private static ReingresoGarantiaOrigenNoDisponibleException BuscarOrigenNoDisponible(Exception ex)
+        {
+            for (Exception actual = ex; actual != null; actual = actual.InnerException)
+            {
+                ReingresoGarantiaOrigenNoDisponibleException origen = actual as ReingresoGarantiaOrigenNoDisponibleException;
+
+                if (origen != null)
+                    return origen;
             }
 
             return null;

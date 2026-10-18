@@ -342,4 +342,23 @@ namespace DOMAIN.Features.Ordenes
             Resultado = null;
         }
     }
+
+    // La orden original ya tiene al menos un reingreso de garantia creado: cualquier orden hija
+    // con id_orden_origen apuntandole y tipo_orden = Garantia, sin importar su estado ni si su
+    // cobertura es valida. Desde ese momento la orden es de SOLO CONSULTA: inspeccionar sigue
+    // permitido y tambien crear otro reingreso (sujeto a la regla de un unico reingreso abierto
+    // de ReingresoGarantiaAbiertoException), pero toda otra mutacion y la cancelacion de su
+    // entrega se rechazan sin escribir. La UI la reconoce por tipo de excepcion (nunca por el
+    // texto del mensaje) y traduce ClaveMensaje; hereda de ReglaNegocioException para no
+    // alterar los manejos existentes.
+    public class OrdenOriginalSoloConsultaException : ReglaNegocioException
+    {
+        public string ClaveMensaje { get; private set; }
+
+        public OrdenOriginalSoloConsultaException(string claveMensaje, string mensaje)
+            : base(mensaje)
+        {
+            ClaveMensaje = claveMensaje;
+        }
+    }
 }

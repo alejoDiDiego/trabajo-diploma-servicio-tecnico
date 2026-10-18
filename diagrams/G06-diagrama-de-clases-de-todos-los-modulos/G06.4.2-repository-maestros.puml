@@ -1,0 +1,99 @@
+@startuml G06.4.2-repository-maestros
+
+' G06.4.2 - REPOSITORIO: subconjunto maestros (estado actual del repositorio)
+' Fuente: los 25 tipos propios de INFRASTRUCTURE\REPOSITORY.csproj, agrupados en cuatro diagramas.
+' Este diagrama reune los repositorios de datos maestros: clientes, equipos, tipos de equipo,
+' marcas y proveedores. La agrupacion es documental, no crea namespaces ni proyectos nuevos.
+
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+package "REPOSITORY.Features.Clientes" as PKG_CLIENTES {
+  class ClienteRepository {
+    - _db : SqlHelper
+    + Inicializar() : void
+    + Agregar(cliente : Cliente) : Cliente
+    + Modificar(cliente : Cliente) : void
+    + Desactivar(id : int) : void
+    + Reactivar(id : int) : void
+    + ObtenerPorId(id : int) : Cliente
+    + ObtenerConflictoDocumento(documento : string, idExcluir : int) : Cliente
+    + Listar(incluirInactivos : bool) : List<Cliente>
+    - CrearConflictoDocumento(idConflicto : int, documento : string) : ClienteDocumentoDuplicadoException
+    - Mapear(fila : DataRow) : Cliente
+  }
+}
+
+package "REPOSITORY.Features.Equipos" as PKG_EQUIPOS {
+  class EquipoRepository {
+    - _db : SqlHelper
+    + Inicializar() : void
+    + Agregar(equipo : Equipo) : Equipo
+    + Modificar(equipo : Equipo) : void
+    + Desactivar(id : int) : void
+    + Reactivar(id : int) : void
+    + ObtenerPorId(id : int) : Equipo
+    + Listar(incluirInactivos : bool) : List<Equipo>
+    + ListarPorCliente(idCliente : int, incluirInactivos : bool) : List<Equipo>
+  }
+}
+
+package "REPOSITORY.Features.TiposEquipo" as PKG_TIPOSEQUIPO {
+  class TipoEquipoRepository {
+    - _db : SqlHelper
+    + Inicializar() : void
+    + Agregar(tipo : TipoEquipo) : TipoEquipo
+    + Modificar(tipo : TipoEquipo) : void
+    + Desactivar(id : int) : void
+    + Reactivar(id : int) : void
+    + ObtenerPorId(id : int) : TipoEquipo
+    + Listar(incluirInactivos : bool) : List<TipoEquipo>
+  }
+}
+
+package "REPOSITORY.Features.Marcas" as PKG_MARCAS {
+  class MarcaRepository {
+    - _db : SqlHelper
+    + Inicializar() : void
+    + Agregar(marca : Marca) : Marca
+    + Modificar(marca : Marca) : void
+    + Desactivar(id : int) : void
+    + Reactivar(id : int) : void
+    + ObtenerPorId(id : int) : Marca
+    + Listar(incluirInactivos : bool) : List<Marca>
+  }
+}
+
+package "REPOSITORY.Features.Proveedores" as PKG_PROVEEDORES {
+  class ProveedorRepository {
+    - _db : SqlHelper
+    + Inicializar() : void
+    + Agregar(proveedor : Proveedor) : Proveedor
+    + Modificar(proveedor : Proveedor) : void
+    + Desactivar(id : int) : void
+    + Reactivar(id : int) : void
+    + ObtenerPorId(id : int) : Proveedor
+    + Listar(incluirInactivos : bool) : List<Proveedor>
+  }
+}
+
+' --- Los cinco repositorios comparten el helper de datos del proyecto ---
+ClienteRepository ..> SqlHelper : _db (creado con new)
+EquipoRepository ..> SqlHelper : _db (creado con new)
+TipoEquipoRepository ..> SqlHelper : _db (creado con new)
+MarcaRepository ..> SqlHelper : _db (creado con new)
+ProveedorRepository ..> SqlHelper : _db (creado con new)
+
+note right of ClienteRepository
+  Inicializar instala UX_Clientes_Documento solo si el indice no existe
+  y no hay documentos duplicados previos (inactivos incluidos).
+  Agregar y Modificar validan la propiedad del documento y la DML en
+  el mismo lote con TABLOCKX, HOLDLOCK.
+end note
+
+note bottom of EquipoRepository
+  El cliente y el equipo tienen flags activo independientes: reactivar
+  el equipo no reactiva al cliente y una orden historica conserva su FK.
+end note
+
+@enduml

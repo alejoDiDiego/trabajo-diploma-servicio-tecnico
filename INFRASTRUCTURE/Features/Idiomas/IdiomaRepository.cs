@@ -1408,6 +1408,15 @@ namespace REPOSITORY.Features.Idiomas
             AgregarSeed("Espanol", "Mensaje.GarantiaReaperturaBloqueada", "No se puede reabrir este reingreso porque ya existe otro reingreso de garantia abierto para la orden original.");
             AgregarSeed("Ingles", "Mensaje.GarantiaReaperturaBloqueada", "This re-entry cannot be reopened because another warranty re-entry is already open for the original order.");
 
+            // Bloqueo de la orden original: una vez que tiene reingresos de garantia creados queda
+            // en solo consulta. Claves nuevas: AgregarSeed no sobrescribe traducciones existentes.
+            AgregarSeed("Espanol", "Mensaje.OrdenOriginalSoloConsulta", "La orden original es de solo consulta porque ya tiene reingresos de garantia. No se puede modificar ni cancelar su entrega.");
+            AgregarSeed("Ingles", "Mensaje.OrdenOriginalSoloConsulta", "The original order is read-only because it already has warranty re-entries. It cannot be modified and its delivery cannot be cancelled.");
+            AgregarSeed("Espanol", "OrdenDetalle.OrdenOriginalSoloConsulta", "Solo consulta: esta orden ya tiene reingresos de garantia. Puede consultar sus datos y crear otro reingreso con garantia vigente y sin otro abierto.");
+            AgregarSeed("Ingles", "OrdenDetalle.OrdenOriginalSoloConsulta", "Read-only: this order already has warranty re-entries. You can view its data and create another re-entry while coverage is valid and no other re-entry is open.");
+            AgregarSeed("Espanol", "Mensaje.GarantiaOrigenNoDisponible", "No se puede crear el reingreso porque la orden original ya no esta entregada con resultado reparado. Actualice la orden.");
+            AgregarSeed("Ingles", "Mensaje.GarantiaOrigenNoDisponible", "The re-entry cannot be created because the original order is no longer delivered with a repaired result. Refresh the order.");
+
             AgregarSeed("Espanol", "Ordenes.FiltroTipo", "Tipo:");
             AgregarSeed("Ingles", "Ordenes.FiltroTipo", "Type:");
 

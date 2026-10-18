@@ -1,0 +1,117 @@
+@startuml G06.2-abstractions
+
+' G06.2 - Diagrama de contratos del modulo ABSTRACTIONS (estado actual del repositorio)
+' Fuente: los 11 tipos propios declarados en los archivos Compile de ABSTRACTIONS\ABSTRACTIONS.csproj.
+' Los contratos declaran propiedades de solo lectura y operaciones; no exponen setters.
+
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+package "ABSTRACTIONS.Entities" as PKG_ENTITIES {
+  interface IEntity {
+    + Id : int
+  }
+}
+
+package "ABSTRACTIONS.Features.Idiomas" as PKG_IDIOMAS {
+  interface IIdioma {
+    + Nombre : string
+    + Traducciones : IList<ITraduccion>
+    + AgregarTraduccion(traduccion : ITraduccion) : void
+    + BuscarTraduccion(texto : string) : string
+  }
+  interface IPalabra {
+    + Texto : string
+  }
+  interface ITraduccion {
+    + IdIdioma : int
+    + IdPalabra : int
+    + PalabraTraducida : string
+    + Palabra : IPalabra
+  }
+  interface IObservado {
+    + ObservadoresRegistrados : IList<IObservador>
+    + RegistrarObservador(observador : IObservador) : void
+    + DesregistrarObservador(observador : IObservador) : void
+    + ActualizarObservadores(idioma : IIdioma) : void
+  }
+  interface IObservador {
+    + Actualizar(idiomaObservado : IIdioma) : void
+  }
+  class TraduccionEditable {
+    + IdPalabra : int
+    + Clave : string
+    + Texto : string
+  }
+}
+
+package "ABSTRACTIONS.Features.Permisos" as PKG_PERMISOS {
+  interface IPermisoComponent {
+    + Nombre : string
+    + Codigo : string
+    + EsFamilia : bool
+    + Hijos : IList<IPermisoComponent>
+    + AgregarHijo(permiso : IPermisoComponent) : void
+    + Contiene(permiso : IPermisoComponent) : bool
+  }
+}
+
+package "ABSTRACTIONS.Features.Usuarios" as PKG_USUARIOS {
+  interface IUsuario {
+    + Username : string
+    + Password : string
+    + Activo : bool
+  }
+}
+
+package "ABSTRACTIONS.Services" as PKG_SERVICES {
+  interface IEncryptionService {
+    + Encrypt(plainText : string) : string
+    + Decrypt(cipherText : string) : string
+  }
+  interface IPasswordHasher {
+    + HashPassword(password : string) : string
+    + VerifyHashedPassword(hashedPassword : string, password : string) : bool
+  }
+}
+
+' --- Herencia de contrato y relaciones entre contratos ---
+IEntity <|-- IIdioma
+IEntity <|-- IPalabra
+IEntity <|-- ITraduccion
+IEntity <|-- IPermisoComponent
+IEntity <|-- IUsuario
+IIdioma "1" o-- "0..*" ITraduccion : Traducciones
+ITraduccion --> IPalabra : Palabra
+IPermisoComponent "0..*" --> "0..*" IPermisoComponent : Hijos (lista real; no exclusiva)
+IObservado "1" o-- "0..*" IObservador : ObservadoresRegistrados
+IObservador --> IIdioma : Actualizar
+
+' --- Implementaciones en otros proyectos (referencia externa, no se duplican aqui) ---
+note right of IEntity
+  Implementado por DOMAIN: Idioma, Palabra, Traduccion,
+  PermisoComponent (abstracta), Usuario.
+end note
+
+note right of IIdioma
+  Idioma : IIdioma (DOMAIN). SesionIdioma publica la
+  propiedad idioma y avisa a los IObservador.
+end note
+
+note bottom of IEncryptionService
+  EncryptionService : IEncryptionService (SERVICES).
+  IPasswordHasher: PasswordHasher : IPasswordHasher (SERVICES).
+end note
+
+note bottom of IPermisoComponent
+  Auto-asociacion del Composite: la lista Hijos (IList<IPermisoComponent>) es real, la
+  declaracion es de la base y la pertenencia NO es exclusiva (el mismo componente puede
+  aparecer en ramas distintas). La cardinalidad 0..1 no describe este contrato.
+end note
+
+note bottom of TraduccionEditable
+  DTO de edicion de traducciones (no es un contrato):
+  lo devuelve IdiomaService.ListarTraduccionesPorIdioma.
+end note
+
+@enduml

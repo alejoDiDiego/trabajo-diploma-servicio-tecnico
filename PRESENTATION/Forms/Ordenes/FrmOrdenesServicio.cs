@@ -622,6 +622,22 @@ namespace UI.Forms.Ordenes
                 return;
             }
 
+            // Revalidacion fail-closed del bloqueo por reingresos antes de confirmar y de pedir el
+            // motivo: si no se puede comprobar, no se continua.
+            try
+            {
+                if (_service.EsSoloConsultaPorReingresos(seleccionada.Id))
+                {
+                    MostrarAdvertencia("Mensaje.OrdenOriginalSoloConsulta");
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+                return;
+            }
+
             if (!EsCancelable(seleccionada.EstadoRaw))
             {
                 MostrarAdvertencia("Mensaje.OrdenNoCancelable");
@@ -679,6 +695,21 @@ namespace UI.Forms.Ordenes
             if (seleccionada.EstadoRaw != EstadoOrdenServicio.ListoRetiro)
             {
                 MostrarAdvertencia("Mensaje.OrdenNoEntregable");
+                return;
+            }
+
+            // Misma revalidacion fail-closed antes de abrir el detalle en la pestana de entrega.
+            try
+            {
+                if (_service.EsSoloConsultaPorReingresos(seleccionada.Id))
+                {
+                    MostrarAdvertencia("Mensaje.OrdenOriginalSoloConsulta");
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
                 return;
             }
 
@@ -759,6 +790,7 @@ namespace UI.Forms.Ordenes
             bool puedeEntregar = TienePermiso(CodigosPermiso.OrdenesEntregar);
             FilaOrden seleccionada = OrdenSeleccionada();
             bool haySeleccion = seleccionada != null;
+            bool soloConsulta = haySeleccion && EsSoloConsulta(seleccionada.Id);
 
             BTN_Crear.Visible = puedeCrear;
             BTN_Detalle.Visible = puedeVer;
@@ -767,8 +799,10 @@ namespace UI.Forms.Ordenes
 
             BTN_Crear.Enabled = puedeCrear;
             BTN_Detalle.Enabled = puedeVer && haySeleccion;
-            BTN_Cancelar.Enabled = puedeCancelar && haySeleccion && seleccionada != null && EsCancelable(seleccionada.EstadoRaw);
-            BTN_Entregar.Enabled = puedeEntregar && haySeleccion && seleccionada != null && seleccionada.EstadoRaw == EstadoOrdenServicio.ListoRetiro;
+            BTN_Cancelar.Enabled = puedeCancelar && haySeleccion && !soloConsulta
+                && seleccionada != null && EsCancelable(seleccionada.EstadoRaw);
+            BTN_Entregar.Enabled = puedeEntregar && haySeleccion && !soloConsulta
+                && seleccionada != null && seleccionada.EstadoRaw == EstadoOrdenServicio.ListoRetiro;
         }
 
         private bool TienePermiso(string codigo)
@@ -803,8 +837,46 @@ namespace UI.Forms.Ordenes
                 MessageBoxIcon.Warning);
         }
 
+        // Revalidacion del bloqueo por reingresos de la fila seleccionada. Si la lectura falla la
+        // accion no se oculta: el service vuelve a validar antes de escribir y, en el clic, la
+        // comprobacion es fail-closed.
+        private bool EsSoloConsulta(int idOrden)
+        {
+            try
+            {
+                return _service.EsSoloConsultaPorReingresos(idOrden);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        // El bloqueo de la orden original se reconoce por tipo de excepcion, nunca por el texto
+        // del mensaje ni por el resultado de una consulta SQL.
+        private static OrdenOriginalSoloConsultaException BuscarSoloConsulta(Exception ex)
+        {
+            for (Exception actual = ex; actual != null; actual = actual.InnerException)
+            {
+                OrdenOriginalSoloConsultaException soloConsulta = actual as OrdenOriginalSoloConsultaException;
+
+                if (soloConsulta != null)
+                    return soloConsulta;
+            }
+
+            return null;
+        }
+
         private void MostrarError(Exception ex)
         {
+            OrdenOriginalSoloConsultaException soloConsulta = BuscarSoloConsulta(ex);
+
+            if (soloConsulta != null)
+            {
+                MostrarAdvertencia(soloConsulta.ClaveMensaje);
+                return;
+            }
+
             string detalle = ex != null ? ex.Message : "";
             MessageBox.Show(
                 _sesionIdioma.idioma.BuscarTraduccion("Mensaje.ErrorOperacion").Replace("{0}", detalle),

@@ -1,0 +1,515 @@
+@startuml G06.6-ui
+
+' G06.6 - Diagrama de clases del modulo UI (PRESENTATION): estado actual del repositorio
+' Fuente: los archivos Compile de PRESENTATION\UI.csproj. Tipos propios: Program, 28 formularios
+' (cada uno con su partial de Designer, que no es un tipo propio) y 32 ayudantes anidados privados.
+' Los 32 ayudantes anidados privados se declaran al nivel del paquete con su nombre calificado
+' ("FrmX.Ayudante"), un alias unico y el estereotipo <<nested_private>>: la anidacion lexica se
+' conserva en el nombre, y no implica propiedad de datos ni persistencia. La notacion plana es la
+' forma estandar de PlantUML para declarar clases: no se usan clases dentro del cuerpo de otra.
+' Los parciales *.Designer.cs contienen solo la construccion de controles: se omiten como tipo.
+
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+package "UI (PRESENTATION)" as PKG_UI {
+  class Program <<static>> {
+    + Main() : void
+  }
+  class FrmPrincipal {
+    - _idiomaService : IdiomaService
+    - _sesionIdioma : SesionIdioma
+    + FrmPrincipal()
+    + Actualizar(idiomaObservado : IIdioma) : void
+    - ActualizarMenuUsuario() : void
+    - CargarMenuIdiomas() : void
+    - CambiarIdioma(idIdioma : int) : void
+    - CerrarFormulariosHijos() : void
+    - TSMI_Ordenes_Click(sender, e) : void
+  }
+}
+
+package "UI.Forms.Auth" as PKG_AUTH {
+  class FrmLogin {
+    + FrmLogin()
+    + Actualizar(idiomaObservado : IIdioma) : void
+    - BTN_IniciarSesion_Click(sender, e) : void
+  }
+  class FrmAdministrarUsuarios {
+    + Actualizar(idiomaObservado : IIdioma) : void
+    - ActualizarLista() : void
+    - BTN_CrearUsuario_Click(sender, e) : void
+    - BTN_EliminarUsuario_Click(sender, e) : void
+    - BTN_ReactivarUsuario_Click(sender, e) : void
+    - MostrarUsuarioDuplicado(ex, usernamePropuesto) : bool
+  }
+  class FrmAdministrarPermisos {
+    + Actualizar(idiomaObservado : IIdioma) : void
+    - CargarArbol(idSeleccionar : int?) : void
+    - BTN_AgregarFamilia_Click(sender, e) : void
+    - BTN_AgregarPermiso_Click(sender, e) : void
+    - BTN_QuitarSeleccionado_Click(sender, e) : void
+  }
+  class "FrmAdministrarPermisos.NodoPermiso" as UI_FrmAdministrarPermisos_NodoPermiso <<nested_private>> {
+    + Permiso : PermisoComponent
+    + IdPadre : int?
+    + IdPermiso : int?
+    + EsRaiz : bool
+    + CrearPermiso(permiso, idPadre) : NodoPermiso
+  }
+  class FrmAsignarPermisosUsuario {
+    + Actualizar(idiomaObservado : IIdioma) : void
+    - CargarUsuarios() : void
+    - CargarPermisosUsuario() : void
+    - BTN_Asignar_Click(sender, e) : void
+    - BTN_Quitar_Click(sender, e) : void
+  }
+}
+
+package "UI.Forms" as PKG_FORMS {
+  class FrmDashboard {
+    + Actualizar(idiomaObservado : IIdioma) : void
+    - CargarResumen() : void
+    - BTN_Actualizar_Click(sender, e) : void
+  }
+}
+
+package "UI.Forms.Ordenes" as PKG_ORDENES {
+  class FrmOrdenesServicio {
+    + Actualizar(idiomaObservado : IIdioma) : void
+    - CargarOrdenes() : void
+    - AplicarFiltro() : void
+    - AplicarPermisos() : void
+    - EsSoloConsulta(idOrden : int) : bool
+    - EsCancelable(estado : string) : bool
+    - BTN_Detalle_Click(sender, e) : void
+  }
+  class "FrmOrdenesServicio.FilaOrden" as UI_FrmOrdenesServicio_FilaOrden <<nested_private>> {
+    + Id : int
+    + Numero : int
+    + ClienteNombre : string
+    + EquipoDesc : string
+    + EstadoRaw : string
+    + ResultadoRaw : string
+    + TipoRaw : string
+    + Estado : string
+    + Resultado : string
+    + Tipo : string
+    + Fecha : DateTime
+  }
+  class "FrmOrdenesServicio.ItemCliente" as UI_FrmOrdenesServicio_ItemCliente <<nested_private>> {
+    + Id : int
+    + Nombre : string
+  }
+  class "FrmOrdenesServicio.ItemEstado" as UI_FrmOrdenesServicio_ItemEstado <<nested_private>> {
+    + Id : string
+    + Nombre : string
+  }
+  class FrmOrdenServicioDetalle {
+    + FrmOrdenServicioDetalle()
+    + FrmOrdenServicioDetalle(idOrden : int)
+    + FrmOrdenServicioDetalle(idOrden : int, tabInicial : string)
+    + Actualizar(idiomaObservado : IIdioma) : void
+    - CargarOrden() : void
+    - ActualizarAvisoSoloConsulta() : void
+    - AplicarPermisosDetalle() : void
+    - AplicarPermisosGarantia() : void
+    - CargarReingresosGarantia() : void
+    - CargarTabPresupuesto() : void
+    - CargarPruebasDeCombo() : void
+    - IntervencionPruebaSeleccionada() : Reparacion
+    - EsIntervencionActual(intervencion : Reparacion) : bool
+    - GrillaPruebasCoherente(intervencion : Reparacion) : bool
+    - HayIntervencionAbierta() : bool
+    - ActualizarAccionesPruebas() : void
+    - BTN_RegistrarPrueba_Click(sender, e) : void
+    - BTN_FinalizarPruebas_Click(sender, e) : void
+    - BTN_CrearReingreso_Click(sender, e) : void
+    - BTN_CancelarEntrega_Click(sender, e) : void
+  }
+  class "FrmOrdenServicioDetalle.ItemCliente" as UI_FrmOrdenServicioDetalle_ItemCliente <<nested_private>> {
+    + Id : int
+    + Nombre : string
+  }
+  class "FrmOrdenServicioDetalle.ItemEquipo" as UI_FrmOrdenServicioDetalle_ItemEquipo <<nested_private>> {
+    + Id : int
+    + Nombre : string
+  }
+  class "FrmOrdenServicioDetalle.ItemTecnico" as UI_FrmOrdenServicioDetalle_ItemTecnico <<nested_private>> {
+    + Id : int
+    + Nombre : string
+  }
+  class "FrmOrdenServicioDetalle.ItemTipoItem" as UI_FrmOrdenServicioDetalle_ItemTipoItem <<nested_private>> {
+    + Id : string
+    + Nombre : string
+  }
+  class "FrmOrdenServicioDetalle.FilaHistorial" as UI_FrmOrdenServicioDetalle_FilaHistorial <<nested_private>> {
+    + Fecha : DateTime
+    + Anterior : string
+    + Nuevo : string
+    + Usuario : string
+    + Observacion : string
+  }
+  class "FrmOrdenServicioDetalle.ItemRepuestoConsumo" as UI_FrmOrdenServicioDetalle_ItemRepuestoConsumo <<nested_private>> {
+    + Id : int
+    + Nombre : string
+  }
+  class "FrmOrdenServicioDetalle.ItemIntervencion" as UI_FrmOrdenServicioDetalle_ItemIntervencion <<nested_private>> {
+    + Id : int
+    + Nombre : string
+  }
+  class "FrmOrdenServicioDetalle.FilaReparacion" as UI_FrmOrdenServicioDetalle_FilaReparacion <<nested_private>> {
+    + Id : int
+    + Numero : int
+    + Tecnico : string
+    + Inicio : DateTime
+    + Fin : string
+    + Estado : string
+  }
+  class "FrmOrdenServicioDetalle.FilaConsumido" as UI_FrmOrdenServicioDetalle_FilaConsumido <<nested_private>> {
+    + IdRepuesto : int
+    + Repuesto : string
+    + Cantidad : int
+    + Costo : decimal
+    + Subtotal : decimal
+  }
+  class "FrmOrdenServicioDetalle.ItemSelectorPresupuesto" as UI_FrmOrdenServicioDetalle_ItemSelectorPresupuesto <<nested_private>> {
+    + Id : int
+    + Nombre : string
+  }
+  class "FrmOrdenServicioDetalle.FilaPrueba" as UI_FrmOrdenServicioDetalle_FilaPrueba <<nested_private>> {
+    + Id : int
+    + Fecha : DateTime
+    + Intervencion : string
+    + Descripcion : string
+    + Resultado : string
+    + Motivo : string
+    + FechaAnulacion : string
+    + UsuarioAnulacion : string
+    + Usuario : string
+  }
+  class "FrmOrdenServicioDetalle.FilaReingreso" as UI_FrmOrdenServicioDetalle_FilaReingreso <<nested_private>> {
+    + Id : int
+    + Numero : int
+    + Fecha : DateTime
+    + Estado : string
+    + Resultado : string
+  }
+}
+
+package "UI.Forms.Clientes" as PKG_CLIENTES {
+  class FrmClientes {
+    + Actualizar(idiomaObservado : IIdioma) : void
+    - CargarClientes() : void
+    - BTN_Crear_Click(sender, e) : void
+    - MostrarDocumentoDuplicado(conflicto : ClienteDocumentoDuplicadoException) : void
+  }
+  class FrmClienteEditar {
+    + FrmClienteEditar(cliente : Cliente)
+    + Nombre : string
+    + Documento : string
+    - FrmClienteEditar_Load(sender, e) : void
+  }
+}
+
+package "UI.Forms.Equipos" as PKG_EQUIPOS {
+  class FrmEquipos {
+    + Actualizar(idiomaObservado : IIdioma) : void
+    - CargarEquipos() : void
+    - BTN_Crear_Click(sender, e) : void
+  }
+  class "FrmEquipos.FilaEquipo" as UI_FrmEquipos_FilaEquipo <<nested_private>> {
+    + Id : int
+    + IdCliente : int
+    + Cliente : string
+    + TipoEquipo : string
+    + Marca : string
+    + Modelo : string
+    + NumeroSerie : string
+    + Activo : bool
+  }
+  class "FrmEquipos.ItemCliente" as UI_FrmEquipos_ItemCliente <<nested_private>> {
+    + Id : int
+    + Nombre : string
+  }
+  class FrmEquipoEditar {
+    + FrmEquipoEditar(equipo : Equipo, idClientePreseleccionado : int)
+    + IdCliente : int
+    + IdTipoEquipo : int
+    + IdMarca : int
+    + Modelo : string
+    - CargarCombos(idCliente, idTipo, idMarca, incluirInactivosCatalogos) : void
+  }
+  class "FrmEquipoEditar.ItemCliente" as UI_FrmEquipoEditar_ItemCliente <<nested_private>> {
+    + Id : int
+    + Nombre : string
+  }
+}
+
+package "UI.Forms.Catalogos" as PKG_CATALOGOS {
+  class FrmTiposEquipo {
+    + Actualizar(idiomaObservado : IIdioma) : void
+    - CargarTipos() : void
+    - BTN_Crear_Click(sender, e) : void
+  }
+  class FrmMarcas {
+    + Actualizar(idiomaObservado : IIdioma) : void
+    - CargarMarcas() : void
+    - BTN_Editar_Click(sender, e) : void
+  }
+  class FrmCatalogoEditar {
+    + FrmCatalogoEditar(titulo : string, valorInicial : string)
+    + Nombre : string
+    - FrmCatalogoEditar_Load(sender, e) : void
+  }
+}
+
+package "UI.Forms.Repuestos" as PKG_REPUESTOS {
+  class FrmRepuestos {
+    + Actualizar(idiomaObservado : IIdioma) : void
+    - CargarRepuestos() : void
+    - AplicarFiltro() : void
+  }
+  class "FrmRepuestos.FilaRepuesto" as UI_FrmRepuestos_FilaRepuesto <<nested_private>> {
+    + Id : int
+    + Codigo : string
+    + Descripcion : string
+    + Stock : int
+    + StockMinimo : int
+    + Alerta : string
+    + Costo : decimal
+    + Precio : decimal
+    + Activo : bool
+  }
+  class FrmRepuestoEditar {
+    + FrmRepuestoEditar(repuesto : Repuesto)
+    + Codigo : string
+    + StockInicial : int
+    + CostoActual : decimal
+    + PrecioReferencia : decimal
+  }
+  class FrmAjusteStock {
+    + FrmAjusteStock(repuesto : Repuesto)
+    + Cantidad : int
+    + Motivo : string
+  }
+  class FrmMovimientosStock {
+    + FrmMovimientosStock(idRepuesto : int)
+    - CargarMovimientos() : void
+  }
+  class "FrmMovimientosStock.ItemRepuesto" as UI_FrmMovimientosStock_ItemRepuesto <<nested_private>> {
+    + Id : int
+    + Nombre : string
+  }
+  class "FrmMovimientosStock.ItemTipo" as UI_FrmMovimientosStock_ItemTipo <<nested_private>> {
+    + Id : string
+    + Nombre : string
+  }
+  class "FrmMovimientosStock.FilaMovimiento" as UI_FrmMovimientosStock_FilaMovimiento <<nested_private>> {
+    + Fecha : DateTime
+    + Repuesto : string
+    + Tipo : string
+    + Cantidad : int
+    + Anterior : int
+    + Posterior : int
+    + Usuario : string
+    + Obs : string
+  }
+}
+
+package "UI.Forms.Proveedores" as PKG_PROVEEDORES {
+  class FrmProveedores {
+    + Actualizar(idiomaObservado : IIdioma) : void
+    - CargarProveedores() : void
+    - BTN_Desactivar_Click(sender, e) : void
+  }
+  class FrmProveedorEditar {
+    + FrmProveedorEditar(proveedor : Proveedor)
+    + RazonSocial : string
+    + Cuit : string
+    + Contacto : string
+  }
+}
+
+package "UI.Forms.Compras" as PKG_COMPRAS {
+  class FrmCompras {
+    + Actualizar(idiomaObservado : IIdioma) : void
+    - CargarCompras() : void
+    - BTN_Confirmar_Click(sender, e) : void
+  }
+  class "FrmCompras.FilaCompra" as UI_FrmCompras_FilaCompra <<nested_private>> {
+    + Id : int
+    + IdProveedor : int
+    + Proveedor : string
+    + Fecha : DateTime
+    + EstadoRaw : string
+    + Estado : string
+    + Total : decimal
+  }
+  class "FrmCompras.ItemProveedor" as UI_FrmCompras_ItemProveedor <<nested_private>> {
+    + Id : int
+    + Nombre : string
+  }
+  class "FrmCompras.ItemEstado" as UI_FrmCompras_ItemEstado <<nested_private>> {
+    + Id : string
+    + Nombre : string
+  }
+  class FrmCompraDetalle {
+    + FrmCompraDetalle(idCompra : int)
+    + Actualizar(idiomaObservado : IIdioma) : void
+    - MostrarDetalle(detalle : List<DetalleCompra>) : void
+    - BTN_Confirmar_Click(sender, e) : void
+  }
+  class "FrmCompraDetalle.ItemProveedor" as UI_FrmCompraDetalle_ItemProveedor <<nested_private>> {
+    + Id : int
+    + Nombre : string
+  }
+  class "FrmCompraDetalle.ItemRepuesto" as UI_FrmCompraDetalle_ItemRepuesto <<nested_private>> {
+    + Id : int
+    + Nombre : string
+  }
+  class "FrmCompraDetalle.FilaDetalle" as UI_FrmCompraDetalle_FilaDetalle <<nested_private>> {
+    + Id : int
+    + IdRepuesto : int
+    + Repuesto : string
+    + Cantidad : int
+    + Costo : decimal
+    + Subtotal : decimal
+  }
+}
+
+package "UI.Forms.Garantias" as PKG_GARANTIAS {
+  class FrmGarantias {
+    + Actualizar(idiomaObservado : IIdioma) : void
+    - CargarGarantias() : void
+    - AplicarFiltro() : void
+  }
+  class "FrmGarantias.FilaGarantia" as UI_FrmGarantias_FilaGarantia <<nested_private>> {
+    + IdOrden : int
+    + Orden : int
+    + Equipo : string
+    + Cliente : string
+    + Inicio : DateTime
+    + Fin : DateTime
+    + VigenciaRaw : string
+    + Vigencia : string
+    + Estado : string
+  }
+  class "FrmGarantias.ItemVigencia" as UI_FrmGarantias_ItemVigencia <<nested_private>> {
+    + Id : string
+    + Nombre : string
+  }
+}
+
+package "UI.Forms.Reportes" as PKG_REPORTES {
+  class FrmReportes {
+    + Actualizar(idiomaObservado : IIdioma) : void
+    - EjecutarReporte() : void
+    - MostrarTasa(clave : string, tasa : decimal) : void
+  }
+  class "FrmReportes.ItemReporte" as UI_FrmReportes_ItemReporte <<nested_private>> {
+    + Id : string
+    + Nombre : string
+  }
+}
+
+package "UI.Forms.Idiomas" as PKG_IDIOMAS {
+  class FrmAdministrarTraducciones {
+    + Actualizar(idiomaObservado : IIdioma) : void
+    - CargarIdiomas() : void
+    - CargarTraducciones() : void
+    - BTN_EditarTraduccion_Click(sender, e) : void
+  }
+}
+
+package "UI.Forms.Bitacora" as PKG_BITACORA {
+  class FrmBitacora {
+    + Actualizar(idiomaObservado : IIdioma) : void
+    - CargarBitacora() : void
+    - BTN_Buscar_Click(sender, e) : void
+  }
+}
+
+package "UI.Forms.ControlCambios" as PKG_CONTROLCAMBIOS {
+  class FrmControlCambios {
+    + Actualizar(idiomaObservado : IIdioma) : void
+    - CargarCambios() : void
+    - BTN_Restaurar_Click(sender, e) : void
+  }
+}
+
+' --- Relaciones del modulo UI ---
+IObservador <|.. FrmPrincipal
+IObservador <|.. FrmLogin
+IObservador <|.. FrmAdministrarUsuarios
+IObservador <|.. FrmAdministrarPermisos
+IObservador <|.. FrmAsignarPermisosUsuario
+IObservador <|.. FrmOrdenesServicio
+IObservador <|.. FrmOrdenServicioDetalle
+IObservador <|.. FrmClientes
+IObservador <|.. FrmClienteEditar
+IObservador <|.. FrmEquipos
+IObservador <|.. FrmEquipoEditar
+IObservador <|.. FrmTiposEquipo
+IObservador <|.. FrmMarcas
+IObservador <|.. FrmCatalogoEditar
+IObservador <|.. FrmRepuestos
+IObservador <|.. FrmRepuestoEditar
+IObservador <|.. FrmAjusteStock
+IObservador <|.. FrmMovimientosStock
+IObservador <|.. FrmProveedores
+IObservador <|.. FrmProveedorEditar
+IObservador <|.. FrmCompras
+IObservador <|.. FrmCompraDetalle
+IObservador <|.. FrmGarantias
+IObservador <|.. FrmDashboard
+IObservador <|.. FrmReportes
+IObservador <|.. FrmAdministrarTraducciones
+IObservador <|.. FrmBitacora
+IObservador <|.. FrmControlCambios
+
+Program ..> FrmPrincipal : Application.Run
+FrmPrincipal ..> SesionIdioma : CambiarIdioma
+FrmOrdenServicioDetalle ..> OrdenServicioService : new
+FrmOrdenesServicio ..> OrdenServicioService : new
+FrmClientes ..> ClienteService : new
+FrmGarantias ..> GarantiaService : new
+FrmCompras ..> CompraService : new
+FrmCompraDetalle ..> CompraService : new
+FrmRepuestos ..> RepuestoService : new
+FrmMovimientosStock ..> RepuestoService : new
+FrmReportes ..> ReporteService : new
+FrmDashboard ..> ReporteService : new
+FrmAdministrarUsuarios ..> UsuarioService : new
+FrmAsignarPermisosUsuario ..> UsuarioPermisoService : new
+FrmAdministrarPermisos ..> PermisoService : new
+FrmAdministrarTraducciones ..> IdiomaService : new
+FrmBitacora ..> BitacoraService : new
+FrmControlCambios ..> ControlCambioService : new
+
+note right of FrmOrdenServicioDetalle
+  Detalle de la orden: recepcion, diagnostico, presupuestos, reparaciones,
+  pruebas, entrega y garantia. Su constructor por id carga la orden y
+  AplicarPermisosDetalle habilita o deshabilita cada accion segun permisos
+  efectivos y estado; ActualizarAvisoSoloConsulta muestra el aviso cuando la
+  orden ya tiene reingresos de garantia.
+end note
+
+note bottom of FrmOrdenServicioDetalle
+  Pruebas: CargarPruebasDeCombo deja la grilla de la intervencion elegida;
+  IntervencionPruebaSeleccionada, EsIntervencionActual, GrillaPruebasCoherente
+  y HayIntervencionAbierta sostienen ActualizarAccionesPruebas, que solo
+  habilita registrar, anular y finalizar sobre la intervencion actual.
+end note
+
+note bottom of FrmClientes
+  MostrarDocumentoDuplicado traduce el mensaje por el TIPO de excepcion
+  (nunca por el texto) y distingue el propietario activo del inactivo.
+end note
+
+note bottom of FrmGarantias
+  Lista garantias por orden y vigencia (Vigente/Vencida/Anulada) con
+  columnas traducidas; no crea ni anula coberturas desde esta pantalla.
+end note
+
+@enduml

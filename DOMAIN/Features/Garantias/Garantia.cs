@@ -66,4 +66,19 @@ namespace DOMAIN.Features.Garantias
             ClaveMensaje = claveMensaje;
         }
     }
+
+    // El reingreso ya no se puede crear porque la orden original dejo de estar entregada con
+    // resultado reparado (por ejemplo, su entrega se cancelo entre la validacion del service y
+    // la escritura del alta). Lo decide el lote bloqueado del repositorio, que no inserta nada.
+    // La UI la reconoce por tipo de excepcion y traduce ClaveMensaje.
+    public class ReingresoGarantiaOrigenNoDisponibleException : ReglaNegocioException
+    {
+        public string ClaveMensaje { get; private set; }
+
+        public ReingresoGarantiaOrigenNoDisponibleException(string claveMensaje, string mensaje)
+            : base(mensaje)
+        {
+            ClaveMensaje = claveMensaje;
+        }
+    }
 }

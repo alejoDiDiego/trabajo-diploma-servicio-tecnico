@@ -102,11 +102,31 @@ runtime evidence.
 | Re-entry list | `ListarReingresosGarantia` (no state filter, no evaluation join) plus [FrmOrdenServicioDetalle](../../PRESENTATION/Forms/Ordenes/FrmOrdenServicioDetalle.cs), `CargarReingresosGarantia`/`RefrescarGrillaReingresos`/`ConfigurarColumnasReingresos` and the designer's `DGV_ReingresosGarantia` | ES/EN headers and the empty-list path were observed at runtime (every row matched `fecha_ingreso` and the translated state/result); a failed read and large-DPI rendering were not exercised, and the 900x600 window clips the grid body (see the small-window clipping section below); the date column shows the re-entry's reception timestamp (`fecha_ingreso`), not the evaluation date |
 | Conservative boundary | [EstadoEvaluacionGarantia](../../DOMAIN/Features/Garantias/EstadoEvaluacionGarantia.cs) keeps its three states; `Aceptada` closes the evaluation but not the visit, and any unknown or inconsistent order state counts as open | The predicate's behaviour on abnormal data (for example a re-entry cancelled before evaluation, which stays open) is inspected only |
 
+## Addressed in feat-011 (source-verified; runtime acceptance pending)
+
+**Builder scope only: source inspection plus a clean Debug / Any CPU build. No application launch,
+no database access, no fixture and no runtime scenario was executed for `feat-011`, and its four
+`vis-freeze-*` scenarios are still `planned`.** The rows below are inspected implementation, not
+verified runtime behaviour; only the Checker can turn them into evidence.
+
+| Item | Implementation inspected | Remaining boundary |
+| --- | --- | --- |
+| Read-only original | `OrdenServicioRepository.TieneReingresosGarantia` (pure existence of a `tipo_orden = 'Garantia'` child by `id_orden_origen`), `OrdenServicioService.ObtenerOrdenParaModificar` plus the typed `OrdenOriginalSoloConsultaException` (`Mensaje.OrdenOriginalSoloConsulta`, banner key `OrdenDetalle.OrdenOriginalSoloConsulta`) | Every mutating service method and `GarantiaService.Crear`/`Anular` reaches the guard before its first repository write, but no refused mutation was exercised at runtime; whether a legacy database can already hold a frozen original in an early state, and how the banner renders at 900x600 and large DPI, are untested |
+| Scoped persistence guards | `EntregaRepository.CancelarEntregaConTransicion` (`-2` before the sibling test and the `DELETE`), `OrdenServicioRepository.CambiarEstadoConHistorial` and `ReabrirPruebasConTransicion` (`-2` before the first `UPDATE`/history `INSERT`), `CrearConHistorial` (`-3` for an ineligible origin, `-1` for an open sibling, `out int codigoResultado`) | Inspected SQL; no repository-wide guard, no trigger and no `SQLHelper` change. The `-2`/`-3` branches isolated from the service pre-check are reachable only through a race and were not executed |
+| Cancellation versus re-entry race | Both batches hold `TABLOCKX, HOLDLOCK` on `OrdenesServicio` and re-read what they depend on inside the lock, so the second one refuses (`-3` after a committed cancellation, `-2` after a committed creation) | Two simultaneous operations were **not** run; the invariant is source-inspected, not measured |
+| UI refusal | `FrmOrdenServicioDetalle` freeze state loaded in `CargarOrden`, banner `LBL_OrdenSoloConsulta`, the freeze intersected in `AplicarPermisosDetalle`, `ActualizarAccionesPruebas`, `ActualizarBotonAnularPrueba` and `AplicarPermisosGarantia`, pseudo budget entries omitted in `CargarSelectorPresupuesto`, fresh check in `BTN_CancelarEntrega_Click`; `FrmOrdenesServicio` revalidates the selected row and maps the typed exception in `MostrarError` | Visual acceptance is pending: disabled controls plus the banner are the refusal, and the ES/EN texts and the reserved banner row are unverified at runtime. A stale window can only be refused by the service, which is the authoritative path |
+
 ## Small-window clipping (observed, NOT fixed, 2026-10-13)
 
 These are **observed legacy layout limitations, explicitly not fixed** and not described anywhere
 as resolved. They were seen through the real UI during the dated feat-006/feat-008/feat-009 Checker
-runs recorded in [progress.md](../../progress.md); no designer file or layout was changed.
+runs recorded in [progress.md](../../progress.md); no designer file or layout was changed in those
+runs. `feat-011` later changed only the order-detail designer, to reserve the consultation banner
+row above the tabs: the banner occupies 30 design px between the header panel (0..104) and the tab
+control, the tab control moved from y=112 to y=142 keeping its 480 px height, `BTN_Cerrar` moved
+from y=610 to y=640 and the form grew from a 920x654 to a 920x684 client area, so no tab content,
+no bottom edge and no header data moved. That is a taller fixed-size dialog, not a fix of the
+clipping below, and the banner itself is unverified at 900x600 and at large DPI.
 
 | Window | Observed clipping | Consequence | Evidence |
 | --- | --- | --- | --- |
@@ -128,9 +148,12 @@ fix would need its own authorized scope; nothing here claims one.
   Calendar-day inclusive coverage is intended policy, not the implemented date predicate.
 - [EntregaRepository](../../INFRASTRUCTURE/Features/Ordenes/EntregaRepository.cs),
   `CancelarEntregaConTransicion`, still leaves the coverage row and unrelated re-entries in
-  place, and since feat-009 it is refused while another re-entry of the same original order is
-  open (see the feat-009 section above); `CrearConTransicion` does not regenerate an existing
-  warranty on re-delivery.
+  place; since feat-009 it is refused while another re-entry of the same original order is open,
+  and since feat-011 it is refused as well when the order itself already has any warranty re-entry
+  (the original is read-only; see the feat-011 section above). Cancelling the delivery of an order
+  without re-entries is unchanged and still returns it to EnPruebas/NULL (repaired) or to
+  ListoRetiro (other result); `CrearConTransicion` does not regenerate an existing warranty on
+  re-delivery.
 - [FrmOrdenServicioDetalle](../../PRESENTATION/Forms/Ordenes/FrmOrdenServicioDetalle.cs),
   `BTN_CrearReingreso_Click`, submits the original order's historical customer. The service
   validates current equipment ownership, so changing the owner can block re-entry from this UI.

@@ -1,16 +1,173 @@
 # Session Progress
 
+## G06 documentation round (feat-012, 2026-10-17)
+
+- Current objective: owner-authorized feat-012 is **done** (fresh independent Checker PASS on retry round 1, 2026-10-17; all six criteria verified); no feature remains in progress. It produced nine G06 PlantUML diagrams and companion Spanish class-description tables in the new diagrams/G06-diagrama-de-clases-de-todos-los-modulos folder. Exact scope and acceptance criteria are in feature_list.json (the sole backlog). Earlier Current State objectives below are historical.
+- Checkout: checkpoint-6-arreglos-y-mejoras; all preexisting tracked source/guide changes and .codegraph/, .playwright-mcp/, skills-lock.json must be preserved. No Git writes are authorized.
+- Baseline: powershell -NoProfile -File .\init.ps1 PASS (11 tasks, 292 relative links, diff hygiene). This proves structure only.
+- Verification boundary: documentation/source conformance, new links and syntax/content checks only; no build, application startup or database access. Fresh Planner -> Builder -> Checker, sequential; no second Builder in this round.
+- File-write workaround: Google Drive lacks the temp-file/hard-link support used by DSH file writers; authorized repository writes use PowerShell/.NET shell writes instead.
+- Stage: retry round 1 complete with an independent Checker **PASS** (2026-10-17): `feat-012` is `done`, all six acceptance criteria are verified (criteria 2 and 3 moved to true), and no feature remains in progress. The previous Checker FAIL evidence and the retry Builder report remain below as historical. The Checker wrote only `feature_list.json` and this file over the nine G06 paths repaired by the Builder plus the two state files (21-path authorization, no new path); no source/config/SQL/build/app/DB/install/download/remote-render/Git write. Recommended next step: none for `feat-012`; the pending checkpoint-6 work may be committed when the owner authorises a Git write.
+
 ## Current State
 
-- Last Updated: 2026-10-13 (feat-010 Checker: **documentation-only verification PASS**; the catalogue, the root implementation notes and the limitations register were judged against the dated feat-006..feat-009 runtime evidence, and links, harness and protected scope were checked; no runtime test repeated)
-- Current Objective: `feat-010` is **`done`** (documentation only, owner-authorized): its Builder aligned [business-test-catalogue.md](docs/agents/business-test-catalogue.md) (CLI-03, CLI-04, PRE-01, PRU-01, GAR-02, GAR-09, ENT-03), the root `IMPLEMENTACION_SERVICIO_TECNICO.md` and [known-limitations.md](docs/agents/known-limitations.md) with the rules enforced by feat-006..feat-009, and record the clipped 900x600 controls as a known limitation; no source, configuration, SQL or database change was made and **no runtime test was repeated**; its Checker verified all five criteria with documentation, link, tracker and diff checks only (see the feat-010 Checker section below). `feat-009` is **done**: only one warranty re-entry of an original order may be open at a time (refused with a business message while a sibling is open, allowed again once the sibling is delivered or its rejection reaches a committed destination) and the Garantia tab lists the re-entries with number, reception date and translated state/result - independently verified through the real UI with database readback in its Checker section. No task remains `in-progress`: the next session can start the following authorized work.
+- Last Updated: 2026-10-17 (`feat-011` Checker: **all six criteria and all four `vis-freeze-*` scenarios PASS** through the real WinForms UI with SQL readback, a real two-process concurrency proof and the regressions re-run; the feature is `done`). Previous update: 2026-10-17 (`feat-011` Builder: the read-only-original rule is implemented in source and the six-project Debug / Any CPU build passes; **no application launch, no database access and no runtime test were performed**, so its six criteria and four `vis-freeze-*` scenarios remain unverified and the feature stays `in-progress`, awaiting its Checker). Previous update: 2026-10-17 (owner-authorized `feat-011` added: after a delivered order enters warranty the original order must stay read-only - no delivery cancellation, no edits, no transitions - leaving only inspection and opening warranty re-entries). Previous update: 2026-10-13 (feat-010 Checker: **documentation-only verification PASS**; the catalogue, the root implementation notes and the limitations register were judged against the dated feat-006..feat-009 runtime evidence, and links, harness and protected scope were checked; no runtime test repeated)
+- Current Objective: `feat-011` is **`done`**: independently verified on 2026-10-17 through the real WinForms UI against the authorized non-production database, with SQL readback, an external two-process concurrency proof and the feat-009/GAR/ENT regressions re-run (see the feat-011 Checker section below); all six criteria and all four `vis-freeze-*` scenarios passed and no task remains `in-progress`. Previous objective (historical): `feat-011` was **`in-progress`** while the Builder implemented the immutable-original rule in source - typed domain exceptions, the existence predicate `TieneReingresosGarantia`, its scoped repository guards, the guard on every existing-order service mutator, the three paired ES/EN keys and the UI freeze with the consultation banner - and verified it by source inspection plus the compiled solution **only**. That Builder state is historical: nothing was runtime-verified then, and the feat-011 Checker section below closes every open item. Previous objective (historical): `feat-010` is **`done`** (documentation only, owner-authorized): its Builder aligned [business-test-catalogue.md](docs/agents/business-test-catalogue.md) (CLI-03, CLI-04, PRE-01, PRU-01, GAR-02, GAR-09, ENT-03), the root `IMPLEMENTACION_SERVICIO_TECNICO.md` and [known-limitations.md](docs/agents/known-limitations.md) with the rules enforced by feat-006..feat-009, and record the clipped 900x600 controls as a known limitation; no source, configuration, SQL or database change was made and **no runtime test was repeated**; its Checker verified all five criteria with documentation, link, tracker and diff checks only (see the feat-010 Checker section below). `feat-009` is **done**: only one warranty re-entry of an original order may be open at a time (refused with a business message while a sibling is open, allowed again once the sibling is delivered or its rejection reaches a committed destination) and the Garantia tab lists the re-entries with number, reception date and translated state/result - independently verified through the real UI with database readback in its Checker section. No task remains `in-progress`: the next session can start the following authorized work.
 - Previous objective (historical): `feat-008` **done** (current-intervention-only test registration, verified through the real UI with database readback, 4/4 criteria and 3/3 scenarios). The `feat-009` Builder report below is historical: it certifies source plus compilation only, and its open items were closed by the Checker section above. `feat-010` (documentation only) is `done` (5/5 criteria, documentation-only checks).
 - Previous objectives (historical): `feat-007` **done** (spare-part budget item type, verified through the real UI with database readback, 5/5 criteria and 3/3 scenarios). `feat-006` **done** (unique customer documento across active and inactive clientes, verified through the real UI with database readback, 6/6 criteria and 4/4 scenarios). `feat-005` **done**: COM-07, GAR-08 and INF-11 fixed and re-verified through the real UI. `feat-004` sweep A-F remains complete (all 144 rows).
-- Checkout observed: `checkpoint-6-arreglos-y-mejoras` @ `94c0829` plus local changes (the uncommitted feat-006 work preserved + the feat-007 diff + the feat-008 diff + the feat-009 diff + the feat-010 documentation diff); nothing staged, committed or pushed.
+- Checkout observed: `checkpoint-6-arreglos-y-mejoras` @ `5114582` plus local changes (the uncommitted feat-006 work preserved + the feat-007 diff + the feat-008 diff + the feat-009 diff + the feat-010 diff + the feat-011 source/documentation diff and the feat-011 Checker tracker diff); nothing staged, committed or pushed.
 - Preexisting untracked entries to preserve: `.codegraph/`, `.playwright-mcp/`, `skills-lock.json`.
-- Environment note: the leftover `UI.exe` (PID 84192) was closed **gracefully through its own window** by the Checker on 2026-10-13 (pywinauto WM_CLOSE on `FrmPrincipal`, no dialog, process exited; no taskkill/Stop-Process and no user or IDE process touched). The documented Debug / Any CPU solution build then passed with exit 0 and refreshed `PRESENTATION\bin\Debug\UI.exe`. The feat-009 Checker run's own `UI.exe` (PID 73756) was also closed gracefully through its own window (WM_CLOSE on `FrmPrincipal`, no dialog) at the end of the session and `tasklist` reports no remaining instance; ``PRESENTATION\bin\Debug`` is free for the next build.
+- Environment note: the leftover `UI.exe` (PID 84192) was closed **gracefully through its own window** by the Checker on 2026-10-13 (pywinauto WM_CLOSE on `FrmPrincipal`, no dialog, process exited; no taskkill/Stop-Process and no user or IDE process touched). The documented Debug / Any CPU solution build then passed with exit 0 and refreshed `PRESENTATION\bin\Debug\UI.exe`. The feat-009 Checker run's own `UI.exe` (PID 73756) was also closed gracefully through its own window (WM_CLOSE on `FrmPrincipal`, no dialog) at the end of the session and `tasklist` reports no remaining instance; ``PRESENTATION\bin\Debug`` is free for the next build. The feat-011 Checker run own ``UI.exe`` (PID 31404, launched 18:57:43 from the freshly rebuilt binary, SHA256 781BF1B8...) was closed gracefully through its own window (WM_CLOSE on ``FrmPrincipal``, no dialog) at 21:18:43 and ``tasklist`` reports no remaining instance; no taskkill/Stop-Process was used.
 - Run artifacts (outside the repository): `%LOCALAPPDATA%\ServicioTecnicoDesktopTests\evidence\sweep-20261003B\` with `sweep-log.md` and `sweep-20261003B.md`, and `...\evidence\feat006-20261013\` with `feat006-log.md` and `shots\`; driver scripts under `...\scripts\sweep\` (`feat006_s0_login.py` .. `feat006_s7_regression.py`). feat-007 kept `...\evidence\feat007-20261013\`; this Checker run kept `...\evidence\feat008-20261013\` with `feat008-log.md`, `state.json` and 17 screenshots in `shots\`, plus the driver scripts `...\scripts\sweep\feat008kit.py`, `feat008_s0_setup.py`, `feat008_s1_previous.py`, `feat008_s1b_disabled.py`, `feat008_s2_switchback.py`, `feat008_s2b_switchback.py`, `feat008_s3_current.py`, `feat008_s3b_current.py`, `feat008_s3c_current.py`, `feat008_s3d_current.py`, `feat008_s3e_current.py`, `feat008_s4_texts_layout.py` and `feat008_s5_en_selection.py`. feat-009 kept `...\evidence\feat009-20261013\` with `feat009-log.md`, `state.json`, the `s0-*`..`s4d-*` screenshots and the `feat009*.py` drivers listed in its Checker section.
 
+## Builder report (feat-011, 2026-10-17)
+
+Objective: once an original order has **any** warranty re-entry created, that original is read-only -
+cancelling its delivery is refused and every other mutation of it is refused, with a translated
+business message and no write - while inspection stays available and creating further warranty
+re-entries keeps the feat-009 single-open rule. Orders without any warranty re-entry keep today's
+behaviour, ENT-03 delivery cancellation included. Scope: only the 17 authorized files; no new file,
+no project/`.csproj` edit, no DDL, no migration, no data change.
+
+Rule decided by the owner and implemented as stated: the freeze is **existence-based**, so it does
+not expire when the re-entries close and never consults coverage validity, expiry or evaluation
+state. It is not a new state and never rewrites the order.
+
+| File | Method / member | Change |
+| --- | --- | --- |
+| [OrdenServicio](DOMAIN/Features/Ordenes/OrdenServicio.cs) | `OrdenOriginalSoloConsultaException` (new, same file) | `ReglaNegocioException` subclass carrying `ClaveMensaje` so the UI translates by type; no new file and no project edit |
+| [Garantia](DOMAIN/Features/Garantias/Garantia.cs) | `ReingresoGarantiaOrigenNoDisponibleException` (new, same file) | Typed origin-ineligible refusal for the locked re-entry creation |
+| [OrdenServicioRepository](INFRASTRUCTURE/Features/Ordenes/OrdenServicioRepository.cs) | result codes (new) | `ResultadoOk 0`, `ResultadoReingresoAbierto -1`, `ResultadoOrdenSoloConsulta -2`, `ResultadoOrigenNoDisponible -3`; the SQL literals in each batch match them |
+| same | `TieneReingresosGarantia` (new) | Single existence read over `id_orden_origen` + `tipo_orden = 'Garantia'`: no state filter, no evaluation join, no coverage/expiry check, no parent restriction; deliberately not built from `PredicadoReingresoAbierto` |
+| same | `CambiarEstadoConHistorial` | Now returns `int`; `TABLOCKX,HOLDLOCK` existence guard is the first statement, before the first `UPDATE`/history `INSERT`; `-2` writes nothing |
+| same | `ReabrirPruebasConTransicion` | Same guard and `int` return; `resultado = NULL` path and history insert unchanged on success |
+| same | `CrearConHistorial` | Gained `out int codigoResultado`; in the warranty branch the origin eligibility (`Entregado` + `Reparado` + delivery row, same lock) is re-read first and returns `-3` before any `INSERT`, then the **unchanged** single-open predicate returns `-1`; normal creation unchanged |
+| [EntregaRepository](INFRASTRUCTURE/Features/Ordenes/EntregaRepository.cs) | `CancelarEntregaConTransicion` | After the existing locked parent read and before the sibling test and the `DELETE`: any warranty child returns `-2` with no DML; the `-1` sibling branch, the delete/update/history transaction and `CrearConTransicion` are untouched |
+| [OrdenServicioService](APPLICATION/Features/Ordenes/OrdenServicioService.cs) | `EsSoloConsultaPorReingresos` (new, public) | Read wrapper over the repository predicate, used by both forms |
+| same | `ObtenerOrdenParaModificar`, `ValidarBloqueoSoloConsulta` (new, private) | Existence + predicate + typed refusal; sentinel decoder for the `-2` batches |
+| same | 28 existing-order mutators | Owner load replaced by `ObtenerOrdenParaModificar` **before** any domain mutation, repository write or audit: `AsignarTecnico`, `IniciarDiagnostico`, `FinalizarDiagnostico`, `EmitirPresupuesto`, `RegistrarAprobacionPresupuesto`, `RegistrarRechazoPresupuesto`, `SolicitarAdicional`, `EmitirAdicional`, `RegistrarAprobacionAdicional`, `RegistrarRechazoAdicional`, `CrearBorrador`, `PublicarBorrador`, `EliminarBorrador` (previously loaded no owning order at all), `AnularPresupuesto` (before `presupuestoDb.Anular` and before the order is touched), `CancelarSolicitudAdicional`, `QuitarConsumo`, `CancelarOrden`, `EntregarOrden`, `CancelarEntrega`, `ModificarRecepcion`, `IniciarReparacion`, `ConsumirRepuesto`, `FinalizarReparacion`, `RegistrarPrueba`, `FinalizarPruebas`, `ReabrirPruebas`, `AnularPrueba` and `EvaluarReingreso` (target re-entry only) |
+| same | guarded catches, batch results | Every guarded method now rethrows with `throw;` (the concrete type and its `ClaveMensaje` survive); the four `CambiarEstadoConHistorial` call sites and `ReabrirPruebasConTransicion` decode `-2`; `CancelarEntrega` maps `-2` and `-1` exactly instead of "any negative"; `CrearReingresoGarantia` decodes `-3` before the existing `-1` sentinel |
+| same | reads and creation kept | `EvaluarReingreso` guards only its target re-entry and still reads its frozen original; `CrearOrden`, `CrearReingresoGarantia` and all reads keep `ObtenerOrdenExistente` |
+| [GarantiaService](APPLICATION/Features/Garantias/GarantiaService.cs) | `Crear`, `Anular`, `ValidarOrdenOriginalModificable` (new) | The target original is validated before coverage is written; concrete type preserved with `throw;` |
+| [IdiomaRepository](INFRASTRUCTURE/Features/Idiomas/IdiomaRepository.cs) | `SembrarDatosIniciales` | Three new paired ES/EN keys: `Mensaje.OrdenOriginalSoloConsulta`, `OrdenDetalle.OrdenOriginalSoloConsulta`, `Mensaje.GarantiaOrigenNoDisponible`; idempotent `AgregarSeed`, no existing translation overwritten |
+| [FrmOrdenServicioDetalle.Designer.cs](PRESENTATION/Forms/Ordenes/FrmOrdenServicioDetalle.Designer.cs) | designer | New wrapping `LBL_OrdenSoloConsulta` (12,106, 896x32, `Tag OrdenDetalle.OrdenOriginalSoloConsulta`, hidden by default) between the header panel and the tabs; tabs moved from y=112 to y=142 keeping 480 px, `BTN_Cerrar` from y=610 to y=640, client area 920x654 -> 920x684, so no tab content, header data or bottom edge moved |
+| [FrmOrdenServicioDetalle](PRESENTATION/Forms/Ordenes/FrmOrdenServicioDetalle.cs) | `CargarOrden`, `CargarModoNuevo`, `ActualizarTextos`, `ActualizarAvisoSoloConsulta` (new) | Predicate read together with the order and before any tab load (a failed read shows the error and closes the detail instead of defaulting to editable), reset in new mode, banner text translated by `Tag` |
+| same | `AplicarPermisosDetalle`, `ActualizarAccionesPruebas`, `ActualizarBotonAnularPrueba`, `AplicarPermisosGarantia` | Every mutation eligibility intersected with the freeze, including the direct `puedeDecidir` paths, delivery/cancellation/reopen, diagnosis, budget/draft/additional, repair/consumption/test/evaluation inputs and buttons; tabs, read-only grids, history, `Ver original`, `Cerrar` and the existing-budget selector stay usable (`CBO_SelectorPresupuesto` enabled for a frozen order) |
+| same | `CargarSelectorPresupuesto` | Pseudo `(nuevo ...)` entries omitted while frozen, so only existing documents can be selected |
+| same | `BTN_CancelarEntrega_Click`, `BTN_CrearReingreso_Click`, `MostrarError` | Fresh fail-closed freeze check before the confirmation and the reason prompt; re-entry refresh after a typed refusal; typed mapping by `InnerException` walk for both new exceptions, never by message text |
+| [FrmOrdenesServicio](PRESENTATION/Forms/Ordenes/FrmOrdenesServicio.cs) | `AplicarPermisos`, `BTN_Cancelar_Click`, `BTN_Entregar_Click`, `MostrarError`, `EsSoloConsulta`/`BuscarSoloConsulta` (new) | Selected row revalidated for legacy frozen rows and again fail-closed before prompts or navigation; freeze type mapped by exception type; no new cancel-delivery action and no designer change |
+| guides | business-flows.md, persistence.md, business-test-catalogue.md, known-limitations.md | Frozen-original rule versus open-sibling rule, guard inventory, scoped enforcement, result codes and the cancellation-versus-creation lock invariant; catalogue rows ENT-03, ENT-07, GAR-02, GAR-09 and GAR-11 distinguish frozen-original from no-child behaviour; new feat-011 limitations section plus the updated original-cancellation caveat and banner layout note, preserving the coverage-date, permission, small-window and partial-success limits |
+
+Intentionally untouched (authorized but no change needed):
+[GarantiaRepository](INFRASTRUCTURE/Features/Garantias/GarantiaRepository.cs) (the coverage/visits
+comment from feat-009 already describes the cardinality; no query change was required). Not
+touched at all because they are outside the authorized list: `PresupuestoRepository`,
+`DiagnosticoRepository`, `ReparacionRepository`, `EvaluacionGarantiaRepository`,
+`HistorialEstadoOrdenRepository`, [SQLHelper](INFRASTRUCTURE/SQLHelper.cs), every `.csproj`,
+`IMPLEMENTACION_SERVICIO_TECNICO.md` and the desktop tooling.
+
+Checks actually run:
+
+| Check | Command | Result |
+| --- | --- | --- |
+| Baseline harness | `powershell -NoProfile -File ".\init.ps1"` and `git diff --check` before any edit | PASS: 11 tasks, state/completion gates, 274 relative links, `git diff --check` exit 0 |
+| Build (documented command) | vswhere + `MSBuild .\TP_INTEGRADOR_2022.sln /t:Build /p:Configuration=Debug "/p:Platform=Any CPU" /m` | **PASS: exit 0**; six projects, `UI -> PRESENTATION\bin\Debug\UI.exe` refreshed and no `UI.exe` was running (`tasklist` reports no match), so no output was locked and no process was killed |
+| Build (clean rebuild) | same command with `/t:Rebuild` | **PASS: exit 0**, 0 warnings, 0 errors, all six assemblies produced |
+| Intermediate build after the domain/repository/service edits | same command | exit 1 only because the new repository constants had not been written yet by a failed script step; the constants were applied and the build then passed (recorded here for honesty, not as a feature failure) |
+| Guard-before-write matrix | scripted scan of `OrdenServicioService.cs`: every 8-space method declaration, its `ObtenerOrdenParaModificar` line, its first repository-write or `new BitacoraService()` line and its catch shape | 29 declarations carry a guard (28 mutators plus the helper itself); **0 methods reach a write before their guard**; **0 methods with a plain `catch (ReglaNegocioException)` lack `throw;`** |
+| Remaining unguarded loads | same script, listing every remaining `ObtenerOrdenExistente` use | 11 read methods (`PuedeCancelarSolicitud`, `ObtenerDiagnostico`, `ObtenerPresupuesto`, `ObtenerPresupuestoOriginal`, `ListarAdicionales`, `ListarTodosPresupuestos`, `ExisteAdicionalPendiente`, `CalcularMontoAutorizado`, `ObtenerEntrega`, `ListarReparaciones`), the re-entry creation path (`CrearReingresoGarantia`), the frozen-original read inside `EvaluarReingreso`, `RegistrarEvaluacionPendienteReingreso` reading its original, and the helper itself; every mutating path is guarded |
+| Form/SQL check | grep for SQL keywords and repository types in both order forms | 0 SQL statements in `FrmOrdenServicioDetalle.cs`, `FrmOrdenesServicio.cs` and the designer; both call the service only |
+| Seed pairing | text count per key in `IdiomaRepository` | `Mensaje.OrdenOriginalSoloConsulta`, `OrdenDetalle.OrdenOriginalSoloConsulta` and `Mensaje.GarantiaOrigenNoDisponible` each ES=1 / EN=1 |
+| Tracker JSON | `ConvertFrom-Json` over `feature_list.json` | Valid; `feat-011` `in-progress` and the only non-`done` feature, 17 authorized files, 6/6 criteria `verified: false`, 4/4 scenarios `planned` with empty evidence |
+| Diff hygiene | `git status --short`, `git diff --check`, per-file BOM/ending readback | Only authorized files changed (16 of 17; no new file); `git diff --check` exit 0; BOM-less files keep their original endings (CRLF for source, LF for the guides, the tracker and this file) |
+| Harness (final) | `powershell -NoProfile -File ".\init.ps1"` | PASS (see the re-run recorded below) |
+
+Deviations from the planner result (all deliberate, none silently dropped):
+
+1. `ReingresoGarantiaOrigenNoDisponibleException` lives in
+   [Garantia](DOMAIN/Features/Garantias/Garantia.cs) as instructed, but the origin re-read also
+   had to check that an `Entregas` row exists for the origin: `Entregado` + `Reparado` alone is
+   not the same condition the service validates before creating a re-entry, and the criterion is
+   that the order cannot keep a warranty re-entry after its delivery was cancelled.
+2. `CancelarEntregaConTransicion` returns `-2` for the frozen original and keeps `-1` for the open
+   sibling, so `CancelarEntrega` now maps both codes explicitly instead of treating every negative
+   value as the sibling conflict. This is what the planner asked for, but it means a hypothetical
+   future negative code is no longer silently reported as a sibling conflict.
+3. `CambiarEstadoConHistorial` and `ReabrirPruebasConTransicion` changed their return type from
+   `void` to `int` (like `CancelarEntregaConTransicion` in feat-009) instead of adding a new method
+   pair: their callers are all inside the guarded service, which keeps the sentinel decoding in one
+   place.
+4. `CrearConHistorial` gained an `out int codigoResultado` parameter rather than a result object or
+   a second method, because its `OrdenServicio` return cannot express both `-1` and `-3`; both call
+   sites (`CrearOrden`, `CrearReingresoGarantia`) were updated.
+5. The order detail grew by 30 design px in height (client 920x654 -> 920x684) and moved the tab
+   control and `BTN_Cerrar` down by the same amount, instead of shrinking the tab pages: shrinking
+   them by the full banner height would have clipped the bottom of the Presupuesto page (its
+   lowest control ends at y=438 in a 454 px page), and the header panel's last label box ends at
+   y=98 in a 104 px panel, so neither the header nor the tabs had spare room.
+6. `FrmOrdenesServicio` gained a small read helper that treats a failed predicate read as "not
+   frozen" for the *button state*, while the click-time revalidation is fail-closed (error shown,
+   no prompt, no write). The detail form stays strictly fail-closed. The authoritative refusal is
+   always the service/repository guard.
+7. The catalogue row `ENT-07` was updated in addition to the rows the planner listed (ENT-03, GAR-02,
+   GAR-09, GAR-11): it is the row that describes the delivered lock the freeze extends, and leaving
+   it unchanged would have contradicted the new behaviour.
+
+**Not verified (builder scope):** no application launch, no startup migration or seed run, no
+database read or write, no fixture, no concurrency exercise and none of the four `vis-freeze-*`
+scenarios. The refusals, the banner and its ES/EN texts, the enabled/disabled matrix at runtime,
+the banner layout at 900x600 and at large DPI, and the `-2`/`-3` branches isolated from the service
+pre-check are proven by source inspection plus compilation only. This Builder report certifies
+nothing.
+
+**Next action for the Checker:** run `vis-freeze-cancel-delivery`, `vis-freeze-mutations`,
+`vis-freeze-readonly-and-reentry` and `vis-freeze-regression-no-reentry` through the real WinForms
+UI against the authorized non-production database: deliver a repaired order, create one warranty
+re-entry, then attempt to cancel the original delivery and every other mutating action (business
+message, no write, `OrdenesServicio`/`Entregas`/`Garantias`/`HistorialOrdenes`/`Bitacora`
+unchanged), confirm the frozen order is still inspectable and that another re-entry can be opened
+once the previous open one closes, and confirm an order **without** re-entries still cancels its
+delivery. Read back the three new translation keys rather than trusting the seeded text.
+
+## Checker verification (feat-011, 2026-10-17) - independent, runtime
+
+**Verdict: PASS. All six acceptance criteria and all four `vis-freeze-*` scenarios verified.** Independent verification only:
+no implementation, designer, SQL or configuration file was modified by this Checker; only `feature_list.json` and this file
+were updated. Scope, source inventory and every refusal were re-derived from the repository, not taken from the Builder report.
+
+### What was checked
+
+| Check | Command / method | Result |
+| --- | --- | --- |
+| Harness | `powershell -NoProfile -File .\init.ps1` | PASS: 11 tasks, state/completion gates, 292 relative links, `git diff --check` |
+| Whitespace / staging | `git diff --check`, `git diff --cached --stat`, `git status --short` | exit 0, nothing staged; exactly the 16 authorized files changed plus the preexisting `FrmRepuestos.cs`; `GarantiaRepository.cs` untouched; `.codegraph/`, `.playwright-mcp/`, `skills-lock.json` preserved |
+| Build (documented) | vswhere + `MSBuild .\TP_INTEGRADOR_2022.sln /t:Rebuild /p:Configuration=Debug "/p:Platform=Any CPU" /m` | exit 0, six projects, 0 warnings / 0 errors; `UI.exe` rebuilt 18:50:17, SHA256 `781BF1B844FCF9E131A46758159723D6A2C547F6B947FC99B432F923EE8424AF`; the runtime process (PID 31404, launched 18:57:43) loaded that path, so the exercised binary is the fresh build |
+| Source re-derivation | read the repository | the existence predicate `TieneReingresosGarantia` has no child-state, coverage, evaluation or parent-state filter; 28 existing-order service mutators load through `ObtenerOrdenParaModificar` before their first write and rethrow with `throw;`; the guards sit inside the same `ExecuteTransaction` batches under `TABLOCKX, HOLDLOCK`; result codes `-2`/`-3` are decoded by `ValidarBloqueoSoloConsulta`, `CancelarEntrega` and `CrearReingresoGarantia`; no form contains SQL; the three ES/EN keys were seeded and `AgregarSeed` never overwrites; `BTN_CrearReingreso` is not intersected with the freeze |
+| Fixtures (real UI) | pywinauto 0.6.9 drivers under `scripts\sweep\feat011_*` | customer 4002, equipment 4002..4009, orders FX-A 5002, FX-B 5003, FX-C 5004, FX-D 5005, FX-E 5006, FX-F 5007, FX-G 5008, FX-H 5009; children 5010, 5011, 5012, 5013, 5014, 5015, 5016 |
+| `vis-freeze-cancel-delivery` | UI + forced real mouse click + application/repository calls + SQL readback | PASS (see the log; also the stale-view path on FX-F) |
+| `vis-freeze-mutations` | UI control matrix, 59 real mouse clicks, 28 external service calls, 3 locked batches, SQL readback | PASS; 0 allowed writes, snapshot and all counters unchanged |
+| `vis-freeze-readonly-and-reentry` | ES/EN banner + matrix + re-entry grid, feat-009 single-open, creation after closing, Ver original, child editability | PASS |
+| `vis-freeze-regression-no-reentry` | ENT-03/ENT-04/ENT-05/ENT-06 on FX-B and FX-C, then the first child | PASS |
+| Criterion 6 (concurrency) | two independent `agent011harness.exe` processes loading the built assemblies, released by one shared go-file barrier, with a controlled post-barrier stagger and two unstaggered rounds | PASS: creation-first gives cancellation `-2`; cancellation-first gives creation `-3`; a stale creation after a committed cancellation gives `-3`; two simultaneous rounds committed on exactly one side, never both |
+| Regressions | feat-009 single-open and reverse edge, GAR-05/06/07/08/10, ENT-04/05 | PASS (the reverse edge refused with the translated message and batch `-1`; the sibling-free cancellation succeeded) |
+| Layout / sizes / DPI | banner and tab rectangles at the default size, 900x600, 1400x900 and on the main window; ES and EN | PASS; system DPI 144 (150 percent) was in force; the banner stays visible and the preexisting 900x600 clipping of the tab body is unchanged, not fixed |
+
+### Observed facts worth keeping
+
+- Freeze predicate: FX-C 5004 (delivered **NoReparable**, **no coverage**) froze as soon as a child row existed, and FX-A stayed frozen while all of its children were closed - the rule is existence-based, as required.
+- Refusal mechanism on a frozen original: the banner is shown and `BTN_CancelarEntrega` leaves the UIA tree; a forced real mouse click and a click on the still-enabled stale control wrote nothing, and the click-time recheck produced `Mensaje.OrdenOriginalSoloConsulta`.
+- External calls: 20 of 28 service mutators returned the typed `FREEZE|Mensaje.OrdenOriginalSoloConsulta`; the other 8 were refused by their own earlier state rule (finished intervention, non-adicional or non-borrador document, re-entry without a pending evaluation) and also wrote nothing. All three bypass batches (`CambiarEstadoConHistorial`, `ReabrirPruebasConTransicion`, `CancelarEntregaConTransicion`) returned `-2`.
+- Lock-order proof: the harness runs two processes with one barrier; `race-fixd-create-first`, `race-fixe-cancel-first`, `race-fixe-stale-create`, `race-fixg-simultaneous` and `race-fixh-simultaneous` under `evidence\feat011-20261017\` hold the raw outputs.
+- Test artifact to disclose: in the stale round the second (redundant) raw cancellation call committed one extra history row on FX-E (`Entregado -> EnPruebas` when it was already `EnPruebas`); that is the raw repository batch being called twice without the service pre-check, not a product defect, and the creation in the same round still returned `-3` with no child.
+- Instrumentation note: one derived `CHECKSUM` digit in the `Diagnosticos` block of `full_snapshot(4012)` differed between my first reading and the final reading; the underlying row (`id_diagnostico` 4011, `es_reparable` 1, `tiempo_estimado_dias` 30, `descripcion` length 31) is stable and consistent, `DiagnosticoRepository.Inicializar` performs DDL only, and no write path was ever invoked against 4012. All of 4012 order/coverage/delivery/history values match the feat-009 record. Reported as an unexplained instrumentation difference, not as a verified data change.
+
+### Not re-tested / boundaries
+
+- Only the full-permission `admin` session was exercised; a restricted-permission variant was not reachable without credentials.
+- Only the machine's DPI 144 (150 percent) and the default culture were exercised.
+- The preexisting 900x600 tab-body clipping and the large-DPI rendering limits recorded in `known-limitations.md` were observed and left as they are; the feat-011 banner does not fix them.
+- The feat-011 guides (`business-flows.md`, `persistence.md`, `business-test-catalogue.md`, `known-limitations.md`) were read and matched the observed behaviour, but their "runtime acceptance pending" wording was **not** updated because this Checker may only change the trackers.
+- The fixtures were kept for review (no cleanup), as authorized; the historical fixtures and their related rows were not altered.
 ## Builder report (feat-010, 2026-10-13) - documentation only
 
 Objective: align the maintained business test catalogue, the root implementation notes and the
@@ -861,3 +1018,214 @@ These are also recorded in [known limitations](docs/agents/known-limitations.md)
    repeats no runtime test.
 6. Historical (feat-005): review its diff and evidence above; optionally push the pending commit or
    investigate REP-07 partial-return UI separately.
+
+### feat-012 pre-Builder preservation fingerprints (Planner read-only snapshot)
+
+- Tracked files excluding feature_list.json/progress.md: 254 files; SHA256 bb037144738522b2589b19ed1bb8a9010733f388bab69ed666ed80d96d758f5d.
+- Existing diagrams (exclude the new G06 subtree on recheck): 56 files; SHA256 56da9854b1cfbb4ec21dd22135a8044c361d17c9f3412d10c5b266dffcc67a6d.
+- Preexisting local tooling .codegraph/, .playwright-mcp/, skills-lock.json: 5 files; SHA256 c50b5b4f78bb2bfd9f1f17425c23b758b87929308fc505c929e631e6ca6f5251.
+- Algorithm: repository-relative slash paths sorted by PowerShell Sort-Object -CaseSensitive; each row is path + TAB + lowercase SHA256 of its bytes; join rows with LF and append a trailing LF; SHA256 of UTF8 bytes without BOM.
+- Prior passing feat-001..011 entries (explicit UTF8 ReadAllText, PowerShell ConvertTo-Json -InputObject array -Depth 30 -Compress; UTF8 SHA256): A6C936B7AEBA55CF659063E2ED7611FB47F05FED632869F5E4EA6079D67E4F27. No passing feature may be reopened or rewritten.
+- Registration check: init.ps1 PASS (12 tasks, 292 links). These fingerprints establish preservation only, not diagram correctness; Planner source review is ongoing.
+
+### feat-012 Planner result (2026-10-17; read-only stage complete)
+
+- Exact 21-path scope accepted: nine PlantUML/Markdown pairs plus index under the new G06 folder, and the two existing harness state files; no application or prior-documentation mutation.
+- Source inventory from six Compile manifests: DOMAIN 49, ABSTRACTIONS 11, APPLICATION 19, REPOSITORY 25, SERVICES 4, handwritten UI 61 (Program + 28 forms + 32 private nested helpers); 169 own semantic types total. Merge partial forms and explicitly exclude generated settings/resources/metadata, not business classes.
+- Plan requires per-type Spanish characteristics/behaviours with source/member links, explicit relation/cardinality support, source-to-diagram inventory, actual concrete construction and current feat-006..011 rules. Select significant members without silently dropping types; distinguish conceptual FK associations from object navigation/ownership.
+- Repository split planned as technical 9 (including reports), masters 5, orders 6, stock/purchases/warranties 5. Context-only repeated reference types must be labeled.
+- No renderer identified by bounded local discovery (no plantuml/dot commands, no workspace PlantUML bundle, PLANTUML_JAR unset; Java alone is not PlantUML). Structural syntax fallback is allowed by the feature, but rendering/full syntax/visual-layout certification must not be claimed.
+- Verification: independent class-set/member/relationship source review, all new Markdown links (not covered by init.ps1), all nine syntax structures and aliases, whitespace/secrets/path safety, scope/preservation fingerprints, JSON/prior-feature preservation, init.ps1 and git diff --check. No build/app/DB verification is required or authorized.
+- Planner reports no human/product blocker and no file edits, installs, builds, app/DB access or nested delegation. Builder receives the complete actionable plan and must leave criteria false and status in-progress for the independent Checker.
+
+### feat-012 Builder report (2026-10-17; documentation-only stage complete)
+
+Objective: deliver the owner-authorized G06 academic package (professional Spanish, exact code identifiers) as nine current-source PlantUML class diagrams plus nine per-diagram class characteristics/behaviours descriptions and an index, without touching application source, configuration, SQL, the database, the existing diagrams or the preexisting dirty work. Scope actually written: exactly the 21 authorized paths - the 19 new files under `diagrams/G06-diagrama-de-clases-de-todos-los-modulos` (README.md, nine .puml and nine .md) plus this `progress.md` and `feature_list.json`. No build, no application launch, no database access, no installs, no remote rendering, no Git write, no extra repository script, plan, baseline or backlog.
+
+| Check | Command / method | Result |
+| --- | --- | --- |
+| Startup | `git rev-parse --show-toplevel`, `git branch --show-current`, `git status --short`, `.\init.ps1` | `checkpoint-6-arreglos-y-mejoras` @ `5114582`; the same 17 dirty tracked paths and the 3 preexisting untracked entries; `init.ps1` PASS (12 tasks, 292 relative links, `git diff --check`). Additional untracked entry after the work: only the new G06 folder. |
+| Source inventory | six `Compile Include` manifests, excluding `bin/`/`obj/` and `Properties/` | DOMAIN 49 types, ABSTRACTIONS 11, APPLICATION 19, REPOSITORY 25, SERVICES 4, UI 61 (Program + 28 forms + 32 private nested helpers) = 169 own types; UI 61 types correspond to 55 distinct names because six helper names repeat across forms. |
+| Class coverage | every source type name compared against the union of the nine .puml declarations and against the backticked name in its companion .md | 169/169 represented in a diagram; 169/169 named in the matching Markdown; no .puml declares a type that the source does not declare. |
+| Member fidelity | 760 distinct member names extracted from the nine .puml and matched against the concatenated source of the six projects; explicit checks for `int?`/`DateTime?` members, `static`/`abstract` classes, code constants and the shared SQL predicate | 760/760 present in the source; 10/10 nullable annotations, 13/13 static classes, `abstract class PermisoComponent`, `NombreRaizSistema`, the four `Resultado*` codes and `PredicadoReingresoAbierto` all match the source declaration. |
+| Structural syntax (no renderer available) | one `@startuml`/one `@enduml` per file, brace balance, per-line quote parity ignoring comments, package aliases, no remote `!include`/URL | 9/9 files pass; 0 duplicate package aliases; 0 remote references. One multi-line note with a split quoted phrase was rewritten and re-verified. |
+| Markdown links | all relative links in the 19 new files resolved from their own folder | 50 relative links checked, 0 broken; source links use `../../`; no absolute or machine-specific path. |
+| Hygiene and secrets | regex scan for absolute/UNC paths, connection strings, password/secret literals and key material; per-file BOM/CRLF/trailing-space/final-newline | 0 absolute paths; 0 connection strings or credential literals; the only flagged token is the private field NAME `Passphrase` declared in `G06.5-services.puml` (no value). All 19 files are BOM-less UTF-8 with LF endings, no trailing spaces and a final newline. |
+| Preservation | repository-relative slash-path + TAB + lowercase SHA256 rows, LF-joined with a trailing LF, SHA256 of UTF-8 without BOM, recomputed after the writes | tracked files excluding the two state files: 254 files, `BB037144738522B2589B19ED1BB8A9010733F388BAB69ED666ED80D96D758F5D` (matches); existing diagrams excluding the new subtree: 56 files, `56DA9854B1CFBB4EC21DD22135A8044C361D17C9F3412D10C5B266DFFCC67A6D` (matches); `.codegraph/`, `.playwright-mcp/`, `skills-lock.json`: 5 files, `C50B5B4F78BB2BFD9F1F17425C23B758B87929308FC505C929E631E6CA6F5251` (matches). |
+| Prior features | first 11 feature entries serialized with explicit UTF-8 read plus `ConvertTo-Json -InputObject` array, `-Depth 30 -Compress`, SHA256 of UTF-8 | `A6C936B7AEBA55CF659063E2ED7611FB47F05FED632869F5E4EA6079D67E4F27` (matches the corrected fingerprint); no passing feature entry was reopened or rewritten. |
+| New folder contents | recursive listing | exactly 19 files (9 `.puml`, 10 `.md`), no subfolders, no PNG/SVG or generated artefact. |
+
+Deliverable contents: README index with the nine pair links, legend, per-project source-to-type inventory, abstraction criteria, explicit exclusions and snapshot/verification limits; G06.1 domain (49 types plus the domain relationships, composite permissions, exceptions and the FK-conceptual convention); G06.2 contracts (10 interfaces plus `TraduccionEditable`); G06.3 application (17 services, `DigitoVerificadorHelper`, `DatosUsuarioIncorrectosException`, the concrete-repository construction matrix); G06.4.1..4.4 repository split 9/5/5+1/6, with the result codes, the shared predicate, the composite unique indices and the transaction boundaries; G06.5 services (`SessionManager`, `SesionIdioma`, `EncryptionService`, `PasswordHasher`, API only, no secret values); G06.6 UI (Program, 28 forms as `IObservador`, 32 nested private helpers with their projections and the repeated-name accounting). Current rules reflected: customer document uniqueness including inactive records, spare-part budget item as quotation only with nullable `IdRepuesto`, current-intervention test registration with explicit finalization, 0..1 warranty coverage versus 0..N re-entries with one open visit, existence-based read-only original order with its typed exceptions and the `0/-1/-2/-3` result codes, and the distinction between conceptual FK associations and C# ownership.
+
+Limitations and deviations (Builder/source/documentation checks only): no PlantUML renderer was identified in the environment (no `plantuml`/`dot` command, no workspace bundle, `PLANTUML_JAR` unset), so the nine diagrams were validated **structurally** (delimiters, brace/quote balance, aliases, no remote references) and not rendered; no visual layout, PNG or full PlantUML syntax certification is claimed. The validation was performed with read-only shell scripts and inline commands, not with any new repository script or tool. The repository split in G06.4.x is documentary only, and `ReparacionRepository` is documented inside the stock/purchases/warranties diagram while belonging physically to `Features/Reparaciones`; both facts are stated in the documents. The diagrams describe source structure and rules, not runtime behaviour, database contents or concurrency, and no criterion of feat-012 is claimed as verified.
+
+Next action for the Checker: independently re-run the class-set difference against the six `Compile` manifests, the member/visibility/nullability and relationship/cardinality review, the structural `.puml` checks and the 50 new relative links, re-verify the three preservation digests plus the prior-feature digest, `git diff --check` and `init.ps1`, and only then decide each of the six acceptance criteria; no runtime, build or database evidence is required or authorized for this documentation feature.
+
+## Checker verification (feat-012, 2026-10-17) - independent, documentation/source only
+
+Verdict: **FAIL for completion** - `feat-012` stays `in-progress`. The Checker read `AGENTS.md`, the
+harness skill, the exact `feat-012` entry, the current repository state, the Planner/Builder handoff and
+the nine G06 pairs against the actual compiled source. No artifact was modified: application source,
+configuration, SQL, `.csproj`, the old diagrams and the 19 new G06 files were only read; this Checker
+wrote only `feature_list.json` and this file. No build, application launch, database access, install,
+download, remote rendering or Git write was performed.
+
+### Independently verified (PASS)
+
+| Check | Method | Result |
+| --- | --- | --- |
+| Own-type inventory | `Compile Include` of the six `.csproj`, excluding `bin/obj` and generated `Properties` files, cross-checked with a brace-scoped parse of every `.cs` | DOMAIN 44 code files / 49 types (45 Compile entries including `AssemblyInfo`), ABSTRACTIONS 11/11, APPLICATION 19/19, REPOSITORY 25/25, SERVICES 4/4, UI 57 files / 61 types = 29 top-level + 32 nested; 169 total |
+| Diagram coverage and ownership | every source type matched to a `.puml` class by name **and** nesting parent | 169/169 present, 0 phantom classes; nested helper ownership matches the source exactly (the 12 `FrmOrdenServicioDetalle` helpers and the other 20 in their own forms) |
+| Member fidelity | 1165 documented members matched against the declared members of the owning class plus its base chain (case-exact) | 1165/1165 correct; 0 members borrowed from a sibling class or another file |
+| Inheritance and dependencies | source base lists vs `.puml` generalizations/realizations; constructor fields and `new` sites vs the APPLICATION/UI dependency arrows | match (five `ReglaNegocioException` subclasses, `IEntity` contract chain, 28 `IObservador` forms, 10 repositories in `OrdenServicioService`, `EntregaRepository` reusing `OrdenServicioRepository.PredicadoReingresoAbierto`) |
+| feat-006..feat-011 rules reflected | source spot checks (`Garantia.cs`, `OrdenServicio.cs`, `DetallePresupuesto.cs`, `OrdenServicioRepository`, `EntregaRepository`, `GarantiaService`, `OrdenServicioService`, `SessionManager`, `SesionIdioma`) | correct: document uniqueness exception, `int? IdRepuesto` quotation-only item, current-intervention tests, coverage 0..1 vs re-entries 0..N with one open, existence-based freeze, result codes `0/-1/-2/-3` matching the SQL literals, `CrearConHistorial` `out` code, no DI/repository interfaces |
+| Structure of the nine `.puml` | one `@startuml`/`@enduml`, brace balance, package-alias uniqueness, no `!include`/URL | 9/9 pass, 0 duplicate aliases, 0 remote references |
+| Markdown links | every relative link in the ten new `.md` resolved from its own folder | 50 checked, 0 broken, no absolute or machine-specific path |
+| File hygiene and secrets | per-file BOM/endings/trailing space/final newline; regex scan for credentials, keys, absolute paths, IPs | 19/19 BOM-less UTF-8 + LF + final newline + no trailing whitespace; no secret values, only the private field name `Passphrase` in `G06.5-services.puml` |
+| Preservation | recomputed the Planner fingerprints with the documented algorithm | tracked excluding the two state files: n254 `BB037144738522B2589B19ED1BB8A9010733F388BAB69ED666ED80D96D758F5D`; old diagrams: n56 `56DA9854B1CFBB4EC21DD22135A8044C361D17C9F3412D10C5B266DFFCC67A6D`; `.codegraph/`+`.playwright-mcp/`+`skills-lock.json`: n5 `C50B5B4F78BB2BFD9F1F17425C23B758B87929308FC505C929E631E6CA6F5251` - all match; `git status` shows only the preexisting dirty paths plus the new G06 folder; exactly 19 files in that folder |
+| Prior features and harness | `feature_list.json` parse, prior-entry digest, `init.ps1`, `git diff --check` | 12 features, the 11 earlier ones `done` and unchanged; the reported prior digest `A6C936B7AEBA55CF659063E2ED7611FB47F05FED632869F5E4EA6079D67E4F27` reproduces over the prior feature **objects** (not over an array of ids as the fingerprint text worded it); `init.ps1` PASS (12 tasks, 292 relative links, `git diff --check` exit 0) |
+| Renderer availability | bounded local lookup | no `plantuml`, no `dot`/Graphviz, no workspace jar, `PLANTUML_JAR` unset; Java alone is not a renderer, so the disclosed structural fallback under criterion 6 applies and no render/layout/syntax certification is claimed |
+
+### Why it is not `done` (FAIL evidence)
+
+1. **Criterion 3 - object ownership is misrepresented for identity-only relations.**
+   `G06.1-domain.puml` lines 588-600 use `o--`/`*--` (object aggregation/composition) for 13
+   relations that have no field in `DOMAIN`: `OrdenServicio` to `HistorialEstadoOrden`, `Diagnostico`,
+   `Presupuesto`, `Entrega`, `Reparacion`, `Garantia` and itself by `id_orden_origen`;
+   `Presupuesto *-- DetallePresupuesto`; `Compra *-- DetalleCompra`; `Reparacion` to
+   `ReparacionRepuesto` and `Prueba`; `Repuesto` to `MovimientoStock`; `Garantia` to
+   `EvaluacionGarantia`. A scan of `DOMAIN/**/*.cs` finds only two real collections
+   (`Idioma.Traducciones`, `PermisoComponent._hijos`) and no reference-typed navigation property.
+   This contradicts the document own legend (`README.md` lines 37-40: `o--`/`*--` require a real
+   field or list, FK-conceptual edges are dotted), contradicts `G06.1-domain.md` lines 99-100
+   ("estas relaciones se dibujan punteadas"), and contradicts `G06.1-domain.md` line 51 itself
+   ("`Presupuesto` ... **No** tiene coleccion de detalles").
+   `G06.1-domain.puml` line 582 (`FamiliaPermiso "0..1" o-- "0..*" PermisoComponent : Hijos`)
+   attributes `Hijos` to the subclass although it is declared in `PermisoComponent`, and its `0..1`
+   reading implies exclusive membership while `FamiliaPermiso.cs` states that the same
+   permission/family may appear in different branches.
+
+2. **Criterion 2 - wrong counts and wrong statements in the companion descriptions.**
+   - `README.md` line 47 and line 57 and `G06.1-domain.md` line 10 declare 48 DOMAIN code files;
+     `DOMAIN.csproj` declares 45 `Compile` entries (44 code files + `Properties/AssemblyInfo.cs`),
+     and the README inventory table itself lists 44 rows.
+   - `G06.4.3-repository-ordenes.md` line 9 says the diagram documents 6 types but lists and draws 5
+     (README and `.puml`: 5).
+   - `G06.4.4-repository-stock-compras-garantias.md` line 10 says 5 types but documents 6, including
+     `ReparacionRepository` (README and `.puml`: 6).
+   - `G06.1-domain.md` lines 12-14 name `Presupuesto.cs`, `Bitacora.cs` and `SQLHelper` as files that
+     declare two types each; the actual multi-type files are `Cliente.cs`, `OrdenServicio.cs` and
+     `DetallePresupuesto.cs` (two each) and `Garantia.cs` (three), while `SQLHelper.cs` belongs to
+     REPOSITORY.
+   - `G06.1-domain.md` line 30 says `CodigosPermiso` declares **59** `const string`; source and
+     `G06.1-domain.puml` declare **57**.
+   - `G06.6-ui.md` line 11 says six helper names repeat across forms; its own repeated-name table
+     (lines 101-107) lists four (`ItemCliente`, `ItemProveedor`, `ItemEstado`, `ItemRepuesto`).
+   - `G06.2-abstractions.md` lines 42 and 55 list `SesionIdioma` as an implementation of
+     `IObservador`; the source declares `SesionIdioma : IObservado`.
+
+3. **Residual uncertainty (not a separate failure).** The nested-class notation used in
+   `G06.6-ui.puml` (`- class NodoPermiso { ... }` inside a form class body) passes the disclosed
+   structural checks (balanced braces) but was **not** render-certified; no renderer exists locally
+   and installing or remotely rendering was out of scope. The rest of the diagrams use plain
+   PlantUML constructs.
+
+### Criterion decision recorded in `feature_list.json`
+
+| # | Criterion theme | Verified |
+| --- | --- | --- |
+| 1 | Nine current-source diagrams with G06 numbering and an index | true (delivered; the index carries the wrong DOMAIN file count reported above) |
+| 2 | Companion Markdown characteristics/behaviours covering the types | false (type coverage is complete, but the counts/statements listed above are wrong) |
+| 3 | Traceability of classes/members/inheritance/relations and FK-vs-ownership distinction | false (notation and ownership evidence above) |
+| 4 | feat-006..feat-011 rules reflected | true |
+| 5 | Preservation and documentation-only scope | true |
+| 6 | Structural/links/state/preservation/diff/harness validation with the renderer limitation disclosed | true (validations ran and this evidence is recorded) |
+
+### Boundaries and recommended next step
+
+- Verified: source-to-document conformance, structure, links, hygiene, preservation, state and harness.
+- Not verified and not authorised: build, application launch, database reads/writes, runtime behaviour,
+  visual layout and full PlantUML syntax/rendering.
+- Recommended next step: one repair round that (a) replaces the aggregation/composition arrows of the
+  13 identity-only relations with the documented dotted FK-conceptual notation (or states an explicit
+  notation rule that keeps object ownership distinct) and fixes the `FamiliaPermiso`/`Hijos` owner and
+  multiplicity, and (b) corrects the seven count/statement errors listed above; then a fresh Checker
+  re-verification of criteria 2 and 3. No source, configuration, SQL or database change is involved.
+### feat-012 Builder report, retry round 1 (2026-10-17; narrow documentation repair)
+
+Objective: repair the two Checker FAIL findings on the already-delivered G06 package - conceptual FK/permission notation and the inaccurate counts/statements - and remove the non-standard nested-class notation of the UI diagram. Documentation only: no source, configuration, SQL, database, build, application launch, install, download, remote rendering or Git write. Exactly 11 pre-existing authorized paths were modified: the nine G06 files named by the Planner plus `feature_list.json` and this `progress.md`. No file was added, deleted, moved or renamed; the other 10 G06 artifacts were left untouched.
+
+| Repair | File | Change |
+| --- | --- | --- |
+| 13 identity-only relations | `G06.1-domain.puml`, `G06.1-domain.md` | `o--`/`*--` replaced by dotted `..` labelled `FK conceptual <actual column>`; `OrdenServicio` to history/diagnosis/budget/delivery/repair/warranty/self, `Presupuesto` to detail, `Compra` to detail, `Reparacion` to consumption/tests, `Repuesto` to movements and `Garantia` to evaluation. `Presupuesto` 1:1..* is annotated as the emitted budget (non-empty detail is required by `OrdenServicioService.ValidarItemsYCalcularSubtotal`, not by the class or the table); `Compra` 1:0..* covers the document lifecycle because `CompraRepository.QuitarItem` can delete the last item while creation and confirmation require at least one; the self relation is 0..1:0..* because `IdOrdenOrigen` is `int?` (exactly one origin applies to the warranty child, and one open child is a conditional rule, not a 0..1 lifetime cardinality). |
+| Permission sharing | `G06.1-domain.puml`, `G06.1-domain.md`, `G06.2-abstractions.puml`, `G06.2-abstractions.md` | `FamiliaPermiso "0..1" o-- "0..*" PermisoComponent : Hijos` replaced by the ordinary self-association `PermisoComponent "0..*" --> "0..*" PermisoComponent : Hijos (lista real; no exclusiva)`; the same 0..1 defect of `IPermisoComponent` corrected to 0..*:0..* with a note that `Hijos` is a real `IList<IPermisoComponent>` declared in the base, that families accept children while simple permissions always reject them, and that the same component may appear in different branches. |
+| File/type counts | `README.md`, `G06.1-domain.md` | DOMAIN now reports 45 `Compile` entries = 44 code files + `AssemblyInfo` (was 48); the multi-type files are `Cliente.cs`, `OrdenServicio.cs` and `DetallePresupuesto.cs` (two types each) and `Garantia.cs` (three), and `SQLHelper` is stated to belong to REPOSITORY (was `Presupuesto.cs`/`Bitacora.cs`/`SQLHelper`). |
+| Other count facts | `G06.1-domain.md`, `G06.4.3-repository-ordenes.md`, `G06.4.4-repository-stock-compras-garantias.md`, `G06.6-ui.md` | `CodigosPermiso` 59 -> 57 constants; orders subgroup 6 -> 5 types; stock/purchases/warranties subgroup 5 -> 6 types (`ReparacionRepository` listed); UI repeats four helper names (was six) with 10 repeated declarations and six occurrences beyond the first; the relations row "10 formularios" corrected to 11 distinct parents (the 32-helper table itself already had 11). |
+| Contract statement | `G06.2-abstractions.md` | `SesionIdioma` removed as an `IObservador` implementation in the relation row and in the implementation table: the source declares `SesionIdioma : IObservado` and the 28 forms implement `IObservador`; the architecture note now describes `IPermisoComponent` as a non-exclusive Composite. |
+| UI notation | `G06.6-ui.puml`, `G06.6-ui.md`, `README.md` | The 32 `- class <Helper> { ... }` blocks nested inside a form body were rewritten as flat package-level declarations `class "FrmX.Ayudante" as UI_FrmX_Ayudante <<nested_private>> { ... }`, with every member line, visibility and nullability preserved and every helper kept in its own package and its own form. Header comment, README legend and the UI scope section describe the flat notation and state that the qualified name and the stereotype denote lexical private nesting, not data composition. No helper was merged with another, no short name was renamed and the 12 `FrmOrdenServicioDetalle` helpers stay distinct. |
+
+| Check | Method | Result |
+| --- | --- | --- |
+| Source type inventory | `Compile Include` of the six `.csproj`, `bin/obj` and generated `Properties` excluded, brace-scoped parse of every `.cs` | 160 code files; DOMAIN 49, ABSTRACTIONS 11, APPLICATION 19, REPOSITORY 25, SERVICES 4, UI 57 files/61 types (29 top-level + 32 nested) = 169 types; all six counts match the recorded inventory |
+| Type coverage | every source type compared with the union of the nine `.puml` declarations | 169/169 declared, 0 source types missing, 0 phantom types; per diagram: DOMAIN 49, ABSTRACTIONS 11, APPLICATION 19, repositories 9/5/5/6, SERVICES 4, UI 61 (29 + 32 qualified) |
+| Member fidelity | 595 distinct member names extracted from the nine `.puml` and matched against the concatenated source of the six projects | 595/595 present as source tokens; 0 unknown names; the rewritten helper blocks kept their members byte-for-byte apart from indentation |
+| UI helper mapping | flat declarations compared with a scoped parse of the 32 `private class` declarations and their enclosing form | 32/32 helpers, 32 unique aliases, 11 distinct parent forms, 0 missing and 0 extra; 12 `FrmOrdenServicioDetalle` helpers |
+| Structural `.puml` validation | one `@startuml`/`@enduml`, brace balance, per-line quote parity, package-alias uniqueness per file, no `!include`/URL | 9/9 files pass; 0 duplicate aliases within a file; 0 remote references; 0 leftover nested `- class` lines |
+| Markdown coverage and links | every `.puml` type named in its companion `.md`; every relative link resolved from its own folder | 0 unnamed types; 50 relative links checked, 0 broken, no absolute or machine-specific path; the 33-row helper table covers the 32 helpers and the four repeated-name rows sum to 10 |
+| Corrected facts re-checked against source | `DOMAIN.csproj`, `CodigosPermiso`, `PermisoComponent`/`FamiliaPermiso`, `SesionIdioma`, `CompraRepository.QuitarItem`, `OrdenServicioService.ValidarItemsYCalcularSubtotal`, the 32 nested UI helpers | all corrected values reproduce: 45 `Compile` entries / 44 code files, 57 constants, 32 helpers with 11 parents and four repeated names, `SesionIdioma : IObservado`, last draft item deletable |
+| Hygiene and secrets | per-file BOM/endings/trailing space/final newline; regex scan for credentials, keys and absolute paths | 19/19 G06 files are BOM-less UTF-8 with LF, no trailing whitespace and a final newline; 0 secret-pattern hits; 0 absolute-path hits; the G06 deliverable digest is `68236F4295339CEB14ACE9079A6944CB58257C1FB86FCD5EB4E87F09213AB920` |
+| Preservation | recomputed the Planner fingerprints with the documented algorithm (tracked files via `git ls-files -z`) | tracked excluding the two state files: n254 `BB037144738522B2589B19ED1BB8A9010733F388BAB69ED666ED80D96D758F5D`; old diagrams: n56 `56DA9854B1CFBB4EC21DD22135A8044C361D17C9F3412D10C5B266DFFCC67A6D`; `.codegraph/`+`.playwright-mcp/`+`skills-lock.json`: n5 `C50B5B4F78BB2BFD9F1F17425C23B758B87929308FC505C929E631E6CA6F5251` - all match; `git status` shows only the preexisting dirty paths plus the untracked G06 folder, and the folder still holds exactly 19 files |
+| Prior features and harness | `feature_list.json` parse, prior-feature digest, `init.ps1`, `git diff --check` | 12 features, the 11 earlier ones `done` and unchanged, prior-object digest `A6C936B7AEBA55CF659063E2ED7611FB47F05FED632869F5E4EA6079D67E4F27`; `init.ps1` PASS (12 tasks, 292 relative links, `git diff --check` exit 0) |
+| Renderer availability | bounded local lookup (`Get-Command`, `PLANTUML_JAR`, workspace jars, Graphviz) | still no `plantuml` command, no `dot`, no workspace jar, `PLANTUML_JAR` unset (only Java is present), so the disclosed structural fallback under criterion 6 applies |
+
+Limitations and deviations (Builder/source/documentation checks only): no PlantUML renderer exists locally, so the nine diagrams were validated structurally and against the source, never rendered; no visual layout, PNG or full PlantUML syntax certification is claimed, and the flat helper notation is standard PlantUML by construction but was not render-verified. No member-level audit was rebuilt from scratch: the 595 diagram member names and the 169-type inventory were re-derived and matched against the source, while the previously accepted 1165 member-ownership pairs and the 760-name Builder set were not recomputed; the helper rewrite preserved every member line, and the 32 helper members were checked against the new declarations. The `G06.6-ui.puml` dependency arrows were left exactly as they were (17 `..>` arrows plus the `Program ..> FrmPrincipal` edge), so `NodoPermiso.Permiso : PermisoComponent` still appears only as the documented external context type and not as an extra arrow. `feature_list.json` had mixed line endings from the earlier Checker write (62 CRLF among 696 LF); it was normalized to LF with an identical content hash (`348B3D9E972B60B5613D5B03DC998FBFA315EE28E7DB36E8821210754AA1F47D` before and after). No criterion of feat-012 is claimed as verified here: criteria 2 and 3 stay `false` and the feature stays `in-progress`.
+
+Next action for the fresh Checker: independently re-run the class-set difference against the six `Compile` manifests, the member/visibility/nullability review, the corrected relation/cardinality and permission-sharing reading, the 32-helper flat mapping and the structural `.puml` checks, the 50 new relative links, the three preservation digests plus the prior-feature digest, `git diff --check` and `init.ps1`, and only then decide criteria 2 and 3. No runtime, build or database evidence is required or authorized for this documentation feature.
+
+
+## Checker verification (feat-012, retry round 1, 2026-10-17) - independent, documentation/source only
+
+Verdict: **PASS for completion** - all six acceptance criteria are met and `feat-012` is `done`. The fresh
+Checker read `AGENTS.md`, the harness skill, the exact `feat-012` entry, the current repository state, the
+Planner/Builder handoff and all nine G06 pairs against the actual source. No implementation file was
+modified: application source, configuration, SQL, `.csproj`, the old diagrams and the 19 new G06 files
+were only read; this Checker wrote only `feature_list.json` and this file. No build, application launch,
+database access, install, download, remote rendering or Git write was performed.
+
+| Check | Method | Result |
+| --- | --- | --- |
+| Startup and state | `git rev-parse --show-toplevel`, branch, `git status --short`, `init.ps1`, JSON parse | `checkpoint-6-arreglos-y-mejoras` @ `5114582`; the same 17 preexisting dirty tracked paths and 3 preexisting untracked entries plus the 19-file G06 folder; 12 features with the 11 earlier ones `done`; `init.ps1` PASS (12 tasks, 292 relative links, `git diff --check` exit 0) |
+| Own-type inventory | six `Compile Include` manifests plus a brace-scoped parse of every `.cs` | DOMAIN 45 Compile = 44 code + `AssemblyInfo`, 49 types; ABSTRACTIONS 11; APPLICATION 19; REPOSITORY 25; SERVICES 4; UI 57 code files = 29 top-level + 32 nested = 61; 160 code files and 169 distinct types |
+| Diagram coverage | every source type vs the nine `.puml` declarations (qualified helper names included) | 169/169 declared, 0 phantom, 0 missing; every helper parent matches the source form |
+| Member ownership | 1058 `.puml` member occurrences resolved inside the owning type block | 0 members outside their owner; the 32 helper member lists resolve to their own source helper; 0 puml types unnamed in the companion `.md` |
+| FK vs ownership and cardinalities | `G06.1-domain.puml`/`.md` vs DOMAIN fields, indexes and service guards | 13 identity-only relations are dotted `FK conceptual <column>`; `o--` only for the real collections (`Idioma.Traducciones`, `ObservadoresRegistrados`); `Traduccion --> IPalabra` is the only object reference; 0..1 for Diagnostico/Entrega/Garantia via `UX_Diagnostico_Orden`/`UX_Entrega_Orden`/`UX_Garantias_OrdenOriginal`; emitted detail 1..1..* via `ValidarItemsYCalcularSubtotal`; `Compra` 1..0..* because `QuitarItem` deletes the last draft line; self 0..1..0..* because `IdOrdenOrigen` is `int?` |
+| Permission sharing | `PermisoComponent._hijos`/`Hijos`, `FamiliaPermiso.AgregarHijo`, `PermisoSimple.AgregarHijo`, `IPermisoComponent.Hijos` | base-owned non-exclusive `0..* --> 0..*` in DOMAIN and ABSTRACTIONS; no `0..1` and no exclusive diamond |
+| Corrected counts and statements | recomputed from `DOMAIN.csproj`, `CodigosPermiso`, the four multi-type DOMAIN files, `SesionIdioma` and the 32 helper declarations | 57 constants; 5 orders / 6 stock repositories; 4 repeated helper names = 10 declarations + 6 extra occurrences; 11 parents; 12 `FrmOrdenServicioDetalle` helpers; `SesionIdioma : IObservado` and 28 `IObservador` forms; multi-type files `Cliente`/`OrdenServicio`/`DetallePresupuesto`/`Garantia`; `SQLHelper` in REPOSITORY - all reproduce |
+| UI flat helper notation | 32 qualified `class "FrmX.Ayudante" as UI_... <<nested_private>>` declarations | 32 helpers, 32 unique aliases, 11 parents, 12 detail helpers, 0 leftover nested `- class` blocks, every member line resolves to source |
+| feat-006..011 rules | source spot checks (`ClienteRepository`, `OrdenServicioRepository`, `EntregaRepository`, `OrdenServicioService`, `GarantiaService`, `DetallePresupuesto`, `IdiomaRepository`) | document uniqueness including inactive records; spare-part quotation-only nullable `IdRepuesto` with no stock effect; current-intervention tests plus explicit finalization; coverage 0..1 vs 0..N with one open visit; existence-based freeze (`TieneReingresosGarantia`) with the `0/-1/-2/-3` codes; no DI, no repository interface, no enum, no exclusive Composite child |
+| Structure, links, hygiene | one `@startuml`/`@enduml`, brace/quote balance, aliases, remote references; every relative link; BOM/CRLF/trailing space/final newline; secret and absolute-path scan | 9/9 structural pass, 0 duplicate aliases, 0 remote references; 50/50 relative links; 19/19 BOM-less UTF-8 + LF + no trailing whitespace + final newline; 0 credential values (only the field name `Passphrase`, no value) and 0 absolute paths; G06 digest `68236F4295339CEB14ACE9079A6944CB58257C1FB86FCD5EB4E87F09213AB920` |
+| Preservation and state | documented algorithm over `git ls-files`, the old diagrams and the tooling entries; prior-feature object digest | tracked excluding the two state files n254 `BB037144738522B2589B19ED1BB8A9010733F388BAB69ED666ED80D96D758F5D`; old diagrams n56 `56DA9854B1CFBB4EC21DD22135A8044C361D17C9F3412D10C5B266DFFCC67A6D`; tooling n5 `C50B5B4F78BB2BFD9F1F17425C23B758B87929308FC505C929E631E6CA6F5251`; prior-feature objects `A6C936B7AEBA55CF659063E2ED7611FB47F05FED632869F5E4EA6079D67E4F27` - all reproduce; exactly 19 files in the folder and no extra untracked path |
+| Renderer | bounded local lookup | no `plantuml`, no `dot`, no workspace jar, `PLANTUML_JAR` unset (Java alone is not a renderer), so the disclosed structural fallback applies and no render/layout/full-syntax certification is claimed |
+
+### Criteria decided
+
+| # | Criterion theme | Verified |
+| --- | --- | --- |
+| 1 | Nine current-source diagrams with G06 numbering and an index | true |
+| 2 | Companion Markdown characteristics/behaviours covering the types/constants, identifiers preserved and omissions documented | true |
+| 3 | Traceability of classes/members/inheritance/relations/cardinalities; FK-conceptual vs object ownership | true |
+| 4 | feat-006..feat-011 rules reflected | true |
+| 5 | Preservation and documentation-only scope | true |
+| 6 | Structural/links/state/preservation/diff/harness validation with the renderer limitation disclosed | true |
+
+### Boundaries, non-blocking observations and next action
+
+- Verified: source-to-document conformance, structure, links, hygiene, preservation, state and harness.
+  Not verified and not authorised: build, application launch, database reads/writes, runtime behaviour,
+  visual layout and full PlantUML rendering.
+- Non-blocking: in `G06.6-ui.md` the `FilaOrden` and `FilaCompra` helper rows list a different
+  significant-member subset than the `.puml` (both subsets are real source members); the pre-repair byte
+  identity of the 10 G06 files the Builder reports untouched is not independently reproducible because no
+  per-file baseline was recorded, although all of them were re-verified correct against source.
+- Recommended next step: none for `feat-012`; the pending checkpoint-6 work (17 dirty tracked paths plus
+  the new G06 folder) may be committed when the owner authorises a Git write.

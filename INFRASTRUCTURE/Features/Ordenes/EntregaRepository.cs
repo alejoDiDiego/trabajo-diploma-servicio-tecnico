@@ -168,52 +168,70 @@ namespace REPOSITORY.Features.Ordenes
         public int CancelarEntregaConTransicion(int idOrden, string estadoAnterior, string estadoNuevo,
             bool limpiarResultado, int idUsuarioHistorial, string observacionHistorial)
         {
-            // Batch atomico: guard de hermanos (borde inverso), DELETE fisico entrega + UPDATE
-            // orden + INSERT historial.
+            // Batch atomico: guard del bloqueo por reingresos (borde directo), guard de hermanos
+            // (borde inverso), DELETE fisico entrega + UPDATE orden + INSERT historial.
             // El DELETE fisico es obligatorio: la UNIQUE UX_Entrega_Orden impediria re-entregar.
             // Si el destino es EnPruebas (era Reparado) el resultado se lleva a NULL explicito;
             // en otro caso el resultado se conserva intacto.
-            // Reabrir la entrega de un reingreso lo devuelve a un estado no terminal, asi que no
-            // puede ejecutarse mientras otro reingreso de la misma orden original siga abierto:
-            // en conflicto no se ejecuta DML y el lote devuelve -1 (el service lanza la excepcion
-            // de negocio). Reutiliza el predicado compartido de OrdenServicioRepository.
+            // Borde directo: si esta orden ya tiene reingresos de garantia creados (cualquier hijo
+            // con tipo Garantia, sin importar su estado ni su cobertura) es de solo consulta y su
+            // entrega no se puede cancelar; el lote devuelve -2 sin ejecutar DML. Se evalua
+            // primero, bajo el MISMO bloqueo de la tabla que usa el alta de reingresos, de modo
+            // que las dos operaciones no pueden commitear para la misma orden.
+            // Borde inverso: reabrir la entrega de un reingreso lo devuelve a un estado no
+            // terminal, asi que no puede ejecutarse mientras otro reingreso de la misma orden
+            // original siga abierto: en conflicto el lote devuelve -1 (el service lanza la
+            // excepcion de negocio). Reutiliza el predicado compartido de OrdenServicioRepository.
             string query = @"
                 SET NOCOUNT ON;
 
                 DECLARE @IdOrdenOrigen int = NULL;
                 DECLARE @TipoOrden nvarchar(20) = NULL;
+                DECLARE @HijosGarantia int = 0;
 
                 SELECT @TipoOrden = tipo_orden, @IdOrdenOrigen = id_orden_origen
                 FROM OrdenesServicio WITH (TABLOCKX, HOLDLOCK)
                 WHERE id_orden = @IdOrden;
 
+                SELECT @HijosGarantia = COUNT(*)
+                FROM OrdenesServicio o
+                WHERE o.id_orden_origen = @IdOrden
+                  AND o.tipo_orden = 'Garantia';
+
                 DECLARE @Conflicto int = 0;
 
-                IF @TipoOrden = 'Garantia' AND @IdOrdenOrigen IS NOT NULL
+                IF @HijosGarantia > 0
                 BEGIN
-                    SELECT @Conflicto = COUNT(*)
-                    FROM OrdenesServicio o
-                    WHERE o.id_orden <> @IdOrden
-                      AND " + OrdenServicioRepository.PredicadoReingresoAbierto + @";
-                END
-
-                IF @Conflicto > 0
-                BEGIN
-                    SELECT -1;
+                    SELECT -2;
                 END
                 ELSE
                 BEGIN
-                    DELETE FROM Entregas WHERE id_orden = @IdOrden;
+                    IF @TipoOrden = 'Garantia' AND @IdOrdenOrigen IS NOT NULL
+                    BEGIN
+                        SELECT @Conflicto = COUNT(*)
+                        FROM OrdenesServicio o
+                        WHERE o.id_orden <> @IdOrden
+                          AND " + OrdenServicioRepository.PredicadoReingresoAbierto + @";
+                    END
 
-                    UPDATE OrdenesServicio
-                    SET estado = @EstadoNuevo,
-                        resultado = CASE WHEN @LimpiarResultado = 1 THEN NULL ELSE resultado END
-                    WHERE id_orden = @IdOrden;
+                    IF @Conflicto > 0
+                    BEGIN
+                        SELECT -1;
+                    END
+                    ELSE
+                    BEGIN
+                        DELETE FROM Entregas WHERE id_orden = @IdOrden;
 
-                    INSERT INTO HistorialOrdenes (id_orden, estado_anterior, estado_nuevo, fecha_hora, id_usuario, observacion)
-                    VALUES (@IdOrden, @EstadoAnterior, @EstadoNuevo, GETDATE(), @IdUsuarioHistorial, @ObservacionHistorial);
+                        UPDATE OrdenesServicio
+                        SET estado = @EstadoNuevo,
+                            resultado = CASE WHEN @LimpiarResultado = 1 THEN NULL ELSE resultado END
+                        WHERE id_orden = @IdOrden;
 
-                    SELECT 0;
+                        INSERT INTO HistorialOrdenes (id_orden, estado_anterior, estado_nuevo, fecha_hora, id_usuario, observacion)
+                        VALUES (@IdOrden, @EstadoAnterior, @EstadoNuevo, GETDATE(), @IdUsuarioHistorial, @ObservacionHistorial);
+
+                        SELECT 0;
+                    END
                 END
             ";
 

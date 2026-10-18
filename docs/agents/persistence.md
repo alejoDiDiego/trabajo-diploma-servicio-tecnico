@@ -198,6 +198,61 @@ tipo_orden = 'Garantia'` ordered by `fecha_ingreso, id_orden`: it deliberately f
 state and joins no evaluation, so delivered re-entries and re-entries without evaluations are
 listed. Both reads reuse the repository's existing `Mapear` mapper.
 
+## Read-only original order: scoped guards and their locks (feat-011)
+
+**Verified implementation (source inspection, not re-executed against a database in this scope).
+No DDL changed: no new table, column, constraint, index or trigger was added or altered, and
+[SQLHelper](../../INFRASTRUCTURE/SQLHelper.cs) is untouched.**
+
+Two predicates coexist and must not be merged:
+
+- `PredicadoReingresoAbierto` (feat-009) answers "is a sibling re-entry still **open**?" and reads
+  the child state plus its `EvaluacionesGarantia` row.
+- `TieneReingresosGarantia(idOrdenOrigen)` (feat-011) answers "does this order already have
+  **any** warranty re-entry?" with a single existence read:
+  `SELECT COUNT(*) FROM OrdenesServicio WHERE id_orden_origen = @IdOrdenOrigen AND tipo_orden =
+  'Garantia'`. It applies no state filter, no evaluation join, no coverage or expiry check and no
+  parent state/type restriction, and it is deliberately **not** built from the open-sibling
+  predicate: an original is read-only because a visit was created, not because that visit is open.
+
+**Result codes** returned by the locked batches (constants on `OrdenServicioRepository`):
+`0` success, `-1` open sibling, `-2` target order read-only because it already has re-entries,
+`-3` re-entry origin no longer eligible. The SQL literals inside each batch must stay in sync with
+those constants; the service maps them to typed business exceptions and never to raw SQL text.
+
+**Scoped enforcement.** Only the batches that can bypass a guarded service call were hardened, each
+holding `TABLOCKX, HOLDLOCK` on `OrdenesServicio` for the whole batch so the check and the DML
+cannot be split by a concurrent writer:
+
+- `EntregaRepository.CancelarEntregaConTransicion`: after its existing locked read of
+  `tipo_orden`/`id_orden_origen` and **before** the sibling test and the `DELETE`, it counts the
+  order's own warranty children; with any child it returns `-2` and executes no DML. The
+  delete/update/history transaction, the `-1` sibling branch and the
+  `CASE WHEN @LimpiarResultado` behaviour are unchanged. `CrearConTransicion` is untouched.
+- `OrdenServicioRepository.CambiarEstadoConHistorial` and `ReabrirPruebasConTransicion`: the same
+  locked existence test now precedes the first `UPDATE`/`INSERT`; with any child the batch returns
+  `-2` and writes nothing, including no `HistorialOrdenes` row.
+- `OrdenServicioRepository.CrearConHistorial`: the warranty branch now (a) takes
+  `TABLOCKX, HOLDLOCK` and re-reads the **origin** (`estado = 'Entregado'`, `resultado =
+  'Reparado'` and an `Entregas` row for it), returning `-3` before any `INSERT` when the origin is
+  no longer eligible, and (b) only then evaluates the unchanged single-open predicate, returning
+  `-1`. The method gained an `out int codigoResultado` so the service can tell `-3` from `-1`
+  before hydration; normal (non-warranty) creation still skips both branches and returns the new
+  identity. Creating a child never updates the original.
+
+**Race serialization.** Cancelling a delivery and creating a re-entry cannot both commit for the
+same order: both batches take the same table lock on `OrdenesServicio` and re-read the state they
+depend on inside it. If cancellation commits first, the later creation sees an ineligible origin
+(`-3`); if creation commits first, the later cancellation sees the child (`-2`). Each refusal is a
+committed read-only batch, so a business refusal never leaves a partial write, while a real SQL
+failure rolls the whole batch back. This is inspected SQL and a clean build, not a measured
+parallel result.
+
+**Deliberately out of scope:** no trigger, no `SQLHelper` rewrite, no repository-wide guard and no
+change to `PresupuestoRepository`, `DiagnosticoRepository`, `ReparacionRepository`,
+`EvaluacionGarantiaRepository` or `HistorialEstadoOrdenRepository`. Those remain reachable only
+through the guarded service methods.
+
 ## Snapshots, history, and atomicity
 
 Monetary SQL columns use decimal(18,2): budget price/subtotal/discount/total,
@@ -216,5 +271,7 @@ Stock batches use UPDLOCK/HOLDLOCK, but other state validations occur before wri
 Customer document writes additionally hold TABLOCKX/HOLDLOCK for their whole batch
 (see the document-uniqueness section above). The warranty re-entry guard holds
 TABLOCKX/HOLDLOCK on `OrdenesServicio` for its whole batch as well (see the
-coverage-versus-visit section above); that is inspected SQL, not proof of parallel correctness.
+coverage-versus-visit section above), and since feat-011 the delivery-cancellation and
+state-transition batches hold that same lock for the read-only original guard (see the
+read-only-original section above); that is inspected SQL, not proof of parallel correctness.
 No universal optimistic-concurrency guard or proven parallel safety should be inferred.

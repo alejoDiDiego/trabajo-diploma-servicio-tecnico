@@ -2,7 +2,9 @@ using System;
 using APPLICATION.Features.Bitacora;
 using DOMAIN.Exceptions;
 using DOMAIN.Features.Garantias;
+using DOMAIN.Features.Ordenes;
 using REPOSITORY.Features.Garantias;
+using REPOSITORY.Features.Ordenes;
 using SERVICES.Auth;
 
 namespace APPLICATION.Features.Garantias
@@ -30,6 +32,10 @@ namespace APPLICATION.Features.Garantias
             {
                 ObtenerIdUsuarioSesion();
 
+                // La orden original destino se valida antes de registrar la cobertura: si ya tiene
+                // reingresos de garantia queda en solo consulta.
+                ValidarOrdenOriginalModificable(idOrdenOriginal);
+
                 Garantia garantiaToSave = Garantia.CrearNuevo(
                     idOrdenOriginal, fechaInicio, fechaFin, observaciones);
 
@@ -41,9 +47,10 @@ namespace APPLICATION.Features.Garantias
 
                 return garantiaDb;
             }
-            catch (ReglaNegocioException ex)
+            catch (ReglaNegocioException)
             {
-                throw new ReglaNegocioException(ex.Message);
+                // Se conserva el tipo concreto (p. ej. OrdenOriginalSoloConsultaException).
+                throw;
             }
             catch (Exception ex)
             {
@@ -104,14 +111,19 @@ namespace APPLICATION.Features.Garantias
                 if (garantia == null)
                     throw new ReglaNegocioException("La garantia seleccionada no existe.");
 
+                // Igual que en Crear: la orden original con reingresos de garantia es de solo
+                // consulta y no admite la anulacion de su cobertura.
+                ValidarOrdenOriginalModificable(garantia.IdOrdenOriginal);
+
                 _garantiaRepository.Anular(id);
 
                 BitacoraService bitacoraService = new BitacoraService();
                 bitacoraService.Registrar("Garantia anulada", "id=" + id, "ORDENES");
             }
-            catch (ReglaNegocioException ex)
+            catch (ReglaNegocioException)
             {
-                throw new ReglaNegocioException(ex.Message);
+                // Se conserva el tipo concreto (p. ej. OrdenOriginalSoloConsultaException).
+                throw;
             }
             catch (Exception ex)
             {
@@ -138,6 +150,17 @@ namespace APPLICATION.Features.Garantias
             {
                 throw new Exception("Error al obtener evaluacion de garantia", ex);
             }
+        }
+
+        // Una orden original con al menos un reingreso de garantia creado es de solo consulta: su
+        // cobertura no se crea ni se anula. Solo lectura sobre la existencia de los reingresos.
+        private void ValidarOrdenOriginalModificable(int idOrdenOriginal)
+        {
+            OrdenServicioRepository ordenRepository = new OrdenServicioRepository();
+
+            if (ordenRepository.TieneReingresosGarantia(idOrdenOriginal))
+                throw new OrdenOriginalSoloConsultaException("Mensaje.OrdenOriginalSoloConsulta",
+                    "La orden original es de solo consulta porque ya tiene reingresos de garantia.");
         }
 
         private int ObtenerIdUsuarioSesion()
