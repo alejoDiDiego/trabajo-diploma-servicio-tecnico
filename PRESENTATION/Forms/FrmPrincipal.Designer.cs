@@ -23,8 +23,23 @@ namespace UI.Forms
             this.TSMI_ControlCambios = new System.Windows.Forms.ToolStripMenuItem();
             this.TSMI_Bitacora = new System.Windows.Forms.ToolStripMenuItem();
             this.TSMI_RecalcularDV = new System.Windows.Forms.ToolStripMenuItem();
+            this.TSMI_Clientes = new System.Windows.Forms.ToolStripMenuItem();
+            this.TSMI_Equipos = new System.Windows.Forms.ToolStripMenuItem();
+            this.TSMI_Ordenes = new System.Windows.Forms.ToolStripMenuItem();
+            this.TSMI_Catalogos = new System.Windows.Forms.ToolStripMenuItem();
+            this.TSMI_TiposEquipo = new System.Windows.Forms.ToolStripMenuItem();
+            this.TSMI_Marcas = new System.Windows.Forms.ToolStripMenuItem();
+            this.TSMI_Inventario = new System.Windows.Forms.ToolStripMenuItem();
+            this.TSMI_Repuestos = new System.Windows.Forms.ToolStripMenuItem();
+            this.TSMI_Movimientos = new System.Windows.Forms.ToolStripMenuItem();
+            this.TSMI_Proveedores = new System.Windows.Forms.ToolStripMenuItem();
+            this.TSMI_Compras = new System.Windows.Forms.ToolStripMenuItem();
+            this.TSMI_Garantias = new System.Windows.Forms.ToolStripMenuItem();
+            this.TSMI_Dashboard = new System.Windows.Forms.ToolStripMenuItem();
+            this.TSMI_Reportes = new System.Windows.Forms.ToolStripMenuItem();
             this.TSMI_Idioma = new System.Windows.Forms.ToolStripMenuItem();
             this.TSMI_AdministrarTraducciones = new System.Windows.Forms.ToolStripMenuItem();
+            this.TSMI_Gestion = new System.Windows.Forms.ToolStripMenuItem();
             this.MSP_Principal.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -32,6 +47,7 @@ namespace UI.Forms
             // 
             this.MSP_Principal.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.TSMI_Usuario,
+            this.TSMI_Gestion,
             this.TSMI_Idioma});
             this.MSP_Principal.Location = new System.Drawing.Point(0, 0);
             this.MSP_Principal.Name = "MSP_Principal";
@@ -118,8 +134,142 @@ namespace UI.Forms
             this.TSMI_RecalcularDV.Text = "Recalcular DV";
             this.TSMI_RecalcularDV.Click += new System.EventHandler(this.TSMI_RecalcularDV_Click);
             // 
-            // TSMI_Idioma
+            // TSMI_Gestion
             // 
+            this.TSMI_Gestion.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.TSMI_Clientes,
+            this.TSMI_Equipos,
+            this.TSMI_Ordenes,
+            this.TSMI_Garantias,
+            this.TSMI_Dashboard,
+            this.TSMI_Reportes,
+            this.TSMI_Catalogos,
+            this.TSMI_Inventario});
+            this.TSMI_Gestion.Name = "TSMI_Gestion";
+            this.TSMI_Gestion.Size = new System.Drawing.Size(59, 20);
+            this.TSMI_Gestion.Tag = "Menu.Gestion";
+            this.TSMI_Gestion.Text = "Gestion";
+            // 
+            // TSMI_Clientes
+            // 
+            this.TSMI_Clientes.Name = "TSMI_Clientes";
+            this.TSMI_Clientes.Size = new System.Drawing.Size(180, 22);
+            this.TSMI_Clientes.Tag = "Menu.Clientes";
+            this.TSMI_Clientes.Text = "Clientes";
+            this.TSMI_Clientes.Click += new System.EventHandler(this.TSMI_Clientes_Click);
+            // 
+            // TSMI_Equipos
+            // 
+            this.TSMI_Equipos.Name = "TSMI_Equipos";
+            this.TSMI_Equipos.Size = new System.Drawing.Size(180, 22);
+            this.TSMI_Equipos.Tag = "Menu.Equipos";
+            this.TSMI_Equipos.Text = "Equipos";
+            this.TSMI_Equipos.Click += new System.EventHandler(this.TSMI_Equipos_Click);
+            // 
+            // TSMI_Ordenes
+            // 
+            this.TSMI_Ordenes.Name = "TSMI_Ordenes";
+            this.TSMI_Ordenes.Size = new System.Drawing.Size(180, 22);
+            this.TSMI_Ordenes.Tag = "Menu.Ordenes";
+            this.TSMI_Ordenes.Text = "Ordenes";
+            this.TSMI_Ordenes.Click += new System.EventHandler(this.TSMI_Ordenes_Click);
+            // 
+            // TSMI_Catalogos
+            // 
+            this.TSMI_Catalogos.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.TSMI_TiposEquipo,
+            this.TSMI_Marcas});
+            this.TSMI_Catalogos.Name = "TSMI_Catalogos";
+            this.TSMI_Catalogos.Size = new System.Drawing.Size(180, 22);
+            this.TSMI_Catalogos.Tag = "Menu.Catalogos";
+            this.TSMI_Catalogos.Text = "Catalogos";
+            // 
+            // TSMI_TiposEquipo
+            // 
+            this.TSMI_TiposEquipo.Name = "TSMI_TiposEquipo";
+            this.TSMI_TiposEquipo.Size = new System.Drawing.Size(180, 22);
+            this.TSMI_TiposEquipo.Tag = "Menu.TiposEquipo";
+            this.TSMI_TiposEquipo.Text = "Tipos de equipo";
+            this.TSMI_TiposEquipo.Click += new System.EventHandler(this.TSMI_TiposEquipo_Click);
+            // 
+            // TSMI_Marcas
+            // 
+            this.TSMI_Marcas.Name = "TSMI_Marcas";
+            this.TSMI_Marcas.Size = new System.Drawing.Size(180, 22);
+            this.TSMI_Marcas.Tag = "Menu.Marcas";
+            this.TSMI_Marcas.Text = "Marcas";
+            this.TSMI_Marcas.Click += new System.EventHandler(this.TSMI_Marcas_Click);
+            //
+            // TSMI_Inventario
+            //
+            this.TSMI_Inventario.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.TSMI_Repuestos,
+            this.TSMI_Movimientos,
+            this.TSMI_Proveedores,
+            this.TSMI_Compras});
+            this.TSMI_Inventario.Name = "TSMI_Inventario";
+            this.TSMI_Inventario.Size = new System.Drawing.Size(180, 22);
+            this.TSMI_Inventario.Tag = "Menu.Inventario";
+            this.TSMI_Inventario.Text = "Inventario";
+            //
+            // TSMI_Repuestos
+            //
+            this.TSMI_Repuestos.Name = "TSMI_Repuestos";
+            this.TSMI_Repuestos.Size = new System.Drawing.Size(180, 22);
+            this.TSMI_Repuestos.Tag = "Menu.Repuestos";
+            this.TSMI_Repuestos.Text = "Repuestos";
+            this.TSMI_Repuestos.Click += new System.EventHandler(this.TSMI_Repuestos_Click);
+            //
+            // TSMI_Movimientos
+            //
+            this.TSMI_Movimientos.Name = "TSMI_Movimientos";
+            this.TSMI_Movimientos.Size = new System.Drawing.Size(180, 22);
+            this.TSMI_Movimientos.Tag = "Menu.MovimientosStock";
+            this.TSMI_Movimientos.Text = "Movimientos de stock";
+            this.TSMI_Movimientos.Click += new System.EventHandler(this.TSMI_Movimientos_Click);
+            //
+            // TSMI_Proveedores
+            //
+            this.TSMI_Proveedores.Name = "TSMI_Proveedores";
+            this.TSMI_Proveedores.Size = new System.Drawing.Size(180, 22);
+            this.TSMI_Proveedores.Tag = "Menu.Proveedores";
+            this.TSMI_Proveedores.Text = "Proveedores";
+            this.TSMI_Proveedores.Click += new System.EventHandler(this.TSMI_Proveedores_Click);
+            //
+            // TSMI_Compras
+            //
+            this.TSMI_Compras.Name = "TSMI_Compras";
+            this.TSMI_Compras.Size = new System.Drawing.Size(180, 22);
+            this.TSMI_Compras.Tag = "Menu.Compras";
+            this.TSMI_Compras.Text = "Compras";
+            this.TSMI_Compras.Click += new System.EventHandler(this.TSMI_Compras_Click);
+            //
+            // TSMI_Garantias
+            //
+            this.TSMI_Garantias.Name = "TSMI_Garantias";
+            this.TSMI_Garantias.Size = new System.Drawing.Size(180, 22);
+            this.TSMI_Garantias.Tag = "Menu.Garantias";
+            this.TSMI_Garantias.Text = "Garantias";
+            this.TSMI_Garantias.Click += new System.EventHandler(this.TSMI_Garantias_Click);
+            //
+            // TSMI_Dashboard
+            //
+            this.TSMI_Dashboard.Name = "TSMI_Dashboard";
+            this.TSMI_Dashboard.Size = new System.Drawing.Size(180, 22);
+            this.TSMI_Dashboard.Tag = "Menu.Dashboard";
+            this.TSMI_Dashboard.Text = "Dashboard";
+            this.TSMI_Dashboard.Click += new System.EventHandler(this.TSMI_Dashboard_Click);
+            //
+            // TSMI_Reportes
+            //
+            this.TSMI_Reportes.Name = "TSMI_Reportes";
+            this.TSMI_Reportes.Size = new System.Drawing.Size(180, 22);
+            this.TSMI_Reportes.Tag = "Menu.Reportes";
+            this.TSMI_Reportes.Text = "Reportes";
+            this.TSMI_Reportes.Click += new System.EventHandler(this.TSMI_Reportes_Click);
+            //
+            // TSMI_Idioma
+            //
             this.TSMI_Idioma.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.TSMI_AdministrarTraducciones});
             this.TSMI_Idioma.Name = "TSMI_Idioma";
@@ -166,6 +316,21 @@ namespace UI.Forms
         private System.Windows.Forms.ToolStripMenuItem TSMI_ControlCambios;
         private System.Windows.Forms.ToolStripMenuItem TSMI_Bitacora;
         private System.Windows.Forms.ToolStripMenuItem TSMI_RecalcularDV;
+        private System.Windows.Forms.ToolStripMenuItem TSMI_Gestion;
+        private System.Windows.Forms.ToolStripMenuItem TSMI_Clientes;
+        private System.Windows.Forms.ToolStripMenuItem TSMI_Equipos;
+        private System.Windows.Forms.ToolStripMenuItem TSMI_Ordenes;
+        private System.Windows.Forms.ToolStripMenuItem TSMI_Catalogos;
+        private System.Windows.Forms.ToolStripMenuItem TSMI_TiposEquipo;
+        private System.Windows.Forms.ToolStripMenuItem TSMI_Marcas;
+        private System.Windows.Forms.ToolStripMenuItem TSMI_Inventario;
+        private System.Windows.Forms.ToolStripMenuItem TSMI_Repuestos;
+        private System.Windows.Forms.ToolStripMenuItem TSMI_Movimientos;
+        private System.Windows.Forms.ToolStripMenuItem TSMI_Proveedores;
+        private System.Windows.Forms.ToolStripMenuItem TSMI_Compras;
+        private System.Windows.Forms.ToolStripMenuItem TSMI_Garantias;
+        private System.Windows.Forms.ToolStripMenuItem TSMI_Dashboard;
+        private System.Windows.Forms.ToolStripMenuItem TSMI_Reportes;
         private System.Windows.Forms.ToolStripMenuItem TSMI_Idioma;
         private System.Windows.Forms.ToolStripMenuItem TSMI_AdministrarTraducciones;
     }

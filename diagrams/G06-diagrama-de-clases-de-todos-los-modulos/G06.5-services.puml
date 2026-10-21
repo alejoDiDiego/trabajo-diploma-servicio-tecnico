@@ -1,0 +1,94 @@
+@startuml
+title G06 - Capa SERVICES
+
+left to right direction
+skinparam classAttributeIconSize 0
+hide circle
+
+package "Sesión y autorización" {
+
+    class SessionManager <<Sesión única>> {
+        - {static} _lock : object
+        - {static} _session : SessionManager
+        - _permisos : List<IPermisoComponent>
+        + Usuario : IUsuario
+        + FechaInicio : DateTime
+        + IntegridadComprometida : bool
+        --
+        - SessionManager()
+        + {static} GetInstance() : SessionManager
+        + {static} HaySesionActiva() : bool
+        + {static} ObtenerUsuarioActual() : IUsuario
+        + {static} Login(usuario : IUsuario) : void
+        + {static} Login(usuario : IUsuario, permisos : IEnumerable<IPermisoComponent>) : void
+        + {static} TienePermiso(codigo : string) : bool
+        + {static} TieneAlgunPermiso(params codigos : string[]) : bool
+        + {static} ListarPermisos() : List<IPermisoComponent>
+        + {static} Logout() : void
+    }
+}
+
+package "Idiomas" {
+
+    class SesionIdioma <<Singleton, Observable>> {
+        + idioma : IIdioma
+        + ObservadoresRegistrados : IList<IObservador>
+        - {static} sesionIdioma : SesionIdioma
+        --
+        - SesionIdioma()
+        + {static} GetInstance() : SesionIdioma
+        + CambiarIdioma(idiomaSeleccionado : IIdioma) : void
+        + ActualizarObservadores(idiomaSeleccionado : IIdioma) : void
+        + RegistrarObservador(observador : IObservador) : void
+        + DesregistrarObservador(observador : IObservador) : void
+    }
+}
+
+package "Seguridad criptográfica" {
+
+    class PasswordHasher {
+        - {static} SaltSize : const int
+        - {static} KeySize : const int
+        - {static} Iterations : const int
+        - {static} _hashAlgorithm : HashAlgorithmName
+        --
+        + HashPassword(password : string) : string
+        + VerifyHashedPassword(hashedPassword : string, password : string) : bool
+    }
+
+    class EncryptionService {
+        - {static} Passphrase : string
+        - {static} Salt : byte[]
+        --
+        + Encrypt(plainText : string) : string
+        + Decrypt(cipherText : string) : string
+    }
+}
+
+' Contratos de ABSTRACTIONS referenciados por esta capa.
+interface IUsuario
+interface IPermisoComponent
+interface IObservado
+interface IIdioma
+interface IObservador
+interface IPasswordHasher
+interface IEncryptionService
+
+SessionManager --> "0..1" IUsuario : usuario
+SessionManager --> "0..*" IPermisoComponent : permisos
+
+IObservado <|.. SesionIdioma
+SesionIdioma --> "0..1" IIdioma : idioma actual
+SesionIdioma --> "0..*" IObservador : notifica
+
+IPasswordHasher <|.. PasswordHasher
+IEncryptionService <|.. EncryptionService
+
+note right of EncryptionService
+  Implementada pero sin
+  consumidores encontrados
+  en el código actual
+  de la aplicación.
+end note
+
+@enduml

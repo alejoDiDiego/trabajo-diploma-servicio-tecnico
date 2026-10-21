@@ -1,0 +1,126 @@
+@startuml
+title G06 - Capa INFRASTRUCTURE / REPOSITORY - Órdenes
+
+left to right direction
+skinparam classAttributeIconSize 0
+hide circle
+
+class SqlHelper <<referencia>>
+
+package "Negocio - Órdenes" {
+
+    class OrdenServicioRepository {
+        - _db : SqlHelper
+        + ResultadoOk : const int = 0
+        + ResultadoReingresoAbierto : const int = -1
+        + ResultadoOrdenSoloConsulta : const int = -2
+        + ResultadoOrigenNoDisponible : const int = -3
+        + PredicadoReingresoAbierto : const string
+        --
+        + Inicializar() : void
+        + CrearConHistorial(..., out codigoResultado : int) : OrdenServicio
+        + CambiarEstadoConHistorial(...) : int
+        + ReabrirPruebasConTransicion(...) : int
+        + AsignarTecnico(...) : void
+        + ActualizarRecepcion(...) : void
+        + ObtenerPorId(...) : OrdenServicio
+        + Listar(...) : List<OrdenServicio>
+        + ListarPorCliente(...) : List<OrdenServicio>
+        + ObtenerReingresoGarantiaAbierto(...) : OrdenServicio
+        + ListarReingresosGarantia(...) : List<OrdenServicio>
+        + TieneReingresosGarantia(...) : bool
+    }
+
+    class DiagnosticoRepository {
+        - _db : SqlHelper
+        --
+        + Inicializar() : void
+        + Crear(...) : Diagnostico
+        + CrearConTransicion(...) : Diagnostico
+        + ObtenerPorOrden(...) : Diagnostico
+    }
+
+    class HistorialEstadoOrdenRepository {
+        - _db : SqlHelper
+        --
+        + Inicializar() : void
+        + Insertar(...) : HistorialEstadoOrden
+        + ListarPorOrden(...) : List<HistorialEstadoOrden>
+    }
+
+    class PresupuestoRepository {
+        - _db : SqlHelper
+        --
+        + Inicializar() : void
+        + EmitirConDetalle(...) : Presupuesto
+        + AprobarConTransicion(...) : void
+        + RechazarConTransicion(...) : void
+        + EmitirAdicional(...) : Presupuesto
+        + AprobarAdicionalConTransicion(...) : void
+        + RechazarAdicionalConTransicion(...) : void
+        + CrearBorrador(...) : Presupuesto
+        + PublicarBorrador(...) : void
+        + EliminarBorrador(...) : void
+        + AnularConTransicion(...) : void
+        + AnularRechazadoConTransicion(...) : void
+        + CancelarSolicitudAdicional(...) : void
+        + CalcularMontoAutorizado(...) : decimal
+        + ObtenerPorId(...) : Presupuesto
+        + ObtenerPorOrden(...) : Presupuesto
+        + ObtenerOriginal(...) : Presupuesto
+        + ListarAdicionales(...) : List<Presupuesto>
+        + ExisteAdicionalPendiente(...) : bool
+        + ExisteOriginalActivo(...) : bool
+        + HasActividadPosterior(...) : bool
+        + ListarPorOrden(...) : List<Presupuesto>
+        + ListarDetalle(...) : List<DetallePresupuesto>
+    }
+
+    class EntregaRepository {
+        - _db : SqlHelper
+        --
+        + Inicializar() : void
+        + CrearConTransicion(...) : Entrega
+        + CancelarEntregaConTransicion(...) : int
+        + ObtenerPorOrden(...) : Entrega
+    }
+
+    class ReparacionRepository {
+        - _db : SqlHelper
+        --
+        + Inicializar() : void
+        + IniciarReparacion(...) : int
+        + IniciarIntervencionAdicional(...) : int
+        + ConsumirRepuesto(...) : void
+        + DevolverConsumo(...) : void
+        + FinalizarReparacion(...) : void
+        + RegistrarPrueba(...) : int
+        + FinalizarPruebas(...) : void
+        + AnularPrueba(...) : void
+        + CerrarAbiertaYCancelar(...) : void
+        + ObtenerPorId(...) : Reparacion
+        + ObtenerAbierta(...) : Reparacion
+        + ObtenerPruebaPorId(...) : Prueba
+        + ListarPorOrden(...) : List<Reparacion>
+        + ListarConsumidos(...) : List<ReparacionRepuesto>
+        + ListarPruebas(...) : List<Prueba>
+    }
+}
+
+SqlHelper <-- OrdenServicioRepository
+SqlHelper <-- DiagnosticoRepository
+SqlHelper <-- HistorialEstadoOrdenRepository
+SqlHelper <-- PresupuestoRepository
+SqlHelper <-- EntregaRepository
+SqlHelper <-- ReparacionRepository
+
+EntregaRepository ..> OrdenServicioRepository : PredicadoReingresoAbierto
+
+' CrearConHistorial devuelve la orden y comunica el resultado mediante out.
+' En el alta exitosa, codigoResultado contiene el identificador creado.
+' Los codigos negativos identifican rechazos del lote transaccional.
+'
+' TieneReingresosGarantia consulta existencia, no solamente reingresos abiertos.
+' CerrarAbiertaYCancelar existe, pero no lo usa el flujo actual de APPLICATION.
+
+@enduml

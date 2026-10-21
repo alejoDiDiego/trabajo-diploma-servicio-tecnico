@@ -1,0 +1,92 @@
+@startuml
+title G06 - Capa ABSTRACTIONS
+
+left to right direction
+skinparam classAttributeIconSize 0
+hide circle
+hide empty members
+
+package "Contratos funcionales" {
+
+    interface IEntity {
+        + Id : int
+    }
+
+    interface IUsuario {
+        + Username : string
+        + Password : string
+        + Activo : bool
+    }
+
+    interface IPermisoComponent {
+        + Nombre : string
+        + Codigo : string
+        + EsFamilia : bool
+        + Hijos : IList<IPermisoComponent>
+        + AgregarHijo(permiso : IPermisoComponent) : void
+        + Contiene(permiso : IPermisoComponent) : bool
+    }
+
+    interface IIdioma {
+        + Nombre : string
+        + Traducciones : IList<ITraduccion>
+        + AgregarTraduccion(traduccion : ITraduccion) : void
+        + BuscarTraduccion(texto : string) : string
+    }
+
+    interface IPalabra {
+        + Texto : string
+    }
+
+    interface ITraduccion {
+        + IdIdioma : int
+        + IdPalabra : int
+        + PalabraTraducida : string
+        + Palabra : IPalabra
+    }
+
+    class TraduccionEditable <<DTO>> {
+        + IdPalabra : int
+        + Clave : string
+        + Texto : string
+    }
+}
+
+package "Contratos técnicos" {
+
+    interface IObservador {
+        + Actualizar(idiomaObservado : IIdioma) : void
+    }
+
+    interface IObservado {
+        + ObservadoresRegistrados : IList<IObservador>
+        + RegistrarObservador(observador : IObservador) : void
+        + DesregistrarObservador(observador : IObservador) : void
+        + ActualizarObservadores(idioma : IIdioma) : void
+    }
+
+    interface IPasswordHasher {
+        + HashPassword(password : string) : string
+        + VerifyHashedPassword(hashedPassword : string, password : string) : bool
+    }
+
+    interface IEncryptionService {
+        + Encrypt(plainText : string) : string
+        + Decrypt(cipherText : string) : string
+    }
+}
+
+IEntity <|-- IUsuario
+IEntity <|-- IPermisoComponent
+IEntity <|-- IIdioma
+IEntity <|-- IPalabra
+IEntity <|-- ITraduccion
+
+IIdioma --> "0..*" ITraduccion : contiene
+ITraduccion --> "1" IPalabra : palabra
+
+IObservado --> "0..*" IObservador : administra
+IObservador ..> IIdioma : recibe
+IObservado ..> IIdioma : notifica
+
+@enduml

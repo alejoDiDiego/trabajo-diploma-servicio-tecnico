@@ -1,0 +1,4114 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Drawing;
+using System.Linq;
+using System.Windows.Forms;
+using ABSTRACTIONS.Features.Idiomas;
+using APPLICATION.Features.Clientes;
+using APPLICATION.Features.Equipos;
+using APPLICATION.Features.Garantias;
+using APPLICATION.Features.Ordenes;
+using APPLICATION.Features.Repuestos;
+using DOMAIN.Features.Clientes;
+using DOMAIN.Features.Equipos;
+using DOMAIN.Features.Garantias;
+using DOMAIN.Features.Ordenes;
+using DOMAIN.Features.Permisos;
+using DOMAIN.Features.Reparaciones;
+using DOMAIN.Features.Repuestos;
+using DOMAIN.Features.Usuarios;
+using SERVICES.Auth;
+using SERVICES.Idiomas;
+
+namespace UI.Forms.Ordenes
+{
+    // Dialogo modal: modo nuevo (idOrden 0, solo recepcion + Crear) o modo
+    // detalle (5 tabs). Cada boton llama al service, muestra el error del
+    // service y recarga todo con CargarOrden. Sin ComboBox libre de Estado.
+    // Presupuesto: fila editable simple (controles inline + DGV); no se crea
+    // dialogo aparte FrmPresupuestoItemEditar (ver DECISIONES del checkpoint).
+    public partial class FrmOrdenServicioDetalle : Form, IObservador
+    {
+        private class ItemCliente
+        {
+            public int Id { get; set; }
+            public string Nombre { get; set; }
+        }
+
+        private class ItemEquipo
+        {
+            public int Id { get; set; }
+            public string Nombre { get; set; }
+        }
+
+        private class ItemTecnico
+        {
+            public int Id { get; set; }
+            public string Nombre { get; set; }
+        }
+
+        private class ItemTipoItem
+        {
+            public string Id { get; set; }
+            public string Nombre { get; set; }
+        }
+
+        private class FilaHistorial
+        {
+            public DateTime Fecha { get; set; }
+            public string Anterior { get; set; }
+            public string Nuevo { get; set; }
+            public string Usuario { get; set; }
+            public string Observacion { get; set; }
+        }
+
+        private class ItemRepuestoConsumo
+        {
+            public int Id { get; set; }
+            public string Nombre { get; set; }
+        }
+
+        private class ItemIntervencion
+        {
+            public int Id { get; set; }
+            public string Nombre { get; set; }
+        }
+
+        private class FilaReparacion
+        {
+            public int Id { get; set; }
+            public int Numero { get; set; }
+            public string Tecnico { get; set; }
+            public DateTime Inicio { get; set; }
+            public string Fin { get; set; }
+            public string Estado { get; set; }
+        }
+
+        private class FilaConsumido
+        {
+            public int IdRepuesto { get; set; }
+            public string Repuesto { get; set; }
+            public int Cantidad { get; set; }
+            public decimal Costo { get; set; }
+            public decimal Subtotal { get; set; }
+        }
+
+        private class ItemSelectorPresupuesto
+        {
+            public int Id { get; set; }
+            public string Nombre { get; set; }
+        }
+
+        private class FilaPrueba
+        {
+            public int Id { get; set; }
+            public DateTime Fecha { get; set; }
+            public string Intervencion { get; set; }
+            public string Descripcion { get; set; }
+            public string Resultado { get; set; }
+            public string Motivo { get; set; }
+            public string FechaAnulacion { get; set; }
+            public string UsuarioAnulacion { get; set; }
+            public string Usuario { get; set; }
+        }
+
+        // Fila de la lista de reingresos de garantia de la orden mostrada: numero, fecha de
+        // recepcion (no la de evaluacion), estado y resultado ya traducidos.
+        private class FilaReingreso
+        {
+            public int Id { get; set; }
+            public int Numero { get; set; }
+            public DateTime Fecha { get; set; }
+            public string Estado { get; set; }
+            public string Resultado { get; set; }
+        }
+
+        private readonly SesionIdioma _sesionIdioma;
+        private readonly OrdenServicioService _service;
+        private readonly GarantiaService _garantiaService;
+        private readonly ClienteService _clienteService;
+        private readonly EquipoService _equipoService;
+        private readonly string _tabInicial;
+        private int _idOrden;
+        private bool _esNuevo;
+        private bool _cargandoCombos = false;
+        private OrdenServicio _orden = null;
+        private Diagnostico _diagnostico = null;
+        private Presupuesto _presupuesto = null;
+        private Presupuesto _original = null;
+        private List<Presupuesto> _adicionales = new List<Presupuesto>();
+        private List<Presupuesto> _todosPresupuestos = new List<Presupuesto>();
+        private bool _puedeCancelarSolicitud = false;
+        private int? _idSeleccionPreferida = null;
+        private bool _modoNuevoAdicional = false;
+        private bool _modoNuevoOriginal = false;
+        private bool _hayAdicionalPendiente = false;
+        private Entrega _entrega = null;
+        private List<Cliente> _clientes = new List<Cliente>();
+        private List<Equipo> _equipos = new List<Equipo>();
+        private List<Usuario> _tecnicos = new List<Usuario>();
+        private List<DetallePresupuesto> _itemsNuevo = new List<DetallePresupuesto>();
+        private List<Repuesto> _repuestosPresupuesto = new List<Repuesto>();
+        private Dictionary<int, string> _nombresRepuestosPresupuesto = new Dictionary<int, string>();
+        private List<Reparacion> _reparaciones = new List<Reparacion>();
+        private Dictionary<int, List<Prueba>> _pruebasPorReparacion = new Dictionary<int, List<Prueba>>();
+        private List<Prueba> _pruebasActuales = new List<Prueba>();
+        // Intervencion cuyas pruebas quedaron efectivamente en DGV_Pruebas; 0 mientras la
+        // grilla esta cargando o cuando su lectura fallo. El aviso de intervencion anterior
+        // se crea en codigo (no vive en el Designer).
+        private int _idIntervencionPruebaCargada = 0;
+        private bool _cargandoPruebas = false;
+        private Label LBL_PruebaIntervencionAviso;
+        private Dictionary<int, string> _nombresRepuestos = new Dictionary<int, string>();
+        private Garantia _garantia = null;
+        private bool _garantiaVigente = false;
+        private EvaluacionGarantia _evaluacion = null;
+        private List<OrdenServicio> _reingresos = new List<OrdenServicio>();
+        private bool _soloConsulta = false;
+
+        public FrmOrdenServicioDetalle()
+            : this(0, null)
+        {
+        }
+
+        public FrmOrdenServicioDetalle(int idOrden)
+            : this(idOrden, null)
+        {
+        }
+
+        public FrmOrdenServicioDetalle(int idOrden, string tabInicial)
+        {
+            _sesionIdioma = SesionIdioma.GetInstance();
+            _service = new OrdenServicioService();
+            _garantiaService = new GarantiaService();
+            _clienteService = new ClienteService();
+            _equipoService = new EquipoService();
+            _idOrden = idOrden;
+            _esNuevo = idOrden <= 0;
+            _tabInicial = tabInicial;
+            InitializeComponent();
+            CrearAvisoPruebasIntervencion();
+        }
+
+        public void Actualizar(IIdioma idiomaObservado)
+        {
+            if (idiomaObservado == null)
+                return;
+
+            ActualizarTextos();
+            CargarComboTiposItem();
+            CargarCombosRecepcion();
+            CargarOrden();
+        }
+
+        private void FrmOrdenServicioDetalle_Load(object sender, EventArgs e)
+        {
+            _sesionIdioma.RegistrarObservador(this);
+
+            if (_esNuevo && !TienePermiso(CodigosPermiso.OrdenesCrear))
+            {
+                MostrarAccesoDenegado();
+                Close();
+                return;
+            }
+
+            if (!_esNuevo && !TienePermiso(CodigosPermiso.OrdenesVer))
+            {
+                MostrarAccesoDenegado();
+                Close();
+                return;
+            }
+
+            CargarCatalogos();
+            CargarComboRepuestosPresupuesto();
+            CargarComboTiposItem();
+            ActualizarTextos();
+            CargarOrden();
+
+            if (!_esNuevo && !string.IsNullOrEmpty(_tabInicial))
+                SeleccionarTab(_tabInicial);
+        }
+
+        private void ActualizarTextos()
+        {
+            if (_sesionIdioma.idioma == null)
+                return;
+
+            IIdioma idioma = _sesionIdioma.idioma;
+            string claveTitulo = _esNuevo ? "OrdenDetalle.TituloNuevo" : "OrdenDetalle.TituloDetalle";
+            Tag = claveTitulo;
+            Text = idioma.BuscarTraduccion(Tag.ToString());
+
+            TAB_Recepcion.Text = idioma.BuscarTraduccion(TAB_Recepcion.Tag.ToString());
+            TAB_Diagnostico.Text = idioma.BuscarTraduccion(TAB_Diagnostico.Tag.ToString());
+            TAB_Presupuesto.Text = idioma.BuscarTraduccion(TAB_Presupuesto.Tag.ToString());
+            TAB_Reparaciones.Text = idioma.BuscarTraduccion(TAB_Reparaciones.Tag.ToString());
+            TAB_Pruebas.Text = idioma.BuscarTraduccion(TAB_Pruebas.Tag.ToString());
+            TAB_Historial.Text = idioma.BuscarTraduccion(TAB_Historial.Tag.ToString());
+            TAB_Entrega.Text = idioma.BuscarTraduccion(TAB_Entrega.Tag.ToString());
+            TAB_Garantia.Text = idioma.BuscarTraduccion(TAB_Garantia.Tag.ToString());
+
+            LBL_GOrigen.Text = idioma.BuscarTraduccion(LBL_GOrigen.Tag.ToString());
+            LBL_GVigencia.Text = idioma.BuscarTraduccion(LBL_GVigencia.Tag.ToString());
+            LBL_GEstado.Text = idioma.BuscarTraduccion(LBL_GEstado.Tag.ToString());
+            LBL_GEvaluacion.Text = idioma.BuscarTraduccion(LBL_GEvaluacion.Tag.ToString());
+            LBL_GMotivo.Text = idioma.BuscarTraduccion(LBL_GMotivo.Tag.ToString());
+            LBL_GObs.Text = idioma.BuscarTraduccion(LBL_GObs.Tag.ToString());
+            BTN_VerOriginal.Text = idioma.BuscarTraduccion(BTN_VerOriginal.Tag.ToString());
+            BTN_AceptarGarantia.Text = idioma.BuscarTraduccion(BTN_AceptarGarantia.Tag.ToString());
+            BTN_RechazarGarantia.Text = idioma.BuscarTraduccion(BTN_RechazarGarantia.Tag.ToString());
+            BTN_CrearReingreso.Text = idioma.BuscarTraduccion(BTN_CrearReingreso.Tag.ToString());
+            LBL_ReingresosGarantia.Text = idioma.BuscarTraduccion(LBL_ReingresosGarantia.Tag.ToString());
+            LBL_OrdenSoloConsulta.Text = idioma.BuscarTraduccion(LBL_OrdenSoloConsulta.Tag.ToString());
+
+            LBL_RCliente.Text = idioma.BuscarTraduccion(LBL_RCliente.Tag.ToString());
+            LBL_REquipo.Text = idioma.BuscarTraduccion(LBL_REquipo.Tag.ToString());
+            LBL_RTecnico.Text = idioma.BuscarTraduccion(LBL_RTecnico.Tag.ToString());
+            LBL_RProblema.Text = idioma.BuscarTraduccion(LBL_RProblema.Tag.ToString()) + " *";
+            LBL_REstadoFisico.Text = idioma.BuscarTraduccion(LBL_REstadoFisico.Tag.ToString());
+            LBL_RAccesorios.Text = idioma.BuscarTraduccion(LBL_RAccesorios.Tag.ToString());
+            LBL_RObs.Text = idioma.BuscarTraduccion(LBL_RObs.Tag.ToString());
+            BTN_CrearOrden.Text = idioma.BuscarTraduccion(BTN_CrearOrden.Tag.ToString());
+            BTN_GuardarRecepcion.Text = idioma.BuscarTraduccion(BTN_GuardarRecepcion.Tag.ToString());
+            BTN_AsignarTecnico.Text = idioma.BuscarTraduccion(BTN_AsignarTecnico.Tag.ToString());
+
+            LBL_DDescripcion.Text = idioma.BuscarTraduccion(LBL_DDescripcion.Tag.ToString()) + " *";
+            CHK_EsReparable.Text = idioma.BuscarTraduccion(CHK_EsReparable.Tag.ToString());
+            LBL_DDias.Text = idioma.BuscarTraduccion(LBL_DDias.Tag.ToString());
+            LBL_DObs.Text = idioma.BuscarTraduccion(LBL_DObs.Tag.ToString());
+            LBL_AvisoNoReparable.Text = idioma.BuscarTraduccion(LBL_AvisoNoReparable.Tag.ToString());
+            BTN_Iniciar.Text = idioma.BuscarTraduccion(BTN_Iniciar.Tag.ToString());
+            BTN_Finalizar.Text = idioma.BuscarTraduccion(BTN_Finalizar.Tag.ToString());
+
+            LBL_PTipo.Text = idioma.BuscarTraduccion(LBL_PTipo.Tag.ToString());
+            LBL_SelectorPresupuesto.Text = idioma.BuscarTraduccion(LBL_SelectorPresupuesto.Tag.ToString());
+            BTN_SolicitarAdicional.Text = idioma.BuscarTraduccion(BTN_SolicitarAdicional.Tag.ToString());
+            LBL_PDesc.Text = idioma.BuscarTraduccion(LBL_PDesc.Tag.ToString());
+            LBL_PCant.Text = idioma.BuscarTraduccion(LBL_PCant.Tag.ToString());
+            LBL_PPrecio.Text = idioma.BuscarTraduccion(LBL_PPrecio.Tag.ToString());
+            BTN_AgregarItem.Text = idioma.BuscarTraduccion(BTN_AgregarItem.Tag.ToString());
+            BTN_QuitarItem.Text = idioma.BuscarTraduccion(BTN_QuitarItem.Tag.ToString());
+            LBL_PDescuento.Text = idioma.BuscarTraduccion(LBL_PDescuento.Tag.ToString());
+            LBL_PGarantia.Text = idioma.BuscarTraduccion(LBL_PGarantia.Tag.ToString());
+            LBL_PMedio.Text = idioma.BuscarTraduccion(LBL_PMedio.Tag.ToString());
+            LBL_PMotivo.Text = idioma.BuscarTraduccion(LBL_PMotivo.Tag.ToString());
+            LBL_PObs.Text = idioma.BuscarTraduccion(LBL_PObs.Tag.ToString());
+            BTN_Emitir.Text = idioma.BuscarTraduccion(BTN_Emitir.Tag.ToString());
+            BTN_GuardarBorrador.Text = idioma.BuscarTraduccion(BTN_GuardarBorrador.Tag.ToString());
+            BTN_EliminarBorrador.Text = idioma.BuscarTraduccion(BTN_EliminarBorrador.Tag.ToString());
+            BTN_Anular.Text = idioma.BuscarTraduccion(BTN_Anular.Tag.ToString());
+            BTN_CancelarSolicitud.Text = idioma.BuscarTraduccion(BTN_CancelarSolicitud.Tag.ToString());
+            BTN_Aprobar.Text = idioma.BuscarTraduccion(BTN_Aprobar.Tag.ToString());
+            BTN_Rechazar.Text = idioma.BuscarTraduccion(BTN_Rechazar.Tag.ToString());
+
+            LBL_EEntregadoA.Text = idioma.BuscarTraduccion(LBL_EEntregadoA.Tag.ToString()) + " *";
+            LBL_EDocumento.Text = idioma.BuscarTraduccion(LBL_EDocumento.Tag.ToString());
+            LBL_EObs.Text = idioma.BuscarTraduccion(LBL_EObs.Tag.ToString());
+            BTN_Entregar.Text = idioma.BuscarTraduccion(BTN_Entregar.Tag.ToString());
+            BTN_CancelarEntrega.Text = idioma.BuscarTraduccion(BTN_CancelarEntrega.Tag.ToString());
+            BTN_ReabrirPruebas.Text = idioma.BuscarTraduccion(BTN_ReabrirPruebas.Tag.ToString());
+            BTN_Cerrar.Text = idioma.BuscarTraduccion(BTN_Cerrar.Tag.ToString());
+
+            BTN_IniciarReparacion.Text = idioma.BuscarTraduccion(BTN_IniciarReparacion.Tag.ToString());
+            LBL_CRepuesto.Text = idioma.BuscarTraduccion(LBL_CRepuesto.Tag.ToString());
+            LBL_CCantidad.Text = idioma.BuscarTraduccion(LBL_CCantidad.Tag.ToString());
+            BTN_Consumir.Text = idioma.BuscarTraduccion(BTN_Consumir.Tag.ToString());
+            BTN_QuitarConsumo.Text = idioma.BuscarTraduccion(BTN_QuitarConsumo.Tag.ToString());
+            LBL_Consumidos.Text = idioma.BuscarTraduccion(LBL_Consumidos.Tag.ToString());
+            LBL_FTrabajo.Text = idioma.BuscarTraduccion(LBL_FTrabajo.Tag.ToString()) + " *";
+            LBL_FObs.Text = idioma.BuscarTraduccion(LBL_FObs.Tag.ToString());
+            BTN_FinalizarReparacion.Text = idioma.BuscarTraduccion(BTN_FinalizarReparacion.Tag.ToString());
+            LBL_PIntervencion.Text = idioma.BuscarTraduccion(LBL_PIntervencion.Tag.ToString());
+            LBL_PDDesc.Text = idioma.BuscarTraduccion(LBL_PDDesc.Tag.ToString()) + " *";
+            RDO_Aprobada.Text = idioma.BuscarTraduccion(RDO_Aprobada.Tag.ToString());
+            RDO_Fallida.Text = idioma.BuscarTraduccion(RDO_Fallida.Tag.ToString());
+            LBL_PDObs.Text = idioma.BuscarTraduccion(LBL_PDObs.Tag.ToString());
+            BTN_RegistrarPrueba.Text = idioma.BuscarTraduccion(BTN_RegistrarPrueba.Tag.ToString());
+            BTN_AnularPrueba.Text = idioma.BuscarTraduccion(BTN_AnularPrueba.Tag.ToString());
+            BTN_FinalizarPruebas.Text = idioma.BuscarTraduccion(BTN_FinalizarPruebas.Tag.ToString());
+            LBL_PruebaIntervencionAviso.Text = idioma.BuscarTraduccion(LBL_PruebaIntervencionAviso.Tag.ToString());
+            BTN_Cerrar.Text = idioma.BuscarTraduccion(BTN_Cerrar.Tag.ToString());
+
+            // La lista de reingresos re-traduce cabeceras y valores desde la copia cacheada:
+            // no vuelve a leer la base ni puede fallar por idioma.
+            RefrescarGrillaReingresos();
+        }
+
+        private void CargarCatalogos()
+        {
+            try
+            {
+                _clientes = _clienteService.Listar(false);
+                _tecnicos = _service.ListarTecnicosElegibles();
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+        }
+
+        private void CargarComboTiposItem()
+        {
+            _cargandoCombos = true;
+
+            try
+            {
+                string seleccionado = TipoItemPresupuesto.ManoObra;
+
+                if (CBO_PTipo.SelectedValue is string)
+                    seleccionado = (string)CBO_PTipo.SelectedValue;
+
+                List<ItemTipoItem> items = new List<ItemTipoItem>();
+                items.Add(new ItemTipoItem { Id = TipoItemPresupuesto.ManoObra, Nombre = TraducirTipoItem(TipoItemPresupuesto.ManoObra) });
+                items.Add(new ItemTipoItem { Id = TipoItemPresupuesto.Servicio, Nombre = TraducirTipoItem(TipoItemPresupuesto.Servicio) });
+                items.Add(new ItemTipoItem { Id = TipoItemPresupuesto.Repuesto, Nombre = TraducirTipoItem(TipoItemPresupuesto.Repuesto) });
+
+                CBO_PTipo.DataSource = null;
+                CBO_PTipo.DisplayMember = "Nombre";
+                CBO_PTipo.ValueMember = "Id";
+                CBO_PTipo.DataSource = items;
+                CBO_PTipo.SelectedValue = seleccionado;
+                AplicarTipoItemSeleccionado();
+            }
+            finally
+            {
+                _cargandoCombos = false;
+            }
+        }
+
+        // Repuestos del item de presupuesto: el selector solo ofrece repuestos activos
+        // (tambien con stock 0: cotizar no reserva stock) y arranca sin seleccion para exigir
+        // una eleccion explicita. El diccionario resuelve tambien repuestos inactivos que ya
+        // esten referenciados por presupuestos existentes.
+        private void CargarComboRepuestosPresupuesto()
+        {
+            _cargandoCombos = true;
+
+            try
+            {
+                List<ItemSelectorPresupuesto> items = new List<ItemSelectorPresupuesto>();
+                _repuestosPresupuesto.Clear();
+                _nombresRepuestosPresupuesto.Clear();
+
+                try
+                {
+                    RepuestoService repuestoService = new RepuestoService();
+
+                    foreach (Repuesto r in repuestoService.Listar(true))
+                    {
+                        _nombresRepuestosPresupuesto[r.Id] = DescribirRepuesto(r);
+
+                        if (!r.Activo)
+                            continue;
+
+                        _repuestosPresupuesto.Add(r);
+                        items.Add(new ItemSelectorPresupuesto { Id = r.Id, Nombre = DescribirRepuesto(r) });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MostrarError(ex);
+                }
+
+                CBO_PRepuesto.DataSource = null;
+                CBO_PRepuesto.DisplayMember = "Nombre";
+                CBO_PRepuesto.ValueMember = "Id";
+                CBO_PRepuesto.DataSource = items;
+                CBO_PRepuesto.SelectedIndex = -1;
+            }
+            finally
+            {
+                _cargandoCombos = false;
+            }
+        }
+
+        private static string DescribirRepuesto(Repuesto repuesto)
+        {
+            return repuesto.Codigo + " - " + repuesto.Descripcion;
+        }
+
+        private Repuesto BuscarRepuestoPresupuesto(int idRepuesto)
+        {
+            return _repuestosPresupuesto.FirstOrDefault(r => r.Id == idRepuesto);
+        }
+
+        private string TipoItemSeleccionado()
+        {
+            if (CBO_PTipo.SelectedValue is string)
+                return (string)CBO_PTipo.SelectedValue;
+
+            return TipoItemPresupuesto.ManoObra;
+        }
+
+        private void CBO_PTipo_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (_cargandoCombos)
+                return;
+
+            AplicarTipoItemSeleccionado();
+            AplicarPermisosDetalle();
+        }
+
+        // TXT_PDesc y CBO_PRepuesto comparten el lugar del tab Presupuesto: el tipo de item
+        // decide cual se muestra y la etiqueta LBL_PDesc cambia de clave de traduccion.
+        private void AplicarTipoItemSeleccionado()
+        {
+            bool esRepuesto = TipoItemSeleccionado() == TipoItemPresupuesto.Repuesto;
+
+            TXT_PDesc.Visible = !esRepuesto;
+            CBO_PRepuesto.Visible = esRepuesto;
+            LBL_PDesc.Tag = esRepuesto ? "OrdenDetalle.Repuesto" : "OrdenDetalle.DescripcionItem";
+
+            if (_sesionIdioma.idioma != null)
+                LBL_PDesc.Text = T(LBL_PDesc.Tag.ToString());
+        }
+
+        private void CBO_PRepuesto_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (_cargandoCombos)
+                return;
+
+            if (!(CBO_PRepuesto.SelectedValue is int))
+                return;
+
+            Repuesto repuesto = BuscarRepuestoPresupuesto((int)CBO_PRepuesto.SelectedValue);
+
+            if (repuesto == null)
+                return;
+
+            // El precio de referencia solo precarga el campo editable: el valor que queda en el
+            // detalle es el snapshot comercial que confirma el operador. Un precio de referencia
+            // fuera del rango del control no se recorta: se avisa y se deja el campo en cero.
+            if (repuesto.PrecioReferencia < NUM_PPrecio.Minimum
+                || repuesto.PrecioReferencia > NUM_PPrecio.Maximum)
+            {
+                NUM_PPrecio.Value = NUM_PPrecio.Minimum;
+                MostrarAdvertencia("Mensaje.PresupuestoPrecioInvalido");
+                return;
+            }
+
+            NUM_PPrecio.Value = repuesto.PrecioReferencia;
+        }
+
+        private void CargarCombosRecepcion()
+        {
+            _cargandoCombos = true;
+
+            try
+            {
+                int idClienteActual = _orden != null ? _orden.IdCliente : 0;
+                int idEquipoActual = _orden != null ? _orden.IdEquipo : 0;
+                int idTecnicoActual = (_orden != null && _orden.IdTecnicoAsignado.HasValue) ? _orden.IdTecnicoAsignado.Value : 0;
+
+                if (_esNuevo && CBO_RCliente.SelectedValue is int && (int)CBO_RCliente.SelectedValue > 0)
+                    idClienteActual = (int)CBO_RCliente.SelectedValue;
+
+                List<ItemCliente> itemsClientes = new List<ItemCliente>();
+
+                foreach (Cliente c in _clientes)
+                    itemsClientes.Add(new ItemCliente { Id = c.Id, Nombre = c.Apellido + ", " + c.Nombre + " (" + c.Documento + ")" });
+
+                if (idClienteActual > 0 && itemsClientes.Find(x => x.Id == idClienteActual) == null)
+                {
+                    try
+                    {
+                        Cliente extra = _clienteService.ObtenerPorId(idClienteActual);
+
+                        if (extra != null)
+                            itemsClientes.Add(new ItemCliente { Id = extra.Id, Nombre = extra.Apellido + ", " + extra.Nombre + " (" + extra.Documento + ")" });
+                    }
+                    catch
+                    {
+                    }
+                }
+
+                CBO_RCliente.DataSource = null;
+                CBO_RCliente.DisplayMember = "Nombre";
+                CBO_RCliente.ValueMember = "Id";
+                CBO_RCliente.DataSource = itemsClientes;
+
+                if (idClienteActual > 0)
+                    CBO_RCliente.SelectedValue = idClienteActual;
+
+                CargarComboEquipos(idClienteActual, idEquipoActual);
+
+                string sinAsignar = T("OrdenDetalle.SinAsignar");
+                List<ItemTecnico> itemsTecnicos = new List<ItemTecnico>();
+                itemsTecnicos.Add(new ItemTecnico { Id = 0, Nombre = sinAsignar });
+
+                foreach (Usuario u in _tecnicos)
+                    itemsTecnicos.Add(new ItemTecnico { Id = u.Id, Nombre = u.Username });
+
+                if (idTecnicoActual > 0 && itemsTecnicos.Find(x => x.Id == idTecnicoActual) == null)
+                    itemsTecnicos.Add(new ItemTecnico { Id = idTecnicoActual, Nombre = "#" + idTecnicoActual });
+
+                CBO_RTecnico.DataSource = null;
+                CBO_RTecnico.DisplayMember = "Nombre";
+                CBO_RTecnico.ValueMember = "Id";
+                CBO_RTecnico.DataSource = itemsTecnicos;
+                CBO_RTecnico.SelectedValue = idTecnicoActual;
+            }
+            finally
+            {
+                _cargandoCombos = false;
+            }
+        }
+
+        private void CargarComboEquipos(int idCliente, int idEquipoActual)
+        {
+            List<ItemEquipo> items = new List<ItemEquipo>();
+
+            try
+            {
+                if (idCliente > 0)
+                {
+                    bool incluirInactivos = !_esNuevo;
+                    _equipos = _equipoService.ListarPorCliente(idCliente, incluirInactivos);
+
+                    foreach (Equipo e in _equipos)
+                        items.Add(new ItemEquipo { Id = e.Id, Nombre = DescribirEquipo(e) });
+                }
+
+                if (idEquipoActual > 0 && items.Find(x => x.Id == idEquipoActual) == null)
+                {
+                    try
+                    {
+                        Equipo extra = _equipoService.ObtenerPorId(idEquipoActual);
+
+                        if (extra != null)
+                            items.Add(new ItemEquipo { Id = extra.Id, Nombre = DescribirEquipo(extra) });
+                    }
+                    catch
+                    {
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+
+            CBO_REquipo.DataSource = null;
+            CBO_REquipo.DisplayMember = "Nombre";
+            CBO_REquipo.ValueMember = "Id";
+            CBO_REquipo.DataSource = items;
+
+            if (idEquipoActual > 0)
+                CBO_REquipo.SelectedValue = idEquipoActual;
+        }
+
+        private string DescribirEquipo(Equipo e)
+        {
+            string desc = (e.Modelo ?? "").Trim();
+
+            if (!string.IsNullOrEmpty(e.NumeroSerie))
+                desc = (desc + " (S/N " + e.NumeroSerie.Trim() + ")").Trim();
+
+            if (string.IsNullOrEmpty(desc))
+                desc = "#" + e.Id;
+
+            return desc;
+        }
+
+        private void CargarOrden()
+        {
+            if (_esNuevo)
+            {
+                CargarModoNuevo();
+                return;
+            }
+
+            try
+            {
+                _orden = _service.ObtenerPorId(_idOrden);
+
+                // El bloqueo por reingresos de garantia se resuelve junto con la orden y ANTES de
+                // cargar cualquier pestana: una lectura fallida no puede dejar la vista editable.
+                _soloConsulta = _service.EsSoloConsultaPorReingresos(_idOrden);
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+                Close();
+                return;
+            }
+
+            try
+            {
+                _diagnostico = _service.ObtenerDiagnostico(_idOrden);
+                _presupuesto = _service.ObtenerPresupuesto(_idOrden);
+                _entrega = _service.ObtenerEntrega(_idOrden);
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+                return;
+            }
+
+            CargarEncabezado();
+            CargarCombosRecepcion();
+
+            CBO_RCliente.Enabled = false;
+            CBO_REquipo.Enabled = false;
+            TXT_RProblema.Text = _orden.ProblemaInformado;
+            TXT_REstadoFisico.Text = _orden.EstadoFisicoIngreso;
+            TXT_RAccesorios.Text = _orden.AccesoriosIngreso;
+            TXT_RObs.Text = _orden.ObservacionesIngreso;
+
+            CargarTabDiagnostico();
+            CargarTabPresupuesto();
+            CargarTabReparaciones();
+            CargarTabPruebas();
+            CargarTabHistorial();
+            CargarTabEntrega();
+            CargarTabGarantia();
+            AplicarPermisosDetalle();
+            ActualizarAvisoSoloConsulta();
+            ConfigurarColumnasDetalle();
+            ConfigurarColumnasReparaciones();
+            ConfigurarColumnasConsumidos();
+            ConfigurarColumnasPruebas();
+            ConfigurarColumnasHistorial();
+            ConfigurarColumnasReingresos();
+        }
+
+        private void CargarModoNuevo()
+        {
+            _orden = null;
+            _diagnostico = null;
+            _presupuesto = null;
+            _original = null;
+            _adicionales = new List<Presupuesto>();
+            _todosPresupuestos = new List<Presupuesto>();
+            _puedeCancelarSolicitud = false;
+            _idSeleccionPreferida = null;
+            _modoNuevoAdicional = false;
+            _modoNuevoOriginal = false;
+            _hayAdicionalPendiente = false;
+            _entrega = null;
+            _pruebasPorReparacion = new Dictionary<int, List<Prueba>>();
+            _pruebasActuales = new List<Prueba>();
+            _idIntervencionPruebaCargada = 0;
+            _garantia = null;
+            _garantiaVigente = false;
+            _evaluacion = null;
+            _reingresos = new List<OrdenServicio>();
+            _soloConsulta = false;
+
+            LBL_MontoAutorizado.Text = "";
+
+            RefrescarGrillaReingresos();
+
+            LBL_Numero.Text = T("OrdenDetalle.TituloNuevo");
+            LBL_Estado.Text = "";
+            LBL_Resultado.Text = "";
+            LBL_Tipo.Text = "";
+            LBL_HCliente.Text = T("OrdenDetalle.Cliente");
+            LBL_HEquipo.Text = T("OrdenDetalle.Equipo");
+            LBL_HTecnico.Text = T("OrdenDetalle.Tecnico");
+            LBL_HFecha.Text = T("OrdenDetalle.Fecha");
+
+            CargarCombosRecepcion();
+            CBO_RCliente.Enabled = true;
+            CBO_REquipo.Enabled = true;
+            CBO_RTecnico.Enabled = false;
+
+            TAB_Diagnostico.Enabled = false;
+            TAB_Presupuesto.Enabled = false;
+            TAB_Reparaciones.Enabled = false;
+            TAB_Pruebas.Enabled = false;
+            TAB_Historial.Enabled = false;
+            TAB_Entrega.Enabled = false;
+            TAB_Garantia.Enabled = false;
+            TAB_Detalle.SelectedTab = TAB_Recepcion;
+
+            AplicarPermisosDetalle();
+            ActualizarAvisoSoloConsulta();
+        }
+
+        // El aviso de solo consulta se muestra unicamente cuando la orden ya tiene reingresos de
+        // garantia; su texto se traduce por la clave de Tag en ActualizarTextos.
+        private void ActualizarAvisoSoloConsulta()
+        {
+            if (LBL_OrdenSoloConsulta == null)
+                return;
+
+            LBL_OrdenSoloConsulta.Visible = _soloConsulta;
+        }
+
+        private void CargarEncabezado()
+        {
+            LBL_Numero.Text = T("OrdenDetalle.Numero").Replace("{0}", _orden.NumeroOrden.ToString());
+            LBL_Estado.Text = T("OrdenDetalle.Estado") + ": " + TraducirEstado(_orden.Estado);
+            LBL_Resultado.Text = T("OrdenDetalle.Resultado") + ": " + TraducirResultado(_orden.Resultado);
+            LBL_Tipo.Text = T("OrdenDetalle.Tipo") + ": " + TraducirTipo(_orden.TipoOrden);
+            LBL_HCliente.Text = T("OrdenDetalle.Cliente") + ": " + ResolverCliente(_orden.IdCliente);
+            LBL_HEquipo.Text = T("OrdenDetalle.Equipo") + ": " + ResolverEquipo(_orden.IdEquipo);
+            LBL_HTecnico.Text = T("OrdenDetalle.Tecnico") + ": " + ResolverTecnico(_orden.IdTecnicoAsignado);
+            LBL_HFecha.Text = T("OrdenDetalle.Fecha") + ": " + _orden.FechaIngreso.ToString("g");
+        }
+
+        private void CargarTabGarantia()
+        {
+            _garantia = null;
+            _garantiaVigente = false;
+            _evaluacion = null;
+
+            LBL_GOrigenValor.Text = "-";
+            LBL_GVigenciaValor.Text = "-";
+            LBL_GEstadoValor.Text = T("OrdenDetalle.GarantiaSinGarantia");
+            LBL_GEvaluacionValor.Text = "-";
+            TXT_GMotivo.Text = "";
+            TXT_GObs.Text = "";
+            TXT_GMotivo.Enabled = false;
+            TXT_GObs.Enabled = false;
+
+            // La lista de reingresos es independiente de la cobertura: se limpia y se re-bindea
+            // siempre, y una orden sin reingresos muestra la grilla vacia sin error.
+            CargarReingresosGarantia();
+
+            if (_esNuevo || _orden == null)
+                return;
+
+            bool esReingreso = _orden.TipoOrden == TipoOrden.Garantia;
+
+            // Info de garantia de la orden original (Normal) o del origen (reingreso).
+            int idOrdenGarantia = esReingreso && _orden.IdOrdenOrigen.HasValue
+                ? _orden.IdOrdenOrigen.Value
+                : _orden.Id;
+
+            try
+            {
+                _garantia = _garantiaService.ObtenerPorOrden(idOrdenGarantia);
+            }
+            catch
+            {
+                _garantia = null;
+            }
+
+            if (_garantia != null)
+            {
+                _garantiaVigente = !_garantia.Anulada && DateTime.Now <= _garantia.FechaFin;
+                LBL_GVigenciaValor.Text = _garantia.FechaInicio.ToString("g") + " - " + _garantia.FechaFin.ToString("g");
+
+                if (_garantia.Anulada)
+                    LBL_GEstadoValor.Text = T("OrdenDetalle.GarantiaAnulada");
+                else if (_garantiaVigente)
+                    LBL_GEstadoValor.Text = T("OrdenDetalle.GarantiaVigente");
+                else
+                    LBL_GEstadoValor.Text = T("OrdenDetalle.GarantiaVencida");
+            }
+
+            if (esReingreso && _orden.IdOrdenOrigen.HasValue)
+            {
+                try
+                {
+                    OrdenServicio origen = _service.ObtenerPorId(_orden.IdOrdenOrigen.Value);
+                    LBL_GOrigenValor.Text = "#" + origen.NumeroOrden;
+                }
+                catch
+                {
+                    LBL_GOrigenValor.Text = "#" + _orden.IdOrdenOrigen.Value;
+                }
+
+                try
+                {
+                    _evaluacion = _garantiaService.ObtenerEvaluacionPorReingreso(_orden.Id);
+                }
+                catch
+                {
+                    _evaluacion = null;
+                }
+
+                if (_evaluacion != null)
+                {
+                    LBL_GEvaluacionValor.Text = TraducirEvaluacion(_evaluacion.Estado);
+                    TXT_GMotivo.Text = _evaluacion.Motivo;
+                    TXT_GObs.Text = _evaluacion.Observaciones;
+                }
+                else
+                {
+                    LBL_GEvaluacionValor.Text = T("OrdenDetalle.EvaluacionPendiente");
+                }
+            }
+            else
+            {
+                LBL_GOrigenValor.Text = "-";
+                LBL_GEvaluacionValor.Text = "-";
+
+                // Orden Normal sin garantia registrada: el texto queda en "Sin garantia"
+                // (incluye DiasGarantia=0 o no Reparado, que nunca generan garantia).
+                if (_garantia == null && _orden.Resultado == ResultadoOrdenServicio.Reparado)
+                    LBL_GEstadoValor.Text = T("OrdenDetalle.GarantiaSinGarantia");
+            }
+
+            AplicarPermisosGarantia();
+        }
+
+        private string TraducirEvaluacion(string estado)
+        {
+            if (string.IsNullOrEmpty(estado))
+                return T("OrdenDetalle.EvaluacionPendiente");
+
+            if (estado == EstadoEvaluacionGarantia.Aceptada)
+                return T("OrdenDetalle.EvaluacionAceptada");
+
+            if (estado == EstadoEvaluacionGarantia.Rechazada)
+                return T("OrdenDetalle.EvaluacionRechazada");
+
+            return T("OrdenDetalle.EvaluacionPendiente");
+        }
+
+        private void AplicarPermisosGarantia()
+        {
+            if (BTN_AceptarGarantia == null || BTN_RechazarGarantia == null
+                || BTN_VerOriginal == null || BTN_CrearReingreso == null)
+                return;
+
+            bool puedeEditar = TienePermiso(CodigosPermiso.OrdenesEditar);
+            bool puedeDecidir = TienePermiso(CodigosPermiso.PresupuestosDecidir);
+
+            bool esReingreso = !_esNuevo && _orden != null && _orden.TipoOrden == TipoOrden.Garantia;
+            bool tieneOrigen = esReingreso && _orden.IdOrdenOrigen.HasValue;
+
+            bool pendienteEvaluacion = esReingreso && _orden != null && !_soloConsulta
+                && _orden.Estado == EstadoOrdenServicio.PendienteEvaluacionGarantia
+                && (_evaluacion == null || _evaluacion.Estado == EstadoEvaluacionGarantia.Pendiente);
+
+            BTN_VerOriginal.Visible = tieneOrigen;
+            BTN_VerOriginal.Enabled = tieneOrigen;
+
+            BTN_AceptarGarantia.Visible = esReingreso && puedeEditar;
+            BTN_AceptarGarantia.Enabled = pendienteEvaluacion && puedeEditar;
+            BTN_RechazarGarantia.Visible = esReingreso && puedeDecidir;
+            BTN_RechazarGarantia.Enabled = pendienteEvaluacion && puedeDecidir;
+
+            TXT_GMotivo.Enabled = pendienteEvaluacion && (puedeEditar || puedeDecidir);
+            TXT_GObs.Enabled = pendienteEvaluacion && (puedeEditar || puedeDecidir);
+
+            // Crear reingreso: solo orden original Normal + Entregada + Reparada +
+            // garantia vigente. El service revalida todo (muestra su error si cambia).
+            bool puedeReingresar = !_esNuevo && _orden != null
+                && _orden.TipoOrden == TipoOrden.Normal
+                && _orden.Estado == EstadoOrdenServicio.Entregado
+                && _orden.Resultado == ResultadoOrdenServicio.Reparado
+                && _garantia != null && _garantiaVigente;
+
+            BTN_CrearReingreso.Visible = !_esNuevo && puedeEditar
+                && _orden != null && _orden.TipoOrden == TipoOrden.Normal;
+            BTN_CrearReingreso.Enabled = puedeReingresar && puedeEditar;
+        }
+
+        // Reingresos de garantia que tienen a la orden mostrada como origen
+        // (OrdenesServicio.id_orden_origen). Incluye reingresos ya entregados y sin evaluacion.
+        // Una lista vacia es un resultado valido; una lectura fallida muestra el error y deja la
+        // grilla vacia en lugar de fabricar un resultado.
+        private void CargarReingresosGarantia()
+        {
+            _reingresos = new List<OrdenServicio>();
+
+            if (!_esNuevo && _orden != null)
+            {
+                try
+                {
+                    List<OrdenServicio> reingresos = _service.ListarReingresosGarantia(_orden.Id);
+
+                    if (reingresos != null)
+                        _reingresos = reingresos;
+                }
+                catch (Exception ex)
+                {
+                    _reingresos = new List<OrdenServicio>();
+                    MostrarError(ex);
+                }
+            }
+
+            RefrescarGrillaReingresos();
+        }
+
+        private void RefrescarGrillaReingresos()
+        {
+            if (DGV_ReingresosGarantia == null)
+                return;
+
+            List<FilaReingreso> filas = new List<FilaReingreso>();
+
+            foreach (OrdenServicio reingreso in _reingresos)
+            {
+                if (reingreso == null)
+                    continue;
+
+                filas.Add(new FilaReingreso
+                {
+                    Id = reingreso.Id,
+                    Numero = reingreso.NumeroOrden,
+                    Fecha = reingreso.FechaIngreso,
+                    Estado = TraducirEstado(reingreso.Estado),
+                    Resultado = TraducirResultado(reingreso.Resultado)
+                });
+            }
+
+            DGV_ReingresosGarantia.DataSource = new BindingList<FilaReingreso>(filas);
+            DGV_ReingresosGarantia.ClearSelection();
+            ConfigurarColumnasReingresos();
+        }
+
+        private void ConfigurarColumnasReingresos()
+        {
+            if (DGV_ReingresosGarantia == null || DGV_ReingresosGarantia.Columns.Count == 0)
+                return;
+
+            ConfigurarColumnaGrid(DGV_ReingresosGarantia, "Numero", "Columna.Numero");
+            ConfigurarColumnaGrid(DGV_ReingresosGarantia, "Fecha", "Columna.Fecha");
+            ConfigurarColumnaGrid(DGV_ReingresosGarantia, "Estado", "Columna.Estado");
+            ConfigurarColumnaGrid(DGV_ReingresosGarantia, "Resultado", "Columna.Resultado");
+
+            if (DGV_ReingresosGarantia.Columns.Contains("Id"))
+                DGV_ReingresosGarantia.Columns["Id"].Visible = false;
+
+            DGV_ReingresosGarantia.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells);
+        }
+
+        private void BTN_VerOriginal_Click(object sender, EventArgs e)
+        {
+            if (_esNuevo || _orden == null || !_orden.IdOrdenOrigen.HasValue)
+                return;
+
+            if (!TienePermiso(CodigosPermiso.OrdenesVer))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
+            using (FrmOrdenServicioDetalle dlg = new FrmOrdenServicioDetalle(_orden.IdOrdenOrigen.Value))
+            {
+                dlg.ShowDialog(this);
+            }
+
+            CargarOrden();
+        }
+
+        private void BTN_CrearReingreso_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.OrdenesCrear))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
+            if (_esNuevo || _orden == null || _orden.TipoOrden != TipoOrden.Normal)
+                return;
+
+            // Preconsulta con el mismo predicado del guard transaccional: avisa antes de pedir el
+            // problema. El repositorio sigue siendo la autoridad ante intentos paralelos.
+            try
+            {
+                if (_service.ObtenerReingresoGarantiaAbierto(_orden.Id) != null)
+                {
+                    MostrarAdvertencia("Mensaje.GarantiaReingresoAbierto");
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+                return;
+            }
+
+            string problema = PedirTexto(
+                T("OrdenDetalle.CrearReingreso"),
+                T("OrdenDetalle.ReingresoProblema"));
+
+            if (problema == null)
+                return;
+
+            if (string.IsNullOrWhiteSpace(problema))
+            {
+                MostrarAdvertencia("Mensaje.OrdenCamposObligatorios");
+                return;
+            }
+
+            DialogResult confirmacion = MessageBox.Show(
+                T("Mensaje.ConfirmarCrearReingreso"),
+                T("Titulo.ConfirmarEdicion"),
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning);
+
+            if (confirmacion == DialogResult.No)
+                return;
+
+            try
+            {
+                OrdenServicio reingreso = _service.CrearReingresoGarantia(
+                    _orden.Id, _orden.IdCliente, problema.Trim(), "", "", "");
+                MessageBox.Show(
+                    T("Mensaje.ReingresoCreado").Replace("{0}", reingreso.NumeroOrden.ToString()),
+                    T("Titulo.Exito"),
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+                CargarOrden();
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+
+                // Un rechazo del guard puede deberse a un hermano abierto que esta vista aun no
+                // mostraba: la lista se refresca tambien en el camino bloqueado.
+                if (BuscarOrigenNoDisponible(ex) != null)
+                    CargarOrden();
+                else if (BuscarReingresoAbierto(ex) != null)
+                    CargarReingresosGarantia();
+            }
+        }
+
+        private void BTN_AceptarGarantia_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.OrdenesEditar))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
+            if (_esNuevo || _orden == null || _orden.TipoOrden != TipoOrden.Garantia)
+                return;
+
+            if (string.IsNullOrWhiteSpace(TXT_GMotivo.Text))
+            {
+                MostrarAdvertencia("Mensaje.OrdenCamposObligatorios");
+                return;
+            }
+
+            DialogResult confirmacion = MessageBox.Show(
+                T("Mensaje.ConfirmarAceptarGarantia"),
+                T("Titulo.ConfirmarEdicion"),
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning);
+
+            if (confirmacion == DialogResult.No)
+                return;
+
+            try
+            {
+                _service.EvaluarReingreso(_idOrden, true,
+                    TXT_GMotivo.Text.Trim(), TXT_GObs.Text.Trim(), false);
+                CargarOrden();
+                MostrarExito("Mensaje.OperacionExitosa");
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+        }
+
+        private void BTN_RechazarGarantia_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.PresupuestosDecidir))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
+            if (_esNuevo || _orden == null || _orden.TipoOrden != TipoOrden.Garantia)
+                return;
+
+            if (string.IsNullOrWhiteSpace(TXT_GMotivo.Text))
+            {
+                MostrarAdvertencia("Mensaje.OrdenCamposObligatorios");
+                return;
+            }
+
+            // CP4/CP6: el backend decide por la decision explicita (continuarPago), no por el
+            // texto del motivo. La UI pregunta con DOS botones: pago => continuarPago=true
+            // (PendientePresupuesto); retiro => continuarPago=false (ListoRetiro + GarantiaNoCubierta).
+            int destino = PedirDestinoRechazo();
+
+            if (destino < 0)
+                return;
+
+            string motivo = TXT_GMotivo.Text.Trim();
+
+            if (destino == 0)
+            {
+                MessageBox.Show(
+                    T("Mensaje.GarantiaPagoInfo"),
+                    T("Titulo.Exito"),
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+
+                if (!motivo.ToLower().Contains("pago"))
+                    motivo = motivo + " [pago: continua como reparacion paga]";
+            }
+
+            try
+            {
+                _service.EvaluarReingreso(_idOrden, false, motivo, TXT_GObs.Text.Trim(), destino == 0);
+                CargarOrden();
+                MostrarExito("Mensaje.OperacionExitosa");
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+        }
+
+        // Devuelve 0 = reparacion paga, 1 = retiro sin cobertura, -1 = cancelado.
+        private int PedirDestinoRechazo()
+        {
+            using (Form dialogo = new Form())
+            {
+                dialogo.Text = T("OrdenDetalle.EvaluarRechazoTitulo");
+                dialogo.FormBorderStyle = FormBorderStyle.FixedDialog;
+                dialogo.StartPosition = FormStartPosition.CenterParent;
+                dialogo.MaximizeBox = false;
+                dialogo.MinimizeBox = false;
+                dialogo.ShowInTaskbar = false;
+                dialogo.ClientSize = new Size(440, 140);
+
+                Label lbl = new Label();
+                lbl.Text = T("OrdenDetalle.EvaluarRechazoPregunta");
+                lbl.AutoSize = false;
+                lbl.Location = new Point(12, 12);
+                lbl.Size = new Size(416, 40);
+                dialogo.Controls.Add(lbl);
+
+                int resultado = -1;
+
+                Button btnPago = new Button();
+                btnPago.Text = T("OrdenDetalle.RechazoPago");
+                btnPago.Location = new Point(12, 60);
+                btnPago.Size = new Size(200, 50);
+                btnPago.BackColor = Color.FromArgb(39, 174, 96);
+                btnPago.FlatStyle = FlatStyle.Flat;
+                btnPago.ForeColor = Color.White;
+                btnPago.Click += (s, ev) => { resultado = 0; dialogo.DialogResult = DialogResult.OK; dialogo.Close(); };
+                dialogo.Controls.Add(btnPago);
+
+                Button btnRetiro = new Button();
+                btnRetiro.Text = T("OrdenDetalle.RechazoRetiro");
+                btnRetiro.Location = new Point(222, 60);
+                btnRetiro.Size = new Size(206, 50);
+                btnRetiro.BackColor = Color.Maroon;
+                btnRetiro.FlatStyle = FlatStyle.Flat;
+                btnRetiro.ForeColor = Color.White;
+                btnRetiro.Click += (s, ev) => { resultado = 1; dialogo.DialogResult = DialogResult.OK; dialogo.Close(); };
+                dialogo.Controls.Add(btnRetiro);
+
+                if (dialogo.ShowDialog(this) != DialogResult.OK)
+                    return -1;
+
+                return resultado;
+            }
+        }
+
+        private void CargarTabDiagnostico()
+        {
+            if (_diagnostico != null)
+            {
+                TXT_DDescripcion.Text = _diagnostico.Descripcion;
+                CHK_EsReparable.Checked = _diagnostico.EsReparable;
+                NUM_DDias.Value = _diagnostico.TiempoEstimadoDias.HasValue ? _diagnostico.TiempoEstimadoDias.Value : 0;
+                TXT_DObs.Text = _diagnostico.Observaciones;
+                LBL_AvisoNoReparable.Visible = !_diagnostico.EsReparable;
+            }
+            else
+            {
+                LBL_AvisoNoReparable.Visible = false;
+            }
+        }
+
+        private void CargarTabPresupuesto()
+        {
+            try
+            {
+                _original = _service.ObtenerPresupuestoOriginal(_idOrden);
+                _adicionales = _service.ListarAdicionales(_idOrden);
+
+                try
+                {
+                    _todosPresupuestos = _service.ListarTodosPresupuestos(_idOrden);
+                }
+                catch
+                {
+                    _todosPresupuestos = new List<Presupuesto>();
+
+                    if (_original != null)
+                        _todosPresupuestos.Add(_original);
+
+                    _todosPresupuestos.AddRange(_adicionales);
+                }
+
+                _hayAdicionalPendiente = _service.ExisteAdicionalPendiente(_idOrden);
+
+                try
+                {
+                    _puedeCancelarSolicitud = _service.PuedeCancelarSolicitud(_idOrden);
+                }
+                catch
+                {
+                    _puedeCancelarSolicitud = false;
+                }
+
+                CargarSelectorPresupuesto();
+                SeleccionarPresupuestoPorDefecto();
+                MostrarPresupuestoSeleccionado();
+                ActualizarMontoAutorizado();
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+
+            RefrescarTotales();
+        }
+
+        private string DescribirPresupuesto(Presupuesto p, string titulo)
+        {
+            string texto = titulo + " | " + TraducirEstadoPresupuesto(p.Estado) + " | $" + p.Total.ToString("F2");
+
+            if (p.Estado == EstadoPresupuesto.Anulado || p.Estado == EstadoPresupuesto.Borrador)
+                texto += " (" + TraducirEstadoPresupuesto(p.Estado) + ")";
+
+            return texto;
+        }
+
+        private void CargarSelectorPresupuesto()
+        {
+            _cargandoCombos = true;
+
+            try
+            {
+                List<ItemSelectorPresupuesto> items = new List<ItemSelectorPresupuesto>();
+                List<Presupuesto> originales = new List<Presupuesto>();
+                List<Presupuesto> adicionales = new List<Presupuesto>();
+
+                foreach (Presupuesto p in _todosPresupuestos)
+                {
+                    if (p.Tipo == TipoPresupuesto.Original)
+                        originales.Add(p);
+                    else
+                        adicionales.Add(p);
+                }
+
+                originales.Sort((a, b) => a.Id.CompareTo(b.Id));
+                adicionales.Sort((a, b) => a.Id.CompareTo(b.Id));
+
+                // Con la orden en solo consulta el selector no ofrece documentos nuevos: queda
+                // limitado a los presupuestos ya existentes.
+                if (originales.Count == 0)
+                {
+                    if (!_soloConsulta)
+                        items.Add(new ItemSelectorPresupuesto
+                        {
+                            Id = 0,
+                            Nombre = TraducirTipoPresupuesto(TipoPresupuesto.Original) + " " + T("OrdenDetalle.PresupuestoNuevo")
+                        });
+                }
+                else if (originales.Count == 1)
+                    items.Add(new ItemSelectorPresupuesto
+                    {
+                        Id = originales[0].Id,
+                        Nombre = DescribirPresupuesto(originales[0], TraducirTipoPresupuesto(TipoPresupuesto.Original))
+                    });
+                else
+                {
+                    for (int i = 0; i < originales.Count; i++)
+                    {
+                        items.Add(new ItemSelectorPresupuesto
+                        {
+                            Id = originales[i].Id,
+                            Nombre = DescribirPresupuesto(originales[i], TraducirTipoPresupuesto(TipoPresupuesto.Original) + " #" + (i + 1))
+                        });
+                    }
+                }
+
+                int numero = 0;
+
+                foreach (Presupuesto adicional in adicionales)
+                {
+                    numero++;
+                    items.Add(new ItemSelectorPresupuesto
+                    {
+                        Id = adicional.Id,
+                        Nombre = DescribirPresupuesto(adicional, TraducirTipoPresupuesto(TipoPresupuesto.Adicional) + " #" + numero)
+                    });
+                }
+
+                if (!_soloConsulta && _original != null && _original.Estado == EstadoPresupuesto.Aprobado)
+                    items.Add(new ItemSelectorPresupuesto { Id = -1, Nombre = T("OrdenDetalle.NuevoAdicional") });
+
+                // Nuevo Original tras anulacion: sin Original activo, en PendientePresupuesto
+                // y sin pausa por solicitud de adicional (pausada => solo nuevo adicional).
+                if (!_soloConsulta && _original == null && originales.Count > 0 && _orden != null
+                    && _orden.Estado == EstadoOrdenServicio.PendientePresupuesto
+                    && !_puedeCancelarSolicitud)
+                    items.Add(new ItemSelectorPresupuesto { Id = -2, Nombre = T("OrdenDetalle.NuevoOriginal") });
+
+                CBO_SelectorPresupuesto.DataSource = null;
+                CBO_SelectorPresupuesto.DisplayMember = "Nombre";
+                CBO_SelectorPresupuesto.ValueMember = "Id";
+                CBO_SelectorPresupuesto.DataSource = items;
+            }
+            finally
+            {
+                _cargandoCombos = false;
+            }
+        }
+
+        private void SeleccionarPresupuestoPorDefecto()
+        {
+            if (CBO_SelectorPresupuesto.DataSource == null)
+                return;
+
+            List<ItemSelectorPresupuesto> items = CBO_SelectorPresupuesto.DataSource as List<ItemSelectorPresupuesto>;
+            int idSeleccion = 0;
+            bool haySeleccion = false;
+
+            if (_idSeleccionPreferida.HasValue && items != null)
+            {
+                foreach (ItemSelectorPresupuesto item in items)
+                {
+                    if (item.Id == _idSeleccionPreferida.Value)
+                    {
+                        idSeleccion = item.Id;
+                        haySeleccion = true;
+                        break;
+                    }
+                }
+            }
+
+            _idSeleccionPreferida = null;
+
+            if (!haySeleccion)
+            {
+                List<Presupuesto> ordenados = new List<Presupuesto>(_todosPresupuestos);
+                ordenados.Sort((a, b) => b.Id.CompareTo(a.Id));
+
+                foreach (Presupuesto p in ordenados)
+                {
+                    if (p.Estado == EstadoPresupuesto.Borrador)
+                    {
+                        idSeleccion = p.Id;
+                        haySeleccion = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!haySeleccion)
+            {
+                foreach (Presupuesto adicional in _adicionales)
+                {
+                    if (adicional.Estado == EstadoPresupuesto.Pendiente)
+                    {
+                        idSeleccion = adicional.Id;
+                        haySeleccion = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!haySeleccion && _original != null && _original.Estado == EstadoPresupuesto.Pendiente)
+            {
+                idSeleccion = _original.Id;
+                haySeleccion = true;
+            }
+
+            if (!haySeleccion && _original != null && _original.Estado == EstadoPresupuesto.Aprobado
+                && _orden != null && _orden.Estado == EstadoOrdenServicio.PendientePresupuesto && !_hayAdicionalPendiente)
+            {
+                idSeleccion = -1;
+                haySeleccion = true;
+            }
+
+            if (!haySeleccion && _original != null)
+            {
+                idSeleccion = _original.Id;
+                haySeleccion = true;
+            }
+
+            if (!haySeleccion && _original == null && items != null
+                && _orden != null && _orden.Estado == EstadoOrdenServicio.PendientePresupuesto
+                && !_puedeCancelarSolicitud)
+            {
+                foreach (ItemSelectorPresupuesto item in items)
+                {
+                    if (item.Id == -2 || item.Id == 0)
+                    {
+                        idSeleccion = item.Id;
+                        haySeleccion = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!haySeleccion && items != null)
+            {
+                foreach (ItemSelectorPresupuesto item in items)
+                {
+                    if (item.Id <= 0)
+                        continue;
+
+                    Presupuesto candidato = null;
+
+                    foreach (Presupuesto p in _todosPresupuestos)
+                    {
+                        if (p.Id == item.Id)
+                        {
+                            candidato = p;
+                            break;
+                        }
+                    }
+
+                    if (candidato != null && candidato.Estado != EstadoPresupuesto.Anulado)
+                    {
+                        idSeleccion = item.Id;
+                        haySeleccion = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!haySeleccion && items != null && items.Count > 0)
+            {
+                int idNuevo = int.MinValue;
+                bool hayNuevo = false;
+
+                foreach (ItemSelectorPresupuesto item in items)
+                {
+                    if (item.Id == 0 || item.Id == -2)
+                    {
+                        idNuevo = item.Id;
+                        hayNuevo = true;
+                        break;
+                    }
+                }
+
+                idSeleccion = hayNuevo ? idNuevo : items[0].Id;
+                haySeleccion = true;
+            }
+
+            if (!haySeleccion)
+                idSeleccion = 0;
+
+            _cargandoCombos = true;
+
+            try
+            {
+                CBO_SelectorPresupuesto.SelectedValue = idSeleccion;
+            }
+            finally
+            {
+                _cargandoCombos = false;
+            }
+
+            AplicarSeleccionPresupuesto(idSeleccion);
+        }
+
+        private void AplicarSeleccionPresupuesto(int idSeleccion)
+        {
+            if (idSeleccion == -1)
+            {
+                _presupuesto = null;
+                _modoNuevoAdicional = true;
+                _modoNuevoOriginal = false;
+                return;
+            }
+
+            if (idSeleccion == -2)
+            {
+                _presupuesto = null;
+                _modoNuevoAdicional = false;
+                _modoNuevoOriginal = true;
+                return;
+            }
+
+            _modoNuevoAdicional = false;
+            _modoNuevoOriginal = false;
+
+            if (idSeleccion <= 0)
+            {
+                _presupuesto = null;
+                return;
+            }
+
+            try
+            {
+                _presupuesto = _service.ObtenerPresupuestoPorId(idSeleccion);
+            }
+            catch (Exception ex)
+            {
+                _presupuesto = null;
+                MostrarError(ex);
+            }
+        }
+
+        private void CBO_SelectorPresupuesto_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (_cargandoCombos)
+                return;
+
+            if (CBO_SelectorPresupuesto.DataSource == null)
+                return;
+
+            if (_esNuevo)
+                return;
+
+            int idSeleccion = 0;
+
+            if (CBO_SelectorPresupuesto.SelectedValue is int)
+                idSeleccion = (int)CBO_SelectorPresupuesto.SelectedValue;
+
+            AplicarSeleccionPresupuesto(idSeleccion);
+            MostrarPresupuestoSeleccionado();
+            RefrescarTotales();
+            AplicarPermisosDetalle();
+        }
+
+        private void MostrarPresupuestoSeleccionado()
+        {
+            try
+            {
+                if (_presupuesto != null)
+                {
+                    List<DetallePresupuesto> detalle = _service.ListarDetalle(_presupuesto.Id);
+                    DGV_Detalle.DataSource = new BindingList<DetallePresupuesto>(detalle);
+                    NUM_PDescuento.Value = _presupuesto.Descuento;
+                    NUM_PGarantia.Value = _presupuesto.DiasGarantia;
+                    TXT_PMedio.Text = _presupuesto.MedioRespuesta ?? "";
+                    TXT_PObs.Text = _presupuesto.Observaciones;
+
+                    if (_presupuesto.Estado == EstadoPresupuesto.Anulado)
+                    {
+                        LBL_PMotivo.Tag = "OrdenDetalle.MotivoAnulacion";
+                        LBL_PMotivo.Text = T("OrdenDetalle.MotivoAnulacion");
+                        TXT_PMotivo.Text = _presupuesto.MotivoAnulacion ?? "";
+                    }
+                    else
+                    {
+                        LBL_PMotivo.Tag = "OrdenDetalle.Motivo";
+                        LBL_PMotivo.Text = T("OrdenDetalle.Motivo");
+                        TXT_PMotivo.Text = _presupuesto.MotivoRechazo ?? "";
+                    }
+                }
+                else
+                {
+                    DGV_Detalle.DataSource = new BindingList<DetallePresupuesto>(_itemsNuevo);
+
+                    if (_modoNuevoAdicional || _modoNuevoOriginal)
+                    {
+                        NUM_PDescuento.Value = 0;
+                        NUM_PGarantia.Value = 0;
+                        TXT_PMedio.Text = "";
+                        TXT_PMotivo.Text = "";
+                        TXT_PObs.Text = "";
+                    }
+
+                    LBL_PMotivo.Tag = "OrdenDetalle.Motivo";
+                    LBL_PMotivo.Text = T("OrdenDetalle.Motivo");
+                }
+
+                ConfigurarColumnasDetalle();
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+        }
+
+        private void ActualizarMontoAutorizado()
+        {
+            try
+            {
+                decimal monto = _service.CalcularMontoAutorizado(_idOrden);
+                LBL_MontoAutorizado.Text = T("OrdenDetalle.MontoAutorizado").Replace("{0}", monto.ToString("F2"));
+            }
+            catch
+            {
+                LBL_MontoAutorizado.Text = T("OrdenDetalle.MontoAutorizado").Replace("{0}", "0.00");
+            }
+        }
+
+        private void CargarTabHistorial()
+        {
+            try
+            {
+                List<HistorialEstadoOrden> historial = _service.ListarHistorial(_idOrden);
+                List<FilaHistorial> filas = new List<FilaHistorial>();
+
+                foreach (HistorialEstadoOrden h in historial)
+                {
+                    filas.Add(new FilaHistorial
+                    {
+                        Fecha = h.FechaHora,
+                        Anterior = TraducirEstado(h.EstadoAnterior),
+                        Nuevo = TraducirEstado(h.EstadoNuevo),
+                        Usuario = ResolverTecnico(h.IdUsuario),
+                        Observacion = h.Observacion
+                    });
+                }
+
+                DGV_Historial.DataSource = new BindingList<FilaHistorial>(filas);
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+        }
+
+        private void CargarTabReparaciones()
+        {
+            try
+            {
+                RepuestoService repuestoService = new RepuestoService();
+                _nombresRepuestos.Clear();
+
+                try
+                {
+                    foreach (Repuesto r in repuestoService.Listar(true))
+                        _nombresRepuestos[r.Id] = r.Codigo + " - " + r.Descripcion;
+                }
+                catch
+                {
+                }
+
+                _reparaciones = _service.ListarReparaciones(_idOrden);
+                _reparaciones.Sort((a, b) => a.NumeroIntervencion.CompareTo(b.NumeroIntervencion));
+
+                List<FilaReparacion> filas = new List<FilaReparacion>();
+
+                foreach (Reparacion r in _reparaciones)
+                {
+                    filas.Add(new FilaReparacion
+                    {
+                        Id = r.Id,
+                        Numero = r.NumeroIntervencion,
+                        Tecnico = ResolverTecnico(r.IdUsuarioTecnico),
+                        Inicio = r.FechaInicio,
+                        Fin = r.FechaFin.HasValue ? r.FechaFin.Value.ToString("g") : T("Resultado.SinResultado"),
+                        Estado = r.FechaFin.HasValue ? T("OrdenDetalle.Finalizada") : T("OrdenDetalle.Abierta")
+                    });
+                }
+
+                DGV_Reparaciones.DataSource = new BindingList<FilaReparacion>(filas);
+
+                SeleccionarReparacionPorDefecto();
+                CargarComboConsumo();
+                CargarConsumidosDeSeleccion();
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+        }
+
+        private void SeleccionarReparacionPorDefecto()
+        {
+            if (_reparaciones.Count == 0 || DGV_Reparaciones.Rows.Count == 0)
+                return;
+
+            int idSeleccion = 0;
+            Reparacion abierta = null;
+
+            foreach (Reparacion r in _reparaciones)
+            {
+                if (!r.FechaFin.HasValue && (abierta == null || r.NumeroIntervencion < abierta.NumeroIntervencion))
+                    abierta = r;
+            }
+
+            if (abierta != null)
+                idSeleccion = abierta.Id;
+            else
+                idSeleccion = _reparaciones[_reparaciones.Count - 1].Id;
+
+            foreach (DataGridViewRow fila in DGV_Reparaciones.Rows)
+            {
+                FilaReparacion dato = fila.DataBoundItem as FilaReparacion;
+
+                if (dato != null && dato.Id == idSeleccion)
+                {
+                    fila.Selected = true;
+                    break;
+                }
+            }
+        }
+
+        private void CargarComboConsumo()
+        {
+            _cargandoCombos = true;
+
+            try
+            {
+                List<ItemRepuestoConsumo> items = new List<ItemRepuestoConsumo>();
+
+                try
+                {
+                    RepuestoService repuestoService = new RepuestoService();
+
+                    foreach (Repuesto r in repuestoService.Listar(false))
+                    {
+                        if (r.StockActual <= 0)
+                            continue;
+
+                        items.Add(new ItemRepuestoConsumo
+                        {
+                            Id = r.Id,
+                            Nombre = r.Codigo + " - " + r.Descripcion + " (" + T("Columna.Stock") + " " + r.StockActual + ")"
+                        });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MostrarError(ex);
+                }
+
+                CBO_ConsumoRepuesto.DataSource = null;
+                CBO_ConsumoRepuesto.DisplayMember = "Nombre";
+                CBO_ConsumoRepuesto.ValueMember = "Id";
+                CBO_ConsumoRepuesto.DataSource = items;
+            }
+            finally
+            {
+                _cargandoCombos = false;
+            }
+        }
+
+        private Reparacion ReparacionSeleccionada()
+        {
+            if (_reparaciones == null || DGV_Reparaciones.SelectedRows.Count == 0)
+                return null;
+
+            FilaReparacion fila = DGV_Reparaciones.SelectedRows[0].DataBoundItem as FilaReparacion;
+
+            if (fila == null)
+                return null;
+
+            foreach (Reparacion r in _reparaciones)
+            {
+                if (r.Id == fila.Id)
+                    return r;
+            }
+
+            return null;
+        }
+
+        private string ResolverRepuesto(int idRepuesto)
+        {
+            if (_nombresRepuestos.ContainsKey(idRepuesto))
+                return _nombresRepuestos[idRepuesto];
+
+            return "#" + idRepuesto;
+        }
+
+        private void CargarConsumidosDeSeleccion()
+        {
+            Reparacion seleccionada = ReparacionSeleccionada();
+
+            if (seleccionada == null)
+            {
+                DGV_Consumidos.DataSource = new BindingList<FilaConsumido>(new List<FilaConsumido>());
+                LBL_CostoTotal.Text = T("OrdenDetalle.CostoTotal").Replace("{0}", "0.00");
+                return;
+            }
+
+            try
+            {
+                List<ReparacionRepuesto> consumidos = _service.ListarConsumidos(seleccionada.Id);
+                List<FilaConsumido> filas = new List<FilaConsumido>();
+                decimal total = 0;
+
+                foreach (ReparacionRepuesto c in consumidos)
+                    total += c.Cantidad * c.CostoUnitario;
+
+                // F8: el backend devuelve una fila por consumo (mismo repuesto en N filas
+                // con costos distintos). Agrupar por (repuesto, costo): igual costo -> una
+                // fila con cantidad total; distinto costo -> una fila por costo. El total
+                // es la suma y cuadra con la suma de subtotales.
+                Dictionary<string, FilaConsumido> grupos = new Dictionary<string, FilaConsumido>();
+
+                foreach (ReparacionRepuesto c in consumidos)
+                {
+                    string clave = c.IdRepuesto + "|" + c.CostoUnitario.ToString("F2", System.Globalization.CultureInfo.InvariantCulture);
+                    FilaConsumido existente;
+
+                    if (!grupos.TryGetValue(clave, out existente))
+                    {
+                        existente = new FilaConsumido
+                        {
+                            IdRepuesto = c.IdRepuesto,
+                            Repuesto = ResolverRepuesto(c.IdRepuesto),
+                            Cantidad = 0,
+                            Costo = c.CostoUnitario,
+                            Subtotal = 0
+                        };
+                        grupos[clave] = existente;
+                    }
+
+                    existente.Cantidad += c.Cantidad;
+                    existente.Subtotal = existente.Cantidad * existente.Costo;
+                }
+
+                foreach (FilaConsumido f in grupos.Values)
+                    filas.Add(f);
+
+                filas.Sort((a, b) =>
+                {
+                    int porRepuesto = string.Compare(a.Repuesto, b.Repuesto, StringComparison.Ordinal);
+                    return porRepuesto != 0 ? porRepuesto : a.Costo.CompareTo(b.Costo);
+                });
+
+                DGV_Consumidos.DataSource = new BindingList<FilaConsumido>(filas);
+                ConfigurarColumnasConsumidos();
+                LBL_CostoTotal.Text = T("OrdenDetalle.CostoTotal").Replace("{0}", total.ToString("F2"));
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+        }
+
+        // El aviso de "intervencion anterior" no vive en el Designer: se crea aca para
+        // reservar ~34 px logicos del alto de DGV_Pruebas. La reserva se deriva del alto real
+        // de la grilla (no de coordenadas fijas) para acompanar el escalado por fuente/DPI,
+        // de modo que el borde inferior de la grilla y los controles de entrada no se muevan.
+        private void CrearAvisoPruebasIntervencion()
+        {
+            const int altoGrillaDiseno = 180;
+            const int reservaDiseno = 34;
+
+            int reserva = (int)Math.Round(DGV_Pruebas.Height * (double)reservaDiseno / altoGrillaDiseno);
+            int altoMinimo = DGV_Pruebas.Font.Height + 4;
+
+            if (reserva < altoMinimo)
+                reserva = altoMinimo;
+
+            if (reserva > DGV_Pruebas.Height / 2)
+                reserva = DGV_Pruebas.Height / 2;
+
+            int bordeInferior = DGV_Pruebas.Bottom;
+
+            LBL_PruebaIntervencionAviso = new Label();
+            LBL_PruebaIntervencionAviso.Name = "LBL_PruebaIntervencionAviso";
+            LBL_PruebaIntervencionAviso.Tag = "OrdenDetalle.PruebasIntervencionAnterior";
+            LBL_PruebaIntervencionAviso.AutoSize = false;
+            LBL_PruebaIntervencionAviso.Font = DGV_Pruebas.Font;
+            LBL_PruebaIntervencionAviso.ForeColor = Color.FromArgb(192, 57, 43);
+            LBL_PruebaIntervencionAviso.TextAlign = ContentAlignment.MiddleLeft;
+            LBL_PruebaIntervencionAviso.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            LBL_PruebaIntervencionAviso.Location = new Point(DGV_Pruebas.Left, DGV_Pruebas.Top + 2);
+            LBL_PruebaIntervencionAviso.Size = new Size(DGV_Pruebas.Width, reserva - 4);
+            LBL_PruebaIntervencionAviso.Visible = false;
+
+            TAB_Pruebas.Controls.Add(LBL_PruebaIntervencionAviso);
+
+            DGV_Pruebas.Top = DGV_Pruebas.Top + reserva;
+            DGV_Pruebas.Height = bordeInferior - DGV_Pruebas.Top;
+        }
+
+        private void CargarTabPruebas()
+        {
+            _cargandoCombos = true;
+            _cargandoPruebas = true;
+
+            try
+            {
+                _pruebasPorReparacion = new Dictionary<int, List<Prueba>>();
+                LimpiarGrillaPruebas();
+
+                if (_reparaciones != null)
+                {
+                    foreach (Reparacion r in _reparaciones)
+                    {
+                        try
+                        {
+                            _pruebasPorReparacion[r.Id] = _service.ListarPruebas(r.Id);
+                        }
+                        catch
+                        {
+                            // Una lectura fallida no se cachea como lista vacia: la intervencion
+                            // seleccionada reintenta contra el service en CargarPruebasDeCombo.
+                        }
+                    }
+                }
+
+                List<ItemIntervencion> items = new List<ItemIntervencion>();
+
+                if (_reparaciones != null)
+                {
+                    foreach (Reparacion r in _reparaciones)
+                    {
+                        items.Add(new ItemIntervencion
+                        {
+                            Id = r.Id,
+                            Nombre = "N° " + r.NumeroIntervencion + " (" + r.FechaInicio.ToString("g") + ")"
+                        });
+                    }
+                }
+
+                int idUltima = ObtenerIdUltimaIntervencion();
+
+                CBO_PruebaReparacion.DataSource = null;
+                CBO_PruebaReparacion.DisplayMember = "Nombre";
+                CBO_PruebaReparacion.ValueMember = "Id";
+                CBO_PruebaReparacion.DataSource = items;
+
+                if (idUltima > 0)
+                    CBO_PruebaReparacion.SelectedValue = idUltima;
+            }
+            finally
+            {
+                _cargandoCombos = false;
+                _cargandoPruebas = false;
+            }
+
+            CargarPruebasDeCombo();
+        }
+
+        private void CargarPruebasDeCombo()
+        {
+            _cargandoPruebas = true;
+
+            try
+            {
+                // La grilla se vacia antes de reemplazar los datos (tambien en los caminos de
+                // seleccion nula o invalida y de error) para que nunca muestre filas de otra
+                // intervencion ni conserve una seleccion que habilite anular.
+                LimpiarGrillaPruebas();
+
+                if (CBO_PruebaReparacion.DataSource == null)
+                    return;
+
+                int idReparacion = 0;
+
+                if (CBO_PruebaReparacion.SelectedValue is int)
+                    idReparacion = (int)CBO_PruebaReparacion.SelectedValue;
+
+                if (idReparacion <= 0)
+                    return;
+
+                try
+                {
+                    string intervencion = "";
+
+                    if (_reparaciones != null)
+                    {
+                        foreach (Reparacion r in _reparaciones)
+                        {
+                            if (r.Id == idReparacion)
+                            {
+                                intervencion = "N° " + r.NumeroIntervencion;
+                                break;
+                            }
+                        }
+                    }
+
+                    List<Prueba> pruebas = null;
+
+                    if (_pruebasPorReparacion != null && _pruebasPorReparacion.ContainsKey(idReparacion))
+                        pruebas = _pruebasPorReparacion[idReparacion];
+                    else
+                        pruebas = _service.ListarPruebas(idReparacion);
+
+                    _pruebasActuales = pruebas != null ? new List<Prueba>(pruebas) : new List<Prueba>();
+                    List<FilaPrueba> filas = new List<FilaPrueba>();
+
+                    foreach (Prueba p in _pruebasActuales)
+                    {
+                        filas.Add(new FilaPrueba
+                        {
+                            Id = p.Id,
+                            Fecha = p.Fecha,
+                            Intervencion = intervencion,
+                            Descripcion = p.Descripcion,
+                            Resultado = TraducirResultadoPrueba(p.Resultado),
+                            Motivo = p.Resultado == ResultadoPrueba.Anulada ? (p.MotivoAnulacion ?? "") : "",
+                            FechaAnulacion = p.Resultado == ResultadoPrueba.Anulada && p.FechaAnulacion.HasValue
+                                ? p.FechaAnulacion.Value.ToString("g") : "",
+                            UsuarioAnulacion = p.Resultado == ResultadoPrueba.Anulada && p.IdUsuarioAnulacion.HasValue
+                                ? ResolverTecnico(p.IdUsuarioAnulacion) : "",
+                            Usuario = ResolverTecnico(p.IdUsuarioTecnico)
+                        });
+                    }
+
+                    DGV_Pruebas.DataSource = new BindingList<FilaPrueba>(filas);
+                    ConfigurarColumnasPruebas();
+                    _idIntervencionPruebaCargada = idReparacion;
+
+                    // La grilla no debe quedar con una fila seleccionada automaticamente:
+                    // anular exige elegir la fila de forma explicita.
+                    LimpiarSeleccionGrillaPruebas();
+                }
+                catch (Exception ex)
+                {
+                    // La lectura fallo: la grilla queda vacia y sin intervencion cargada, de
+                    // modo que las acciones de prueba quedan deshabilitadas.
+                    LimpiarGrillaPruebas();
+                    MostrarError(ex);
+                }
+            }
+            finally
+            {
+                _cargandoPruebas = false;
+            }
+
+            ActualizarAccionesPruebas();
+        }
+
+        // Vacia la grilla de pruebas y descarta la intervencion cargada, la celda actual y la
+        // seleccion de filas.
+        private void LimpiarGrillaPruebas()
+        {
+            _pruebasActuales = new List<Prueba>();
+            _idIntervencionPruebaCargada = 0;
+            DGV_Pruebas.DataSource = new BindingList<FilaPrueba>(new List<FilaPrueba>());
+            LimpiarSeleccionGrillaPruebas();
+        }
+
+        private void LimpiarSeleccionGrillaPruebas()
+        {
+            DGV_Pruebas.CurrentCell = null;
+            DGV_Pruebas.ClearSelection();
+        }
+
+        private string TraducirResultadoPrueba(string resultado)
+        {
+            if (resultado == ResultadoPrueba.Anulada)
+                return T("Resultado.Anulada");
+
+            if (resultado == ResultadoPrueba.Aprobada)
+                return T("OrdenDetalle.Aprobada");
+
+            return T("OrdenDetalle.Fallida");
+        }
+
+        private Prueba ObtenerUltimaPruebaNoAnulada()
+        {
+            if (_pruebasPorReparacion == null)
+                return null;
+
+            Prueba ultima = null;
+
+            foreach (List<Prueba> lista in _pruebasPorReparacion.Values)
+            {
+                if (lista == null)
+                    continue;
+
+                foreach (Prueba p in lista)
+                {
+                    if (p.Resultado == ResultadoPrueba.Anulada)
+                        continue;
+
+                    if (ultima == null || p.Fecha > ultima.Fecha
+                        || (p.Fecha == ultima.Fecha && p.Id > ultima.Id))
+                        ultima = p;
+                }
+            }
+
+            return ultima;
+        }
+
+        private Prueba PruebaSeleccionada()
+        {
+            if (_pruebasActuales == null || DGV_Pruebas.SelectedRows.Count == 0)
+                return null;
+
+            FilaPrueba fila = DGV_Pruebas.SelectedRows[0].DataBoundItem as FilaPrueba;
+
+            if (fila == null)
+                return null;
+
+            foreach (Prueba p in _pruebasActuales)
+            {
+                if (p.Id == fila.Id)
+                    return p;
+            }
+
+            return null;
+        }
+
+        private int ObtenerIdUltimaIntervencion()
+        {
+            if (_reparaciones == null || _reparaciones.Count == 0)
+                return 0;
+
+            Reparacion ultima = _reparaciones[0];
+
+            foreach (Reparacion r in _reparaciones)
+            {
+                if (r.NumeroIntervencion > ultima.NumeroIntervencion)
+                    ultima = r;
+            }
+
+            return ultima.Id;
+        }
+
+        // Intervencion elegida en el combo del tab Pruebas, resuelta contra las intervenciones
+        // de la orden. Null si no hay seleccion valida.
+        private Reparacion IntervencionPruebaSeleccionada()
+        {
+            int idReparacion = 0;
+
+            if (CBO_PruebaReparacion.SelectedValue is int)
+                idReparacion = (int)CBO_PruebaReparacion.SelectedValue;
+
+            if (idReparacion <= 0 || _reparaciones == null)
+                return null;
+
+            foreach (Reparacion r in _reparaciones)
+            {
+                if (r.Id == idReparacion)
+                    return r;
+            }
+
+            return null;
+        }
+
+        // "Actual" es la ultima intervencion por numero: solo ella admite registrar, anular o
+        // finalizar pruebas nuevas. Las intervenciones anteriores quedan de consulta.
+        private bool EsIntervencionActual(Reparacion intervencion)
+        {
+            return intervencion != null && intervencion.Id == ObtenerIdUltimaIntervencion();
+        }
+
+        // La grilla describe exactamente la intervencion seleccionada y su lectura termino
+        // bien: mientras carga o si la lectura fallo no hay vista valida para operar.
+        private bool GrillaPruebasCoherente(Reparacion intervencion)
+        {
+            return !_cargandoPruebas && intervencion != null
+                && intervencion.Id == _idIntervencionPruebaCargada;
+        }
+
+        private bool HayIntervencionAbierta()
+        {
+            return _reparaciones != null && _reparaciones.Any(r => !r.FechaFin.HasValue);
+        }
+
+        // Acciones del tab Pruebas: registrar, finalizar y anular solo aplican a la
+        // intervencion actual con su grilla cargada. Una seleccion historica deja el tab en
+        // modo consulta (entradas y acciones deshabilitadas) y muestra el motivo; el selector
+        // de intervencion sigue navegable porque solo depende del permiso de ver la orden.
+        private void ActualizarAccionesPruebas()
+        {
+            if (BTN_RegistrarPrueba == null || BTN_FinalizarPruebas == null
+                || LBL_PruebaIntervencionAviso == null)
+                return;
+
+            bool puedeEditar = TienePermiso(CodigosPermiso.OrdenesEditar);
+            bool editable = !_esNuevo && _orden != null && puedeEditar && !_soloConsulta
+                && _orden.Estado != EstadoOrdenServicio.Entregado;
+            bool enPruebas = editable && _orden.Estado == EstadoOrdenServicio.EnPruebas;
+
+            Reparacion intervencion = IntervencionPruebaSeleccionada();
+            bool vistaActual = EsIntervencionActual(intervencion);
+            bool grillaCoherente = GrillaPruebasCoherente(intervencion);
+            bool intervencionFinalizada = intervencion != null && intervencion.FechaFin.HasValue;
+
+            bool habilitaRegistro = enPruebas && vistaActual && grillaCoherente
+                && intervencionFinalizada && !HayIntervencionAbierta();
+            bool habilitaFinalizar = enPruebas && vistaActual && grillaCoherente;
+
+            TXT_PruebaDesc.Enabled = habilitaRegistro;
+            RDO_Aprobada.Enabled = habilitaRegistro;
+            RDO_Fallida.Enabled = habilitaRegistro;
+            TXT_PruebaObs.Enabled = habilitaRegistro;
+            BTN_RegistrarPrueba.Visible = !_esNuevo && puedeEditar;
+            BTN_RegistrarPrueba.Enabled = habilitaRegistro;
+            BTN_FinalizarPruebas.Visible = !_esNuevo && puedeEditar;
+            BTN_FinalizarPruebas.Enabled = habilitaFinalizar;
+
+            // El selector de intervencion no depende de la seleccion: una vista historica
+            // nunca lo deshabilita.
+            CBO_PruebaReparacion.Enabled = !_esNuevo && TienePermiso(CodigosPermiso.OrdenesVer)
+                && _reparaciones != null && _reparaciones.Count > 0;
+
+            bool historica = intervencion != null && !vistaActual;
+            LBL_PruebaIntervencionAviso.Visible = historica;
+
+            if (historica)
+                LBL_PruebaIntervencionAviso.Text = T(LBL_PruebaIntervencionAviso.Tag.ToString());
+
+            ActualizarBotonAnularPrueba();
+        }
+
+        private void ActualizarBotonAnularPrueba()
+        {
+            if (BTN_AnularPrueba == null)
+                return;
+
+            bool puedeEditar = TienePermiso(CodigosPermiso.OrdenesEditar);
+            bool enPruebas = !_esNuevo && _orden != null && !_soloConsulta
+                && _orden.Estado == EstadoOrdenServicio.EnPruebas;
+
+            int idReparacionActual = 0;
+
+            if (CBO_PruebaReparacion.SelectedValue is int)
+                idReparacionActual = (int)CBO_PruebaReparacion.SelectedValue;
+
+            int idUltimaIntervencion = ObtenerIdUltimaIntervencion();
+
+            bool vistaActual = enPruebas && idReparacionActual > 0
+                && idReparacionActual == idUltimaIntervencion;
+
+            BTN_AnularPrueba.Visible = !_esNuevo && puedeEditar && vistaActual;
+
+            if (!BTN_AnularPrueba.Visible)
+            {
+                BTN_AnularPrueba.Enabled = false;
+                return;
+            }
+
+            Prueba seleccionada = PruebaSeleccionada();
+            bool ordenBloqueada = _orden != null && _orden.Estado == EstadoOrdenServicio.Entregado;
+
+            BTN_AnularPrueba.Enabled = puedeEditar && !ordenBloqueada
+                && seleccionada != null
+                && seleccionada.Resultado != ResultadoPrueba.Anulada
+                && seleccionada.IdReparacion == idUltimaIntervencion
+                && seleccionada.IdReparacion == idReparacionActual;
+        }
+
+        private void DGV_Pruebas_SelectionChanged(object sender, EventArgs e)
+        {
+            if (_esNuevo)
+                return;
+
+            ActualizarAccionesPruebas();
+        }
+
+        private void BTN_AnularPrueba_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.OrdenesEditar))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
+            Prueba seleccionada = PruebaSeleccionada();
+
+            if (seleccionada == null)
+            {
+                MostrarAdvertencia("Mensaje.SeleccioneRegistro");
+                return;
+            }
+
+            if (_orden == null || _orden.Estado != EstadoOrdenServicio.EnPruebas)
+                return;
+
+            if (seleccionada.Resultado == ResultadoPrueba.Anulada)
+            {
+                MostrarAdvertencia("Mensaje.SeleccioneRegistro");
+                return;
+            }
+
+            if (seleccionada.IdReparacion != ObtenerIdUltimaIntervencion())
+            {
+                MostrarAdvertencia("Mensaje.PruebasSoloIntervencionActual");
+                return;
+            }
+
+            DialogResult confirmacion = MessageBox.Show(
+                T("Mensaje.ConfirmarAnularPrueba"),
+                T("Titulo.ConfirmarAnulacion"),
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning);
+
+            if (confirmacion == DialogResult.No)
+                return;
+
+            string motivo = PedirTexto(
+                T("OrdenDetalle.AnularPrueba"),
+                T("OrdenDetalle.MotivoAnulacion"));
+
+            if (motivo == null)
+                return;
+
+            if (string.IsNullOrWhiteSpace(motivo))
+            {
+                MostrarAdvertencia("Mensaje.OrdenCamposObligatorios");
+                return;
+            }
+
+            try
+            {
+                _service.AnularPrueba(seleccionada.Id, motivo.Trim());
+                CargarOrden();
+                MostrarExito("Mensaje.OperacionExitosa");
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+        }
+
+        private void BTN_FinalizarPruebas_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.OrdenesEditar))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
+            if (_orden == null || _orden.Estado != EstadoOrdenServicio.EnPruebas)
+                return;
+
+            // Defensivo: finalizar evalua las pruebas validas de la intervencion actual (el
+            // service tambien lo exige por su cuenta); una vista historica no puede finalizar.
+            if (!EsIntervencionActual(IntervencionPruebaSeleccionada()))
+            {
+                MostrarAdvertencia("Mensaje.PruebasSoloIntervencionActual");
+                return;
+            }
+
+            DialogResult confirmacion = MessageBox.Show(
+                T("Mensaje.ConfirmarFinalizarPruebas"),
+                T("Titulo.ConfirmarFinalizarPruebas"),
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning);
+
+            if (confirmacion == DialogResult.No)
+                return;
+
+            try
+            {
+                _service.FinalizarPruebas(_idOrden);
+                CargarOrden();
+                MostrarDestinoFinalizarPruebas();
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+        }
+
+        private void MostrarDestinoFinalizarPruebas()
+        {
+            string texto;
+
+            if (_orden != null && _orden.Estado == EstadoOrdenServicio.ListoRetiro)
+                texto = T("Mensaje.PruebasFinalizadasListo").Replace("{0}", TraducirResultado(_orden.Resultado));
+            else
+                texto = T("Mensaje.PruebasDevueltasReparacion");
+
+            MessageBox.Show(
+                texto,
+                T("Titulo.Exito"),
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
+        }
+
+        private void ConfigurarColumnasReparaciones()
+        {
+            if (DGV_Reparaciones.Columns.Count == 0)
+                return;
+
+            if (DGV_Reparaciones.Columns.Contains("Id"))
+                DGV_Reparaciones.Columns["Id"].Visible = false;
+            ConfigurarColumnaGrid(DGV_Reparaciones, "Numero", "Columna.Numero");
+            ConfigurarColumnaGrid(DGV_Reparaciones, "Tecnico", "Columna.Tecnico");
+            ConfigurarColumnaGrid(DGV_Reparaciones, "Inicio", "Columna.Inicio");
+            ConfigurarColumnaGrid(DGV_Reparaciones, "Fin", "Columna.Fin");
+            ConfigurarColumnaGrid(DGV_Reparaciones, "Estado", "Columna.Estado");
+
+            DGV_Reparaciones.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells);
+        }
+
+        private void ConfigurarColumnasConsumidos()
+        {
+            if (DGV_Consumidos.Columns.Count == 0)
+                return;
+
+            ConfigurarColumnaGrid(DGV_Consumidos, "Repuesto", "Columna.Repuesto");
+            ConfigurarColumnaGrid(DGV_Consumidos, "Cantidad", "Columna.Cantidad");
+            ConfigurarColumnaGrid(DGV_Consumidos, "Costo", "Columna.Costo");
+            ConfigurarColumnaGrid(DGV_Consumidos, "Subtotal", "Columna.Subtotal");
+
+            if (DGV_Consumidos.Columns.Contains("IdRepuesto"))
+                DGV_Consumidos.Columns["IdRepuesto"].Visible = false;
+
+            DGV_Consumidos.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells);
+        }
+
+        private void ConfigurarColumnasPruebas()
+        {
+            if (DGV_Pruebas.Columns.Count == 0)
+                return;
+
+            ConfigurarColumnaGrid(DGV_Pruebas, "Fecha", "Columna.Fecha");
+            ConfigurarColumnaGrid(DGV_Pruebas, "Intervencion", "Columna.Intervencion");
+            ConfigurarColumnaGrid(DGV_Pruebas, "Descripcion", "Columna.Descripcion");
+            ConfigurarColumnaGrid(DGV_Pruebas, "Resultado", "Columna.Resultado");
+            ConfigurarColumnaGrid(DGV_Pruebas, "Motivo", "Columna.Motivo");
+            ConfigurarColumnaGrid(DGV_Pruebas, "FechaAnulacion", "Columna.FechaAnulacion");
+            ConfigurarColumnaGrid(DGV_Pruebas, "UsuarioAnulacion", "Columna.UsuarioAnulacion");
+            ConfigurarColumnaGrid(DGV_Pruebas, "Usuario", "Columna.Usuario");
+
+            if (DGV_Pruebas.Columns.Contains("Id"))
+                DGV_Pruebas.Columns["Id"].Visible = false;
+
+            DGV_Pruebas.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells);
+        }
+
+        private void ConfigurarColumnaGrid(DataGridView grilla, string nombreColumna, string claveTraduccion)
+        {
+            if (!grilla.Columns.Contains(nombreColumna))
+                return;
+
+            if (string.IsNullOrEmpty(claveTraduccion))
+                return;
+
+            grilla.Columns[nombreColumna].Tag = claveTraduccion;
+            grilla.Columns[nombreColumna].HeaderText = _sesionIdioma.idioma == null ? claveTraduccion : _sesionIdioma.idioma.BuscarTraduccion(claveTraduccion);
+        }
+
+        private void CargarTabEntrega()
+        {
+            if (_entrega != null)
+            {
+                TXT_EEntregadoA.Text = _entrega.EntregadoA;
+                TXT_EDocumento.Text = _entrega.DocumentoReceptor;
+                TXT_EObs.Text = _entrega.Observaciones;
+                LBL_FechaEntrega.Text = T("OrdenDetalle.FechaEntrega") + ": " + _entrega.FechaEntrega.ToString("g");
+            }
+            else
+            {
+                TXT_EEntregadoA.Text = "";
+                TXT_EDocumento.Text = "";
+                TXT_EObs.Text = "";
+                LBL_FechaEntrega.Text = T("OrdenDetalle.FechaEntrega") + ": " + T("Resultado.SinResultado");
+            }
+        }
+
+        private void RefrescarTotales()
+        {
+            decimal subtotal = 0;
+            decimal descuento = 0;
+
+            if (_presupuesto != null)
+            {
+                subtotal = _presupuesto.Subtotal;
+                descuento = _presupuesto.Descuento;
+                LBL_EstadoPresupuesto.Text = T("OrdenDetalle.EstadoPresupuesto") + ": "
+                    + TraducirTipoPresupuesto(_presupuesto.Tipo) + " - " + TraducirEstadoPresupuesto(_presupuesto.Estado);
+            }
+            else
+            {
+                foreach (DetallePresupuesto item in _itemsNuevo)
+                    subtotal += item.Subtotal;
+
+                descuento = NUM_PDescuento.Value;
+                LBL_EstadoPresupuesto.Text = T("OrdenDetalle.EstadoPresupuesto") + ": " + T("Resultado.SinResultado");
+            }
+
+            LBL_Totales.Text = T("OrdenDetalle.Totales")
+                .Replace("{0}", subtotal.ToString("F2"))
+                .Replace("{1}", descuento.ToString("F2"))
+                .Replace("{2}", (subtotal - descuento).ToString("F2"));
+        }
+
+        private void SeleccionarTab(string claveTag)
+        {
+            foreach (TabPage pagina in TAB_Detalle.TabPages)
+            {
+                if (pagina.Tag != null && pagina.Tag.ToString() == claveTag && pagina.Enabled)
+                {
+                    TAB_Detalle.SelectedTab = pagina;
+                    return;
+                }
+            }
+        }
+
+        private string ResolverCliente(int idCliente)
+        {
+            Cliente c = _clientes.FirstOrDefault(x => x.Id == idCliente);
+
+            if (c == null)
+            {
+                try
+                {
+                    c = _clienteService.ObtenerPorId(idCliente);
+                }
+                catch
+                {
+                    return "#" + idCliente;
+                }
+            }
+
+            if (c == null)
+                return "#" + idCliente;
+
+            return c.Apellido + ", " + c.Nombre;
+        }
+
+        private string ResolverEquipo(int idEquipo)
+        {
+            Equipo e = _equipos.FirstOrDefault(x => x.Id == idEquipo);
+
+            if (e == null)
+            {
+                try
+                {
+                    e = _equipoService.ObtenerPorId(idEquipo);
+                }
+                catch
+                {
+                    return "#" + idEquipo;
+                }
+            }
+
+            if (e == null)
+                return "#" + idEquipo;
+
+            return DescribirEquipo(e);
+        }
+
+        private string ResolverTecnico(int? idTecnico)
+        {
+            if (!idTecnico.HasValue || idTecnico.Value <= 0)
+                return T("OrdenDetalle.SinAsignar");
+
+            Usuario u = _tecnicos.FirstOrDefault(x => x.Id == idTecnico.Value);
+            return u != null ? u.Username : "#" + idTecnico.Value;
+        }
+
+        private string T(string clave)
+        {
+            if (_sesionIdioma.idioma == null)
+                return clave;
+
+            return _sesionIdioma.idioma.BuscarTraduccion(clave);
+        }
+
+        private string TraducirEstado(string estado)
+        {
+            if (string.IsNullOrEmpty(estado))
+                return "";
+
+            return T("Estado." + estado);
+        }
+
+        private string TraducirResultado(string resultado)
+        {
+            if (string.IsNullOrEmpty(resultado))
+                return T("Resultado.SinResultado");
+
+            return T("Resultado." + resultado);
+        }
+
+        private string TraducirTipo(string tipo)
+        {
+            if (string.IsNullOrEmpty(tipo))
+                return "";
+
+            return T("Tipo." + tipo);
+        }
+
+        private string TraducirTipoPresupuesto(string tipo)
+        {
+            if (string.IsNullOrEmpty(tipo))
+                return "";
+
+            return T("Tipo." + tipo);
+        }
+
+        private string TraducirTipoItem(string tipo)
+        {
+            if (string.IsNullOrEmpty(tipo))
+                return "";
+
+            return T("TipoItem." + tipo);
+        }
+
+        private string TraducirEstadoPresupuesto(string estado)
+        {
+            if (string.IsNullOrEmpty(estado))
+                return "";
+
+            return T("PresupuestoEstado." + estado);
+        }
+
+        private void ConfigurarColumnasDetalle()
+        {
+            if (DGV_Detalle.Columns.Count == 0)
+                return;
+
+            ConfigurarColumnaDetalle("Descripcion", "Columna.Descripcion");
+            ConfigurarColumnaDetalle("TipoItem", "Columna.Tipo");
+            ConfigurarColumnaDetalle("IdRepuesto", "Columna.Repuesto");
+            ConfigurarColumnaDetalle("Cantidad", "Columna.Cantidad");
+            ConfigurarColumnaDetalle("PrecioUnitario", "Columna.Precio");
+            ConfigurarColumnaDetalle("Subtotal", "Columna.Subtotal");
+
+            if (DGV_Detalle.Columns.Contains("Id"))
+                DGV_Detalle.Columns["Id"].Visible = false;
+            if (DGV_Detalle.Columns.Contains("IdPresupuesto"))
+                DGV_Detalle.Columns["IdPresupuesto"].Visible = false;
+
+            DGV_Detalle.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells);
+        }
+
+        private void ConfigurarColumnaDetalle(string nombreColumna, string claveTraduccion)
+        {
+            if (!DGV_Detalle.Columns.Contains(nombreColumna))
+                return;
+
+            DGV_Detalle.Columns[nombreColumna].Tag = claveTraduccion;
+            DGV_Detalle.Columns[nombreColumna].HeaderText = _sesionIdioma.idioma == null ? claveTraduccion : _sesionIdioma.idioma.BuscarTraduccion(claveTraduccion);
+        }
+
+        private void ConfigurarColumnasHistorial()
+        {
+            if (DGV_Historial.Columns.Count == 0)
+                return;
+
+            ConfigurarColumnaHistorial("Fecha", "Columna.Fecha");
+            ConfigurarColumnaHistorial("Anterior", "Columna.Anterior");
+            ConfigurarColumnaHistorial("Nuevo", "Columna.Nuevo");
+            ConfigurarColumnaHistorial("Usuario", "Columna.Usuario");
+            ConfigurarColumnaHistorial("Observacion", "Columna.Observacion");
+
+            DGV_Historial.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.AllCells);
+        }
+
+        private void ConfigurarColumnaHistorial(string nombreColumna, string claveTraduccion)
+        {
+            if (!DGV_Historial.Columns.Contains(nombreColumna))
+                return;
+
+            DGV_Historial.Columns[nombreColumna].Tag = claveTraduccion;
+            DGV_Historial.Columns[nombreColumna].HeaderText = _sesionIdioma.idioma == null ? claveTraduccion : _sesionIdioma.idioma.BuscarTraduccion(claveTraduccion);
+        }
+
+        private void DGV_Detalle_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        {
+            if (DGV_Detalle.Columns.Count == 0)
+                return;
+
+            string columna = DGV_Detalle.Columns[e.ColumnIndex].Name;
+
+            if (columna == "TipoItem" && e.Value is string)
+            {
+                e.Value = TraducirTipoItem((string)e.Value);
+                return;
+            }
+
+            // La columna Repuesto muestra el codigo/descripcion capturado y queda en blanco en
+            // las filas de mano de obra o servicio; debajo sigue el id de repuesto (FK).
+            if (columna == "IdRepuesto")
+            {
+                e.Value = DescribirRepuestoItem(e.Value);
+                e.FormattingApplied = true;
+            }
+        }
+
+        private string DescribirRepuestoItem(object valor)
+        {
+            if (valor == null || valor == DBNull.Value)
+                return "";
+
+            int idRepuesto = Convert.ToInt32(valor);
+            string nombre;
+
+            if (_nombresRepuestosPresupuesto.TryGetValue(idRepuesto, out nombre))
+                return nombre;
+
+            return "#" + idRepuesto;
+        }
+
+        private void NUM_PDescuento_ValueChanged(object sender, EventArgs e)
+        {
+            if (_cargandoCombos)
+                return;
+
+            if (_presupuesto != null)
+                return;
+
+            RefrescarTotales();
+        }
+
+        private void CBO_RCliente_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (_cargandoCombos)
+                return;
+
+            if (CBO_RCliente.DataSource == null)
+                return;
+
+            if (!_esNuevo)
+                return;
+
+            int idCliente = 0;
+
+            if (CBO_RCliente.SelectedValue is int)
+                idCliente = (int)CBO_RCliente.SelectedValue;
+
+            _cargandoCombos = true;
+
+            try
+            {
+                CargarComboEquipos(idCliente, 0);
+            }
+            finally
+            {
+                _cargandoCombos = false;
+            }
+        }
+
+        private void BTN_CrearOrden_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.OrdenesCrear))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
+            int idCliente = 0;
+            int idEquipo = 0;
+
+            if (CBO_RCliente.SelectedValue is int)
+                idCliente = (int)CBO_RCliente.SelectedValue;
+
+            if (CBO_REquipo.SelectedValue is int)
+                idEquipo = (int)CBO_REquipo.SelectedValue;
+
+            if (idCliente <= 0 || idEquipo <= 0 || string.IsNullOrWhiteSpace(TXT_RProblema.Text))
+            {
+                MostrarAdvertencia("Mensaje.OrdenCamposObligatorios");
+                return;
+            }
+
+            try
+            {
+                OrdenServicio creada = _service.CrearOrden(idCliente, idEquipo, TXT_RProblema.Text.Trim(),
+                    TXT_REstadoFisico.Text.Trim(), TXT_RAccesorios.Text.Trim(), TXT_RObs.Text.Trim());
+                _idOrden = creada.Id;
+                _esNuevo = false;
+                TAB_Diagnostico.Enabled = true;
+                TAB_Presupuesto.Enabled = true;
+                TAB_Reparaciones.Enabled = true;
+                TAB_Pruebas.Enabled = true;
+                TAB_Historial.Enabled = true;
+                TAB_Entrega.Enabled = true;
+                TAB_Garantia.Enabled = true;
+                CargarOrden();
+                MostrarExito("Mensaje.OperacionExitosa");
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+        }
+
+        private void BTN_GuardarRecepcion_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.OrdenesEditar))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(TXT_RProblema.Text))
+            {
+                MostrarAdvertencia("Mensaje.OrdenCamposObligatorios");
+                return;
+            }
+
+            try
+            {
+                _service.ModificarRecepcion(_idOrden, TXT_RProblema.Text.Trim(),
+                    TXT_REstadoFisico.Text.Trim(), TXT_RAccesorios.Text.Trim(), TXT_RObs.Text.Trim());
+                CargarOrden();
+                MostrarExito("Mensaje.OperacionExitosa");
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+        }
+
+        private void BTN_AsignarTecnico_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.OrdenesEditar))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
+            int idTecnico = 0;
+
+            if (CBO_RTecnico.SelectedValue is int)
+                idTecnico = (int)CBO_RTecnico.SelectedValue;
+
+            if (idTecnico <= 0)
+            {
+                MostrarAdvertencia("Mensaje.OrdenCamposObligatorios");
+                return;
+            }
+
+            try
+            {
+                _service.AsignarTecnico(_idOrden, idTecnico);
+                CargarOrden();
+                MostrarExito("Mensaje.OperacionExitosa");
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+        }
+
+        private void BTN_Iniciar_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.OrdenesEditar))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
+            try
+            {
+                _service.IniciarDiagnostico(_idOrden);
+                CargarOrden();
+                MostrarExito("Mensaje.OperacionExitosa");
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+        }
+
+        private void BTN_Finalizar_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.OrdenesEditar))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(TXT_DDescripcion.Text))
+            {
+                MostrarAdvertencia("Mensaje.OrdenCamposObligatorios");
+                return;
+            }
+
+            int? dias = NUM_DDias.Value > 0 ? (int?)((int)NUM_DDias.Value) : null;
+
+            try
+            {
+                _service.FinalizarDiagnostico(_idOrden, TXT_DDescripcion.Text.Trim(),
+                    CHK_EsReparable.Checked, dias, TXT_DObs.Text.Trim());
+                CargarOrden();
+                MostrarExito("Mensaje.OperacionExitosa");
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+        }
+
+        private void BTN_AgregarItem_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.OrdenesEditar))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
+            if (_presupuesto != null)
+                return;
+
+            string tipo = TipoItemSeleccionado();
+            string descripcion = TXT_PDesc.Text.Trim();
+            int? idRepuesto = null;
+
+            if (tipo == TipoItemPresupuesto.Repuesto)
+            {
+                if (!(CBO_PRepuesto.SelectedValue is int) || (int)CBO_PRepuesto.SelectedValue <= 0)
+                {
+                    MostrarAdvertencia("Mensaje.PresupuestoRepuestoObligatorio");
+                    return;
+                }
+
+                Repuesto repuesto = BuscarRepuestoPresupuesto((int)CBO_PRepuesto.SelectedValue);
+
+                if (repuesto == null)
+                {
+                    MostrarAdvertencia("Mensaje.PresupuestoRepuestoNoValido");
+                    return;
+                }
+
+                idRepuesto = repuesto.Id;
+                // Snapshot comercial del repuesto elegido: el item guarda codigo + descripcion.
+                descripcion = DescribirRepuesto(repuesto);
+            }
+            else if (string.IsNullOrWhiteSpace(descripcion))
+            {
+                MostrarAdvertencia("Mensaje.ItemCamposObligatorios");
+                return;
+            }
+
+            try
+            {
+                DetallePresupuesto item = DetallePresupuesto.CrearNuevo(0, tipo,
+                    descripcion, (int)NUM_PCant.Value, NUM_PPrecio.Value, idRepuesto);
+                _itemsNuevo.Add(item);
+                TXT_PDesc.Text = "";
+                CBO_PRepuesto.SelectedIndex = -1;
+                NUM_PCant.Value = 1;
+                NUM_PPrecio.Value = 0;
+                DGV_Detalle.DataSource = new BindingList<DetallePresupuesto>(_itemsNuevo);
+                ConfigurarColumnasDetalle();
+                RefrescarTotales();
+                AplicarPermisosDetalle();
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+        }
+
+        private void BTN_QuitarItem_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.OrdenesEditar))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
+            if (_presupuesto != null)
+                return;
+
+            if (DGV_Detalle.SelectedRows.Count == 0)
+            {
+                MostrarAdvertencia("Mensaje.SeleccioneRegistro");
+                return;
+            }
+
+            DetallePresupuesto seleccionado = DGV_Detalle.SelectedRows[0].DataBoundItem as DetallePresupuesto;
+
+            if (seleccionado == null)
+            {
+                MostrarAdvertencia("Mensaje.SeleccioneRegistro");
+                return;
+            }
+
+            _itemsNuevo.Remove(seleccionado);
+            DGV_Detalle.DataSource = new BindingList<DetallePresupuesto>(_itemsNuevo);
+            ConfigurarColumnasDetalle();
+            RefrescarTotales();
+            AplicarPermisosDetalle();
+        }
+
+        private void BTN_Emitir_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.OrdenesEditar))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
+            if (_presupuesto != null && _presupuesto.Estado == EstadoPresupuesto.Borrador)
+            {
+                try
+                {
+                    _service.PublicarBorrador(_presupuesto.Id);
+                    _idSeleccionPreferida = _presupuesto.Id;
+                    CargarOrden();
+                    MostrarExito("Mensaje.OperacionExitosa");
+                }
+                catch (Exception ex)
+                {
+                    MostrarError(ex);
+                }
+
+                return;
+            }
+
+            if (_presupuesto != null)
+                return;
+
+            if (_itemsNuevo.Count == 0)
+            {
+                MostrarAdvertencia("Mensaje.ItemCamposObligatorios");
+                return;
+            }
+
+            try
+            {
+                if (_modoNuevoAdicional)
+                    _service.EmitirAdicional(_idOrden, new List<DetallePresupuesto>(_itemsNuevo),
+                        NUM_PDescuento.Value, (int)NUM_PGarantia.Value, TXT_PObs.Text.Trim());
+                else
+                    _service.EmitirPresupuesto(_idOrden, new List<DetallePresupuesto>(_itemsNuevo),
+                        NUM_PDescuento.Value, (int)NUM_PGarantia.Value, TXT_PObs.Text.Trim());
+
+                _itemsNuevo.Clear();
+                TXT_PDesc.Text = "";
+                CBO_PRepuesto.SelectedIndex = -1;
+                CargarOrden();
+                MostrarExito("Mensaje.OperacionExitosa");
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+        }
+
+        private void BTN_GuardarBorrador_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.OrdenesEditar))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
+            if (_presupuesto != null)
+                return;
+
+            if (_itemsNuevo.Count == 0)
+            {
+                MostrarAdvertencia("Mensaje.ItemCamposObligatorios");
+                return;
+            }
+
+            string tipo = _modoNuevoAdicional ? TipoPresupuesto.Adicional : TipoPresupuesto.Original;
+
+            try
+            {
+                Presupuesto borrador = _service.CrearBorrador(_idOrden, tipo,
+                    new List<DetallePresupuesto>(_itemsNuevo),
+                    NUM_PDescuento.Value, (int)NUM_PGarantia.Value, TXT_PObs.Text.Trim());
+
+                _itemsNuevo.Clear();
+                TXT_PDesc.Text = "";
+                CBO_PRepuesto.SelectedIndex = -1;
+                NUM_PCant.Value = 1;
+                NUM_PPrecio.Value = 0;
+                _idSeleccionPreferida = borrador.Id;
+                CargarOrden();
+                MostrarExito("Mensaje.OperacionExitosa");
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+        }
+
+        private void BTN_EliminarBorrador_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.OrdenesEditar))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
+            if (_presupuesto == null || _presupuesto.Estado != EstadoPresupuesto.Borrador)
+                return;
+
+            DialogResult confirmacion = MessageBox.Show(
+                T("Mensaje.ConfirmarEliminarBorrador"),
+                T("Titulo.ConfirmarEliminacion"),
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning);
+
+            if (confirmacion == DialogResult.No)
+                return;
+
+            try
+            {
+                _service.EliminarBorrador(_presupuesto.Id);
+                _idSeleccionPreferida = null;
+                CargarOrden();
+                MostrarExito("Mensaje.OperacionExitosa");
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+        }
+
+        private void BTN_Anular_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.PresupuestosDecidir))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
+            if (_presupuesto == null)
+            {
+                MostrarAdvertencia("Mensaje.SeleccioneRegistro");
+                return;
+            }
+
+            if (_presupuesto.Estado == EstadoPresupuesto.Borrador
+                || _presupuesto.Estado == EstadoPresupuesto.Anulado)
+                return;
+
+            string motivo = PedirTexto(
+                T("OrdenDetalle.Anular"),
+                T("OrdenDetalle.MotivoAnulacion"));
+
+            if (motivo == null)
+                return;
+
+            if (string.IsNullOrWhiteSpace(motivo))
+            {
+                MostrarAdvertencia("Mensaje.OrdenCamposObligatorios");
+                return;
+            }
+
+            DialogResult confirmacion = MessageBox.Show(
+                T("Mensaje.ConfirmarAnular"),
+                T("Titulo.ConfirmarAnulacion"),
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning);
+
+            if (confirmacion == DialogResult.No)
+                return;
+
+            try
+            {
+                _service.AnularPresupuesto(_presupuesto.Id, motivo.Trim());
+                _idSeleccionPreferida = _presupuesto.Id;
+                CargarOrden();
+                MostrarExito("Mensaje.OperacionExitosa");
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+        }
+
+        private void BTN_CancelarSolicitud_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.OrdenesEditar))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
+            DialogResult confirmacion = MessageBox.Show(
+                T("Mensaje.ConfirmarCancelarSolicitud"),
+                T("Titulo.ConfirmarCancelacion"),
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning);
+
+            if (confirmacion == DialogResult.No)
+                return;
+
+            try
+            {
+                _service.CancelarSolicitudAdicional(_idOrden);
+                _idSeleccionPreferida = null;
+                CargarOrden();
+                MostrarExito("Mensaje.OperacionExitosa");
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+        }
+
+        private void BTN_Aprobar_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.PresupuestosDecidir))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
+            if (_presupuesto == null)
+            {
+                MostrarAdvertencia("Mensaje.SeleccioneRegistro");
+                return;
+            }
+
+            try
+            {
+                if (_presupuesto.Tipo == TipoPresupuesto.Adicional)
+                    _service.RegistrarAprobacionAdicional(_presupuesto.Id, TXT_PMedio.Text.Trim(), TXT_PObs.Text.Trim());
+                else
+                    _service.RegistrarAprobacionPresupuesto(_idOrden, TXT_PMedio.Text.Trim(), TXT_PObs.Text.Trim());
+
+                CargarOrden();
+                MostrarExito("Mensaje.OperacionExitosa");
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+        }
+
+        private void BTN_Rechazar_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.PresupuestosDecidir))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
+            if (_presupuesto == null)
+            {
+                MostrarAdvertencia("Mensaje.SeleccioneRegistro");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(TXT_PMotivo.Text))
+            {
+                MostrarAdvertencia("Mensaje.OrdenCamposObligatorios");
+                return;
+            }
+
+            try
+            {
+                if (_presupuesto.Tipo == TipoPresupuesto.Adicional)
+                    _service.RegistrarRechazoAdicional(_presupuesto.Id, TXT_PMotivo.Text.Trim(),
+                        TXT_PMedio.Text.Trim(), TXT_PObs.Text.Trim());
+                else
+                    _service.RegistrarRechazoPresupuesto(_idOrden, TXT_PMotivo.Text.Trim(),
+                        TXT_PMedio.Text.Trim(), TXT_PObs.Text.Trim());
+
+                CargarOrden();
+                MostrarExito("Mensaje.OperacionExitosa");
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+        }
+
+        private void BTN_SolicitarAdicional_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.OrdenesEditar))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
+            string motivo = PedirTexto(
+                T("OrdenDetalle.SolicitarAdicional"),
+                T("OrdenDetalle.Motivo"));
+
+            if (motivo == null)
+                return;
+
+            if (string.IsNullOrWhiteSpace(motivo))
+            {
+                MostrarAdvertencia("Mensaje.OrdenCamposObligatorios");
+                return;
+            }
+
+            try
+            {
+                _service.SolicitarAdicional(_idOrden, motivo.Trim());
+                CargarOrden();
+                MostrarExito("Mensaje.OperacionExitosa");
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+        }
+
+        private string PedirTexto(string titulo, string etiqueta)
+        {
+            using (Form dialogo = new Form())
+            {
+                dialogo.Text = titulo;
+                dialogo.FormBorderStyle = FormBorderStyle.FixedDialog;
+                dialogo.StartPosition = FormStartPosition.CenterParent;
+                dialogo.MaximizeBox = false;
+                dialogo.MinimizeBox = false;
+                dialogo.ShowInTaskbar = false;
+                dialogo.ClientSize = new System.Drawing.Size(400, 150);
+
+                Label lbl = new Label();
+                lbl.Text = etiqueta;
+                lbl.AutoSize = true;
+                lbl.Location = new System.Drawing.Point(12, 12);
+                dialogo.Controls.Add(lbl);
+
+                TextBox txt = new TextBox();
+                txt.Multiline = true;
+                txt.Location = new System.Drawing.Point(12, 34);
+                txt.Size = new System.Drawing.Size(376, 66);
+                dialogo.Controls.Add(txt);
+
+                Button btnAceptar = new Button();
+                btnAceptar.Text = T("Accion.Aceptar");
+                btnAceptar.DialogResult = DialogResult.OK;
+                btnAceptar.Location = new System.Drawing.Point(212, 108);
+                btnAceptar.Size = new System.Drawing.Size(85, 28);
+                dialogo.Controls.Add(btnAceptar);
+
+                Button btnCancelar = new Button();
+                btnCancelar.Text = T("Accion.Cancelar");
+                btnCancelar.DialogResult = DialogResult.Cancel;
+                btnCancelar.Location = new System.Drawing.Point(303, 108);
+                btnCancelar.Size = new System.Drawing.Size(85, 28);
+                dialogo.Controls.Add(btnCancelar);
+
+                dialogo.AcceptButton = btnAceptar;
+                dialogo.CancelButton = btnCancelar;
+
+                if (dialogo.ShowDialog(this) != DialogResult.OK)
+                    return null;
+
+                return txt.Text;
+            }
+        }
+
+        private int PedirCantidad(string titulo, string etiqueta, int maximo)
+        {
+            using (Form dialogo = new Form())
+            {
+                dialogo.Text = titulo;
+                dialogo.FormBorderStyle = FormBorderStyle.FixedDialog;
+                dialogo.StartPosition = FormStartPosition.CenterParent;
+                dialogo.MaximizeBox = false;
+                dialogo.MinimizeBox = false;
+                dialogo.ShowInTaskbar = false;
+                dialogo.ClientSize = new System.Drawing.Size(300, 110);
+
+                Label lbl = new Label();
+                lbl.Text = etiqueta;
+                lbl.AutoSize = true;
+                lbl.Location = new System.Drawing.Point(12, 12);
+                dialogo.Controls.Add(lbl);
+
+                NumericUpDown num = new NumericUpDown();
+                num.Minimum = 1;
+                num.Maximum = maximo;
+                num.Value = maximo;
+                num.Location = new System.Drawing.Point(12, 34);
+                num.Size = new System.Drawing.Size(276, 22);
+                dialogo.Controls.Add(num);
+
+                Button btnAceptar = new Button();
+                btnAceptar.Text = T("Accion.Aceptar");
+                btnAceptar.DialogResult = DialogResult.OK;
+                btnAceptar.Location = new System.Drawing.Point(112, 68);
+                btnAceptar.Size = new System.Drawing.Size(85, 28);
+                dialogo.Controls.Add(btnAceptar);
+
+                Button btnCancelar = new Button();
+                btnCancelar.Text = T("Accion.Cancelar");
+                btnCancelar.DialogResult = DialogResult.Cancel;
+                btnCancelar.Location = new System.Drawing.Point(203, 68);
+                btnCancelar.Size = new System.Drawing.Size(85, 28);
+                dialogo.Controls.Add(btnCancelar);
+
+                dialogo.AcceptButton = btnAceptar;
+                dialogo.CancelButton = btnCancelar;
+
+                if (dialogo.ShowDialog(this) != DialogResult.OK)
+                    return -1;
+
+                return (int)num.Value;
+            }
+        }
+
+        private void BTN_Entregar_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.OrdenesEntregar))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(TXT_EEntregadoA.Text))
+            {
+                MostrarAdvertencia("Mensaje.OrdenCamposObligatorios");
+                return;
+            }
+
+            DialogResult confirmacion = MessageBox.Show(
+                T("Mensaje.ConfirmarEntregar"),
+                T("Titulo.ConfirmarEntrega"),
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning);
+
+            if (confirmacion == DialogResult.No)
+                return;
+
+            try
+            {
+                _service.EntregarOrden(_idOrden, TXT_EEntregadoA.Text.Trim(),
+                    TXT_EDocumento.Text.Trim(), TXT_EObs.Text.Trim());
+                CargarOrden();
+                MostrarExito("Mensaje.OperacionExitosa");
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+        }
+
+        private void BTN_CancelarEntrega_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.OrdenesEntregar))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
+            if (_orden == null || _orden.Estado != EstadoOrdenServicio.Entregado)
+                return;
+
+            // El bloqueo por reingresos se revalida antes de confirmar y de pedir el motivo: el
+            // estado pudo cambiar desde que se cargo la vista.
+            try
+            {
+                _soloConsulta = _service.EsSoloConsultaPorReingresos(_idOrden);
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+                return;
+            }
+
+            if (_soloConsulta)
+            {
+                ActualizarAvisoSoloConsulta();
+                AplicarPermisosDetalle();
+                MostrarAdvertencia("Mensaje.OrdenOriginalSoloConsulta");
+                return;
+            }
+
+            DialogResult confirmacion = MessageBox.Show(
+                T("Mensaje.ConfirmarCancelarEntrega"),
+                T("Titulo.ConfirmarCancelarEntrega"),
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning);
+
+            if (confirmacion == DialogResult.No)
+                return;
+
+            string motivo = PedirTexto(
+                T("OrdenDetalle.CancelarEntrega"),
+                T("OrdenDetalle.Motivo"));
+
+            if (motivo == null)
+                return;
+
+            if (string.IsNullOrWhiteSpace(motivo))
+            {
+                MostrarAdvertencia("Mensaje.OrdenCamposObligatorios");
+                return;
+            }
+
+            try
+            {
+                _service.CancelarEntrega(_idOrden, motivo.Trim());
+                CargarOrden();
+                MostrarExito("Mensaje.OperacionExitosa");
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+        }
+
+        private void BTN_ReabrirPruebas_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.OrdenesEditar))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
+            if (_orden == null || _orden.Estado != EstadoOrdenServicio.ListoRetiro
+                || _orden.Resultado != ResultadoOrdenServicio.Reparado)
+                return;
+
+            DialogResult confirmacion = MessageBox.Show(
+                T("Mensaje.ConfirmarReabrirPruebas"),
+                T("Titulo.ConfirmarReabrirPruebas"),
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning);
+
+            if (confirmacion == DialogResult.No)
+                return;
+
+            string motivo = PedirTexto(
+                T("OrdenDetalle.ReabrirPruebas"),
+                T("OrdenDetalle.Motivo"));
+
+            if (motivo == null)
+                return;
+
+            if (string.IsNullOrWhiteSpace(motivo))
+            {
+                MostrarAdvertencia("Mensaje.OrdenCamposObligatorios");
+                return;
+            }
+
+            try
+            {
+                _service.ReabrirPruebas(_idOrden, motivo.Trim());
+                CargarOrden();
+                MostrarExito("Mensaje.OperacionExitosa");
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+        }
+
+        private void DGV_Reparaciones_SelectionChanged(object sender, EventArgs e)
+        {
+            if (_esNuevo || _reparaciones == null)
+                return;
+
+            CargarConsumidosDeSeleccion();
+            AplicarPermisosDetalle();
+        }
+
+        private void CBO_PruebaReparacion_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (_cargandoCombos)
+                return;
+
+            if (CBO_PruebaReparacion.DataSource == null)
+                return;
+
+            if (_esNuevo)
+                return;
+
+            CargarPruebasDeCombo();
+        }
+
+        private void BTN_IniciarReparacion_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.OrdenesEditar))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
+            try
+            {
+                _service.IniciarReparacion(_idOrden);
+                CargarOrden();
+                MostrarExito("Mensaje.OperacionExitosa");
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+        }
+
+        private void BTN_Consumir_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.OrdenesEditar))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
+            Reparacion seleccionada = ReparacionSeleccionada();
+
+            if (seleccionada == null)
+            {
+                MostrarAdvertencia("Mensaje.SeleccioneRegistro");
+                return;
+            }
+
+            int idRepuesto = 0;
+
+            if (CBO_ConsumoRepuesto.SelectedValue is int)
+                idRepuesto = (int)CBO_ConsumoRepuesto.SelectedValue;
+
+            if (idRepuesto <= 0)
+            {
+                MostrarAdvertencia("Mensaje.OrdenCamposObligatorios");
+                return;
+            }
+
+            try
+            {
+                _service.ConsumirRepuesto(seleccionada.Id, idRepuesto, (int)NUM_ConsumoCantidad.Value);
+                CargarOrden();
+                MostrarExito("Mensaje.OperacionExitosa");
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+        }
+
+        private void BTN_QuitarConsumo_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.OrdenesEditar))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
+            Reparacion seleccionada = ReparacionSeleccionada();
+
+            if (seleccionada == null)
+            {
+                MostrarAdvertencia("Mensaje.SeleccioneRegistro");
+                return;
+            }
+
+            if (DGV_Consumidos.SelectedRows.Count == 0)
+            {
+                MostrarAdvertencia("Mensaje.SeleccioneRegistro");
+                return;
+            }
+
+            FilaConsumido fila = DGV_Consumidos.SelectedRows[0].DataBoundItem as FilaConsumido;
+
+            if (fila == null)
+            {
+                MostrarAdvertencia("Mensaje.SeleccioneRegistro");
+                return;
+            }
+
+            // F8: la grilla agrupa por (repuesto, costo), pero la devolucion es contra el
+            // TOTAL consumido del repuesto (el backend reparte FIFO entre sus filas).
+            int totalRepuesto = fila.Cantidad;
+
+            try
+            {
+                List<ReparacionRepuesto> consumidos = _service.ListarConsumidos(seleccionada.Id);
+
+                int suma = 0;
+
+                foreach (ReparacionRepuesto c in consumidos)
+                {
+                    if (c.IdRepuesto == fila.IdRepuesto)
+                        suma += c.Cantidad;
+                }
+
+                if (suma > 0)
+                    totalRepuesto = suma;
+            }
+            catch
+            {
+            }
+
+            int cantidad = PedirCantidad(
+                T("OrdenDetalle.QuitarConsumo"),
+                T("OrdenDetalle.CantidadDevolver"),
+                totalRepuesto);
+
+            if (cantidad <= 0)
+                return;
+
+            DialogResult confirmacion = MessageBox.Show(
+                T("Mensaje.ConfirmarDevolucion").Replace("{0}", cantidad.ToString()).Replace("{1}", fila.Repuesto),
+                T("Titulo.ConfirmarDevolucion"),
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning);
+
+            if (confirmacion == DialogResult.No)
+                return;
+
+            try
+            {
+                _service.QuitarConsumo(seleccionada.Id, fila.IdRepuesto, cantidad);
+                CargarOrden();
+                MostrarExito("Mensaje.OperacionExitosa");
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+        }
+
+        private void BTN_FinalizarReparacion_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.OrdenesEditar))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
+            Reparacion seleccionada = ReparacionSeleccionada();
+
+            if (seleccionada == null)
+            {
+                MostrarAdvertencia("Mensaje.SeleccioneRegistro");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(TXT_FTrabajo.Text))
+            {
+                MostrarAdvertencia("Mensaje.OrdenCamposObligatorios");
+                return;
+            }
+
+            try
+            {
+                _service.FinalizarReparacion(seleccionada.Id, TXT_FTrabajo.Text.Trim(), TXT_FObs.Text.Trim());
+                TXT_FTrabajo.Text = "";
+                TXT_FObs.Text = "";
+                CargarOrden();
+                MostrarExito("Mensaje.OperacionExitosa");
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+        }
+
+        private void BTN_RegistrarPrueba_Click(object sender, EventArgs e)
+        {
+            if (!TienePermiso(CodigosPermiso.OrdenesEditar))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+
+            // La seleccion y la actualidad de la intervencion se validan antes que la
+            // descripcion para no responder con un aviso generico de "seleccione un registro".
+            Reparacion intervencion = IntervencionPruebaSeleccionada();
+
+            if (intervencion == null)
+            {
+                MostrarAdvertencia("Mensaje.PruebaIntervencionObligatoria");
+                return;
+            }
+
+            if (!EsIntervencionActual(intervencion))
+            {
+                MostrarAdvertencia("Mensaje.PruebasSoloIntervencionActual");
+                return;
+            }
+
+            if (_orden == null || _orden.Estado != EstadoOrdenServicio.EnPruebas)
+                return;
+
+            if (!intervencion.FechaFin.HasValue || HayIntervencionAbierta())
+            {
+                MostrarAdvertencia("Mensaje.PruebasSoloIntervencionActual");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(TXT_PruebaDesc.Text))
+            {
+                MostrarAdvertencia("Mensaje.PruebaCamposObligatorios");
+                return;
+            }
+
+            try
+            {
+                _service.RegistrarPrueba(intervencion.Id, TXT_PruebaDesc.Text.Trim(),
+                    RDO_Aprobada.Checked, TXT_PruebaObs.Text.Trim());
+                TXT_PruebaDesc.Text = "";
+                TXT_PruebaObs.Text = "";
+                RDO_Aprobada.Checked = true;
+                CargarOrden();
+                MostrarExito("Mensaje.OperacionExitosa");
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+        }
+
+        private void AplicarPermisosDetalle()
+        {
+            bool puedeCrear = TienePermiso(CodigosPermiso.OrdenesCrear);
+            bool puedeEditar = TienePermiso(CodigosPermiso.OrdenesEditar);
+            bool puedeDecidir = TienePermiso(CodigosPermiso.PresupuestosDecidir);
+            bool puedeEntregar = TienePermiso(CodigosPermiso.OrdenesEntregar);
+
+            bool entregado = !_esNuevo && _orden != null && _orden.Estado == EstadoOrdenServicio.Entregado;
+            bool editable = !_esNuevo && !entregado && puedeEditar && !_soloConsulta;
+
+            BTN_CrearOrden.Visible = _esNuevo && puedeCrear;
+            BTN_CrearOrden.Enabled = _esNuevo && puedeCrear;
+
+            TXT_RProblema.Enabled = _esNuevo || editable;
+            TXT_REstadoFisico.Enabled = _esNuevo || editable;
+            TXT_RAccesorios.Enabled = _esNuevo || editable;
+            TXT_RObs.Enabled = _esNuevo || editable;
+
+            BTN_GuardarRecepcion.Visible = !_esNuevo && puedeEditar;
+            BTN_GuardarRecepcion.Enabled = editable;
+            BTN_AsignarTecnico.Visible = !_esNuevo && puedeEditar;
+            BTN_AsignarTecnico.Enabled = editable;
+
+            if (!_esNuevo)
+                CBO_RTecnico.Enabled = editable;
+
+            bool puedeIniciar = editable && _orden != null
+                && _orden.Estado == EstadoOrdenServicio.Recibido
+                && _orden.IdTecnicoAsignado.HasValue;
+            bool puedeFinalizar = editable && _orden != null
+                && _orden.Estado == EstadoOrdenServicio.EnDiagnostico
+                && _diagnostico == null;
+
+            TXT_DDescripcion.Enabled = puedeFinalizar;
+            CHK_EsReparable.Enabled = puedeFinalizar;
+            NUM_DDias.Enabled = puedeFinalizar;
+            TXT_DObs.Enabled = puedeFinalizar;
+            BTN_Iniciar.Visible = !_esNuevo && puedeEditar;
+            BTN_Iniciar.Enabled = puedeIniciar;
+            BTN_Finalizar.Visible = !_esNuevo && puedeEditar;
+            BTN_Finalizar.Enabled = puedeFinalizar;
+
+            bool editaItems = editable && _orden != null
+                && _orden.Estado == EstadoOrdenServicio.PendientePresupuesto
+                && _presupuesto == null
+                && (_modoNuevoAdicional || (_original == null && !_puedeCancelarSolicitud));
+
+            bool esBorrador = !_esNuevo && _presupuesto != null
+                && _presupuesto.Estado == EstadoPresupuesto.Borrador;
+            bool esAnulable = !_esNuevo && _presupuesto != null
+                && (_presupuesto.Estado == EstadoPresupuesto.Pendiente
+                    || _presupuesto.Estado == EstadoPresupuesto.Aprobado
+                    || _presupuesto.Estado == EstadoPresupuesto.Rechazado);
+            bool ordenPendientePresupuesto = _orden != null
+                && _orden.Estado == EstadoOrdenServicio.PendientePresupuesto;
+
+            // Con la orden entregada el selector solo se habilita en la vista de solo consulta:
+            // permite inspeccionar los presupuestos existentes (las entradas de documento nuevo
+            // se omiten en CargarSelectorPresupuesto).
+            CBO_SelectorPresupuesto.Enabled = !_esNuevo && (!entregado || _soloConsulta);
+            bool itemRepuesto = TipoItemSeleccionado() == TipoItemPresupuesto.Repuesto;
+
+            CBO_PTipo.Enabled = editaItems;
+            TXT_PDesc.Enabled = editaItems && !itemRepuesto;
+            CBO_PRepuesto.Enabled = editaItems && itemRepuesto;
+            NUM_PCant.Enabled = editaItems;
+            NUM_PPrecio.Enabled = editaItems;
+            BTN_AgregarItem.Visible = !_esNuevo && puedeEditar;
+            BTN_AgregarItem.Enabled = editaItems;
+            BTN_QuitarItem.Visible = !_esNuevo && puedeEditar;
+            BTN_QuitarItem.Enabled = editaItems;
+            NUM_PDescuento.Enabled = editaItems;
+            NUM_PGarantia.Enabled = editaItems;
+
+            bool puedePublicar = editable && esBorrador && ordenPendientePresupuesto;
+
+            BTN_Emitir.Visible = !_esNuevo && puedeEditar;
+            BTN_Emitir.Enabled = (editaItems && _itemsNuevo.Count > 0) || puedePublicar;
+            BTN_GuardarBorrador.Visible = !_esNuevo && puedeEditar;
+            BTN_GuardarBorrador.Enabled = editaItems && _itemsNuevo.Count > 0;
+            BTN_EliminarBorrador.Visible = !_esNuevo && puedeEditar && esBorrador;
+            BTN_EliminarBorrador.Enabled = editable && esBorrador;
+
+            bool presupuestoPendiente = !_esNuevo && _presupuesto != null
+                && _presupuesto.Estado == EstadoPresupuesto.Pendiente
+                && _orden != null && _orden.Estado == EstadoOrdenServicio.EsperandoRespuesta;
+
+            bool puedeSolicitar = editable && _orden != null
+                && (_orden.Estado == EstadoOrdenServicio.AutorizadoReparacion
+                    || _orden.Estado == EstadoOrdenServicio.EnReparacion
+                    || _orden.Estado == EstadoOrdenServicio.EnPruebas)
+                && _original != null && _original.Estado == EstadoPresupuesto.Aprobado
+                && !_hayAdicionalPendiente;
+
+            BTN_SolicitarAdicional.Visible = !_esNuevo && puedeEditar;
+            BTN_SolicitarAdicional.Enabled = puedeSolicitar;
+            BTN_CancelarSolicitud.Visible = !_esNuevo && puedeEditar && _puedeCancelarSolicitud;
+            BTN_CancelarSolicitud.Enabled = editable && _puedeCancelarSolicitud;
+
+            TXT_PMedio.Enabled = !_esNuevo && !entregado && !_soloConsulta && (editaItems || (puedeDecidir && presupuestoPendiente));
+            TXT_PMotivo.Enabled = !_esNuevo && !entregado && !_soloConsulta && puedeDecidir && presupuestoPendiente;
+            TXT_PObs.Enabled = !_esNuevo && !entregado && !_soloConsulta && (editaItems || (puedeDecidir && presupuestoPendiente));
+            BTN_Aprobar.Visible = !_esNuevo && puedeDecidir;
+            BTN_Aprobar.Enabled = puedeDecidir && presupuestoPendiente && !_soloConsulta;
+            BTN_Rechazar.Visible = !_esNuevo && puedeDecidir;
+            BTN_Rechazar.Enabled = puedeDecidir && presupuestoPendiente && !_soloConsulta;
+            BTN_Anular.Visible = !_esNuevo && puedeDecidir && esAnulable;
+            BTN_Anular.Enabled = puedeDecidir && esAnulable && !entregado && !_soloConsulta;
+
+            bool puedeEntregarAhora = editable && puedeEntregar && _orden != null
+                && _orden.Estado == EstadoOrdenServicio.ListoRetiro
+                && _entrega == null;
+
+            TXT_EEntregadoA.Enabled = puedeEntregarAhora;
+            TXT_EDocumento.Enabled = puedeEntregarAhora;
+            TXT_EObs.Enabled = puedeEntregarAhora;
+            BTN_Entregar.Visible = !_esNuevo && puedeEntregar;
+            BTN_Entregar.Enabled = puedeEntregarAhora;
+
+            bool puedeCancelarEntrega = !_esNuevo && puedeEntregar && !_soloConsulta && _orden != null
+                && _orden.Estado == EstadoOrdenServicio.Entregado
+                && _entrega != null;
+
+            BTN_CancelarEntrega.Visible = puedeCancelarEntrega;
+            BTN_CancelarEntrega.Enabled = puedeCancelarEntrega;
+
+            bool puedeReabrirPruebas = !_esNuevo && puedeEditar && !_soloConsulta && _orden != null
+                && _orden.Estado == EstadoOrdenServicio.ListoRetiro
+                && _orden.Resultado == ResultadoOrdenServicio.Reparado;
+
+            BTN_ReabrirPruebas.Visible = !_esNuevo && puedeEditar && puedeReabrirPruebas;
+            BTN_ReabrirPruebas.Enabled = puedeReabrirPruebas;
+
+            Reparacion reparacionSeleccionada = ReparacionSeleccionada();
+            bool hayAbiertaSeleccionada = reparacionSeleccionada != null && !reparacionSeleccionada.FechaFin.HasValue;
+            bool hayAbierta = _reparaciones != null && _reparaciones.Any(r => !r.FechaFin.HasValue);
+
+            bool puedeIniciarReparacion = editable && _orden != null
+                && (_orden.Estado == EstadoOrdenServicio.AutorizadoReparacion
+                    || (_orden.Estado == EstadoOrdenServicio.EnReparacion && !hayAbierta));
+            bool habilitaConsumo = editable && _orden != null
+                && _orden.Estado == EstadoOrdenServicio.EnReparacion
+                && hayAbiertaSeleccionada;
+            BTN_IniciarReparacion.Visible = !_esNuevo && puedeEditar;
+            BTN_IniciarReparacion.Enabled = puedeIniciarReparacion;
+            CBO_ConsumoRepuesto.Enabled = habilitaConsumo;
+            NUM_ConsumoCantidad.Enabled = habilitaConsumo;
+            BTN_Consumir.Visible = !_esNuevo && puedeEditar;
+            BTN_Consumir.Enabled = habilitaConsumo;
+            BTN_QuitarConsumo.Visible = !_esNuevo && puedeEditar;
+            BTN_QuitarConsumo.Enabled = habilitaConsumo;
+            TXT_FTrabajo.Enabled = habilitaConsumo;
+            TXT_FObs.Enabled = habilitaConsumo;
+            BTN_FinalizarReparacion.Visible = !_esNuevo && puedeEditar;
+            BTN_FinalizarReparacion.Enabled = habilitaConsumo;
+
+            // Controles del tab Pruebas: delegan en el helper, que exige que la intervencion
+            // seleccionada sea la actual y que su grilla este cargada.
+            ActualizarAccionesPruebas();
+            AplicarPermisosGarantia();
+        }
+
+        private bool TienePermiso(string codigo)
+        {
+            return SessionManager.HaySesionActiva() && SessionManager.TienePermiso(codigo);
+        }
+
+        private void MostrarAccesoDenegado()
+        {
+            MessageBox.Show(
+                T("Mensaje.SinPermisos"),
+                T("Titulo.AccesoDenegado"),
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning);
+        }
+
+        private void MostrarExito(string claveMensaje)
+        {
+            MessageBox.Show(
+                T(claveMensaje),
+                T("Titulo.Exito"),
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
+        }
+
+        private void MostrarAdvertencia(string claveMensaje)
+        {
+            MessageBox.Show(
+                T(claveMensaje),
+                T("Titulo.Error"),
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning);
+        }
+
+        private void MostrarError(Exception ex)
+        {
+            OrdenOriginalSoloConsultaException soloConsulta = BuscarSoloConsulta(ex);
+
+            if (soloConsulta != null)
+            {
+                MostrarAdvertencia(soloConsulta.ClaveMensaje);
+                return;
+            }
+
+            ReingresoGarantiaOrigenNoDisponibleException origenNoDisponible = BuscarOrigenNoDisponible(ex);
+
+            if (origenNoDisponible != null)
+            {
+                MostrarAdvertencia(origenNoDisponible.ClaveMensaje);
+                return;
+            }
+
+            ReingresoGarantiaAbiertoException reingresoAbierto = BuscarReingresoAbierto(ex);
+
+            if (reingresoAbierto != null)
+            {
+                MostrarAdvertencia(reingresoAbierto.ClaveMensaje);
+                return;
+            }
+
+            DetallePresupuestoInvalidoException invalido = BuscarDetalleInvalido(ex);
+
+            if (invalido != null)
+            {
+                MostrarAdvertencia(invalido.ClaveMensaje);
+                return;
+            }
+
+            string detalle = ex != null ? ex.Message : "";
+            MessageBox.Show(
+                T("Mensaje.ErrorOperacion").Replace("{0}", detalle),
+                T("Titulo.Error"),
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
+        }
+
+        // El detalle invalido se reconoce por tipo de excepcion y se traduce por clave,
+        // nunca por el texto del mensaje.
+        private static DetallePresupuestoInvalidoException BuscarDetalleInvalido(Exception ex)
+        {
+            for (Exception actual = ex; actual != null; actual = actual.InnerException)
+            {
+                DetallePresupuestoInvalidoException invalido = actual as DetallePresupuestoInvalidoException;
+
+                if (invalido != null)
+                    return invalido;
+            }
+
+            return null;
+        }
+
+        // El bloqueo de reingreso se reconoce por tipo de excepcion, nunca por el texto del
+        // mensaje ni por el resultado de una consulta SQL.
+        private static ReingresoGarantiaAbiertoException BuscarReingresoAbierto(Exception ex)
+        {
+            for (Exception actual = ex; actual != null; actual = actual.InnerException)
+            {
+                ReingresoGarantiaAbiertoException abierto = actual as ReingresoGarantiaAbiertoException;
+
+                if (abierto != null)
+                    return abierto;
+            }
+
+            return null;
+        }
+
+        // El bloqueo de la orden original se reconoce por tipo de excepcion, nunca por el texto
+        // del mensaje ni por el resultado de una consulta SQL.
+        private static OrdenOriginalSoloConsultaException BuscarSoloConsulta(Exception ex)
+        {
+            for (Exception actual = ex; actual != null; actual = actual.InnerException)
+            {
+                OrdenOriginalSoloConsultaException soloConsulta = actual as OrdenOriginalSoloConsultaException;
+
+                if (soloConsulta != null)
+                    return soloConsulta;
+            }
+
+            return null;
+        }
+
+        // Origen que dejo de estar entregado + reparado al momento de crear el reingreso.
+        private static ReingresoGarantiaOrigenNoDisponibleException BuscarOrigenNoDisponible(Exception ex)
+        {
+            for (Exception actual = ex; actual != null; actual = actual.InnerException)
+            {
+                ReingresoGarantiaOrigenNoDisponibleException origen = actual as ReingresoGarantiaOrigenNoDisponibleException;
+
+                if (origen != null)
+                    return origen;
+            }
+
+            return null;
+        }
+
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            _sesionIdioma.DesregistrarObservador(this);
+            base.OnFormClosed(e);
+        }
+    }
+}

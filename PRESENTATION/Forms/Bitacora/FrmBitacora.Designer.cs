@@ -84,6 +84,7 @@ namespace UI.Forms.Bitacora
             //
             // TXT_Usuario
             //
+            this.TXT_Usuario.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.TXT_Usuario.Location = new System.Drawing.Point(65, 13);
             this.TXT_Usuario.Name = "TXT_Usuario";
             this.TXT_Usuario.Size = new System.Drawing.Size(120, 22);
@@ -104,6 +105,7 @@ namespace UI.Forms.Bitacora
             //
             this.DT_Desde.Checked = false;
             this.DT_Desde.CustomFormat = "dd/MM/yyyy HH:mm";
+            this.DT_Desde.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.DT_Desde.Format = System.Windows.Forms.DateTimePickerFormat.Custom;
             this.DT_Desde.Location = new System.Drawing.Point(250, 13);
             this.DT_Desde.Name = "DT_Desde";
@@ -126,6 +128,7 @@ namespace UI.Forms.Bitacora
             //
             this.DT_Hasta.Checked = false;
             this.DT_Hasta.CustomFormat = "dd/MM/yyyy HH:mm";
+            this.DT_Hasta.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.DT_Hasta.Format = System.Windows.Forms.DateTimePickerFormat.Custom;
             this.DT_Hasta.Location = new System.Drawing.Point(460, 13);
             this.DT_Hasta.Name = "DT_Hasta";
@@ -147,6 +150,7 @@ namespace UI.Forms.Bitacora
             // CBO_TipoActividad
             //
             this.CBO_TipoActividad.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.CBO_TipoActividad.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.CBO_TipoActividad.Location = new System.Drawing.Point(665, 13);
             this.CBO_TipoActividad.Name = "CBO_TipoActividad";
             this.CBO_TipoActividad.Size = new System.Drawing.Size(160, 21);

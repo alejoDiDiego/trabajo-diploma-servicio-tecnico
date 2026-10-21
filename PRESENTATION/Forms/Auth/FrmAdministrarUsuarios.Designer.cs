@@ -48,6 +48,7 @@ namespace UI.Forms.Auth
             // 
             // BTN_CerrarSesion
             // 
+            this.BTN_CerrarSesion.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(128)))), ((int)(((byte)(185)))));
             this.BTN_CerrarSesion.FlatAppearance.BorderColor = System.Drawing.Color.White;
             this.BTN_CerrarSesion.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.BTN_CerrarSesion.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
@@ -219,7 +220,7 @@ namespace UI.Forms.Auth
             // 
             // BTN_EditarUsuario
             // 
-            this.BTN_EditarUsuario.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(192)))));
+            this.BTN_EditarUsuario.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(152)))), ((int)(((byte)(219)))));
             this.BTN_EditarUsuario.Enabled = false;
             this.BTN_EditarUsuario.FlatAppearance.BorderSize = 0;
             this.BTN_EditarUsuario.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
@@ -238,7 +239,7 @@ namespace UI.Forms.Auth
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(236)))), ((int)(((byte)(240)))), ((int)(((byte)(241)))));
             this.ClientSize = new System.Drawing.Size(950, 560);
             this.Controls.Add(this.PNL_Permisos);
             this.Controls.Add(this.PNL_Header);

@@ -192,7 +192,14 @@ namespace REPOSITORY.Features.Usuarios
                 ('permisos', 'Gestion permisos'),
                 ('idiomas', 'Gestion idiomas'),
                 ('idiomas', 'Gestion traducciones'),
-                ('lector', 'Lectura general');
+                ('lector', 'Lectura general'),
+                ('encargado', 'Gestion clientes'),
+                ('encargado', 'Gestion equipos'),
+                ('encargado', 'Gestion catalogos'),
+                ('encargado', 'Gestion ordenes'),
+                ('encargado', 'Gestion repuestos'),
+                ('encargado', 'Gestion proveedores'),
+                ('encargado', 'Gestion compras');
 
                 INSERT INTO UsuarioPermisos (id_usuario, id_permiso)
                 SELECT u.id_usuario, p.id_permiso
@@ -205,6 +212,103 @@ namespace REPOSITORY.Features.Usuarios
                     WHERE up.id_usuario = u.id_usuario
                       AND up.id_permiso = p.id_permiso
                 );
+
+                -- Simples directos: recepcionista/tecnico no usan familias para no heredar de mas;
+                -- encargado solo suma BITACORA_VER simple. Gestion repuestos se agrego en CP3
+                -- (las 4 familias base siguen exactas arriba para DBs legacy migradas a rol).
+                CREATE TABLE #AsignacionesSimples (
+                    username nvarchar(100),
+                    codigo nvarchar(100)
+                );
+
+                INSERT INTO #AsignacionesSimples (username, codigo) VALUES
+                ('recepcionista', 'CLIENTES_VER'),
+                ('recepcionista', 'CLIENTES_CREAR'),
+                ('recepcionista', 'CLIENTES_EDITAR'),
+                ('recepcionista', 'EQUIPOS_VER'),
+                ('recepcionista', 'EQUIPOS_CREAR'),
+                ('recepcionista', 'EQUIPOS_EDITAR'),
+                ('recepcionista', 'TIPOS_EQUIPO_VER'),
+                ('recepcionista', 'MARCAS_VER'),
+                ('recepcionista', 'ORDENES_VER'),
+                ('recepcionista', 'ORDENES_CREAR'),
+                ('recepcionista', 'ORDENES_EDITAR'),
+                ('recepcionista', 'ORDENES_ENTREGAR'),
+                ('tecnico', 'CLIENTES_VER'),
+                ('tecnico', 'EQUIPOS_VER'),
+                ('tecnico', 'TIPOS_EQUIPO_VER'),
+                ('tecnico', 'MARCAS_VER'),
+                ('tecnico', 'ORDENES_VER'),
+                ('tecnico', 'ORDENES_EDITAR'),
+                ('encargado', 'BITACORA_VER');
+
+                INSERT INTO UsuarioPermisos (id_usuario, id_permiso)
+                SELECT u.id_usuario, p.id_permiso
+                FROM #AsignacionesSimples a
+                INNER JOIN Usuarios u ON UPPER(u.username) = UPPER(a.username)
+                INNER JOIN Permisos p ON p.codigo = a.codigo AND p.es_familia=0
+                WHERE NOT EXISTS (
+                    SELECT 1
+                    FROM UsuarioPermisos up
+                    WHERE up.id_usuario = u.id_usuario
+                      AND up.id_permiso = p.id_permiso
+                );
+
+                -- Familias de rol base: los 3 usuarios pasan de asignacion directa a su rol.
+                CREATE TABLE #AsignacionesRol (
+                    username nvarchar(100),
+                    familia nvarchar(100)
+                );
+
+                INSERT INTO #AsignacionesRol (username, familia) VALUES
+                ('recepcionista', 'Rol recepcionista'),
+                ('tecnico', 'Rol tecnico'),
+                ('encargado', 'Rol encargado');
+
+                INSERT INTO UsuarioPermisos (id_usuario, id_permiso)
+                SELECT u.id_usuario, p.id_permiso
+                FROM #AsignacionesRol a
+                INNER JOIN Usuarios u ON UPPER(u.username) = UPPER(a.username)
+                INNER JOIN Permisos p ON UPPER(p.nombre) = UPPER(a.familia) AND p.es_familia=1
+                WHERE NOT EXISTS (
+                    SELECT 1
+                    FROM UsuarioPermisos up
+                    WHERE up.id_usuario = u.id_usuario
+                      AND up.id_permiso = p.id_permiso
+                );
+
+                -- Limpieza de asignaciones redundantes ahora cubiertas por el rol (solo estos 3 usuarios).
+                DELETE up
+                FROM UsuarioPermisos up
+                INNER JOIN Usuarios u ON u.id_usuario = up.id_usuario
+                INNER JOIN Permisos p ON p.id_permiso = up.id_permiso
+                WHERE UPPER(u.username) = UPPER('recepcionista')
+                  AND p.es_familia = 0
+                  AND p.codigo IN ('CLIENTES_VER', 'CLIENTES_CREAR', 'CLIENTES_EDITAR', 'EQUIPOS_VER', 'EQUIPOS_CREAR', 'EQUIPOS_EDITAR', 'TIPOS_EQUIPO_VER', 'MARCAS_VER', 'ORDENES_VER', 'ORDENES_CREAR', 'ORDENES_EDITAR', 'ORDENES_ENTREGAR');
+
+                DELETE up
+                FROM UsuarioPermisos up
+                INNER JOIN Usuarios u ON u.id_usuario = up.id_usuario
+                INNER JOIN Permisos p ON p.id_permiso = up.id_permiso
+                WHERE UPPER(u.username) = UPPER('tecnico')
+                  AND p.es_familia = 0
+                  AND p.codigo IN ('CLIENTES_VER', 'EQUIPOS_VER', 'TIPOS_EQUIPO_VER', 'MARCAS_VER', 'ORDENES_VER', 'ORDENES_EDITAR');
+
+                DELETE up
+                FROM UsuarioPermisos up
+                INNER JOIN Usuarios u ON u.id_usuario = up.id_usuario
+                INNER JOIN Permisos p ON p.id_permiso = up.id_permiso
+                WHERE UPPER(u.username) = UPPER('encargado')
+                  AND p.es_familia = 0
+                  AND p.codigo IN ('BITACORA_VER');
+
+                DELETE up
+                FROM UsuarioPermisos up
+                INNER JOIN Usuarios u ON u.id_usuario = up.id_usuario
+                INNER JOIN Permisos p ON p.id_permiso = up.id_permiso
+                WHERE UPPER(u.username) = UPPER('encargado')
+                  AND p.es_familia = 1
+                  AND UPPER(p.nombre) IN (UPPER('Gestion clientes'), UPPER('Gestion equipos'), UPPER('Gestion catalogos'), UPPER('Gestion ordenes'), UPPER('Gestion repuestos'), UPPER('Gestion proveedores'), UPPER('Gestion compras'));
 
                 SELECT 0;
             ";

@@ -1,0 +1,274 @@
+@startuml
+title DER compacto - TPIntegrador - Esquema real dbo
+
+left to right direction
+scale max 1920*1080
+
+hide circle
+hide methods
+skinparam classAttributeIconSize 0
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+skinparam classAttributeFontSize 10
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam linetype ortho
+skinparam nodesep 12
+skinparam ranksep 22
+
+package "Servicio técnico" #EAF3FC {
+
+    entity "Clientes" as CLI {
+        id_cliente <<PK>>
+    }
+
+    entity "TiposEquipo" as TEQ {
+        id_tipo_equipo <<PK>>
+    }
+
+    entity "Marcas" as MAR {
+        id_marca <<PK>>
+    }
+
+    entity "Equipos" as EQU {
+        id_equipo <<PK>>
+        --
+        id_cliente <<FK>>
+        id_tipo_equipo <<FK>>
+        id_marca <<FK>>
+    }
+
+    entity "OrdenesServicio" as ORD {
+        id_orden <<PK>>
+        --
+        id_cliente <<FK>>
+        id_equipo <<FK>>
+        id_usuario_alta <<FK>>
+        id_tecnico_asignado ? <<FK>>
+        id_orden_origen ? <<FK>>
+    }
+
+    entity "Diagnosticos" as DIA {
+        id_diagnostico <<PK>>
+        --
+        id_orden <<FK,UQ>>
+        id_usuario_tecnico <<FK>>
+    }
+
+    entity "HistorialOrdenes" as HIS {
+        id_historial <<PK>>
+        --
+        id_orden <<FK>>
+        id_usuario <<FK>>
+    }
+
+    entity "Presupuestos" as PRE {
+        id_presupuesto <<PK>>
+        --
+        id_orden <<FK>>
+    }
+
+    entity "PresupuestoDetalle" as DPR {
+        id_detalle <<PK>>
+        --
+        id_presupuesto <<FK>>
+        id_repuesto ? <<FK>>
+    }
+
+    entity "Entregas" as ENT {
+        id_entrega <<PK>>
+        --
+        id_orden <<FK,UQ>>
+        id_usuario <<FK>>
+    }
+
+    entity "Reparaciones" as REPA {
+        id_reparacion <<PK>>
+        --
+        id_orden <<FK>>
+        id_usuario_tecnico <<FK>>
+    }
+
+    entity "ReparacionRepuesto" as CON {
+        id_consumo <<PK>>
+        --
+        id_reparacion <<FK>>
+        id_repuesto <<FK>>
+    }
+
+    entity "Pruebas" as PRU {
+        id_prueba <<PK>>
+        --
+        id_reparacion <<FK>>
+        id_usuario_tecnico <<FK>>
+        id_usuario_anulacion ? <<FK>>
+    }
+
+    entity "Repuestos" as REP {
+        id_repuesto <<PK>>
+    }
+
+    entity "MovimientosStock" as MOV {
+        id_movimiento <<PK>>
+        --
+        id_repuesto <<FK>>
+        id_usuario <<FK>>
+        id_compra ? <<FK>>
+        id_reparacion ? <<FK>>
+    }
+
+    entity "Proveedores" as PRO {
+        id_proveedor <<PK>>
+    }
+
+    entity "Compras" as COM {
+        id_compra <<PK>>
+        --
+        id_proveedor <<FK>>
+        id_usuario <<FK>>
+    }
+
+    entity "CompraDetalle" as DCO {
+        id_detalle <<PK>>
+        --
+        id_compra <<FK>>
+        id_repuesto <<FK>>
+    }
+
+    entity "Garantias" as GAR {
+        id_garantia <<PK>>
+        --
+        id_orden_original <<FK,UQ>>
+    }
+
+    entity "EvaluacionesGarantia" as EVA {
+        id_evaluacion <<PK>>
+        --
+        id_orden_reingreso <<FK,UQ>>
+        id_garantia <<FK>>
+        id_usuario <<FK>>
+    }
+}
+
+package "Seguridad y permisos" #EAF7EE {
+
+    entity "Usuarios" as USU {
+        id_usuario <<PK>>
+    }
+
+    entity "Permisos" as PER {
+        id_permiso <<PK>>
+    }
+
+    entity "UsuarioPermisos" as UP {
+        id_usuario <<PK,FK>>
+        id_permiso <<PK,FK>>
+    }
+
+    entity "PermisoComposicion" as PC {
+        id_permiso_padre <<PK,FK>>
+        id_permiso_hijo <<PK,FK>>
+    }
+}
+
+package "Idiomas" #F2ECFA {
+
+    entity "Idiomas" as IDI {
+        id_idioma <<PK>>
+    }
+
+    entity "Palabras" as PAL {
+        id_palabra <<PK>>
+    }
+
+    entity "Traducciones" as TRA {
+        id_idioma <<PK,FK>>
+        id_palabra <<PK,FK>>
+    }
+}
+
+package "Auditoría e integridad" #F2F2F2 {
+
+    entity "Bitacora" as BIT {
+        id_bitacora <<PK>>
+    }
+
+    entity "ControlCambios" as CC {
+        id_cambio <<PK>>
+    }
+
+    entity "DigitosVerticales" as DVV {
+        id_dvv <<PK>>
+    }
+
+    BIT -[hidden]right- CC
+    CC -[hidden]right- DVV
+}
+
+' Clientes y recepción
+CLI ||..o{ EQU
+TEQ ||..o{ EQU
+MAR ||..o{ EQU
+
+CLI ||..o{ ORD
+EQU ||..o{ ORD
+ORD |o..o{ ORD : origen
+
+' Diagnóstico, historial, presupuestos y entrega
+ORD ||..o| DIA
+ORD ||..o{ HIS
+ORD ||..o{ PRE
+PRE ||..o{ DPR
+REP |o..o{ DPR
+ORD ||..o| ENT
+
+' Reparación, pruebas y consumo
+ORD ||..o{ REPA
+REPA ||..o{ PRU
+REPA ||..o{ CON
+REP ||..o{ CON
+
+' Inventario y compras
+REP ||..o{ MOV
+COM |o..o{ MOV
+REPA |o..o{ MOV
+
+PRO ||..o{ COM
+COM ||..o{ DCO
+REP ||..o{ DCO
+
+' Cobertura y evaluaciones de reingresos
+ORD ||..o| GAR : original
+GAR ||..o{ EVA
+ORD ||..o| EVA : reingreso
+
+' Referencias a usuarios: roles independientes
+USU ||..o{ ORD : alta
+USU |o..o{ ORD : técnico
+USU ||..o{ DIA
+USU ||..o{ HIS
+USU ||..o{ ENT
+USU ||..o{ REPA
+USU ||..o{ PRU : técnico
+USU |o..o{ PRU : anulación
+USU ||..o{ MOV
+USU ||..o{ COM
+USU ||..o{ EVA
+
+' Relaciones identificadoras: FK integrante de PK compuesta
+USU ||--o{ UP
+PER ||--o{ UP
+PER ||--o{ PC : padre
+PER ||--o{ PC : hijo
+
+IDI ||--o{ TRA
+PAL ||--o{ TRA
+
+legend bottom
+  PK: primaria | FK: foránea | UQ: única | ?: admite NULL
+  Todas las PK/FK representadas son int. Se omiten los demás campos.
+  Línea continua: FK integrante de PK. Discontinua: FK no integrante de PK.
+  Presupuestos: UNIQUE(id_orden) solo para Original no Anulado.
+endlegend
+
+@enduml

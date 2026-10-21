@@ -30,5 +30,48 @@ namespace DOMAIN.Features.Permisos
         public const string ControlCambiosRestaurar = "CONTROL_CAMBIOS_RESTAURAR";
         public const string IntegridadRecalcular = "INTEGRIDAD_RECALCULAR";
         public const string BitacoraVer = "BITACORA_VER";
+
+        public const string ClientesVer = "CLIENTES_VER";
+        public const string ClientesCrear = "CLIENTES_CREAR";
+        public const string ClientesEditar = "CLIENTES_EDITAR";
+        public const string ClientesDesactivar = "CLIENTES_DESACTIVAR";
+
+        public const string EquiposVer = "EQUIPOS_VER";
+        public const string EquiposCrear = "EQUIPOS_CREAR";
+        public const string EquiposEditar = "EQUIPOS_EDITAR";
+        public const string EquiposDesactivar = "EQUIPOS_DESACTIVAR";
+
+        public const string TiposEquipoVer = "TIPOS_EQUIPO_VER";
+        public const string TiposEquipoCrear = "TIPOS_EQUIPO_CREAR";
+        public const string TiposEquipoEditar = "TIPOS_EQUIPO_EDITAR";
+        public const string TiposEquipoDesactivar = "TIPOS_EQUIPO_DESACTIVAR";
+
+        public const string MarcasVer = "MARCAS_VER";
+        public const string MarcasCrear = "MARCAS_CREAR";
+        public const string MarcasEditar = "MARCAS_EDITAR";
+        public const string MarcasDesactivar = "MARCAS_DESACTIVAR";
+
+        public const string OrdenesVer = "ORDENES_VER";
+        public const string OrdenesCrear = "ORDENES_CREAR";
+        public const string OrdenesEditar = "ORDENES_EDITAR";
+        public const string OrdenesCancelar = "ORDENES_CANCELAR";
+        public const string OrdenesEntregar = "ORDENES_ENTREGAR";
+        public const string PresupuestosDecidir = "PRESUPUESTOS_DECIDIR";
+
+        public const string RepuestosVer = "REPUESTOS_VER";
+        public const string RepuestosCrear = "REPUESTOS_CREAR";
+        public const string RepuestosEditar = "REPUESTOS_EDITAR";
+        public const string RepuestosDesactivar = "REPUESTOS_DESACTIVAR";
+
+        public const string ProveedoresVer = "PROVEEDORES_VER";
+        public const string ProveedoresCrear = "PROVEEDORES_CREAR";
+        public const string ProveedoresEditar = "PROVEEDORES_EDITAR";
+        public const string ProveedoresDesactivar = "PROVEEDORES_DESACTIVAR";
+
+        public const string ComprasVer = "COMPRAS_VER";
+        public const string ComprasCrear = "COMPRAS_CREAR";
+        public const string ComprasCancelar = "COMPRAS_CANCELAR";
+
+        public const string ReportesVer = "REPORTES_VER";
     }
 }

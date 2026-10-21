@@ -1,0 +1,96 @@
+@startuml
+title G06 - Capa INFRASTRUCTURE / REPOSITORY - Stock, Compras y Garantías
+
+left to right direction
+skinparam classAttributeIconSize 0
+hide circle
+
+class SqlHelper <<referencia>>
+
+package "Negocio - Stock, Compras y Garantías" {
+
+    class RepuestoRepository {
+        - _db : SqlHelper
+        --
+        + Inicializar() : void
+        + Crear(...) : Repuesto
+        + Modificar(...) : void
+        + AjustarStock(...) : void
+        + Desactivar(...) : void
+        + Reactivar(...) : void
+        + ObtenerPorId(...) : Repuesto
+        + ObtenerPorCodigo(...) : Repuesto
+        + Listar(...) : List<Repuesto>
+    }
+
+    class MovimientoStockRepository {
+        - _db : SqlHelper
+        --
+        + Inicializar() : void
+        + Registrar(...) : MovimientoStock
+        + ObtenerPorId(...) : MovimientoStock
+        + ListarPorRepuesto(...) : List<MovimientoStock>
+        + ListarFiltros(...) : List<MovimientoStock>
+    }
+
+    class CompraRepository {
+        - _db : SqlHelper
+        --
+        + Inicializar() : void
+        + CrearBorradorConDetalle(...) : Compra
+        + AgregarItem(...) : void
+        + QuitarItem(...) : void
+        + ConfirmarConStock(...) : Compra
+        + CancelarBorrador(...) : void
+        + AnularConfirmadaConStock(...) : void
+        + ObtenerPorId(...) : Compra
+        + Listar(...) : List<Compra>
+        + ListarDetalle(...) : List<DetalleCompra>
+    }
+
+    class GarantiaRepository {
+        - _db : SqlHelper
+        --
+        + Inicializar() : void
+        + Crear(...) : Garantia
+        + ObtenerPorId(...) : Garantia
+        + ObtenerPorOrden(...) : Garantia
+        + ObtenerVigente(...) : Garantia
+        + Anular(...) : void
+    }
+
+    class EvaluacionGarantiaRepository {
+        - _db : SqlHelper
+        --
+        + Inicializar() : void
+        + Crear(...) : EvaluacionGarantia
+        + Evaluar(...) : void
+        + ObtenerPorId(...) : EvaluacionGarantia
+        + ObtenerPorReingreso(...) : EvaluacionGarantia
+    }
+
+    class ReporteRepository {
+        - _db : SqlHelper
+        --
+        + ContarOrdenesPorEstado(...) : DataTable
+        + ContarOrdenesPorResultado(...) : DataTable
+        + ReparacionesPorTecnico(...) : DataTable
+        + TiempoPromedioIngresoEntrega(...) : DataTable
+        + ContarPresupuestosPorEstado(...) : DataTable
+        + RepuestosMasUtilizados(...) : DataTable
+        + ComprasPorProveedor(...) : DataTable
+        + ContarReingresosGarantia(...) : DataTable
+        + EvaluacionesPorEstado(...) : DataTable
+        + MontoPresupuestosAprobados(...) : DataTable
+        + DashboardResumen() : DataTable
+    }
+}
+
+SqlHelper <-- RepuestoRepository
+SqlHelper <-- MovimientoStockRepository
+SqlHelper <-- CompraRepository
+SqlHelper <-- GarantiaRepository
+SqlHelper <-- EvaluacionGarantiaRepository
+SqlHelper <-- ReporteRepository
+
+@enduml

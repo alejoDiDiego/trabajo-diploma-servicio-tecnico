@@ -1,0 +1,81 @@
+@startuml
+title G06 - Capa INFRASTRUCTURE / REPOSITORY - Maestros
+
+left to right direction
+skinparam classAttributeIconSize 0
+hide circle
+
+class SqlHelper <<referencia>>
+
+package "Negocio - Maestros" {
+
+    class ClienteRepository {
+        - _db : SqlHelper
+        --
+        + Inicializar() : void
+        + Agregar(...) : Cliente
+        + Modificar(...) : void
+        + Desactivar(...) : void
+        + Reactivar(...) : void
+        + ObtenerPorId(...) : Cliente
+        + ObtenerConflictoDocumento(documento : string, idExcluir : int = 0) : Cliente
+        + Listar(...) : List<Cliente>
+    }
+
+    class TipoEquipoRepository {
+        - _db : SqlHelper
+        --
+        + Inicializar() : void
+        + Agregar(...) : TipoEquipo
+        + Modificar(...) : void
+        + Desactivar(...) : void
+        + Reactivar(...) : void
+        + ObtenerPorId(...) : TipoEquipo
+        + Listar(...) : List<TipoEquipo>
+    }
+
+    class MarcaRepository {
+        - _db : SqlHelper
+        --
+        + Inicializar() : void
+        + Agregar(...) : Marca
+        + Modificar(...) : void
+        + Desactivar(...) : void
+        + Reactivar(...) : void
+        + ObtenerPorId(...) : Marca
+        + Listar(...) : List<Marca>
+    }
+
+    class EquipoRepository {
+        - _db : SqlHelper
+        --
+        + Inicializar() : void
+        + Agregar(...) : Equipo
+        + Modificar(...) : void
+        + Desactivar(...) : void
+        + Reactivar(...) : void
+        + ObtenerPorId(...) : Equipo
+        + Listar(...) : List<Equipo>
+        + ListarPorCliente(...) : List<Equipo>
+    }
+
+    class ProveedorRepository {
+        - _db : SqlHelper
+        --
+        + Inicializar() : void
+        + Agregar(...) : Proveedor
+        + Modificar(...) : void
+        + Desactivar(...) : void
+        + Reactivar(...) : void
+        + ObtenerPorId(...) : Proveedor
+        + Listar(...) : List<Proveedor>
+    }
+}
+
+SqlHelper <-- ClienteRepository
+SqlHelper <-- TipoEquipoRepository
+SqlHelper <-- MarcaRepository
+SqlHelper <-- EquipoRepository
+SqlHelper <-- ProveedorRepository
+
+@enduml

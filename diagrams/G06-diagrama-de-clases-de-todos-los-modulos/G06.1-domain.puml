@@ -1,0 +1,571 @@
+@startuml
+title G06 - Capa DOMAIN
+
+left to right direction
+skinparam classAttributeIconSize 0
+hide circle
+
+package "Negocio - Clientes y Equipos" {
+
+    class Cliente {
+        + Id : int
+        + Nombre : string
+        + Apellido : string
+        + Documento : string
+        + Telefono : string
+        + Email : string
+        + Direccion : string
+        + Observaciones : string
+        + Activo : bool
+        + FechaAlta : DateTime
+        --
+        + {static} CrearNuevo(...) : Cliente
+        + {static} CargarDesdeDB(...) : Cliente
+    }
+
+    class Equipo {
+        + Id : int
+        + IdCliente : int
+        + IdTipoEquipo : int
+        + IdMarca : int
+        + Modelo : string
+        + NumeroSerie : string
+        + Imei : string
+        + Color : string
+        + Observaciones : string
+        + Activo : bool
+        --
+        + {static} CrearNuevo(...) : Equipo
+        + {static} CargarDesdeDB(...) : Equipo
+    }
+
+    class TipoEquipo {
+        + Id : int
+        + Nombre : string
+        + Activo : bool
+        --
+        + {static} CrearNuevo(...) : TipoEquipo
+        + {static} CargarDesdeDB(...) : TipoEquipo
+    }
+
+    class Marca {
+        + Id : int
+        + Nombre : string
+        + Activo : bool
+        --
+        + {static} CrearNuevo(...) : Marca
+        + {static} CargarDesdeDB(...) : Marca
+    }
+}
+
+package "Negocio - Orden de Servicio" {
+
+    class OrdenServicio {
+        + Id : int
+        + NumeroOrden : int
+        + IdCliente : int
+        + IdEquipo : int
+        + IdTecnicoAsignado : int?
+        + IdOrdenOrigen : int?
+        + TipoOrden : string
+        + Estado : string
+        + Resultado : string?
+        + FechaIngreso : DateTime
+        + ProblemaInformado : string
+        + EstadoFisicoIngreso : string
+        + AccesoriosIngreso : string
+        + ObservacionesIngreso : string
+        + ObservacionResultado : string?
+        + IdUsuarioAlta : int
+        --
+        + {static} CrearNuevo(...) : OrdenServicio
+        + {static} CrearNuevoGarantia(...) : OrdenServicio
+        + {static} CargarDesdeDB(...) : OrdenServicio
+        + AsignarTecnico(...) : void
+        + ActualizarRecepcion(...) : void
+        + IniciarDiagnostico() : void
+        + MarcarPendientePresupuesto() : void
+        + MarcarPendientePresupuestoDesdeEvaluacion() : void
+        + MarcarEsperandoRespuesta() : void
+        + AutorizarReparacion() : void
+        + MarcarNoReparable(...) : void
+        + MarcarPresupuestoRechazado(...) : void
+        + IniciarReparacion() : void
+        + FinalizarReparacion() : void
+        + SolicitarAdicional() : void
+        + RevertirAPendientePresupuesto() : void
+        + CancelarSolicitudAdicional(...) : void
+        + FinalizarPruebasAprobadas() : void
+        + FinalizarPruebasRequiereRevision() : void
+        + Cancelar(...) : void
+        + Entregar() : void
+        + CancelarEntrega() : void
+        + MarcarPendienteEvaluacionGarantia() : void
+        + AutorizarReparacionGarantia() : void
+        + MarcarGarantiaNoCubierta(...) : void
+        + ReabrirPruebas() : void
+    }
+
+    class Diagnostico {
+        + Id : int
+        + IdOrden : int
+        + IdUsuarioTecnico : int
+        + Fecha : DateTime
+        + Descripcion : string
+        + EsReparable : bool
+        + TiempoEstimadoDias : int?
+        + Observaciones : string
+        --
+        + {static} CrearNuevo(...) : Diagnostico
+        + {static} CargarDesdeDB(...) : Diagnostico
+    }
+
+    class HistorialEstadoOrden {
+        + Id : int
+        + IdOrden : int
+        + EstadoAnterior : string?
+        + EstadoNuevo : string
+        + FechaHora : DateTime
+        + IdUsuario : int
+        + Observacion : string
+        --
+        + {static} CrearNuevo(...) : HistorialEstadoOrden
+        + {static} CargarDesdeDB(...) : HistorialEstadoOrden
+    }
+
+    class Presupuesto {
+        + Id : int
+        + IdOrden : int
+        + Tipo : string
+        + FechaEmision : DateTime
+        + Estado : string
+        + Subtotal : decimal
+        + Descuento : decimal
+        + Total : decimal
+        + DiasGarantia : int
+        + FechaRespuesta : DateTime?
+        + MedioRespuesta : string?
+        + MotivoRechazo : string?
+        + MotivoAnulacion : string?
+        + Observaciones : string
+        --
+        + {static} CrearNuevo(...) : Presupuesto
+        + {static} CrearBorrador(...) : Presupuesto
+        + {static} CargarDesdeDB(...) : Presupuesto
+        + Aprobar(...) : void
+        + Rechazar(...) : void
+        + Anular(...) : void
+    }
+
+    class DetallePresupuesto {
+        + Id : int
+        + IdPresupuesto : int
+        + IdRepuesto : int?
+        + TipoItem : string
+        + Descripcion : string
+        + Cantidad : int
+        + PrecioUnitario : decimal
+        + Subtotal : decimal
+        --
+        + {static} CrearNuevo(...) : DetallePresupuesto
+        + {static} CargarDesdeDB(...) : DetallePresupuesto
+        + ValidarParaGuardar() : void
+    }
+
+    class Entrega {
+        + Id : int
+        + IdOrden : int
+        + FechaEntrega : DateTime
+        + IdUsuario : int
+        + EntregadoA : string
+        + DocumentoReceptor : string
+        + Observaciones : string
+        --
+        + {static} CrearNuevo(...) : Entrega
+        + {static} CargarDesdeDB(...) : Entrega
+    }
+}
+
+package "Negocio - Reparación e Inventario" {
+
+    class Reparacion {
+        + Id : int
+        + IdOrden : int
+        + NumeroIntervencion : int
+        + IdUsuarioTecnico : int
+        + FechaInicio : DateTime
+        + FechaFin : DateTime?
+        + TrabajoRealizado : string?
+        + Observaciones : string
+        --
+        + {static} CrearNuevo(...) : Reparacion
+        + {static} CargarDesdeDB(...) : Reparacion
+        + Finalizar(...) : void
+    }
+
+    class ReparacionRepuesto {
+        + IdConsumo : int
+        + IdReparacion : int
+        + IdRepuesto : int
+        + Cantidad : int
+        + CostoUnitario : decimal
+        --
+        + {static} CrearNuevo(...) : ReparacionRepuesto
+        + {static} CargarDesdeDB(...) : ReparacionRepuesto
+    }
+
+    class Prueba {
+        + Id : int
+        + IdReparacion : int
+        + IdUsuarioTecnico : int
+        + Fecha : DateTime
+        + Descripcion : string
+        + Resultado : string
+        + Observaciones : string
+        + MotivoAnulacion : string?
+        + FechaAnulacion : DateTime?
+        + IdUsuarioAnulacion : int?
+        --
+        + {static} CrearNuevo(...) : Prueba
+        + {static} CargarDesdeDB(...) : Prueba
+        + Anular(...) : void
+    }
+
+    class Repuesto {
+        + Id : int
+        + Codigo : string
+        + Descripcion : string
+        + StockActual : int
+        + StockMinimo : int
+        + CostoActual : decimal
+        + PrecioReferencia : decimal
+        + Activo : bool
+        --
+        + {static} CrearNuevo(...) : Repuesto
+        + {static} CargarDesdeDB(...) : Repuesto
+    }
+
+    class MovimientoStock {
+        + Id : int
+        + IdRepuesto : int
+        + Fecha : DateTime
+        + Tipo : string
+        + Cantidad : int
+        + StockAnterior : int
+        + StockPosterior : int
+        + IdUsuario : int
+        + IdCompra : int?
+        + IdReparacion : int?
+        + Observacion : string
+        --
+        + {static} CrearNuevo(...) : MovimientoStock
+        + {static} CargarDesdeDB(...) : MovimientoStock
+    }
+}
+
+package "Negocio - Compras y Garantías" {
+
+    class Proveedor {
+        + Id : int
+        + RazonSocial : string
+        + Cuit : string
+        + Telefono : string
+        + Email : string
+        + Direccion : string
+        + Contacto : string
+        + Activo : bool
+        --
+        + {static} CrearNuevo(...) : Proveedor
+        + {static} CargarDesdeDB(...) : Proveedor
+    }
+
+    class Compra {
+        + Id : int
+        + IdProveedor : int
+        + Fecha : DateTime
+        + Estado : string
+        + Total : decimal
+        + IdUsuario : int
+        + Observaciones : string
+        + MotivoAnulacion : string?
+        --
+        + {static} CrearBorrador(...) : Compra
+        + {static} CargarDesdeDB(...) : Compra
+        + CancelarBorrador() : void
+        + AnularConfirmada(...) : void
+    }
+
+    class DetalleCompra {
+        + Id : int
+        + IdCompra : int
+        + IdRepuesto : int
+        + Cantidad : int
+        + CostoUnitario : decimal
+        + Subtotal : decimal
+        --
+        + {static} CrearNuevo(...) : DetalleCompra
+        + {static} CargarDesdeDB(...) : DetalleCompra
+    }
+
+    class Garantia {
+        + Id : int
+        + IdOrdenOriginal : int
+        + FechaInicio : DateTime
+        + FechaFin : DateTime
+        + Observaciones : string
+        + Anulada : bool
+        --
+        + {static} CrearNuevo(...) : Garantia
+        + {static} CargarDesdeDB(...) : Garantia
+    }
+
+    class EvaluacionGarantia {
+        + Id : int
+        + IdOrdenReingreso : int
+        + IdGarantia : int
+        + Estado : string
+        + Fecha : DateTime
+        + IdUsuario : int
+        + Motivo : string
+        + Observaciones : string
+        --
+        + {static} CrearPendiente(...) : EvaluacionGarantia
+        + {static} CargarDesdeDB(...) : EvaluacionGarantia
+    }
+}
+
+package "Aspectos técnicos - Seguridad y permisos" {
+
+    class Usuario {
+        + Id : int
+        + Username : string
+        + Password : string
+        + Activo : bool
+        + DVH : string
+        --
+        + {static} CrearNuevo(...) : Usuario
+        + {static} CargarDesdeDB(...) : Usuario
+        + Desactivar() : void
+        + Reactivar() : void
+        + SetDVH(...) : void
+    }
+
+    class UserDVH <<DTO>> {
+        + Id : int
+        + DVH : string
+    }
+
+    abstract class PermisoComponent {
+        + Id : int
+        + Nombre : string
+        + Codigo : string
+        + {abstract} EsFamilia : bool
+        + Hijos : IList<IPermisoComponent>
+        --
+        + Contiene(...) : bool
+        + {abstract} AgregarHijo(...) : void
+    }
+
+    class PermisoSimple {
+        + EsFamilia : bool
+        + {static} CargarDesdeDB(...) : PermisoSimple
+        + AgregarHijo(...) : void
+    }
+
+    class FamiliaPermiso {
+        + EsFamilia : bool
+        + {static} CrearNuevo(...) : FamiliaPermiso
+        + {static} CargarDesdeDB(...) : FamiliaPermiso
+        + AgregarHijo(...) : void
+        + Contiene(...) : bool
+    }
+
+    interface IUsuario
+    interface IPermisoComponent
+}
+
+package "Aspectos técnicos - Idiomas y auditoría" {
+
+    class Idioma {
+        + Id : int
+        + Nombre : string
+        + Traducciones : IList<ITraduccion>
+        --
+        + {static} Crear(...) : Idioma
+        + AgregarTraduccion(...) : void
+        + BuscarTraduccion(...) : string
+    }
+
+    class Palabra {
+        + Id : int
+        + Texto : string
+        --
+        + {static} Crear(...) : Palabra
+    }
+
+    class Traduccion {
+        + IdIdioma : int
+        + IdPalabra : int
+        + PalabraTraducida : string
+        + Palabra : IPalabra
+        --
+        + {static} Crear(...) : Traduccion
+    }
+
+    class EntradaBitacora {
+        + Id : int
+        + Fecha : DateTime
+        + Usuario : string
+        + Actividad : string
+        + Detalle : string
+        + TipoActividad : string
+        --
+        + {static} Crear(...) : EntradaBitacora
+    }
+
+    class ControlCambio {
+        + Id : int
+        + TablaAfectada : string
+        + IdIdioma : int
+        + IdPalabra : int
+        + ClaveRegistro : string
+        + CampoModificado : string
+        + ValorAnterior : string
+        + ValorNuevo : string
+        + UsuarioModifico : string
+        + FechaCambio : DateTime
+        + TipoCambio : string
+        + NombreIdioma : string
+        --
+        + {static} Crear(...) : ControlCambio
+    }
+
+    interface IIdioma
+    interface IPalabra
+    interface ITraduccion
+}
+
+package "Aspectos técnicos - Excepciones" {
+
+    class ReglaNegocioException <<Exception>>
+    class UsuarioYaExisteException <<Exception>>
+    class UsuarioNoExisteException <<Exception>>
+
+    class ClienteDocumentoDuplicadoException <<Exception>> {
+        + Documento : string
+        + IdClienteExistente : int
+        + NombreExistente : string
+        + ApellidoExistente : string
+        + ActivoExistente : bool
+        + TienePropietario : bool
+        + NombrePropietario : string
+    }
+
+    class DetallePresupuestoInvalidoException <<Exception>> {
+        + ClaveMensaje : string
+    }
+
+    class OrdenOriginalSoloConsultaException <<Exception>> {
+        + ClaveMensaje : string
+    }
+
+    class ReingresoGarantiaAbiertoException <<Exception>> {
+        + ClaveMensaje : string
+    }
+
+    class ReingresoGarantiaOrigenNoDisponibleException <<Exception>> {
+        + ClaveMensaje : string
+    }
+}
+
+package "Constantes del dominio" {
+
+    class EstadoOrdenServicio <<static>>
+    class ResultadoOrdenServicio <<static>>
+    class TipoOrden <<static>>
+    class EstadoPresupuesto <<static>>
+    class TipoPresupuesto <<static>>
+    class TipoItemPresupuesto <<static>>
+    class ResultadoPrueba <<static>>
+    class TipoMovimientoStock <<static>>
+    class EstadoCompra <<static>>
+    class EstadoEvaluacionGarantia <<static>>
+    class CodigosPermiso <<static>>
+}
+
+' Asociaciones conceptuales por identificadores.
+' No representan propiedades de navegacion ni composicion.
+
+Cliente "1" -- "0..*" Equipo
+TipoEquipo "1" -- "0..*" Equipo
+Marca "1" -- "0..*" Equipo
+
+Cliente "1" -- "0..*" OrdenServicio
+Equipo "1" -- "0..*" OrdenServicio
+
+' Una orden puede tener 0..1 origen; un origen puede tener 0..* reingresos.
+' Solo se permite un reingreso abierto por origen a la vez.
+' Con cualquier reingreso creado, el origen queda de solo consulta.
+' Estas restricciones se aplican en APPLICATION/REPOSITORY.
+OrdenServicio "0..*" --> "0..1" OrdenServicio : origen
+
+OrdenServicio "1" -- "0..1" Diagnostico
+OrdenServicio "1" -- "1..*" HistorialEstadoOrden
+OrdenServicio "1" -- "0..*" Presupuesto
+Presupuesto "1" -- "0..*" DetallePresupuesto
+OrdenServicio "1" -- "0..1" Entrega
+
+' Referencia comercial opcional: cotizar no reserva ni consume stock.
+Repuesto "0..1" -- "0..*" DetallePresupuesto
+
+OrdenServicio "1" -- "0..*" Reparacion
+Reparacion "1" -- "0..*" Prueba
+Reparacion "1" -- "0..*" ReparacionRepuesto
+Repuesto "1" -- "0..*" ReparacionRepuesto
+Repuesto "1" -- "0..*" MovimientoStock
+
+Proveedor "1" -- "0..*" Compra
+Compra "1" -- "0..*" DetalleCompra
+Repuesto "1" -- "0..*" DetalleCompra
+
+' La cobertura es unica por orden original; los reingresos son otras ordenes.
+OrdenServicio "1" -- "0..1" Garantia
+Garantia "1" -- "0..*" EvaluacionGarantia
+OrdenServicio "1" -- "0..1" EvaluacionGarantia
+
+IUsuario <|.. Usuario
+IPermisoComponent <|.. PermisoComponent
+PermisoComponent <|-- PermisoSimple
+PermisoComponent <|-- FamiliaPermiso
+
+' Un componente puede ser compartido por varias familias.
+FamiliaPermiso "0..*" --> "0..*" IPermisoComponent
+
+IIdioma <|.. Idioma
+IPalabra <|.. Palabra
+ITraduccion <|.. Traduccion
+Idioma "1" --> "0..*" ITraduccion
+Traduccion --> IPalabra
+
+Exception <|-- ReglaNegocioException
+Exception <|-- UsuarioYaExisteException
+Exception <|-- UsuarioNoExisteException
+
+ReglaNegocioException <|-- ClienteDocumentoDuplicadoException
+ReglaNegocioException <|-- DetallePresupuestoInvalidoException
+ReglaNegocioException <|-- OrdenOriginalSoloConsultaException
+ReglaNegocioException <|-- ReingresoGarantiaAbiertoException
+ReglaNegocioException <|-- ReingresoGarantiaOrigenNoDisponibleException
+
+OrdenServicio ..> EstadoOrdenServicio
+OrdenServicio ..> ResultadoOrdenServicio
+OrdenServicio ..> TipoOrden
+Presupuesto ..> EstadoPresupuesto
+Presupuesto ..> TipoPresupuesto
+DetallePresupuesto ..> TipoItemPresupuesto
+Prueba ..> ResultadoPrueba
+MovimientoStock ..> TipoMovimientoStock
+Compra ..> EstadoCompra
+EvaluacionGarantia ..> EstadoEvaluacionGarantia
+
+@enduml

@@ -1,0 +1,826 @@
+{
+    "schema_version":  1,
+    "features":  [
+                     {
+                         "id":  "feat-001",
+                         "name":  "Minimal repository harness and visual workflow acceptance",
+                         "description":  "Add persistent task state, read-only Windows verification, and session lifecycle rules. Require visual form-based acceptance of affected state transitions and reversal cycles for future behavior changes.",
+                         "type":  "documentation",
+                         "authorized_files":  [
+                                                  "AGENTS.md",
+                                                  "docs/agents/README.md",
+                                                  "docs/agents/development-and-testing.md",
+                                                  "feature_list.json",
+                                                  "progress.md",
+                                                  "init.ps1"
+                                              ],
+                         "dependencies":  [
+
+                                          ],
+                         "status":  "done",
+                         "acceptance_criteria":  [
+                                                     {
+                                                         "description":  "Startup routes to state and read-only verification; completion and session closure require recorded evidence.",
+                                                         "verified":  true
+                                                     },
+                                                     {
+                                                         "description":  "The verifier checks state, dependencies, completion evidence, visual scenario gates, and relative documentation links without building, launching, or accessing a database.",
+                                                         "verified":  true
+                                                     },
+                                                     {
+                                                         "description":  "Behavior acceptance prioritizes real desktop form flows, allowed and blocked transitions, reversals, repeated cycles, and persisted readback; missing visual evidence blocks completion.",
+                                                         "verified":  true
+                                                     },
+                                                     {
+                                                         "description":  "Checks and limitations are recorded; application files and preexisting local files are preserved.",
+                                                         "verified":  true
+                                                     }
+                                                 ],
+                         "visual_scenarios":  [
+
+                                              ],
+                         "evidence":  "2026-10-03: init.ps1 passed state/completion checks, 159 relative file links, and git diff --check. Fourteen isolated negative checks rejected invalid state/dependencies/scope and unsupported completion claims without changing repository harness hashes. Structural audit improved from 36 to 84/100. Source/content/diff review confirmed the six-file authorized scope and visual acceptance policy. See progress.md for commands, boundaries, and next action. No application build, launch, or database exercise was performed."
+                     },
+                     {
+                         "id":  "feat-002",
+                         "name":  "Local desktop-testing environment and visual state-machine validation",
+                         "description":  "Install an optional machine-local toolset (Windows-MCP 0.8.7 + pywinauto 0.6.9 under %LOCALAPPDATA%, external OpenCode config and launcher), build the application, and validate the state machine through real form interaction against the authorized non-production database. Keep installs and detailed evidence outside the repository; document how to replicate them.",
+                         "type":  "documentation",
+                         "authorized_files":  [
+                                                  "AGENTS.md",
+                                                  "docs/agents/README.md",
+                                                  "docs/agents/development-and-testing.md",
+                                                  "docs/agents/desktop-testing.md",
+                                                  "feature_list.json",
+                                                  "progress.md"
+                                              ],
+                         "dependencies":  [
+                                              "feat-001"
+                                          ],
+                         "status":  "done",
+                         "acceptance_criteria":  [
+                                                     {
+                                                         "description":  "External environments, pinned versions, launcher, and read-only environment check exist outside the repository; the app builds and runs without them.",
+                                                         "verified":  true
+                                                     },
+                                                     {
+                                                         "description":  "Both drivers were validated on a throwaway window with real input, including their documented limitations.",
+                                                         "verified":  true
+                                                     },
+                                                     {
+                                                         "description":  "Budget, repair, test, reopen, delivery, delivery-cancellation and warranty re-entry cycles were exercised through the forms with observed states and results.",
+                                                         "verified":  true
+                                                     },
+                                                     {
+                                                         "description":  "Replicable documentation was added and linked from the guides; test records were kept for owner review as requested.",
+                                                         "verified":  true
+                                                     }
+                                                 ],
+                         "visual_scenarios":  [
+                                                  {
+                                                      "id":  "vis-budget-cycle",
+                                                      "description":  "Emit budget -\u003e cancel the annulment dialog (regret) -\u003e annul with reason -\u003e re-emit -\u003e approve.",
+                                                      "status":  "passed",
+                                                      "evidence":  "progress.md verification table and external evidence visual-validation-20261003.md; observed Esperando respuesta -\u003e (unchanged) -\u003e Pendiente presupuesto -\u003e Esperando respuesta -\u003e Autorizado reparacion on order 1004."
+                                                  },
+                                                  {
+                                                      "id":  "vis-repair-tests-cycle",
+                                                      "description":  "Start/finish repair, register approved and failed tests, annul the failed test, finalize, reopen tests, finalize again.",
+                                                      "status":  "passed",
+                                                      "evidence":  "External evidence visual-validation-20261003.md; observed En pruebas -\u003e Listo retiro/Reparado -\u003e En pruebas (result cleared) -\u003e Listo retiro/Reparado."
+                                                  },
+                                                  {
+                                                      "id":  "vis-delivery-cycle",
+                                                      "description":  "Deliver -\u003e cancel delivery with reason -\u003e finalize -\u003e deliver again; also on a NoReparable order.",
+                                                      "status":  "passed",
+                                                      "evidence":  "External evidence visual-validation-20261003.md; orders 1002 (No reparable result retained) and 1005 (repaired delivery returned to En pruebas, result cleared)."
+                                                  },
+                                                  {
+                                                      "id":  "vis-warranty-reentry",
+                                                      "description":  "Automatic 30-day warranty on delivery, then warranty re-entry from the delivered order, reparable diagnosis and acceptance.",
+                                                      "status":  "passed",
+                                                      "evidence":  "External evidence visual-validation-20261003.md; warranty row Vigente for order 1005; re-entry order 1006 Recibido -\u003e Pendiente evaluacion garantia -\u003e Autorizado reparacion with the original untouched."
+                                                  }
+                                              ],
+                         "evidence":  "2026-10-03: MSBuild Debug/Any CPU build succeeded for all six projects. Windows-MCP and pywinauto validated on a throwaway WinForms window with real input. Five AGENT_ test orders (1002-1006) exercised the budget, repair, test-annulment, reopen, delivery, delivery-cancellation and warranty re-entry transitions through the forms; records intentionally kept for review. External tooling at %LOCALAPPDATA%\\ServicioTecnicoDesktopTests; detailed evidence in its evidence\\visual-validation-20261003.md. Repository changes: this tracker, progress.md, docs/agents/desktop-testing.md, and guide links only."
+                     },
+                     {
+                         "id":  "feat-003",
+                         "name":  "Scoped test policy and full business test catalogue",
+                         "description":  "Adopt scoped acceptance for feature tasks (only the affected transitions and direct effects) and restrict full or partial business-flow sweeps to explicit user requests. Add the maintained business test catalogue covering every business module with reversal, regret, blocked and repeated cycles, cross-module interactions, known-defect findings and execution phases A-F. Record the handoff for executing sweeps in a new session.",
+                         "type":  "documentation",
+                         "authorized_files":  [
+                                                  "AGENTS.md",
+                                                  "docs/agents/README.md",
+                                                  "docs/agents/development-and-testing.md",
+                                                  "docs/agents/business-test-catalogue.md",
+                                                  "feature_list.json",
+                                                  "progress.md"
+                                              ],
+                         "dependencies":  [
+                                              "feat-001",
+                                              "feat-002"
+                                          ],
+                         "status":  "done",
+                         "acceptance_criteria":  [
+                                                     {
+                                                         "description":  "Policy scopes per-task acceptance and limits full sweeps to explicit user requests.",
+                                                         "verified":  true
+                                                     },
+                                                     {
+                                                         "description":  "The catalogue covers every business module with reversal/regret/blocked/repeat scenarios, cross-module effects, known defects and phases A-F.",
+                                                         "verified":  true
+                                                     },
+                                                     {
+                                                         "description":  "Guides and index link the catalogue; the harness verifier passes.",
+                                                         "verified":  true
+                                                     },
+                                                     {
+                                                         "description":  "A handoff for executing sweeps in a new chat is recorded.",
+                                                         "verified":  true
+                                                     },
+                                                     {
+                                                         "description":  "Coverage audit against the real module inventory closed gaps: golden path, list quick paths, cross-cutting checks and missing module scenarios.",
+                                                         "verified":  true
+                                                     }
+                                                 ],
+                         "visual_scenarios":  [
+
+                                              ],
+                         "evidence":  "2026-10-03: docs-only task. Added docs/agents/business-test-catalogue.md (18 sections: CLI, EQP, CAT, ORD, DIA, PRE, ADI, REP, PRU, ENT, STK, PRO, COM, GAR, DSH, INF, PERM-01, INT plus cross-cutting HIST/LIST/LANG; known defects marked as findings; phases A-F; golden path). Coverage audit compared APPLICATION/Features (16 folders; 6 administration excluded) and PRESENTATION/Forms against the catalogue: all business modules covered; gaps closed (golden path, ORD-08/ENT-08 cancellation and quick-delivery from the orders list, COM-10 purchase list actions, PRE-13 draft persistence, GAR-11 view original, STK-01 initial-stock fields, HIST-01/LIST-01/LANG-01 cross-cutting checks). Scoped-acceptance policy added to AGENTS.md and development-and-testing.md; catalogue linked from the index. Handoff recorded in progress.md. No application build, launch, or database write was performed; sweeps will run in a new session with the external environment."
+                     },
+                     {
+                         "id":  "feat-004",
+                         "name":  "Business-flow sweep A-F on the authorized test database",
+                         "description":  "Execute the business test catalogue phases A-F through the real WinForms UI against the authorized non-production database, using the external pywinauto environment, and record passed, blocked and defective outcomes with evidence.",
+                         "type":  "behavior",
+                         "authorized_files":  [
+                                                  "feature_list.json",
+                                                  "progress.md",
+                                                  "docs/agents/known-limitations.md"
+                                              ],
+                         "dependencies":  [
+                                              "feat-003"
+                                          ],
+                         "status":  "done",
+                         "acceptance_criteria":  [
+                                                     {
+                                                         "description":  "The application builds and the external desktop environment is ready.",
+                                                         "verified":  true
+                                                     },
+                                                     {
+                                                         "description":  "The golden path (order reception through delivery and warranty) is exercised through the forms with readback.",
+                                                         "verified":  true
+                                                     },
+                                                     {
+                                                         "description":  "Budget, additional, repair, test, delivery, purchase and master reversals are exercised.",
+                                                         "verified":  true
+                                                     },
+                                                     {
+                                                         "description":  "The confirmed defects COM-07, GAR-08 and INF-11 are reproduced and recorded as findings, not passes.",
+                                                         "verified":  true
+                                                     },
+                                                     {
+                                                         "description":  "Every catalogue row is executed or explicitly recorded as not executed with the reason.",
+                                                         "verified":  true
+                                                     }
+                                                 ],
+                         "visual_scenarios":  [
+                                                  {
+                                                      "id":  "vis-sweep-golden-path",
+                                                      "description":  "Order 2002: reception, assignment, reparable diagnosis, original budget emit+approve, repair with consumption, approved tests, delivery and automatic warranty.",
+                                                      "status":  "passed",
+                                                      "evidence":  "external evidence sweep-20261003B.md; observed Recibido -\u003e AutorizadoReparacion -\u003e EnReparacion (stock 10-\u003e8) -\u003e EnPruebas -\u003e ListoRetiro/Reparado -\u003e Entregado; warranty id 3."
+                                                  },
+                                                  {
+                                                      "id":  "vis-sweep-budget-reversal",
+                                                      "description":  "Order 2005: emit original, regret the annulment, annul pending, re-emit and approve.",
+                                                      "status":  "passed",
+                                                      "evidence":  "external evidence sweep-20261003B.md; EsperandoRespuesta -\u003e (unchanged) -\u003e PendientePresupuesto -\u003e EsperandoRespuesta -\u003e AutorizadoReparacion."
+                                                  },
+                                                  {
+                                                      "id":  "vis-sweep-additional",
+                                                      "description":  "Order 2005: request additional, emit, approve and resume the repair origin.",
+                                                      "status":  "passed",
+                                                      "evidence":  "external evidence sweep-20261003B.md; Autorizado -\u003e PendientePresupuesto -\u003e EsperandoRespuesta -\u003e AutorizadoReparacion."
+                                                  },
+                                                  {
+                                                      "id":  "vis-sweep-tests-reversal",
+                                                      "description":  "Order 2005: annul a non-latest test, finalize with a revision result, reopen, and block finalization with no valid tests.",
+                                                      "status":  "passed",
+                                                      "evidence":  "external evidence sweep-20261003B.md; EnReparacion/NULL after failure, EnPruebas/NULL after reopen, unchanged when no valid tests."
+                                                  },
+                                                  {
+                                                      "id":  "vis-sweep-delivery-warranty",
+                                                      "description":  "Deliver, cancel delivery, re-finalize tests, re-deliver, and re-entry by warranty with acceptance.",
+                                                      "status":  "passed",
+                                                      "evidence":  "external evidence sweep-20261003B.md; delivered order 2 and 2002 created warranties; re-entry 2003 accepted to AutorizadoReparacion."
+                                                  },
+                                                  {
+                                                      "id":  "vis-sweep-masters-purchases",
+                                                      "description":  "Masters create/duplicate/deactivate and purchases draft/confirm/cancel/annul with stock readback.",
+                                                      "status":  "passed",
+                                                      "evidence":  "external evidence sweep-20261003B.md; duplicate rejection, deactivate/reactivate cycles, stock 10-\u003e15-\u003e10 on annul."
+                                                  },
+                                                  {
+                                                      "id":  "vis-sweep-dashboard",
+                                                      "description":  "Six dashboard KPIs match the database.",
+                                                      "status":  "passed",
+                                                      "evidence":  "external evidence sweep-20261003B.md; abiertas 5, reparacion 0, esperando 0, listas 2, garantias 3, bajo minimo 1."
+                                                  }
+                                              ],
+                         "evidence":  "2026-10-04: full sweep A-F run 20261003B on TPIntegrador completed. All 144 catalogue rows executed or explicitly recorded. PASS for CLI/EQP/CAT/PRO/STK, COM (except COM-07), ORD/DIA/PRE/ADI/REP (except REP-07 blocked)/PRU/ENT, GAR (except GAR-08), DSH, INF-01..10, HIST-01, LIST-01, LANG-01, PERM-01 and INT-01..05. Findings tracked for fixing in feat-005: COM-07 (per-row stock over-reversal), GAR-08 (retiro with reason containing \u0027pago\u0027 takes the paid branch), INF-11 (final-day report boundary). REP-07 partial return is BLOCKED (UI returns the whole part/cost group). Fixtures and full log at %LOCALAPPDATA%\\ServicioTecnicoDesktopTests; external sweep-20261003B.md."
+                     },
+                     {
+                         "id":  "feat-005",
+                         "name":  "Fix confirmed defects COM-07, GAR-08 and INF-11",
+                         "description":  "Correct the three defects confirmed by the business-flow sweep: purchase annulment stock over-reversal with repeated part rows, warranty rejection paid/withdrawal inference from the reason text, and the report final-day boundary.",
+                         "type":  "behavior",
+                         "authorized_files":  [
+                                                  "INFRASTRUCTURE/Features/Compras/CompraRepository.cs",
+                                                  "APPLICATION/Features/Ordenes/OrdenServicioService.cs",
+                                                  "PRESENTATION/Forms/Ordenes/FrmOrdenServicioDetalle.cs",
+                                                  "PRESENTATION/Forms/Reportes/FrmReportes.cs",
+                                                  "INFRASTRUCTURE/Features/Reportes/ReporteRepository.cs",
+                                                  "feature_list.json",
+                                                  "progress.md",
+                                                  "docs/agents/known-limitations.md"
+                                              ],
+                         "dependencies":  [
+                                              "feat-004"
+                                          ],
+                         "status":  "done",
+                         "acceptance_criteria":  [
+                                                     {
+                                                         "description":  "COM-07: purchase annulment validates the aggregate quantity per part before reversing.",
+                                                         "verified":  true
+                                                     },
+                                                     {
+                                                         "description":  "GAR-08: warranty rejection uses an explicit paid/withdrawal decision instead of a reason substring.",
+                                                         "verified":  true
+                                                     },
+                                                     {
+                                                         "description":  "INF-11: reports include records made on the selected final day.",
+                                                         "verified":  true
+                                                     }
+                                                 ],
+                         "visual_scenarios":  [
+                                                  {
+                                                      "id":  "vis-fix-com07",
+                                                      "description":  "Annul a confirmed purchase with repeated part rows and insufficient aggregate stock: must be blocked with no negative stock; with coverage it reverses exactly.",
+                                                      "status":  "passed",
+                                                      "evidence":  "UI + DB: aggregate 2 \u003e stock 1 -\u003e blocked, stock stays 1; coverage 2 -\u003e Cancelada, stock 2-\u003e0, 2 movements; repeat annul rejected; COM-06 single-row still blocked."
+                                                  },
+                                                  {
+                                                      "id":  "vis-fix-gar08",
+                                                      "description":  "Reject a warranty re-entry choosing withdrawal with a reason containing \u0027pago\u0027: must end in ListoRetiro/GarantiaNoCubierta; paid and accept paths unchanged.",
+                                                      "status":  "passed",
+                                                      "evidence":  "UI + DB: withdrawal + \u0027pago\u0027 -\u003e GarantiaNoCubierta; paid -\u003e PendientePresupuesto; withdrawal without \u0027pago\u0027 -\u003e GarantiaNoCubierta; accept -\u003e AutorizadoReparacion."
+                                                  },
+                                                  {
+                                                      "id":  "vis-fix-inf11",
+                                                      "description":  "Report with the final date set to a day with records: those records must be included and later days excluded.",
+                                                      "status":  "passed",
+                                                      "evidence":  "UI + DB: Desde=Hasta=2026-10-04 report equals the DB for that day and excludes later records; INF-07/INF-09 range values match the DB."
+                                                  }
+                                              ],
+                         "evidence":  "2026-10-05: fixes applied and verified through the real UI with database readback. COM-07 (CompraRepository aggregate guard), GAR-08 (EvaluarReingreso explicit continuarPago + UI destination), INF-11 (ReporteRepository \u003c DATEADD(day,1,@Hasta)). Build Debug/Any CPU passed; affected rows and neighbours re-run; guides and tracker updated. External evidence: %LOCALAPPDATA%\\ServicioTecnicoDesktopTests\\evidence\\sweep-20261003B."
+                     },
+                     {
+                         "id":  "feat-006",
+                         "name":  "Unique customer identity (documento) across active and disabled records",
+                         "description":  "Owner report: clientes can currently be created repeatedly with the same documento (DNI). Make the customer documento unique, including against disabled (inactive) clientes, and stop a new record from silently reusing identity data already held by a disabled record. Telefono and email must stay non-unique and freely shareable. The planner must confirm whether Usuarios can express identity duplication at all (the table currently stores only username/password/activo) and record the finding instead of inventing personal-data columns.",
+                         "type":  "behavior",
+                         "authorized_files":  [
+                                                  "DOMAIN/Features/Clientes/Cliente.cs",
+                                                  "APPLICATION/Features/Clientes/ClienteService.cs",
+                                                  "INFRASTRUCTURE/Features/Clientes/ClienteRepository.cs",
+                                                  "PRESENTATION/Forms/Clientes/FrmClienteEditar.cs",
+                                                  "PRESENTATION/Forms/Clientes/FrmClientes.cs",
+                                                  "APPLICATION/Features/Usuarios/UsuarioService.cs",
+                                                  "INFRASTRUCTURE/Features/Usuarios/UsuarioRepository.cs",
+                                                  "PRESENTATION/Forms/Auth/FrmAdministrarUsuarios.cs",
+                                                  "INFRASTRUCTURE/Features/Idiomas/IdiomaRepository.cs",
+                                                  "docs/agents/persistence.md",
+                                                  "docs/agents/business-flows.md",
+                                                  "docs/agents/known-limitations.md",
+                                                  "feature_list.json",
+                                                  "progress.md"
+                                              ],
+                         "dependencies":  [
+                                              "feat-005"
+                                          ],
+                         "status":  "done",
+                         "acceptance_criteria":  [
+                                                     {
+                                                         "description":  "Creating a cliente with a documento already used by an active cliente is rejected with a business message that names the existing record; a distinct documento still creates the cliente.",
+                                                         "verified":  true
+                                                     },
+                                                     {
+                                                         "description":  "A disabled (inactive) cliente keeps reserving its documento: creating a new cliente with that documento is rejected, while editing the disabled record itself stays possible.",
+                                                         "verified":  true
+                                                     },
+                                                     {
+                                                         "description":  "Editing a cliente to a documento owned by another record is rejected, and saving its own unchanged documento still succeeds.",
+                                                         "verified":  true
+                                                     },
+                                                     {
+                                                         "description":  "Telefono and email remain non-unique: two clientes may share the same phone and the same email.",
+                                                         "verified":  true
+                                                     },
+                                                     {
+                                                         "description":  "Uniqueness is enforced on the persistence path (idempotent unique index or equivalent guard that also tolerates pre-existing duplicates) and validated in the service; no form contains direct SQL.",
+                                                         "verified":  true
+                                                     },
+                                                     {
+                                                         "description":  "User administration does not silently accept data that a disabled user already holds: the admin sees a clear business message instead of a raw database error, or the finding is recorded as already covered with evidence.",
+                                                         "verified":  true
+                                                     }
+                                                 ],
+                         "visual_scenarios":  [
+                                                  {
+                                                      "id":  "vis-uniq-cliente-duplicate",
+                                                      "description":  "Create a cliente with a documento already used by an active cliente: blocked with a business message and no new row; a different documento creates normally.",
+                                                      "status":  "passed",
+                                                      "evidence":  "UI+DB: AGENT_006_A created (id 3004, documento AGENT006D1). Two consecutive create attempts with AGENT006D1 blocked by \u0027El documento AGENT006D1 ya pertenece a AGENT_006_A AGENT006 (ID 3004). Edite el registro existente.\u0027; no row added (grid and SELECT COUNT(*) documento=AGENT006D1 stayed 1). AGENT_006_C created normally with AGENT006D2 (id 3005). After closing and reopening the list: 8 pre-existing rows + 3004/3005/3006, D1 owned once. EN (Ingles) message: \u0027Document AGENT006D1 already belongs to AGENT_006_A AGENT006 (ID 3004). Edit the existing record.\u0027"
+                                                  },
+                                                  {
+                                                      "id":  "vis-uniq-cliente-disabled",
+                                                      "description":  "Disable a cliente, then create a new one with the same documento: blocked. Edit the disabled cliente itself: allowed. Two clientes sharing telefono and email: allowed.",
+                                                      "status":  "passed",
+                                                      "evidence":  "UI+DB: desactivation dialog dismissed with No -\u003e activo(3004) remained 1 and the grid was unchanged; confirmed Yes -\u003e \u0027Operacion realizada exitosamente.\u0027 and activo=0. Create with AGENT006D1 blocked: \u0027El documento AGENT006D1 ya pertenece a AGENT_006_A AGENT006 (ID 3004), un cliente inactivo. Marque Ver inactivos para editarlo o reactivarlo.\u0027 With Ver inactivos ticked the disabled row is listed (Activo=0) and editing it while keeping AGENT006D1 succeeded (telefono 555006001 -\u003e 555006999, documento and activo=0 unchanged). AGENT_006_D (id 3006) was then created with the same telefono 555006999 and the same email agent006a@test.local as A: readback shows both rows. Reactivating A returned activo=1 and the repeated D1 attempt showed the active-owner message."
+                                                  },
+                                                  {
+                                                      "id":  "vis-uniq-cliente-edit",
+                                                      "description":  "Edit a cliente onto another cliente documento: blocked; re-save with its own documento: accepted; ES/EN messages shown.",
+                                                      "status":  "passed",
+                                                      "evidence":  "UI+DB: AGENT_006_C (id 3005, AGENT006D2) edited onto AGENT006D1 was blocked with \u0027El documento AGENT006D1 ya pertenece a AGENT_006_A AGENT006 (ID 3004). Edite el registro existente.\u0027; immediately after and again after closing/reopening the list the database still showed 3005=AGENT006D2 and 3004=AGENT006D1 with exactly one row holding D1. Re-saving C with its own AGENT006D2 succeeded, changing it to the free AGENT006D4 persisted, and changing it back to AGENT006D2 persisted; re-saving A with its own D1 also succeeded. ES and EN templates both observed (see vis-uniq-cliente-duplicate evidence)."
+                                                  },
+                                                  {
+                                                      "id":  "vis-uniq-usuario-disabled",
+                                                      "description":  "Disable a system user, then create a user with the same username: a clear business message is shown and no raw SQL error reaches the UI.",
+                                                      "status":  "passed",
+                                                      "evidence":  "UI+DB: non-session user AGENT_006_USR created (id 9); the elimination confirmation dismissed with No left activo=1, then confirmed Yes -\u003e \u0027Usuario eliminado exitosamente.\u0027 and activo=0. Creating the same username again was blocked with \u0027El nombre de usuario AGENT_006_USR ya existe, incluso si la cuenta esta inactiva. Edite o reactive la cuenta existente.\u0027 - a business message, not a raw SQL error - and COUNT(*) for that username stayed 1. Editing AGENT_006_USR2 (id 10) onto that username was blocked with the same message and USR2 was unchanged. Reactivation restored activo=1. EN: \u0027Username AGENT_006_USR already exists, even if the account is inactive. Edit or reactivate the existing account.\u0027"
+                                                  }
+                                              ],
+                         "evidence":  "2026-10-13: Builder implemented feat-006 in source and built it; no runtime or database exercise was performed. DOMAIN/Features/Clientes/Cliente.cs adds ClienteDocumentoDuplicadoException (id, name, surname, documento and active flag of the existing owner). ClienteRepository.Inicializar installs UX_Clientes_Documento only when the index is absent and no duplicate documento group exists (inactive rows included, legacy duplicates left untouched); ClienteRepository.Agregar/Modificar perform the ownership check and the DML in the same ExecuteTransaction batch under TABLOCKX,HOLDLOCK and convert conflicts plus 2601/2627 into the typed exception; ClienteRepository.ObtenerConflictoDocumento(documento, idExcluir) is the read-side lookup that grandfathers a row\u0027s own unchanged documento. ClienteService.Crear/Modificar pre-check before writing and rethrow the concrete type. FrmClientes.MostrarError/MostrarDocumentoDuplicado show the translated owner template by exception type only. UsuarioService.Modificar plus UsuarioRepository.Modificar handle a username already held by an inactive account, and FrmAdministrarUsuarios shows Mensaje.UsuarioYaExiste. IdiomaRepository.SembrarDatosIniciales seeds the three ES/EN keys. Verified: MSBuild Debug/Any CPU build of all six projects passed (exit 0); git diff --check clean; init.ps1 passed. Not verified: application launch, startup migration, database reads/writes, concurrency and the four vis-uniq-* scenarios, which remain planned. Next action for the Checker: run vis-uniq-cliente-duplicate, vis-uniq-cliente-disabled, vis-uniq-cliente-edit and vis-uniq-usuario-disabled through the real WinForms UI against the authorized non-production database. Checker verification (2026-10-13, later session; real WinForms UI + read-only DB readback on the authorized non-production database TPIntegrador on localhost,1433 - container host 03b0f931595f, SQL Server Developer Edition): all six acceptance criteria verified and the four vis-uniq-* scenarios passed with observed messages, ids and persisted rows. MSBuild Debug/Any CPU rebuilt all six projects (exit 0), init.ps1 passed and git diff --check is clean. UX_Clientes_Documento is ABSENT in this database because it already contains 3 duplicate documento groups, so the index was skipped by design and the transactional guard was the runtime enforcement path (the CREATE UNIQUE INDEX branch and the 2601/2627 fallback were not runtime-exercised); the 8 pre-existing Clientes rows and 8 pre-existing users were left byte-identical and nothing was deleted. New fixtures: Clientes 3004 (AGENT_006_A/AGENT006D1), 3005 (AGENT_006_C/AGENT006D2), 3006 (AGENT_006_D/AGENT006D3) and usuarios 9 (AGENT_006_USR), 10 (AGENT_006_USR2), all left active. Affected catalogue rows re-run: CLI-01..05, CLI-07, CLI-08, filters, and the user administration create/edit/disable/reactivate path. Not re-tested: parallel execution, the index-install branch, and the 2601/2627 fallback."
+                     },
+                     {
+                         "id":  "feat-007",
+                         "name":  "Budget detail: enable the spare-part (Repuesto) item type",
+                         "description":  "Owner report: in an order budget the item-type selector only offers Mano de obra and Servicio, so a Repuesto item cannot be added even though TipoItemPresupuesto.Repuesto and the PresupuestoDetalle part reference already exist. Make the spare-part type selectable with an explicit spare-part choice, and define its economics and stock effect from the existing infrastructure instead of inventing a parallel design. Approved budgets must stay immutable.",
+                         "type":  "behavior",
+                         "authorized_files":  [
+                                                  "DOMAIN/Features/Ordenes/TipoItemPresupuesto.cs",
+                                                  "DOMAIN/Features/Ordenes/DetallePresupuesto.cs",
+                                                  "DOMAIN/Features/Ordenes/Presupuesto.cs",
+                                                  "APPLICATION/Features/Ordenes/OrdenServicioService.cs",
+                                                  "INFRASTRUCTURE/Features/Ordenes/PresupuestoRepository.cs",
+                                                  "INFRASTRUCTURE/Features/Repuestos/RepuestoRepository.cs",
+                                                  "INFRASTRUCTURE/Features/Idiomas/IdiomaRepository.cs",
+                                                  "PRESENTATION/Forms/Ordenes/FrmOrdenServicioDetalle.cs",
+                                                  "PRESENTATION/Forms/Ordenes/FrmOrdenServicioDetalle.Designer.cs",
+                                                  "docs/agents/business-flows.md",
+                                                  "docs/agents/persistence.md",
+                                                  "docs/agents/known-limitations.md",
+                                                  "feature_list.json",
+                                                  "progress.md"
+                                              ],
+                         "dependencies":  [
+                                              "feat-005"
+                                          ],
+                         "status":  "done",
+                         "acceptance_criteria":  [
+                                                     {
+                                                         "description":  "The budget detail type selector offers the spare-part type next to labour and service, with ES/EN labels.",
+                                                         "verified":  true
+                                                     },
+                                                     {
+                                                         "description":  "Choosing the spare-part type requires selecting a stock spare part: the part reference, quantity and price are persisted in the emitted budget detail and shown in the grid.",
+                                                         "verified":  true
+                                                     },
+                                                     {
+                                                         "description":  "Emitting a spare-part line without a valid part, quantity or price is blocked with a business message; no partial budget is written.",
+                                                         "verified":  true
+                                                     },
+                                                     {
+                                                         "description":  "The stock and cost effect of a spare-part budget line is documented and matches the implemented behaviour; approved budget economics are never mutated.",
+                                                         "verified":  true
+                                                     },
+                                                     {
+                                                         "description":  "Existing labour and service lines, the additional-budget flow, and annul/re-emit keep working unchanged.",
+                                                         "verified":  true
+                                                     }
+                                                 ],
+                         "visual_scenarios":  [
+                                                  {
+                                                      "id":  "vis-pre-repuesto-add",
+                                                      "description":  "Add a Repuesto line to a pending budget (pick part, quantity, price): the row is saved and displayed with the translated type; an incomplete line is blocked.",
+                                                      "status":  "passed",
+                                                      "evidence":  "UI+DB 2026-10-13 (real clicks/typing, pywinauto): ES selector [Mano de obra, Servicio, Repuesto] and EN [Labor, Service, Spare part]; grid headers ES [Repuesto, Tipo, Descripcion, Cantidad, Precio, Subtotal] and EN [Spare part, Type, Description, Quantity, Price, Subtotal]. Order 4007 (PendientePresupuesto): Add with type Repuesto and no part selected was blocked in ES (Seleccione un repuesto para el item del presupuesto.) and EN (Select a spare part for the estimate item.) with 0 grid rows and 0 PresupuestoDetalle rows; the description box left the UIA tree and the label became Repuesto:/Spare part:. Selecting AGENT_007_PART_A (id 1004, PrecioReferencia 150.00) prefilled 150.00; quantity 2 with an operator price of 175.00 produced the row AGENT_007_PART_A - ... | Repuesto | 2 | 175.00 | 350.00; remove plus re-add reproduced it; five type switches in ES and five in EN kept the typed description; AGENT_007_PART_Z (id 1005, reference 0.00, stock 0) was accepted at 0.00 with subtotal 0.00. Saving the draft stored PresupuestoDetalle 4016 (id_repuesto 1004, 2, 175.00, 350.00) and 4017 (id_repuesto 1005, 3, 0.00, 0.00) and both survived closing and reopening the order in ES and EN. On the persisted budget CBO_PTipo, Add, quantity and price were disabled. The picker rendered at 900x600 and 2000x1200. A live ES/EN switch while the modal form is open is not reachable (see progress.md)."
+                                                  },
+                                                  {
+                                                      "id":  "vis-pre-repuesto-emit",
+                                                      "description":  "Emit and approve a budget containing a Repuesto line: the detail persists after reopening, the order advances, and the stock/economic effect matches the documented rule.",
+                                                      "status":  "passed",
+                                                      "evidence":  "UI+DB 2026-10-13: the saved draft on order 4007 (Presupuesto 2026) was published through BTN_Emitir and the order reached EsperandoRespuesta; PresupuestoDetalle 4016-4019 stayed byte-identical (id_repuesto 1004 and 1005, 175.00/350.00 and 0.00/0.00) and the header kept subtotal/total 1850.00. Emit proof of no stock effect: MovimientosStock 61 -\u003e 61, ReparacionRepuesto 5 -\u003e 5, AGENT_007_PART_A 1004|150.00|100.00|5|1 unchanged, AGENT_007_PART_Z 1005|0.00|10.00|0|1 unchanged, per-part movement and consumption lists unchanged; only one HistorialOrdenes row was added (the documented Borrador -\u003e EsperandoRespuesta transition). Reopening showed the same rows. Approving reached AutorizadoReparacion with subtotal/total 1850.00 unchanged and still no movement or consumption. The part master was then changed through the Inventario UI from PrecioReferencia 150.00/CostoActual 100.00 to 888.00/333.00 and the quoted line stayed 175.00/350.00 in the grid and in the database. Starting the repair (EnReparacion) and consuming AGENT_007_PART_A quantity 1 moved stock 5 -\u003e 4 and created ReparacionRepuesto 1007 with costo_unitario 333.00 (the cost at that moment) while the budget detail stayed identical. Blocked path: order 4008 staged a Repuesto line (AGENT_007_PART_D, id 1006, 1 x 70.00) into Borrador 2027 (detail 4020), the part was deactivated in the master, and publishing was blocked with El repuesto seleccionado no existe o esta inactivo. Seleccione un repuesto activo. - the order stayed PendientePresupuesto, 2027 stayed Borrador, detail 4020 was unchanged, the table counts and the order history did not change and the inactive part line was still displayed by its captured reference. AGENT_007_PART_D was reactivated afterwards."
+                                                  },
+                                                  {
+                                                      "id":  "vis-pre-repuesto-regression",
+                                                      "description":  "Labour and service lines, the additional budget flow, and annulling a budget that contains a Repuesto line still behave as before.",
+                                                      "status":  "passed",
+                                                      "evidence":  "UI+DB 2026-10-13 on order 4009: direct emission (no draft) of Mano de obra 1 x 1000.00 + Servicio 2 x 250.00 + Repuesto 2 x 70.00 (AGENT_007_PART_D) with discount 140.00 produced Presupuesto 2028 with subtotal 1640.00, discount 140.00 and total 1500.00, detail 4021-4023 with id_repuesto 1006 on 4023, and no stock change. Annul regrets all left the document Pendiente: cancelling the reason dialog, submitting an empty reason (Complete los campos obligatorios de la orden.) and answering No to the confirmation; the confirmed annul returned the order to PendientePresupuesto with 2028 Anulado, its quoted detail retained and no stock reversal. Re-emission as a new original (selector entry (nuevo original)) created Presupuesto 2029 (270.00, detail 4024 with id_repuesto 1006 and 4025 labour) while 2028 stayed Anulado; approving reached AutorizadoReparacion and starting the repair reached EnReparacion, where annulling the approved original was blocked (No se puede anular el presupuesto aprobado porque la orden ya tiene reparaciones iniciadas.) with the state and documents unchanged. Additional-budget neighbours: regret on the reason dialog left the order unchanged, a request reached PendientePresupuesto, cancelling it restored EnReparacion, a re-request reached PendientePresupuesto again, and a part-containing additional draft (Presupuesto 2030, Borrador 190.00, detail 4026 with id_repuesto 1006 1 x 90.00) published and approved back to EnReparacion with no stock movement. Control probes on the editable order 4010 (nothing persisted): a typed quantity 0 was coerced to 1 by the control, a three-decimal price 70.555 was refused by the domain rule (Ingrese un precio unitario valido, no negativo y con hasta dos decimales.) with no row written, a typed -5 was coerced to 0.00 and the zero-price row was accepted, and a typed 99999999 was coerced to 10000000.00; PresupuestoDetalle rows for order 4010 stayed 0."
+                                                  }
+                                              ],
+                         "evidence":  "2026-10-13: Builder implemented feat-007 in source and built it; no runtime or database exercise was performed. DOMAIN/Features/Ordenes/DetallePresupuesto.cs: CrearNuevo gains a trailing optional int? idRepuesto accepted only for TipoItemPresupuesto.Repuesto, ValidarParaGuardar revalidates the factory rules (including rows hydrated by CargarDesdeDB) plus subtotal/cantidad/precio consistency and decimal(18,2) representability, and DetallePresupuestoInvalidoException carries the translation key in the same compiled file. TipoItemPresupuesto.cs documents the quotation-only, no-stock-effect rule. OrdenServicioService.ValidarItemsYCalcularSubtotal validates every line and, for each Repuesto line, requires an existing active part through RepuestoRepository.ObtenerPorId without requiring stock or replacing the selling price; PublicarBorrador loads the stored detail, revalidates it and rejects an inconsistent stored subtotal instead of repairing persisted economics; EmitirPresupuesto, EmitirAdicional, CrearBorrador and PublicarBorrador rethrow with throw; so the typed exception survives. PresupuestoRepository.EmitirConDetalle and CrearBorrador persist nullable @IdRepuesto\u003ci\u003e instead of forcing NULL (single-transaction batches and readback unchanged); RepuestoRepository received a comment-only correction. FrmOrdenServicioDetalle.Designer.cs adds the budget-only CBO_PRepuesto in the TXT_PDesc slot; FrmOrdenServicioDetalle.cs lists the Repuesto type with ES/EN labels, loads active parts with SelectedIndex = -1, prefills PrecioReferencia into the editable price, snapshots codigo - descripcion, shows the Columna.Repuesto grid column (blank for non-part rows, numeric FK underneath), keeps Add failures intact and translates the typed exception by key. IdiomaRepository seeds TipoItem.Repuesto and five Mensaje.Presupuesto* keys. Verified: MSBuild Debug/Any CPU compiled all six projects with exit 0 when the UI project output was redirected outside the repository (the documented solution build exits 1 only because the running UI.exe, PID 69672, locks PRESENTATION\\bin\\Debug); git diff --check clean; init.ps1 passed with 210 relative links. Not verified: application launch, startup migration, database reads/writes and the three vis-pre-repuesto-* scenarios, which remain planned. Next action for the Checker: close the running UI.exe, rebuild Debug/Any CPU, then run vis-pre-repuesto-add, vis-pre-repuesto-emit and vis-pre-repuesto-regression through the real WinForms UI against the authorized non-production database. CHECKER VERIFICATION (2026-10-13, independent, runtime, real WinForms UI with read-only sqlcmd readback on the authorized non-production database TPIntegrador on the local SQL Server container host 03b0f931595f): all five criteria verified and the three vis-pre-repuesto-* scenarios passed. The leftover UI.exe (PID 69672) was closed through its own window (no forced termination) and the documented MSBuild Debug/Any CPU solution build then passed with exit 0, refreshing PRESENTATION bin Debug UI.exe. Fixtures created through the UI with the AGENT_007_ prefix: parts AGENT_007_PART_A (id 1004), AGENT_007_PART_Z (id 1005, reference 0.00, stock 0) and AGENT_007_PART_D (id 1006), cliente 3007 (AGENT007D1), equipo 3004 and orders 4007, 4008, 4009 and 4010. Spare-part PresupuestoDetalle rows read back: 4016, 4017, 4020, 4023, 4024 and 4026 with their real id_repuesto, quantity, price and subtotal; Presupuestos 2026 Aprobado 1850.00, 2027 Borrador 70.00, 2028 Anulado 1640.00/140.00/1500.00, 2029 Aprobado 270.00 and 2030 Adicional Aprobado 190.00. Stock proof: MovimientosStock gained only the two initial-stock adjustments of the new parts plus one ConsumoReparacion (5 -\u003e 4) with ReparacionRepuesto 1007 cost 333.00 after the master cost change; no budget create, publish, approve, annul or re-emission path wrote a movement, a consumption or a stock value, and the quoted line survived a master price/cost change. Blocked paths observed in the UI: a spare-part line with no part (ES and EN), a draft whose part was deactivated (nothing written, no state or history transition) and a three-decimal price rejected by the domain rule. Not reachable through the UI and left source-inspected: a live ES/EN switch while the modal order detail is open (the language menu reports enabled but the click is rejected in the modal loop, error -2147220992 - English behaviour was verified by reopening the form in English), the in-memory preservation across a live language switch, and the direct-emission branch with a part deactivated between adding the line and emitting. Startup seeded TipoItem.Repuesto and the five Mensaje.Presupuesto* keys once per language. init.ps1 passed with 218 relative links. External run log and screenshots: %LOCALAPPDATA%/ServicioTecnicoDesktopTests/evidence/feat007-20261013/."
+                     },
+                     {
+                         "id":  "feat-008",
+                         "name":  "Test registration restricted to the current repair intervention",
+                         "description":  "Owner report: in the testing stage, with several interventions recorded, selecting an intervention that is not the current one still shows Registrar prueba; whatever is typed, the form answers \u0027Seleccione un registro\u0027. Recording a test only makes sense for the current intervention, so make the affordance consistent with the selection instead of raising a misleading validation error, and keep finalization, annulment and reopen behaviour intact.",
+                         "type":  "behavior",
+                         "authorized_files":  [
+                                                  "PRESENTATION/Forms/Ordenes/FrmOrdenServicioDetalle.cs",
+                                                  "APPLICATION/Features/Ordenes/OrdenServicioService.cs",
+                                                  "INFRASTRUCTURE/Features/Reparaciones/ReparacionRepository.cs",
+                                                  "DOMAIN/Features/Reparaciones/Prueba.cs",
+                                                  "INFRASTRUCTURE/Features/Idiomas/IdiomaRepository.cs",
+                                                  "docs/agents/business-flows.md",
+                                                  "docs/agents/known-limitations.md",
+                                                  "feature_list.json",
+                                                  "progress.md"
+                                              ],
+                         "dependencies":  [
+                                              "feat-005"
+                                          ],
+                         "status":  "done",
+                         "acceptance_criteria":  [
+                                                     {
+                                                         "description":  "With more than one intervention and an earlier (non-current) intervention selected, the misleading \u0027Seleccione un registro\u0027 error is not reachable: the test-registration action or its inputs are unavailable and the reason is visible.",
+                                                         "verified":  true
+                                                     },
+                                                     {
+                                                         "description":  "A test can still be registered for the current (latest) intervention and is persisted against that intervention; switching back from an earlier intervention restores the action.",
+                                                         "verified":  true
+                                                     },
+                                                     {
+                                                         "description":  "The test grid, its row selection and the enabled actions always describe one coherent intervention after every switch.",
+                                                         "verified":  true
+                                                     },
+                                                     {
+                                                         "description":  "Recording a test still does not finish testing, and finalization, annulment and reopen flows keep evaluating the valid tests of the current intervention.",
+                                                         "verified":  true
+                                                     }
+                                                 ],
+                         "visual_scenarios":  [
+                                                  {
+                                                      "id":  "vis-pru-previous-intervention",
+                                                      "description":  "Order in testing with two or more interventions: select a previous intervention and try to register a test; no misleading \u0027Seleccione un registro\u0027 error appears and the action is clearly unavailable.",
+                                                      "status":  "passed",
+                                                      "evidence":  "PASS (independent, real UI+DB 2026-10-13, order 4011: #1 id 3010 historical, #2 id 3011 current). Mouse (06:39) and keyboard (06:52) selection of N° 1 left the grid with exactly #1\u0027s two tests (3009 Aprobada, 3010 RequiereRevision) and no selected row, TXT_PruebaDesc/TXT_PruebaObs/RDO_Aprobada/RDO_Fallida/BTN_RegistrarPrueba/BTN_FinalizarPruebas all IsEnabled=False, BTN_AnularPrueba absent from the UIA tree (hidden) and the red label visible with \"Intervencion anterior: solo consulta. Seleccione la actual para registrar, anular o finalizar pruebas.\" (45 px high, above the grid). Physical clicks (SetCursorPos/mouse_event) on the disabled box, radio and button plus form-level typing, Tab/Enter/Space and a UIA Invoke attempt (COMError) produced no dialog at all - no \"Seleccione un registro\" - and the DB kept 2 rows for #1. Returning to N° 2 re-enabled the inputs and the button, hid the label and cleared the selection (annulment button visible+disabled)."
+                                                  },
+                                                  {
+                                                      "id":  "vis-pru-current-intervention",
+                                                      "description":  "With the current intervention selected, register an approved and a failed test, annul one, finalize, reopen and finalize again.",
+                                                      "status":  "passed",
+                                                      "evidence":  "PASS (independent, real UI+DB 2026-10-13, order 4011). On #2 (id 3011) AGENT_008_IV2_APROBADA_A (3014), AGENT_008_IV2_REVISION_B (3015, RequiereRevision) and AGENT_008_IV2_APROBADA_C (3016) were registered through real clicks/typing; each read back with id_reparacion=3011 and the order stayed En pruebas. The non-latest revision row was annulled: the regret pass cancelled the reason dialog leaving resultado RequiereRevision with no motivo; the confirmed pass stored resultado Anulada, motivo \"AGENT_008 motivo anulacion revision\" and fecha_anulacion 2026-10-13 10:14:10, shown in the grid (Resultado Anulada, Motivo, Fecha anulacion, Usuario anulacion) with the state unchanged. Finalization reached Listo retiro/Reparado (4011|ListoRetiro|Reparado); reopening with a reason returned En pruebas with the result cleared (4011|EnPruebas|NULL) and the six #2 tests still attached; with every current test annulled the finalization was refused with \"Error al realizar la operacion: No hay pruebas validas para finalizar las pruebas de la orden.\" and the state stayed En pruebas; AGENT_008_IV2_APROBADA_D (3017) then reached Listo retiro/Reparado again and closing/reopening the order kept 7 rows for #2 (6 annulled) and 2 untouched rows for #1."
+                                                  },
+                                                  {
+                                                      "id":  "vis-pru-switch-back",
+                                                      "description":  "Switch previous to current intervention repeatedly: grid rows, selection and enabled actions stay consistent and the recorded test belongs to the current intervention.",
+                                                      "status":  "passed",
+                                                      "evidence":  "PASS (independent, real UI+DB 2026-10-13, order 4011). Eleven alternations between N° 1 and N° 2 by mouse combo selection and by keyboard ({UP}/{DOWN}), including a switch made while a current-intervention row was selected and switches to N° 2 with an empty grid (rows=0 at 06:43:03, 06:48:35 and 06:49:53). Every switch kept the combo, the grid rows (only that intervention\u0027s \"N° n\" rows), the reason label (visible only on the historical view) and the enabled registration/finalization actions aligned; annulment stayed hidden on #1 and visible-but-disabled on #2 without a row selection. With a valid row selected on N° 2 the annulment button became enabled and after switching to #1 and back it was disabled again (selection cleared); an annulled row could not be selected for annulment. AGENT_008_IV2_SWITCHBACK (3012) and AGENT_008_IV2_SWITCHBACK2 (3013) registered on the current view after switching back stored id_reparacion=3011 while #1 kept its same two rows and the total grew by exactly one; the repeat after closing and reopening the detail form behaved identically."
+                                                  }
+                                              ],
+                         "evidence":  "2026-10-13: Builder implemented feat-008 in source and built it; no runtime or database exercise was performed. FrmOrdenServicioDetalle creates LBL_PruebaIntervencionAviso after InitializeComponent (Tag OrdenDetalle.PruebasIntervencionAnterior, top/left/right anchor, about 34 logical px taken from the runtime height of DGV_Pruebas while its bottom edge and the input positions stay fixed) and gains IntervencionPruebaSeleccionada, EsIntervencionActual, GrillaPruebasCoherente, HayIntervencionAbierta, ActualizarAccionesPruebas, LimpiarGrillaPruebas and LimpiarSeleccionGrillaPruebas. AplicarPermisosDetalle delegates its testing block to the helper, so the registration inputs and button, the result radios and finalization require EnPruebas plus edit permission plus the current (latest) intervention plus no open intervention plus a coherently loaded grid, while the intervention combo stays navigable; a historical selection shows the consultation-only reason and keeps the unsaved draft text. CargarPruebasDeCombo clears _pruebasActuales, the binding, CurrentCell and the selection before and after binding and records _idIntervencionPruebaCargada; CargarTabPruebas no longer caches a failed read. BTN_RegistrarPrueba_Click checks selection/current before the description and uses Mensaje.PruebaIntervencionObligatoria / Mensaje.PruebasSoloIntervencionActual, BTN_FinalizarPruebas_Click re-checks current-view eligibility before its dialog, and BTN_AnularPrueba_Click only replaced its historical-intervention warning. IdiomaRepository seeds the three ES/EN keys; Mensaje.SeleccioneRegistro is untouched. OrdenServicioService, ReparacionRepository, Prueba.cs and the Designer file were intentionally not modified. Verified: MSBuild Debug/Any CPU compiled all six projects (exit 0) when the UI output was redirected outside the repository; the documented solution build reached exit 1 only on MSB3027/MSB3021 because the running UI.exe (PID 84192) locks PRESENTATION\\bin\\Debug; git diff --check clean; init.ps1 passed. Not verified: application launch, startup seeds, database reads/writes and the three vis-pru-* scenarios, which remain planned. Next action for the Checker: run vis-pru-previous-intervention, vis-pru-current-intervention and vis-pru-switch-back through the real WinForms UI against the authorized non-production database. Checker verification (2026-10-13, later session; independent, real WinForms UI with pywinauto clicks/typing plus read-only database readback on the authorized non-production database TPIntegrador, local SQL Server container 03b0f931595f): the leftover UI.exe (PID 84192) was closed gracefully through its own window, the documented full solution build then passed (MSBuild Debug/Any CPU, six projects, UI -\u003e PRESENTATION\\bin\\Debug\\UI.exe, exit 0) and init.ps1 passed. All four criteria and the three vis-pru-* scenarios were exercised on the AGENT_008_ fixture order 4011 (interventions #1=3010 historical, #2=3011 current). Source inspection confirmed the single decision point ActualizarAccionesPruebas (every enable/visible site of the testing controls except the unchanged annulment helper), no historical registration path, no SQL or repository call in the form, the unchanged service guards and refusal message \"Solo se puede registrar la prueba de la ultima intervencion finalizada.\", the untouched Designer/service/repository/domain files and the paired ES/EN seeds. Residual observations: the label reservation shrinks the grid by about 51 px at 150% DPI (its bottom edge and every input position stay fixed; the last grid row needed keyboard scrolling) and at a 900x600 window the controls below the grid stay clipped as before this change; DataGridView rows expose no UIA selection pattern, so row selection was observed through the annulment button state, the DB and screenshots. Evidence: %LOCALAPPDATA%\\ServicioTecnicoDesktopTests\\evidence\\feat008-20261013 and the Checker section of progress.md."
+                     },
+                     {
+                         "id":  "feat-009",
+                         "name":  "Single open warranty re-entry per order plus re-entry list",
+                         "description":  "Owner report: while an order already has an open warranty re-entry, further warranty re-entries (other reingresos) of the same original order can be created in parallel. Several re-entries per warranty are acceptable overall, but only one may be open at a time: once the open re-entry closes or is successfully registered and that warranty order ends, a new one may be created. The Garantia section of the original order must also list its warranty re-entries with a data grid.",
+                         "type":  "behavior",
+                         "authorized_files":  [
+                                                  "DOMAIN/Features/Garantias/Garantia.cs",
+                                                  "DOMAIN/Features/Garantias/EvaluacionGarantia.cs",
+                                                  "DOMAIN/Features/Garantias/EstadoEvaluacionGarantia.cs",
+                                                  "APPLICATION/Features/Garantias/GarantiaService.cs",
+                                                  "APPLICATION/Features/Ordenes/OrdenServicioService.cs",
+                                                  "INFRASTRUCTURE/Features/Garantias/GarantiaRepository.cs",
+                                                  "INFRASTRUCTURE/Features/Garantias/EvaluacionGarantiaRepository.cs",
+                                                  "INFRASTRUCTURE/Features/Ordenes/OrdenServicioRepository.cs",
+                                                  "INFRASTRUCTURE/Features/Ordenes/EntregaRepository.cs",
+                                                  "INFRASTRUCTURE/Features/Idiomas/IdiomaRepository.cs",
+                                                  "PRESENTATION/Forms/Ordenes/FrmOrdenServicioDetalle.cs",
+                                                  "PRESENTATION/Forms/Ordenes/FrmOrdenServicioDetalle.Designer.cs",
+                                                  "PRESENTATION/Forms/Garantias/FrmGarantias.cs",
+                                                  "docs/agents/business-flows.md",
+                                                  "docs/agents/persistence.md",
+                                                  "docs/agents/known-limitations.md",
+                                                  "feature_list.json",
+                                                  "progress.md"
+                                              ],
+                         "dependencies":  [
+                                              "feat-005"
+                                          ],
+                         "status":  "done",
+                         "acceptance_criteria":  [
+                                                     {
+                                                         "description":  "While an original order has an open warranty re-entry, requesting another warranty re-entry of that order is blocked with a business message and creates no order.",
+                                                         "verified":  true
+                                                     },
+                                                     {
+                                                         "description":  "Once the open re-entry reaches its terminal state (its evaluation closes or the warranty order is finished), a new re-entry of the same original order is allowed and created.",
+                                                         "verified":  true
+                                                     },
+                                                     {
+                                                         "description":  "The Garantia section of the original order lists its warranty re-entries with number, date and state/result, using ES/EN column labels; an order without re-entries shows an empty list and no error.",
+                                                         "verified":  true
+                                                     },
+                                                     {
+                                                         "description":  "The cardinality rule between an original order, its garantia records and its re-entry orders is documented, guarded consistently at the persistence layer, and does not reset or alter the original delivered order.",
+                                                         "verified":  true
+                                                     },
+                                                     {
+                                                         "description":  "Delivery-time warranty creation and the existing evaluation destinations (accept, continuation against payment, withdrawal) keep working.",
+                                                         "verified":  true
+                                                     }
+                                                 ],
+                         "visual_scenarios":  [
+                                                  {
+                                                      "id":  "vis-gar-block-parallel-reentry",
+                                                      "description":  "Delivered repaired order with an open warranty re-entry: attempt a second re-entry from the original order; it is blocked with a business message and no new order appears.",
+                                                      "status":  "passed",
+                                                      "evidence":  "PASS (independent, real UI+DB 2026-10-13, original 4012 / re-entry A 4013). The Garantia tab of 4012 was opened BEFORE A existed and showed an empty grid; A was then created from that same window (message Reingreso creado: orden #4013.). Every later attempt was refused: 3x while A was Recibido from that window, once from a freshly reopened window, once while A was Pendiente evaluacion garantia and once while A was Autorizado reparacion with an Aceptada evaluation. Each showed title Error and the business text Ya existe un reingreso de garantia abierto para esta orden. Cierre el reingreso existente antes de crear otro., with NO reason prompt; after each one the count of OrdenesServicio rows with id_orden_origen=4012, the original row, its HistorialOrdenes count and its Entregas/Garantias rows were identical (byte-compared snapshot). Screenshots s1-03/s1-04/s1b-02/s1b-04. A genuinely stale cached-grid window is unreachable because the order detail is modal (ShowDialog) and every creation path re-reads the DB pre-check; the freshly reopened window covered reopening. Checker verification (2026-10-13): all five acceptance criteria and all four vis-gar-* scenarios were verified independently through the real WinForms UI (pywinauto 0.6.9 from the local ServicioTecnicoDesktopTests harness, 150% DPI, ES/EN) against the authorized non-production database TPIntegrador (server 03b0f931595f, the same DB used by feat-002/004/005/006/007/008), with SQL readback for every state change. UI-created fixtures: cliente 3009, equipos 3006/3007/3009, original order 4012 (Normal, delivered Reparado, exactly one coverage row 2003 = 30 days), warranty re-entries 4013 (A), 4014 (B), 4015 (C), plus 4016 (0-day Normal delivery) and 4018 (No reparable delivery). Documented build and harness checks re-ran: vswhere-discovered MSBuild Debug/Any CPU exit 0 (six projects, UI.exe refreshed) and init.ps1 PASS (10 tasks, 262 relative links, git diff --check). Tracker and progress.md updated; no implementation file, DDL or migration was changed by the Checker."
+                                                  },
+                                                  {
+                                                      "id":  "vis-gar-allow-after-close",
+                                                      "description":  "Close or finish the open re-entry, then request a new re-entry from the same original order: it is allowed and created.",
+                                                      "status":  "passed",
+                                                      "evidence":  "PASS (independent, real UI+DB 2026-10-13). While A (4013) was still open as Listo retiro/Reparado with an Aceptada evaluation, creation was still refused with the same message. After A was delivered (Entregado, delivery 3007) a new re-entry B (4014) was created from 4012. B was then rejected with the withdrawal destination and a reason containing pago (Listo retiro/Garantia no cubierta + Rechazada), after which C (4015) was created; C was rejected with the paid destination (Pendiente presupuesto), also closing it. The original 4012 kept Entregado/Reparado, coverage 2003 (2026-10-13 to 2026-11-12, 30 days) and delivery 3006 unchanged throughout."
+                                                  },
+                                                  {
+                                                      "id":  "vis-gar-reentry-list",
+                                                      "description":  "The original order Garantia section lists every re-entry with number, date and state, and stays empty for an order without re-entries.",
+                                                      "status":  "passed",
+                                                      "evidence":  "PASS (independent, real UI+DB 2026-10-13). ES: caption Reingresos de garantia, headers Numero/Fecha/Estado/Resultado, rows 4013 10/13/2026 8:37 AM Entregado Reparado; 4014 8:57 AM Listo retiro Garantia no cubierta; 4015 9:04 AM Recibido -. Number and reception date of every row matched the fecha_ingreso readback (including a delivered re-entry and one without evaluation). EN after reopening the form in English: caption Warranty re-entries, headers Number/Date/Status/Result, rows Delivered/Repaired, Ready for pickup/Warranty not covered, Received. Empty case: order 4014 (no children) showed no rows, caption present, no error. Grid rendered fully at the default size and at 1400x1000 (crops s3-01b/s3-03b/s3-05b). LIMITATION observed: at a 900x600 window (150% DPI, about 600x400 logical) the Garantia page scrolls to its maximum and only the caption is reachable, the grid body stays clipped (screenshots s3c/s3d); this matches the app-wide 900x600 clipping limitation of this checkout, not a data defect of the list."
+                                                  },
+                                                  {
+                                                      "id":  "vis-gar-regression",
+                                                      "description":  "Delivery still creates the warranty row, the evaluation destinations (accept / paid continuation / withdrawal) still reach their documented states, and the original order is untouched.",
+                                                      "status":  "passed",
+                                                      "evidence":  "PASS (independent, real UI+DB 2026-10-13). ENT-02: 4012 delivery created exactly one Garantias row (2003) with the approved Original 30 days; 4016 (approved Original of 0 days, delivered Reparado) created none; 4018 (delivered No reparable) created none; delivering the warranty order 4013 twice created none. GAR-05 accept -\u003e Autorizado reparacion + Aceptada (4013). GAR-06 paid rejection -\u003e Pendiente presupuesto + Rechazada with the [pago: continua como reparacion paga] wording (4015). GAR-07/GAR-08 withdrawal with a reason containing pago -\u003e Listo retiro/Garantia no cubierta (4014). GAR-11 Ver original from 4014 opened Orden #4012 (Entregado/Reparado) and left its snapshot unchanged. ENT-03 cancelling 4013 delivery with no open sibling succeeded (En pruebas/NULL, delivery row deleted, history 8 to 9) and was refused with No se puede reabrir este reingreso... while 4014 was open; the No, cancelled-reason and blank-reason attempts committed nothing (blank showed Complete los campos obligatorios de la orden.). ENT-05 re-finalize + re-deliver -\u003e Entregado (delivery 3010)."
+                                                  }
+                                              ],
+                         "evidence":  "2026-10-13: Builder implemented feat-009 in source and built it; no runtime or database exercise was performed. DOMAIN/Features/Garantias/Garantia.cs documents the coverage 0..1 / visits 0..N cardinality and adds ReingresoGarantiaAbiertoException (ClaveMensaje property) in the same compiled file; EstadoEvaluacionGarantia.cs is comment-only (Aceptada closes the evaluation, not the visit). OrdenServicioRepository exposes the shared const PredicadoReingresoAbierto (closed = Entregado, or Rechazada plus a committed post-evaluation destination; every other state stays open), plus ObtenerReingresoGarantiaAbierto and ListarReingresosGarantia (origin FK + tipo Garantia, no state or evaluation filter, ordered by fecha_ingreso then id, reusing Mapear); CrearConHistorial runs the guard as the first statement under TABLOCKX,HOLDLOCK before any INSERT, inserts nothing and returns -1 on conflict, and the repository returns null. EntregaRepository.CancelarEntregaConTransicion reuses the same predicate text inside its existing delete/update/history transaction and now returns int (-1 = blocked, no DML). OrdenServicioService pre-checks ObtenerReingresoGarantiaAbierto, converts both sentinels into the typed exception, replaces its ReglaNegocioException reconstruction with throw; in CrearReingresoGarantia and CancelarEntrega, and adds the two read wrappers. FrmOrdenServicioDetalle adds FilaReingreso, CargarReingresosGarantia, RefrescarGrillaReingresos, ConfigurarColumnasReingresos, a precheck plus list refresh in BTN_CrearReingreso_Click, and BuscarReingresoAbierto so MostrarError translates by type; the designer adds the permanent read-only DGV_ReingresosGarantia and its caption inside the Garantia tab with TAB_Garantia.AutoScroll, touching no budget or testing control. IdiomaRepository seeds the paired ES/EN keys Mensaje.GarantiaReingresoAbierto, Mensaje.GarantiaReaperturaBloqueada and OrdenDetalle.ReingresosGarantia. GarantiaRepository\u0027s misleading one-order-one-warranty comment now separates coverage from visits; no DDL, index or data migration was added. Verified: MSBuild Rebuild Debug/Any CPU of TP_INTEGRADOR_2022.sln exit 0 (six projects, 0 warnings, 0 errors); git diff --check exit 0; init.ps1 PASS. Intentionally untouched: FrmGarantias.cs, EvaluacionGarantia.cs, EvaluacionGarantiaRepository.cs, GarantiaService.cs. Not verified: application launch, startup seeds, database reads/writes, concurrency, legacy parallel siblings and the four vis-gar-* scenarios, which remain planned. Next action for the Checker: run vis-gar-block-parallel-reentry, vis-gar-allow-after-close, vis-gar-reentry-list and vis-gar-regression through the real WinForms UI against the authorized non-production database."
+                     },
+                     {
+                         "id":  "feat-010",
+                         "name":  "Align the business test catalogue and implementation notes with the enforced rules",
+                         "description":  "Documents still describe behaviour that feat-006 and feat-007 changed. docs/agents/business-test-catalogue.md CLI-03 states that a duplicate customer documento is allowed and that the document is not unique, contrary to the enforced rule. The catalogue PRE-01 row and the root implementation notes still describe the spare-part budget item type as reserved infrastructure that emission rejects, contrary to feat-007. Correct those statements and any other wording invalidated by both features, and record the clipped Ver inactivos checkbox at a 900x600 window as a known limitation instead of a test step that cannot be performed.",
+                         "type":  "documentation",
+                         "authorized_files":  [
+                                                  "docs/agents/business-test-catalogue.md",
+                                                  "IMPLEMENTACION_SERVICIO_TECNICO.md",
+                                                  "docs/agents/known-limitations.md",
+                                                  "feature_list.json",
+                                                  "progress.md"
+                                              ],
+                         "dependencies":  [
+                                              "feat-006"
+                                          ],
+                         "status":  "done",
+                         "acceptance_criteria":  [
+                                                     {
+                                                         "description":  "Catalogue row CLI-03 states the enforced uniqueness rule and its blocked path, including the inactive-owner case.",
+                                                         "verified":  true
+                                                     },
+                                                     {
+                                                         "description":  "Every other catalogue statement invalidated by feat-006 (duplicate customer creation, editing a cliente onto an owned documento) is corrected, and unaffected rows keep their wording and status.",
+                                                         "verified":  true
+                                                     },
+                                                     {
+                                                         "description":  "The statements that the spare-part budget item type is reserved infrastructure and not emit-enabled are corrected in the catalogue PRE-01 row and in the root implementation notes, matching feat-007.",
+                                                         "verified":  true
+                                                     },
+                                                     {
+                                                         "description":  "The clipped \u0027Ver inactivos\u0027 control at a 900x600 window is recorded as a known limitation with its consequence for the inactive-owner message, and is not described as fixed.",
+                                                         "verified":  true
+                                                     },
+                                                     {
+                                                         "description":  "Relative documentation links remain valid and init.ps1 passes; no source, SQL or database change is made.",
+                                                         "verified":  true
+                                                     }
+                                                 ],
+                         "visual_scenarios":  [
+
+                                              ],
+                         "evidence":  "2026-10-13: feat-010 Builder (documentation only; no source, configuration, SQL or database change and no runtime test repeated). Realigned docs/agents/business-test-catalogue.md: CLI-03 now states the enforced uniqueness across active and inactive owners, the blocked path with a business message naming the owner and no new record, the inactive case directing the operator to tick Ver inactivos, that legacy duplicates stay untouched and that UX_Clientes_Documento installs only in a duplicate-free database; CLI-04 keeps its allowed edits and adds that the record own unchanged documento still saves while another active or inactive owner documento is blocked with the record unchanged and telefono/email stay shareable; PRE-01 now describes labour/service/spare-part draft lines with an existing active part required, persisted part reference, quantity, unit price and subtotal, the editable reference-price prefill, zero prices and active zero-stock parts allowed and no stock reservation, movement or automatic consumption; PRU-01 adds the feat-008 consultation-only historical intervention with a visible translated reason, the unavailable registration/annulment/finalization, the historical tests still displayed and the actions restored on the current intervention, with the unchanged service guards; GAR-02 requires no open warranty re-entry; GAR-09 states the blocked path while a sibling is open (business message, no new order) and the allowed path after it closes by delivery or by a rejected evaluation with a committed destination, coverage 0..1 per original, visits 0..N through id_orden_origen, one open visit, Aceptada and an accepted ListoRetiro not closing it and the read-only re-entry grid on the original; ENT-03 adds the refused cancellation of a delivered warranty re-entry with another open sibling leaving delivery, state/result and history unchanged. IMPLEMENTACION_SERVICIO_TECNICO.md: corrected the PresupuestoDetalle.id_repuesto infrastructure-only bullet and the Emitir ManoObra/Servicio-only sentence, the TipoItemPresupuesto Repuesto not-emit-enabled sentence, the N4 multiple-reingreso decision (replaced by the feat-009 cardinality and closing rule), the historical test-registration UI gating (replaced by the feat-008 policy) and the garantias_abiertas dashboard bullet (an operational Tipo Garantia not-Entregado count that is not the open-visit predicate); added a historical-scope block plus a current-rules section after the title. docs/agents/known-limitations.md: added one small-window clipping section (Clientes Ver inactivos at 900x600, Garantia re-entry grid at 900x600 and 150 percent DPI, Pruebas controls below the test grid) explicitly NOT fixed with pointers to the dated Checker sections, and corrected the feat-006..feat-009 verification boundaries to the recorded runtime verdicts (6/6 and 4/4, 5/5 and 3/3, 4/4 and 3/3, 5/5 and 4/4) while keeping concurrency, other DPIs and cultures, long inputs and universal hit-testing untested. progress.md updated (current objective, evidence table, handoff, two drift blockers resolved). Checks: init.ps1 PASS, git diff --check exit 0, touched links validated with the root notes checked manually, protected-file SHA-256 manifest byte-identical. No build, launch, database access, sweep or fixture command was run. Checker verification (2026-10-13, documentation-only, independent; no build, launch, database access or sweep): all five criteria verified. CLI-03 and CLI-04 state the enforced documento uniqueness, the blocked path with the owner-naming business message and no write, the inactive-owner case pointing to Ver inactivos, the grandfathering of legacy duplicate groups and the own-unchanged-documento save, while telefono/email stay shareable. Exactly seven catalogue rows changed (CLI-03, CLI-04, PRE-01, PRU-01, ENT-03, GAR-02, GAR-09): 7 insertions and 7 deletions, 144 row ids in both HEAD and the worktree with an identical id sequence, no row added or removed, and the three cross-cutting rows (HIST-01/LIST-01/LANG-01) keep their five-column shape. PRE-01 and the root notes no longer describe the spare-part item type as reserved or not emit-enabled; the two corrected statements are labelled as corrected by feat-007 and separated from the per-checkpoint historical prose by a historical-scope banner plus a Spanish current-rules section. known-limitations.md records the 900x600 clipping as observed and NOT fixed in one section with three rows, including the consequence that the inactive-owner message tells the operator to tick an unreachable Ver inactivos control, and states that no layout fix is claimed; its four feat-006..feat-009 sections cite the dated Checker verdicts (6/6 and 4/4, 5/5 and 3/3, 4/4 and 3/3, 5/5 and 4/4) and keep concurrency, other DPIs/cultures, long inputs, universal hit-testing and the failed-read path untested. No wording exceeds the dated feat-006..feat-009 Checker observations; no runtime evidence was renewed or fabricated. Checks run: init.ps1 PASS (10 tasks, 274 relative links, git diff --check exit 0); git diff --check exit 0; git status --short and git diff --stat show the same 27 modified files and the three pre-existing untracked entries, nothing staged; every relative link resolves (root notes 1/1 checked manually because init.ps1 does not cover them, catalogue 4/4, known-limitations 40/40, progress 57/57, feature_list 0); the tracker parses and feat-010 is the only in-progress feature with five criteria and an empty visual_scenarios. Protected scope: 251 tracked files excluding the five authorized ones hashed with SHA-256 (aggregate 979316b88ac6b6d5a2050e09549835bd8bdd80184799f834a1233230e14f4cc9); no source, configuration, SQL or database artifact changed (no .sql/.config/.csproj/.sln in the diff, and every protected tracked file was last written at or before 08:15:41 while the five authorized files were written 10:19:03-10:23:25); the three untracked entries are untouched. Residual uncertainty: the Builder pre-edit manifest was not persisted anywhere readable, so non-modification of protected files rests on the content scope, the mtime gap and the absence of any feat-010 reference outside the five authorized files rather than on a stored before/after hash pair; the replaced CP3 testing-UI bullet dropped still-true historical details (the Motivo column and the precarga fallback); and the historical CP1-CP3 lines keep the superseded Repuesto wording under the new historical-scope banner. No criterion failed."
+                     },
+                     {
+                         "id":  "feat-011",
+                         "name":  "Read-only original order once a warranty re-entry exists",
+                         "description":  "Owner report: after a delivered order enters warranty, the original order can still be mutated - its delivery can be cancelled, which returns it to an earlier editable state, and the order can then be edited or transitioned again. Rule required by the owner: once an original order has warranty re-entries created it can only be inspected as it ended; it must not be re-entered, have its delivery cancelled or be edited, and the only remaining action is opening warranty re-entries (still one open at a time per feat-009). Enforce the rule in the application and persistence paths, not only through disabled controls, and keep the pre-warranty behaviour (delivery cancellation ENT-03) for orders without re-entries.",
+                         "type":  "behavior",
+                         "authorized_files":  [
+                                                  "DOMAIN/Features/Ordenes/OrdenServicio.cs",
+                                                  "DOMAIN/Features/Garantias/Garantia.cs",
+                                                  "APPLICATION/Features/Ordenes/OrdenServicioService.cs",
+                                                  "APPLICATION/Features/Garantias/GarantiaService.cs",
+                                                  "INFRASTRUCTURE/Features/Ordenes/OrdenServicioRepository.cs",
+                                                  "INFRASTRUCTURE/Features/Ordenes/EntregaRepository.cs",
+                                                  "INFRASTRUCTURE/Features/Garantias/GarantiaRepository.cs",
+                                                  "INFRASTRUCTURE/Features/Idiomas/IdiomaRepository.cs",
+                                                  "PRESENTATION/Forms/Ordenes/FrmOrdenesServicio.cs",
+                                                  "PRESENTATION/Forms/Ordenes/FrmOrdenServicioDetalle.cs",
+                                                  "PRESENTATION/Forms/Ordenes/FrmOrdenServicioDetalle.Designer.cs",
+                                                  "docs/agents/business-flows.md",
+                                                  "docs/agents/persistence.md",
+                                                  "docs/agents/business-test-catalogue.md",
+                                                  "docs/agents/known-limitations.md",
+                                                  "feature_list.json",
+                                                  "progress.md"
+                                              ],
+                         "dependencies":  [
+                                              "feat-009"
+                                          ],
+                         "status":  "done",
+                         "acceptance_criteria":  [
+                                                     {
+                                                         "description":  "With at least one warranty re-entry created for a delivered original order, cancelling that delivery is refused with a business message and writes nothing: the state/result, the Entregas rows, the Garantias rows and the audit history stay exactly as delivered.",
+                                                         "verified":  true
+                                                     },
+                                                     {
+                                                         "description":  "The same frozen original order refuses every other mutation - order data edits, diagnosis, budget emission or annulment, repair start or finish, test registration or finalization, delivery or re-delivery and state transitions - with a business message and no partial write.",
+                                                         "verified":  true
+                                                     },
+                                                     {
+                                                         "description":  "The restriction is enforced in the application path and in the persistence paths that can bypass it - the delivery-cancellation transaction, the order state-transition batch and the warranty re-entry creation - so a mutating call that does not come from the form is still refused and writes nothing; the remaining repositories stay reachable only through the guarded service methods.",
+                                                         "verified":  true
+                                                     },
+                                                     {
+                                                         "description":  "The frozen order stays inspectable - header, history, budgets, repairs, tests, delivery and the warranty re-entry list - and opening another warranty re-entry remains allowed under the feat-009 single-open rule.",
+                                                         "verified":  true
+                                                     },
+                                                     {
+                                                         "description":  "Orders without any warranty re-entry keep the previous behaviour: a delivered order can still have its delivery cancelled (ENT-03) and follow the current rules.",
+                                                         "verified":  true
+                                                     },
+                                                     {
+                                                         "description":  "Delivery cancellation and warranty re-entry creation cannot both commit for the same order: the transaction that arrives second refuses because it re-checks the origin order eligibility inside its lock, so an order can never carry a warranty re-entry after its delivery was cancelled.",
+                                                         "verified":  true
+                                                     }
+                                                 ],
+                         "visual_scenarios":  [
+                                                  {
+                                                      "id":  "vis-freeze-cancel-delivery",
+                                                      "description":  "Delivered original order with a warranty re-entry: attempt to cancel its delivery through the order detail reached from the orders list; it is refused with a business message and the order, delivery and history stay unchanged.",
+                                                      "status":  "passed",
+                                                      "evidence":  "FX-A 5002: banner hidden and BTN_CancelarEntrega enabled before any child; the first re-entry 5010 was created through the UI; after the reload the ES banner (Solo consulta: esta orden ya tiene reingresos de garantia...) is shown and the cancellation control leaves the UIA tree; a forced real mouse click wrote nothing (order snapshot and Bitacora 893 unchanged); the application call returned FREEZE|Mensaje.OrdenOriginalSoloConsulta and the locked batch returned -2; reopening the detail kept the banner and the delivered state. FX-F 5007 stale path: the control was still enabled, an out-of-band child 5011 was inserted, the click revalidated fail-closed, showed La orden original es de solo consulta porque ya tiene reingresos de garantia... and the banner appeared, with no write. Screenshots s1-01..s1-05."
+                                                  },
+                                                  {
+                                                      "id":  "vis-freeze-mutations",
+                                                      "description":  "Same frozen order: attempt the remaining mutating actions; they are unavailable or refused, and closing and reopening the order shows the unchanged delivered state.",
+                                                      "status":  "passed",
+                                                      "evidence":  "FX-A 5002 control matrix on every tab: all mutation controls disabled or absent; only CBO_SelectorPresupuesto, CBO_PruebaReparacion and BTN_CrearReingreso enabled. Real mouse clicks on all 59 present controls produced only the feat-009 sibling warning and no write. The historical budget detail, the selector item Original | Aprobado | 15000.00, the intervention, the test, the 9 history rows, the delivery and the re-entry grid stayed inspectable; close and reopen showed Entregado/Reparado. 28 external application mutator calls: 0 allowed, 20 typed FREEZE|Mensaje.OrdenOriginalSoloConsulta and 8 refused by an earlier state rule, with the snapshot and every table counter unchanged; the three locked batches returned -2 (S2b). Screenshots s2-01..s2-03."
+                                                  },
+                                                  {
+                                                      "id":  "vis-freeze-readonly-and-reentry",
+                                                      "description":  "The frozen order is still inspectable and a new re-entry can be opened after the previous open one closes, with translated ES/EN refusal messages and labels.",
+                                                      "status":  "passed",
+                                                      "evidence":  "ES banner and caption Reingresos de garantia versus EN Read-only... and Warranty re-entries, with an identical enabled/disabled matrix in both languages; while 5010 was open a new creation was refused with Ya existe un reingreso de garantia abierto...; 5010 was closed through GAR-07 (ListoRetiro/GarantiaNoCubierta plus a Rechazada evaluation) and then 5012 was created normally, proving the freeze is existence-based; the freeze stayed in force after every child closed; Ver original from 5012 opened Orden #5002 with the banner, Crear reingreso enabled and no cancellation control (S3b PASS); the children stayed editable (5012 reception controls enabled, assignment succeeded) and GAR-05 accepted its evaluation (AutorizadoReparacion plus Aceptada). Screenshots s3-01..s3-05, s3b-ver-original-nested."
+                                                  },
+                                                  {
+                                                      "id":  "vis-freeze-regression-no-reentry",
+                                                      "description":  "Delivered order without any warranty re-entry: delivery cancellation (ENT-03) and the usual delivered-order flows still behave as before.",
+                                                      "status":  "passed",
+                                                      "evidence":  "FX-B 5003 (delivered, repaired, coverage, zero children): not frozen; ENT-06 No / cancelled reason / blank reason left the row identical; ENT-03 committed EnPruebas with a NULL result, the delivery deleted and history 9 to 10; ENT-05 re-finalize plus re-deliver returned Entregado/Reparado with no new coverage (1 row, same dates) and history 12; the first child 5013 created through the UI froze it. FX-C 5004 (delivered, NoReparable): ENT-04 cancelled to ListoRetiro/NoReparable with the delivery deleted and history 4 to 5, re-delivered to Entregado/NoReparable, and an out-of-band child 5014 froze it even without coverage and with a NoReparable result (batch -2). Screenshots s4-01..s4-07."
+                                                  }
+                                              ],
+                         "evidence":  "2026-10-17: feat-011 Builder implemented the read-only-original rule in source and built it; no runtime or database exercise was performed, so none of the six criteria and none of the four vis-freeze-* scenarios is claimed as verified. DOMAIN/Features/Ordenes/OrdenServicio.cs adds the typed OrdenOriginalSoloConsultaException (ReglaNegocioException subclass carrying ClaveMensaje) and DOMAIN/Features/Garantias/Garantia.cs adds ReingresoGarantiaOrigenNoDisponibleException in the same file (no new file, no project edit). INFRASTRUCTURE/Features/Ordenes/OrdenServicioRepository.cs adds TieneReingresosGarantia - pure EXISTENCE of a child order with id_orden_origen = the order and tipo_orden = Garantia, with no state, coverage, evaluation or expiry filter and deliberately not built from PredicadoReingresoAbierto -, the result-code constants (0 ok, -1 open sibling, -2 target order read-only, -3 re-entry origin not eligible), a TABLOCKX,HOLDLOCK existence guard before the first DML of CambiarEstadoConHistorial and ReabrirPruebasConTransicion (both now return int; -2 executes no DML and writes no history), and a CrearConHistorial whose warranty branch first re-reads the origin eligibility (Entregado, Reparado, delivery row present) under the same lock returning -3, then applies the unchanged single-open predicate (-1); the method gained an out int codigoResultado and normal creation is unchanged. EntregaRepository.CancelarEntregaConTransicion counts the order own warranty children immediately after its locked parent read and before the sibling test and the DELETE, returning -2 with no DML; the -1 sibling branch, the delete/update/history transaction and the coverage behaviour are preserved, and CrearConTransicion is untouched. OrdenServicioService adds EsSoloConsultaPorReingresos (public read for the forms), ObtenerOrdenParaModificar (existence plus predicate plus typed refusal) and ValidarBloqueoSoloConsulta; 28 existing-order mutators now load their order through that guard before any domain mutation, repository write or audit (AsignarTecnico, IniciarDiagnostico, FinalizarDiagnostico, EmitirPresupuesto, RegistrarAprobacionPresupuesto, RegistrarRechazoPresupuesto, SolicitarAdicional, EmitirAdicional, RegistrarAprobacionAdicional, RegistrarRechazoAdicional, CrearBorrador, PublicarBorrador, EliminarBorrador - which previously did not load its owning order at all -, AnularPresupuesto before presupuestoDb.Anular, CancelarSolicitudAdicional, QuitarConsumo, CancelarOrden, EntregarOrden, CancelarEntrega, ModificarRecepcion, IniciarReparacion, ConsumirRepuesto, FinalizarReparacion, RegistrarPrueba, FinalizarPruebas, ReabrirPruebas and AnularPrueba); EvaluarReingreso guards only its target re-entry while still reading its frozen original; CrearOrden, CrearReingresoGarantia (a new child, never a mutation of the original) and every read keep ObtenerOrdenExistente; and the guarded methods rethrow with throw; so the concrete type and its ClaveMensaje reach the form. GarantiaService.Crear and GarantiaService.Anular validate their target original before writing coverage. IdiomaRepository.SembrarDatosIniciales seeds three new paired ES/EN keys (Mensaje.OrdenOriginalSoloConsulta, OrdenDetalle.OrdenOriginalSoloConsulta, Mensaje.GarantiaOrigenNoDisponible) with the existing idempotent AgregarSeed, so no owner translation is overwritten. FrmOrdenServicioDetalle reads the predicate together with the order in CargarOrden (a failed read shows the error and closes the detail instead of defaulting to editable), resets it in CargarModoNuevo, adds the wrapping banner LBL_OrdenSoloConsulta above the tabs (designer: 12,106 896x32, tabs moved from y=112 to y=142 with their 480 px height kept, BTN_Cerrar from y=610 to y=640 and the client area from 920x654 to 920x684), intersects every mutation in AplicarPermisosDetalle, ActualizarAccionesPruebas, ActualizarBotonAnularPrueba and AplicarPermisosGarantia with the freeze, keeps the tabs, read-only grids, history, Ver original, Cerrar and the existing-budget selector usable, omits the pseudo new-document entries in CargarSelectorPresupuesto, revalidates before the delivery-cancellation prompt and maps the freeze and origin types in MostrarError by type through InnerException. FrmOrdenesServicio revalidates the selected row in AplicarPermisos and before its prompts or navigation and maps the freeze type in MostrarError; BTN_CrearReingreso keeps its permission, coverage and single-open rules. Guides updated: business-flows.md and persistence.md (frozen-original rule versus open-sibling rule, guard inventory, scoped enforcement, result codes, lock invariant), business-test-catalogue.md (ENT-03, ENT-07, GAR-02, GAR-09, GAR-11) and known-limitations.md (new feat-011 section, the original-cancellation caveat and the banner row layout, with the coverage-date, permission, small-window and partial-success limits preserved). Verified: MSBuild TP_INTEGRADOR_2022.sln Debug / Any CPU exit 0 with all six projects and UI.exe refreshed (no UI.exe was running, so no output was locked); git diff --check exit 0; init.ps1 PASS. NOT verified: application launch, startup migration or seed run, any database read or write, every refusal and acceptance path at runtime, concurrency, ES/EN rendering, the banner at 900x600 and large DPI, and the four vis-freeze-* scenarios, which remain planned. Next action for the Checker: run vis-freeze-cancel-delivery, vis-freeze-mutations, vis-freeze-readonly-and-reentry and vis-freeze-regression-no-reentry through the real WinForms UI against the authorized non-production database. CHECKER (2026-10-17, independent verification): all six criteria and all four vis-freeze-* scenarios PASS. Environment: authorized non-production TPIntegrador (Developer Edition 16.0.4245.2, container 03b0f931595f) on localhost,1433; the runtime was the freshly rebuilt PRESENTATION/bin/Debug/UI.exe (SHA256 781BF1B844FCF9E131A46758159723D6A2C547F6B947FC99B432F923EE8424AF, /t:Rebuild exit 0 at 18:50:17, process 31404 launched 18:57:43 from that path and closed gracefully with WM_CLOSE); init.ps1 PASS (11 tasks, 292 links), git diff --check exit 0, nothing staged, exactly the 16 authorized files plus the preexisting FrmRepuestos.cs change, GarantiaRepository.cs untouched. Fixtures created through the UI with AGENT_011_ prefixes: customer 4002, equipment 4002..4009, FX-A 5002 (frozen original, children 5010/5012/5015), FX-B 5003 (child 5013), FX-C 5004 (NoReparable, child 5014), FX-D 5005 (child 5016), FX-E 5006, FX-F 5007 (child 5011), FX-G 5008, FX-H 5009; the historical fixtures 2002..2009 and 4012..4018 kept their recorded states and 4012 its coverage, delivery and 9 history rows. Criterion 1: the banner replaces the cancellation control and the click-time recheck refuses with Mensaje.OrdenOriginalSoloConsulta while Entregas, OrdenesServicio, Garantias, HistorialOrdenes and Bitacora stay identical. Criterion 2: the full control matrix is disabled or absent, 59 real mouse clicks wrote nothing, and 28 external application mutator calls produced no allowed write (20 typed freeze refusals, 8 earlier state rules). Criterion 3: the application guard is the first statement of every existing-order mutator and the three bypass batches return -2 or -3 under TABLOCKX,HOLDLOCK with the snapshot and all counters unchanged. Criterion 4: header, history, budget detail, selector, intervention, test, delivery and the re-entry grid stayed inspectable in ES and EN, and a new re-entry was created after the previous one closed. Criterion 5: orders without children kept ENT-03/ENT-04/ENT-05/ENT-06 and the first child froze them. Criterion 6: two independent processes loading the built assemblies, released by one barrier, proved creation-first gives cancellation -2 and cancellation-first gives creation -3, a stale creation after a committed cancellation gives -3, and two unstaggered simultaneous rounds committed on exactly one side. Regressions re-run: feat-009 single-open creation and its reverse edge (translated UI refusal plus batch -1), GAR-05/06/07/08/10 and ENT-04/05. Not re-tested or not reachable: a restricted-permission session (only the full-permission admin session was exercised), a DPI other than the 144 observed (150 percent scaling was in force), other cultures, and the preexisting 900x600 clipping of the tab body, which the banner does not fix and which is recorded, not claimed as fixed. Evidence outside the repository: ServicioTecnicoDesktopTests/evidence/feat011-20261017 (feat011-log.md, state.json, shots, race-*)."
+                     },
+                     {
+                         "id":  "feat-012",
+                         "name":  "G06 current architecture class diagrams and class behaviour descriptions",
+                         "description":  "Owner-authorized documentation-only task: recreate all supplied G06 architecture/class diagrams against current repository source in a new dedicated diagrams folder without modifying old diagrams. Deliver PlantUML for all six layers with REPOSITORY split into four diagrams, plus per-diagram Markdown class characteristics/behaviours and an index. Use professional Spanish for the requested academic G06 deliverable, retaining exact code identifiers; the owner explicitly requests source/diagram verification only, not application runtime verification.",
+                         "type":  "documentation",
+                         "authorized_files":  [
+                                                  "feature_list.json",
+                                                  "progress.md",
+                                                  "diagrams/G06-diagrama-de-clases-de-todos-los-modulos/README.md",
+                                                  "diagrams/G06-diagrama-de-clases-de-todos-los-modulos/G06.1-domain.puml",
+                                                  "diagrams/G06-diagrama-de-clases-de-todos-los-modulos/G06.1-domain.md",
+                                                  "diagrams/G06-diagrama-de-clases-de-todos-los-modulos/G06.2-abstractions.puml",
+                                                  "diagrams/G06-diagrama-de-clases-de-todos-los-modulos/G06.2-abstractions.md",
+                                                  "diagrams/G06-diagrama-de-clases-de-todos-los-modulos/G06.3-application.puml",
+                                                  "diagrams/G06-diagrama-de-clases-de-todos-los-modulos/G06.3-application.md",
+                                                  "diagrams/G06-diagrama-de-clases-de-todos-los-modulos/G06.4.1-repository-tecnicos.puml",
+                                                  "diagrams/G06-diagrama-de-clases-de-todos-los-modulos/G06.4.1-repository-tecnicos.md",
+                                                  "diagrams/G06-diagrama-de-clases-de-todos-los-modulos/G06.4.2-repository-maestros.puml",
+                                                  "diagrams/G06-diagrama-de-clases-de-todos-los-modulos/G06.4.2-repository-maestros.md",
+                                                  "diagrams/G06-diagrama-de-clases-de-todos-los-modulos/G06.4.3-repository-ordenes.puml",
+                                                  "diagrams/G06-diagrama-de-clases-de-todos-los-modulos/G06.4.3-repository-ordenes.md",
+                                                  "diagrams/G06-diagrama-de-clases-de-todos-los-modulos/G06.4.4-repository-stock-compras-garantias.puml",
+                                                  "diagrams/G06-diagrama-de-clases-de-todos-los-modulos/G06.4.4-repository-stock-compras-garantias.md",
+                                                  "diagrams/G06-diagrama-de-clases-de-todos-los-modulos/G06.5-services.puml",
+                                                  "diagrams/G06-diagrama-de-clases-de-todos-los-modulos/G06.5-services.md",
+                                                  "diagrams/G06-diagrama-de-clases-de-todos-los-modulos/G06.6-ui.puml",
+                                                  "diagrams/G06-diagrama-de-clases-de-todos-los-modulos/G06.6-ui.md"
+                                              ],
+                         "dependencies":  [
+                                              "feat-011"
+                                          ],
+                         "status":  "done",
+                         "acceptance_criteria":  [
+                                                     {
+                                                         "description":  "Create nine current-source PlantUML class diagrams: DOMAIN, ABSTRACTIONS, APPLICATION, four REPOSITORY subdivisions (technical, masters, orders, stock/purchases/warranties), SERVICES and UI, with G06 numbering and a clear index in the new diagrams/G06-diagrama-de-clases-de-todos-los-modulos folder.",
+                                                         "verified":  true
+                                                     },
+                                                     {
+                                                         "description":  "Each diagram has a companion Markdown description with Nombre, Caracteristicas and Comportamientos (or equivalent accented headings) covering its classes/contracts/constants; preserve actual code identifiers and document abstraction omissions explicitly.",
+                                                         "verified":  true
+                                                     },
+                                                     {
+                                                         "description":  "Independently trace represented classes, significant attributes/methods, inheritance, associations, cardinalities and dependencies to current source/project manifests, including nested UI helper shapes where relevant; distinguish conceptual FK associations from object ownership and implemented rules from recommendations.",
+                                                         "verified":  true
+                                                     },
+                                                     {
+                                                         "description":  "Reflect current changes through feat-011: customer identity conflict exception, spare-part budget reference/validation and quotation-only economics, current-intervention test UI, 0..1 warranty coverage versus 0..N re-entries/one open visit, existence-based original-order freeze and typed exceptions/result codes; do not copy stale owner examples as truth.",
+                                                         "verified":  true
+                                                     },
+                                                     {
+                                                         "description":  "All existing diagrams and preexisting source/docs/local tooling changes remain untouched; modify only new G06 documentation and the two harness state files, without application source/configuration/SQL edits, build, application launch or database access.",
+                                                         "verified":  true
+                                                     },
+                                                     {
+                                                         "description":  "Validate new PlantUML syntax using an already available local renderer if present (no installs or remote source uploads); otherwise disclose the limitation and perform explicit structural syntax/content checks. Validate all new relative Markdown links, source coverage, protected-file preservation, JSON/state, git diff --check and init.ps1; record independent Checker evidence before done.",
+                                                         "verified":  true
+                                                     }
+                                                 ],
+                         "visual_scenarios":  [
+
+                                              ],
+                         "evidence":  "2026-10-17: feat-012 Builder (documentation only; no source, configuration, SQL or database change, no build, no application launch, no database access and no runtime test). Delivered exactly the 19 authorized new files under diagrams/G06-diagrama-de-clases-de-todos-los-modulos: README.md, G06.1-domain, G06.2-abstractions, G06.3-application, G06.4.1-repository-tecnicos, G06.4.2-repository-maestros, G06.4.3-repository-ordenes, G06.4.4-repository-stock-compras-garantias, G06.5-services and G06.6-ui as .puml plus .md, in professional Spanish with exact code identifiers. Scope of the change set: those 19 files and the two harness state files only. Source inventory from the six Compile manifests (bin/obj and Properties excluded): DOMAIN 49 own types, ABSTRACTIONS 11, APPLICATION 19, REPOSITORY 25, SERVICES 4, UI 61 (Program + 28 forms + 32 private nested helpers), 169 total; UI corresponds to 55 distinct names because six helper names repeat across forms. Checks actually run (Builder/source/documentation checks only): 169/169 source types present in the nine .puml unions and named in the matching Markdown; 760 distinct .puml member names all found in the concatenated source; the 10 nullable annotations (int?/DateTime?), 13 static classes, abstract PermisoComponent, NombreRaizSistema, the four Resultado* codes and PredicadoReingresoAbierto matched against the source declarations; structural .puml validation (one @startuml/@enduml per file, balanced braces, per-line quote parity ignoring comments, unique package aliases, no remote include or URL) for 9/9 files; 50 new relative Markdown links resolved with 0 broken and no absolute or machine-specific path; secret/absolute-path regex scan clean apart from the private field name Passphrase declared without any value; all 19 files BOM-less UTF-8 with LF, no trailing whitespace and a final newline; preservation digests recomputed after the writes and matching the Planner fingerprints (tracked excluding the two state files 254 files BB037144738522B2589B19ED1BB8A9010733F388BAB69ED666ED80D96D758F5D; preexisting diagrams excluding the new subtree 56 files 56DA9854B1CFBB4EC21DD22135A8044C361D17C9F3412D10C5B266DFFCC67A6D; tooling .codegraph/.playwright-mcp/skills-lock.json 5 files C50B5B4F78BB2BFD9F1F17425C23B758B87929308FC505C929E631E6CA6F5251); first 11 feature entries unchanged with digest A6C936B7AEBA55CF659063E2ED7611FB47F05FED632869F5E4EA6079D67E4F27; init.ps1 PASS (12 tasks, 292 relative links, git diff --check). Current rules reflected: customer document uniqueness including inactive records, spare-part budget item as quotation only with nullable IdRepuesto, current-intervention test registration with explicit finalization, 0..1 warranty coverage versus 0..N re-entries with one open visit, existence-based read-only original order with typed exceptions and the 0/-1/-2/-3 repository result codes, and conceptual FK associations separated from C# ownership. Not verified and not claimed: all six acceptance criteria remain false and the feature stays in-progress; no PlantUML renderer was identified locally, so the diagrams were validated structurally and were NOT rendered (no visual-layout or full PlantUML syntax certification); no runtime, build or database evidence exists or is required for this documentation feature. Retry round 1 (2026-10-17, fresh Builder, documentation-only repair of the 11 existing authorized paths): the 13 identity-only DOMAIN relations that used o--/*-- are now dotted FK conceptual edges labelled with the real column, with the emitted-budget 1:1..*, the lifecycle Purchase 1:0..* (QuitarItem can delete the last draft item) and the self relation 0..1:0..* (IdOrdenOrigen is int?; exactly one origin applies to the warranty child and one open child is conditional); the permission relation became the ordinary self association PermisoComponent 0..* --\u003e 0..* PermisoComponent Hijos (lista real; no exclusiva) in DOMAIN and IPermisoComponent 0..*:0..* in ABSTRACTIONS; the counts were corrected (DOMAIN 45 Compile entries = 44 code files, multi-type files Cliente/OrdenServicio/DetallePresupuesto/Garantia, CodigosPermiso 57, orders subgroup 5, stock subgroup 6, UI four repeated helper names with 10 repeated declarations and six extra occurrences, 11 distinct helper parents) and SesionIdioma was removed as an IObservador implementation; the 32 UI helpers were rewritten from nested \"- class\" blocks into flat package-level declarations with qualified names, unique aliases and the nested_private stereotype, preserving all 61 UI types, the 12 FrmOrdenServicioDetalle helpers and every member. Builder checks (documentation only): 169/169 source types declared and 0 phantom types, 595/595 member names found in source, 32/32 helpers with 11 parents and 0 leftover nested blocks, 9/9 structural puml checks, 50/50 relative links, 19/19 files BOM-less UTF-8 with LF and no trailing whitespace, 0 secret or absolute-path hits, G06 deliverable digest 68236F4295339CEB14ACE9079A6944CB58257C1FB86FCD5EB4E87F09213AB920, the three Planner preservation digests and the prior-feature digest unchanged, init.ps1 PASS and git diff --check exit 0. Criteria 2 and 3 remain false and the feature remains in-progress pending the fresh Checker. Next action for the Checker: independently re-run the class-set difference against the six Compile manifests, the member/visibility/nullability and relationship/cardinality review, the structural .puml checks and the 50 new relative links, re-verify the preservation and prior-feature digests, git diff --check and init.ps1, and only then decide each acceptance criterion. Checker independent verification (2026-10-17, documentation/source only; no build, application launch, database access, install, remote rendering or Git write; this Checker wrote only feature_list.json and progress.md). VERDICT: FAIL - feat-012 stays in-progress; criteria 1, 4, 5 and 6 verified, criteria 2 and 3 not met. Independently reproduced: 169/169 own types represented in the nine .puml with exact nesting (DOMAIN 49, ABSTRACTIONS 11, APPLICATION 19, REPOSITORY 9+5+5+6, SERVICES 4, UI 61 = 29 top-level + 32 nested) and named in the companion .md tables; 1165/1165 documented members are declared in the correct owning class or its base chain, case-exact; generalizations/realizations (IEntity/IIdioma/IPalabra/ITraduccion/IPermisoComponent/IUsuario/IObservado/IObservador, five ReglaNegocioException subclasses, 28 IObservador forms) and the concrete new-construction dependencies match source; exactly 19 files in the new folder; 50/50 relative Markdown links resolve; 9/9 .puml have one @startuml/@enduml, balanced braces and unique aliases and no remote include/URL; the 19 files are BOM-less UTF-8 with LF, no trailing whitespace and a final newline, with no secrets or absolute paths; preservation digests reproduce exactly (tracked excluding the two state files n254 bb037144738522b2589b19ed1bb8a9010733f388bab69ed666ed80d96d758f5d; existing diagrams excluding the new subtree n56 56da9854b1cfbb4ec21dd22135a8044c361d17c9f3412d10c5b266dffcc67a6d; .codegraph/.playwright-mcp/skills-lock.json n5 c50b5b4f78bb2bfd9f1f17425c23b758b87929308fc505c929e631e6ca6f5251); the 11 prior feature entries remain done and unchanged, and the reported prior-feature digest A6C936B7AEBA55CF659063E2ED7611FB47F05FED632869F5E4EA6079D67E4F27 reproduces over those prior feature objects (not over an array of ids as worded); init.ps1 PASS (12 tasks, 292 links, git diff --check exit 0); no PlantUML renderer exists in the environment (no plantuml/dot command, no workspace jar, PLANTUML_JAR unset), so criterion 6 permits and the Builder disclosed the structural fallback. FAILURE EVIDENCE: (1) criterion 3 - G06.1-domain.puml lines 588-600 draw 13 identity-only FK relations as object aggregation/composition (OrdenServicio to HistorialEstadoOrden, Diagnostico, Presupuesto, Entrega, Reparacion, Garantia and itself by id_orden_origen; Presupuesto *-- DetallePresupuesto; Compra *-- DetalleCompra; Reparacion to ReparacionRepuesto and Prueba; Repuesto to MovimientoStock; Garantia to EvaluacionGarantia) although DOMAIN declares no such fields (only Idioma.Traducciones and PermisoComponent._hijos are real lists), which contradicts README.md lines 37-40 (o--/*-- only with a real field or list; FK-conceptual edges are dotted) and G06.1-domain.md lines 99-100, while G06.1-domain.md line 51 itself states that Presupuesto has no detail collection; G06.1-domain.puml line 582 (FamiliaPermiso 0..1 o-- 0..* PermisoComponent : Hijos) attaches Hijos to the subclass although it is declared in the PermisoComponent base and implies exclusive membership against the source comment that the same component may appear in different branches; (2) criterion 2 - wrong counts and statements: README.md line 47 and line 57 and G06.1-domain.md line 10 state 48 DOMAIN code files where DOMAIN.csproj declares 45 Compile entries (44 code files plus Properties/AssemblyInfo.cs) and the README inventory table itself lists 44 rows; G06.4.3-repository-ordenes.md line 9 says 6 types but lists and draws 5 (README and .puml say 5); G06.4.4-repository-stock-compras-garantias.md line 10 says 5 types but documents 6 (README and .puml say 6, ReparacionRepository included); G06.1-domain.md lines 12-14 name Presupuesto.cs, Bitacora.cs and SQLHelper as two-type files where the actual multi-type files are Cliente.cs, OrdenServicio.cs and DetallePresupuesto.cs with two types each and Garantia.cs with three (SQLHelper.cs belongs to REPOSITORY); G06.1-domain.md line 30 says CodigosPermiso declares 59 const string values where source and .puml declare 57; G06.6-ui.md line 11 says six helper names repeat across forms while its own repeated-name table lists four (ItemCliente, ItemProveedor, ItemEstado, ItemRepuesto); G06.2-abstractions.md lines 42 and 55 list SesionIdioma as an implementation of IObservador where source declares SesionIdioma : IObservado. Residual uncertainty: the nested class block notation used in G06.6-ui.puml (- class NodoPermiso inside a form class body) passes the disclosed structural fallback but was not render-certified, and no renderer is installed or authorized. No artifact was repaired by this Checker; a repair round or an explicit owner decision is required before done. | Checker independent verification, retry round 1 (2026-10-17, fresh Checker; documentation/source only; no build, application launch, database access, install, download, remote rendering or Git write; the Checker wrote only feature_list.json and progress.md). VERDICT: PASS. Independently reproduced against current source: 169/169 own types across the six Compile manifests (DOMAIN 45 Compile = 44 code files + AssemblyInfo and 49 types; ABSTRACTIONS 11; APPLICATION 19; REPOSITORY 25; SERVICES 4; UI 57 code files = 29 top-level + 32 nested = 61 types; 160 code files) are declared in the nine .puml with 0 phantom and 0 missing; 1058 .puml member occurrences resolve inside their owning type block (0 owner mismatches); the 13 identity-only DOMAIN relations are dotted FK conceptual edges labelled with the real column and no o--/*-- remains (only Idioma.Traducciones and PermisoComponent._hijos are real collections and Traduccion.Palabra is the only object reference), with cardinalities matching UX_Diagnostico_Orden/UX_Entrega_Orden/UX_Garantias_OrdenOriginal, the non-empty emitted detail enforced by OrdenServicioService.ValidarItemsYCalcularSubtotal, the deletable last draft line in CompraRepository.QuitarItem and the nullable OrdenServicio.IdOrdenOrigen; the permission relation is the base-owned non-exclusive 0..*:0..* association in DOMAIN and ABSTRACTIONS (FamiliaPermiso.AgregarHijo allows shared branches, PermisoSimple rejects children); the corrected counts and statements were re-checked (57 CodigosPermiso constants, 5 orders and 6 stock repositories, four repeated helper names = 10 declarations and six extra occurrences, 11 helper parents, 12 FrmOrdenServicioDetalle helpers, SesionIdioma : IObservado with 28 IObservador forms, multi-type files Cliente/OrdenServicio/DetallePresupuesto/Garantia, SQLHelper in REPOSITORY); the 32 helpers are flat qualified \"FrmX.Ayudante\" declarations with the nested_private stereotype, 32 unique aliases, 0 leftover nested-class blocks and every listed member resolving to its own source helper; all nine .puml have one @startuml/@enduml, balanced braces, quote parity, unique aliases and no remote include/URL; all 169 puml types are named in their companion .md and all 32 md helper rows resolve to source; 50/50 relative Markdown links resolve with 0 absolute paths; the 19 files are BOM-less UTF-8 with LF, no trailing whitespace and a final newline, with 0 credential values (only the private field name Passphrase, no value) and 0 absolute paths; the G06 deliverable digest 68236F4295339CEB14ACE9079A6944CB58257C1FB86FCD5EB4E87F09213AB920 reproduces; preservation digests reproduce exactly (tracked excluding the two state files n254 BB037144738522B2589B19ED1BB8A9010733F388BAB69ED666ED80D96D758F5D; existing diagrams excluding the new subtree n56 56DA9854B1CFBB4EC21DD22135A8044C361D17C9F3412D10C5B266DFFCC67A6D; .codegraph/.playwright-mcp/skills-lock.json n5 C50B5B4F78BB2BFD9F1F17425C23B758B87929308FC505C929E631E6CA6F5251); the 11 prior feature objects stay done and unchanged (prior-object digest A6C936B7AEBA55CF659063E2ED7611FB47F05FED632869F5E4EA6079D67E4F27); init.ps1 PASS (12 tasks, 292 relative links, git diff --check exit 0); the folder holds exactly 19 files and the only untracked additions are those 19 plus the three preexisting local tooling entries; no PlantUML renderer exists locally (no plantuml/dot command, no workspace jar, PLANTUML_JAR unset), so the disclosed structural fallback under criterion 6 applies and no render/layout/full-syntax certification is claimed. All six criteria are met; criteria 2 and 3 move to true and feat-012 is done. Minor non-blocking observations: the FilaOrden and FilaCompra helper rows in G06.6-ui.md select a different significant-member subset than the .puml (both subsets are real source members); the pre-repair byte identity of the 10 G06 files the Builder reports untouched is not independently reproducible because no per-file baseline was recorded, although all of them were re-verified correct against source."
+                     },
+                     {
+                         "id":  "feat-013",
+                         "name":  "Apply reviewed G06 diagrams, class tables and compact physical DER",
+                         "description":  "Owner-authorized documentation-only update of the G06 folder to the reviewed compact diagrams and Nombre/Características/Comportamientos tables, preserving existing identifiers, splitting REPOSITORY by the four agreed packages, and adding the compact DER based on the read-only live metadata inspection already performed on 2026-10-20.",
+                         "type":  "documentation",
+                         "authorized_files":  [
+                                                  "feature_list.json",
+                                                  "progress.md",
+                                                  "diagrams/G06-diagrama-de-clases-de-todos-los-modulos/README.md",
+                                                  "diagrams/G06-diagrama-de-clases-de-todos-los-modulos/G06.1-domain.puml",
+                                                  "diagrams/G06-diagrama-de-clases-de-todos-los-modulos/G06.1-domain.md",
+                                                  "diagrams/G06-diagrama-de-clases-de-todos-los-modulos/G06.2-abstractions.puml",
+                                                  "diagrams/G06-diagrama-de-clases-de-todos-los-modulos/G06.2-abstractions.md",
+                                                  "diagrams/G06-diagrama-de-clases-de-todos-los-modulos/G06.3-application.puml",
+                                                  "diagrams/G06-diagrama-de-clases-de-todos-los-modulos/G06.3-application.md",
+                                                  "diagrams/G06-diagrama-de-clases-de-todos-los-modulos/G06.4.1-repository-tecnicos.puml",
+                                                  "diagrams/G06-diagrama-de-clases-de-todos-los-modulos/G06.4.1-repository-tecnicos.md",
+                                                  "diagrams/G06-diagrama-de-clases-de-todos-los-modulos/G06.4.2-repository-maestros.puml",
+                                                  "diagrams/G06-diagrama-de-clases-de-todos-los-modulos/G06.4.2-repository-maestros.md",
+                                                  "diagrams/G06-diagrama-de-clases-de-todos-los-modulos/G06.4.3-repository-ordenes.puml",
+                                                  "diagrams/G06-diagrama-de-clases-de-todos-los-modulos/G06.4.3-repository-ordenes.md",
+                                                  "diagrams/G06-diagrama-de-clases-de-todos-los-modulos/G06.4.4-repository-stock-compras-garantias.puml",
+                                                  "diagrams/G06-diagrama-de-clases-de-todos-los-modulos/G06.4.4-repository-stock-compras-garantias.md",
+                                                  "diagrams/G06-diagrama-de-clases-de-todos-los-modulos/G06.5-services.puml",
+                                                  "diagrams/G06-diagrama-de-clases-de-todos-los-modulos/G06.5-services.md",
+                                                  "diagrams/G06-diagrama-de-clases-de-todos-los-modulos/G06.6-ui.puml",
+                                                  "diagrams/G06-diagrama-de-clases-de-todos-los-modulos/G06.6-ui.md",
+                                                  "diagrams/G06-diagrama-de-clases-de-todos-los-modulos/G06.7-der.puml",
+                                                  "diagrams/G06-diagrama-de-clases-de-todos-los-modulos/G06.7-der.md"
+                                              ],
+                         "dependencies":  [
+                                              "feat-012"
+                                          ],
+                         "status":  "done",
+                         "acceptance_criteria":  [
+                                                     {
+                                                         "description":  "The nine existing layer PlantUML diagrams use the reviewed package structure, members, visibility, signatures, relationships and explicit abstraction boundaries.",
+                                                         "verified":  true
+                                                     },
+                                                     {
+                                                         "description":  "Each layer diagram has complete matching Spanish Nombre, Características and Comportamientos tables, including all four repository subdivisions, ABSTRACTIONS, SERVICES and UI.",
+                                                         "verified":  true
+                                                     },
+                                                     {
+                                                         "description":  "A compact DER and companion description cover the 30 application tables and 42 actual FKs from the dated metadata inspection, distinguish physical constraints from code policy, and exclude sysdiagrams explicitly.",
+                                                         "verified":  true
+                                                     },
+                                                     {
+                                                         "description":  "The index reflects the ten diagram/document pairs, current source snapshot and dated SQL metadata evidence without stale exhaustive-inventory or rendering claims.",
+                                                         "verified":  true
+                                                     },
+                                                     {
+                                                         "description":  "Independent documentation review, structural PlantUML checks, Markdown links/tables, JSON state, protected-file fingerprints, git diff --check and init.ps1 pass; unavailable local rendering and runtime checks are disclosed.",
+                                                         "verified":  true
+                                                     }
+                                                 ],
+                         "visual_scenarios":  [
+
+                                              ],
+                         "evidence":  "2026-10-20: documentation-only update completed on checkpoint-6-arreglos-y-mejoras @ 9417b47. Updated the nine reviewed class-diagram/table pairs and README in the existing G06 folder; added G06.7-der.puml and G06.7-der.md using the dated read-only SQL catalog inspection earlier in this session (TPIntegrador dbo: 30 application tables, 42 enabled/trusted FKs, six nullable FKs, four unique FKs, three composite PKs, excluded sysdiagrams and no installed UX_Clientes_Documento). Integrated validator PASS: ten pairs/21 documentation files, 137 own class/contract types plus 30 DER entities with one matching description row each, 151 relative links, 955 represented member-name anchors found in owner source, declaration/note/legend/quote/alias checks, table shape, UTF-8 without BOM/LF, credential-pattern scan, authorized Git scope and 259 protected-file fingerprints unchanged. APP/REPO source validation additionally confirmed 382 public method name/return pairs and 55 OrdenServicioService operations. Independent cross-review PASS with no blocking findings: UI/DER/README (five files), DOMAIN/ABSTRACTIONS/SERVICES (six files); parent independently reviewed APP/REPO and integrated evidence. Final init.ps1 and git diff --check passed; see progress.md for closure checks and limits. Transient temporary-validator variable/Markdown-label parsing issues were fixed outside the repository and rerun successfully. No source/configuration/SQL/data changes, new DB access for the documentation update, build, application startup, tool install, remote upload, render or Git publication. Local renderer unavailable; visual diagram layout and DER legibility are explicitly not certified."
+                     }
+                 ]
+}

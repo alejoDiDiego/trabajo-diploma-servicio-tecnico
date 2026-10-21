@@ -55,7 +55,15 @@ namespace APPLICATION.Features.Bitacora
                 "PERMISOS",
                 "IDIOMAS",
                 "CONTROL_CAMBIOS",
-                "INTEGRIDAD"
+                "INTEGRIDAD",
+                "CLIENTES",
+                "EQUIPOS",
+                "TIPOS_EQUIPO",
+                "MARCAS",
+                "ORDENES",
+                "REPUESTOS",
+                "PROVEEDORES",
+                "COMPRAS"
             };
         }
     }

@@ -1,0 +1,302 @@
+@startuml
+title G06 - Capa UI / PRESENTATION
+
+left to right direction
+skinparam classAttributeIconSize 0
+hide circle
+
+package "Aspectos técnicos" {
+
+    class Program <<static>> {
+        - {static} Main() : void
+    }
+
+    class FrmPrincipal <<Form, IObservador>> {
+        - _sesionIdioma : SesionIdioma
+        --
+        + Actualizar(idiomaObservado : IIdioma) : void
+        - TSMI_Clientes_Click(...) : void
+        - TSMI_Equipos_Click(...) : void
+        - TSMI_Ordenes_Click(...) : void
+        - TSMI_Compras_Click(...) : void
+        - TSMI_Garantias_Click(...) : void
+        - TSMI_Dashboard_Click(...) : void
+        - TSMI_Reportes_Click(...) : void
+    }
+
+    class FrmLogin <<Form, IObservador>> {
+        + Actualizar(idiomaObservado : IIdioma) : void
+    }
+
+    class FrmAdministrarUsuarios <<Form, IObservador>> {
+        + Actualizar(idiomaObservado : IIdioma) : void
+    }
+
+    class FrmAdministrarPermisos <<Form, IObservador>> {
+        + Actualizar(idiomaObservado : IIdioma) : void
+    }
+
+    class FrmAsignarPermisosUsuario <<Form, IObservador>> {
+        + Actualizar(idiomaObservado : IIdioma) : void
+    }
+
+    class FrmBitacora <<Form, IObservador>> {
+        + Actualizar(idiomaObservado : IIdioma) : void
+    }
+
+    class FrmControlCambios <<Form, IObservador>> {
+        + Actualizar(idiomaObservado : IIdioma) : void
+    }
+
+    class FrmAdministrarTraducciones <<Form, IObservador>> {
+        + Actualizar(idiomaObservado : IIdioma) : void
+    }
+}
+
+package "Negocio - Clientes, Equipos y Catálogos" {
+
+    class FrmClientes <<Form, IObservador>> {
+        + Actualizar(idiomaObservado : IIdioma) : void
+    }
+
+    class FrmClienteEditar <<Form, IObservador>> {
+        + Nombre : string
+        + Apellido : string
+        + Documento : string
+        + Telefono : string
+        + Email : string
+        + Direccion : string
+        + Observaciones : string
+        --
+        + Actualizar(idiomaObservado : IIdioma) : void
+    }
+
+    class FrmEquipos <<Form, IObservador>> {
+        + Actualizar(idiomaObservado : IIdioma) : void
+    }
+
+    class FrmEquipoEditar <<Form, IObservador>> {
+        + IdCliente : int
+        + IdTipoEquipo : int
+        + IdMarca : int
+        + Modelo : string
+        + NumeroSerie : string
+        + Imei : string
+        + Color : string
+        + Observaciones : string
+        --
+        + Actualizar(idiomaObservado : IIdioma) : void
+    }
+
+    class FrmTiposEquipo <<Form, IObservador>> {
+        + Actualizar(idiomaObservado : IIdioma) : void
+    }
+
+    class FrmMarcas <<Form, IObservador>> {
+        + Actualizar(idiomaObservado : IIdioma) : void
+    }
+
+    class FrmCatalogoEditar <<Form, IObservador>> {
+        + Nombre : string
+        --
+        + Actualizar(idiomaObservado : IIdioma) : void
+    }
+}
+
+package "Negocio - Órdenes" {
+
+    class FrmOrdenesServicio <<Form, IObservador>> {
+        - _service : OrdenServicioService
+        - _clienteService : ClienteService
+        - _equipoService : EquipoService
+        --
+        + Actualizar(idiomaObservado : IIdioma) : void
+        - EsSoloConsulta(idOrden : int) : bool
+        - BTN_Cancelar_Click(...) : void
+        - BTN_Entregar_Click(...) : void
+    }
+
+    class FrmOrdenServicioDetalle <<Form, IObservador>> {
+        - _service : OrdenServicioService
+        - _garantiaService : GarantiaService
+        - _clienteService : ClienteService
+        - _equipoService : EquipoService
+        - _idOrden : int
+        - _esNuevo : bool
+        - _tabInicial : string
+        - _repuestosPresupuesto : List<Repuesto>
+        - _idIntervencionPruebaCargada : int
+        - _cargandoPruebas : bool
+        - _reingresos : List<OrdenServicio>
+        - _soloConsulta : bool
+        --
+        + FrmOrdenServicioDetalle()
+        + FrmOrdenServicioDetalle(idOrden : int)
+        + FrmOrdenServicioDetalle(idOrden : int, tabInicial : string)
+        + Actualizar(idiomaObservado : IIdioma) : void
+        - CargarComboRepuestosPresupuesto() : void
+        - ActualizarAccionesPruebas() : void
+        - CargarReingresosGarantia() : void
+        - ActualizarAvisoSoloConsulta() : void
+        - AplicarPermisosDetalle() : void
+        - BTN_RechazarGarantia_Click(...) : void
+        - BTN_CancelarEntrega_Click(...) : void
+    }
+
+    class FrmGarantias <<Form, IObservador>> {
+        - _ordenService : OrdenServicioService
+        - _garantiaService : GarantiaService
+        - _clienteService : ClienteService
+        - _equipoService : EquipoService
+        --
+        + Actualizar(idiomaObservado : IIdioma) : void
+    }
+}
+
+package "Negocio - Inventario" {
+
+    class FrmRepuestos <<Form, IObservador>> {
+        + Actualizar(idiomaObservado : IIdioma) : void
+    }
+
+    class FrmRepuestoEditar <<Form, IObservador>> {
+        + Codigo : string
+        + Descripcion : string
+        + StockInicial : int
+        + StockMinimo : int
+        + CostoActual : decimal
+        + PrecioReferencia : decimal
+        --
+        + Actualizar(idiomaObservado : IIdioma) : void
+    }
+
+    class FrmAjusteStock <<Form, IObservador>> {
+        + Cantidad : int
+        + Motivo : string
+        --
+        + Actualizar(idiomaObservado : IIdioma) : void
+    }
+
+    class FrmMovimientosStock <<Form, IObservador>> {
+        + Actualizar(idiomaObservado : IIdioma) : void
+    }
+}
+
+package "Negocio - Proveedores y Compras" {
+
+    class FrmProveedores <<Form, IObservador>> {
+        + Actualizar(idiomaObservado : IIdioma) : void
+    }
+
+    class FrmProveedorEditar <<Form, IObservador>> {
+        + RazonSocial : string
+        + Cuit : string
+        + Telefono : string
+        + Email : string
+        + Direccion : string
+        + Contacto : string
+        --
+        + Actualizar(idiomaObservado : IIdioma) : void
+    }
+
+    class FrmCompras <<Form, IObservador>> {
+        - _service : CompraService
+        - _proveedorService : ProveedorService
+        --
+        + Actualizar(idiomaObservado : IIdioma) : void
+        - BTN_Crear_Click(...) : void
+        - BTN_Detalle_Click(...) : void
+        - BTN_Confirmar_Click(...) : void
+        - BTN_Cancelar_Click(...) : void
+        - BTN_Anular_Click(...) : void
+    }
+
+    class FrmCompraDetalle <<Form, IObservador>> {
+        - _service : CompraService
+        - _proveedorService : ProveedorService
+        - _repuestoService : RepuestoService
+        - _idCompra : int
+        - _esNuevo : bool
+        --
+        + FrmCompraDetalle()
+        + FrmCompraDetalle(idCompra : int)
+        + Actualizar(idiomaObservado : IIdioma) : void
+        - BTN_AgregarItem_Click(...) : void
+        - BTN_QuitarItem_Click(...) : void
+        - BTN_GuardarBorrador_Click(...) : void
+        - BTN_Confirmar_Click(...) : void
+        - BTN_CancelarCompra_Click(...) : void
+        - BTN_AnularCompra_Click(...) : void
+    }
+}
+
+package "Negocio - Información gerencial" {
+
+    class FrmDashboard <<Form, IObservador>> {
+        - _service : ReporteService
+        --
+        + Actualizar(idiomaObservado : IIdioma) : void
+        - BTN_Actualizar_Click(...) : void
+    }
+
+    class FrmReportes <<Form, IObservador>> {
+        - _service : ReporteService
+        --
+        + Actualizar(idiomaObservado : IIdioma) : void
+        - BTN_Buscar_Click(...) : void
+    }
+}
+
+Program --> FrmPrincipal : inicia aplicación
+
+FrmPrincipal --> FrmLogin : abre MDI
+FrmPrincipal --> FrmAdministrarUsuarios : abre MDI
+FrmPrincipal --> FrmAdministrarPermisos : abre MDI
+FrmPrincipal --> FrmAsignarPermisosUsuario : abre MDI
+FrmPrincipal --> FrmBitacora : abre MDI
+FrmPrincipal --> FrmControlCambios : abre MDI
+FrmPrincipal --> FrmAdministrarTraducciones : abre MDI
+
+FrmPrincipal --> FrmClientes : abre MDI
+FrmPrincipal --> FrmEquipos : abre MDI
+FrmPrincipal --> FrmTiposEquipo : abre MDI
+FrmPrincipal --> FrmMarcas : abre MDI
+FrmPrincipal --> FrmOrdenesServicio : abre MDI
+FrmPrincipal --> FrmRepuestos : abre MDI
+FrmPrincipal --> FrmMovimientosStock : abre MDI
+FrmPrincipal --> FrmProveedores : abre MDI
+FrmPrincipal --> FrmCompras : abre MDI
+FrmPrincipal --> FrmGarantias : abre MDI
+FrmPrincipal --> FrmDashboard : abre MDI
+FrmPrincipal --> FrmReportes : abre MDI
+
+FrmClientes --> FrmClienteEditar : modal
+FrmEquipos --> FrmEquipoEditar : modal
+FrmTiposEquipo --> FrmCatalogoEditar : modal
+FrmMarcas --> FrmCatalogoEditar : modal
+
+FrmRepuestos --> FrmRepuestoEditar : modal
+FrmRepuestos --> FrmAjusteStock : modal
+FrmRepuestos --> FrmMovimientosStock : consulta modal
+
+FrmProveedores --> FrmProveedorEditar : modal
+FrmCompras --> FrmCompraDetalle : modal
+FrmOrdenesServicio --> FrmOrdenServicioDetalle : modal
+FrmOrdenServicioDetalle --> FrmOrdenServicioDetalle : consulta modal de orden origen
+
+note bottom
+  Todos los Forms heredan System.Windows.Forms.Form
+  e implementan IObservador.
+
+  Se representan miembros seleccionados, no todos
+  los constructores, campos ni manejadores de eventos.
+
+  Las propiedades de salida de los editores
+  son de solo lectura.
+
+  Los archivos Designer, los controles individuales
+  y las clases auxiliares privadas anidadas
+  no se representan como clases independientes.
+end note
+
+@enduml

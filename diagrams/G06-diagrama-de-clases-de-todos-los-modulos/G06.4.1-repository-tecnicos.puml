@@ -1,0 +1,120 @@
+@startuml
+title G06 - Capa INFRASTRUCTURE / REPOSITORY - Aspectos técnicos
+
+left to right direction
+skinparam classAttributeIconSize 0
+hide circle
+
+package "Aspectos técnicos" {
+
+    class SqlHelper {
+        - _cadenaConexion : string
+        --
+        + SqlHelper(cadenaConexion : string)
+        + ExecuteTransaction(query : string, parametros : SqlParameter[] = null) : int
+        + ExecuteQuery(query : string, parametros : SqlParameter[] = null) : DataTable
+    }
+
+    class IntegridadRepository {
+        - _db : SqlHelper
+        --
+        + Inicializar() : void
+        + GuardarDVV(nombreTabla : string, dvv : string) : void
+        + ObtenerDVV(nombreTabla : string) : string
+    }
+
+    class BitacoraRepository {
+        - _db : SqlHelper
+        --
+        + Inicializar() : void
+        + Insertar(entrada : EntradaBitacora) : void
+        + Listar() : List<EntradaBitacora>
+        + Buscar(...) : List<EntradaBitacora>
+    }
+
+    class ControlCambioRepository {
+        - _db : SqlHelper
+        --
+        + Inicializar() : void
+        + Insertar(cambio : ControlCambio) : void
+        + Listar() : List<ControlCambio>
+        + ObtenerPorId(...) : ControlCambio
+        + ObtenerPorTablaYRegistro(...) : ControlCambio
+    }
+
+    class IdiomaRepository {
+        - _db : SqlHelper
+        --
+        + Inicializar() : void
+        + Listar() : List<Idioma>
+        + ObtenerPorId(...) : Idioma
+        + ObtenerPorNombre(...) : Idioma
+        + ListarTraduccionesPorIdioma(...) : List<TraduccionEditable>
+        + ObtenerTraduccionEditable(...) : TraduccionEditable
+        + AgregarIdioma(...) : Idioma
+        + AgregarIdiomaConId(...) : void
+        + ModificarIdioma(...) : void
+        + EliminarIdioma(...) : void
+        + GuardarTraduccion(...) : void
+        + EliminarTraduccion(...) : void
+    }
+
+    class UsuarioRepository {
+        - _db : SqlHelper
+        --
+        + Inicializar() : void
+        + Agregar(usuario : Usuario) : Usuario
+        + Eliminar(id : int) : void
+        + CambiarEstado(...) : void
+        + ObtenerPorUsername(...) : Usuario
+        + ObtenerPorId(...) : Usuario
+        + Listar() : List<Usuario>
+        + Modificar(...) : void
+        + ObtenerTodosDVH() : List<UserDVH>
+        + ActualizarDVH(...) : void
+    }
+
+    class PermisoRepository {
+        - _db : SqlHelper
+        + NombreRaizSistema : const string
+        --
+        + Inicializar() : void
+        + ListarArbol() : List<PermisoComponent>
+        + ListarSubArbol(...) : List<PermisoComponent>
+        + ListarFamilias() : List<FamiliaPermiso>
+        + ListarPermisosSimples() : List<PermisoSimple>
+        + AgregarFamilia(...) : FamiliaPermiso
+        + ModificarFamilia(...) : void
+        + EliminarFamilia(...) : void
+        + AgregarComponente(...) : void
+        + QuitarComponente(...) : void
+        + ExisteRelacion(...) : bool
+        + ObtenerRaizSistema() : PermisoComponent
+        + EsRaizSistema(...) : bool
+        + ObtenerPorId(...) : PermisoComponent
+        + ObtenerPorCodigo(...) : PermisoComponent
+    }
+
+    class UsuarioPermisoRepository {
+        - _db : SqlHelper
+        --
+        + Inicializar() : void
+        + AsignarPermiso(...) : void
+        + QuitarPermiso(...) : void
+        + TienePermisoAsignado(...) : bool
+        + ListarPermisosAsignados(...) : List<PermisoComponent>
+        + ListarPermisosDisponibles(...) : List<PermisoComponent>
+    }
+}
+
+SqlHelper <-- IntegridadRepository
+SqlHelper <-- BitacoraRepository
+SqlHelper <-- ControlCambioRepository
+SqlHelper <-- IdiomaRepository
+SqlHelper <-- UsuarioRepository
+SqlHelper <-- PermisoRepository
+SqlHelper <-- UsuarioPermisoRepository
+
+UsuarioPermisoRepository ..> PermisoRepository : NombreRaizSistema
+
+@enduml

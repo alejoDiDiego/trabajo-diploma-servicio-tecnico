@@ -1,0 +1,342 @@
+@startuml
+title G06 - Capa APPLICATION
+
+left to right direction
+skinparam classAttributeIconSize 0
+hide circle
+
+package "Negocio" {
+
+    class ClienteService {
+        - _clienteRepository : ClienteRepository
+        --
+        + Inicializar() : void
+        + Crear(...) : Cliente
+        + Modificar(...) : Cliente
+        + Desactivar(id : int) : void
+        + Reactivar(id : int) : void
+        + Listar(...) : List<Cliente>
+        + ObtenerPorId(id : int) : Cliente
+    }
+
+    class TipoEquipoService {
+        - _tipoEquipoRepository : TipoEquipoRepository
+        --
+        + Inicializar() : void
+        + Crear(...) : TipoEquipo
+        + Modificar(...) : TipoEquipo
+        + Desactivar(...) : void
+        + Reactivar(...) : void
+        + Listar(...) : List<TipoEquipo>
+        + ObtenerPorId(...) : TipoEquipo
+    }
+
+    class MarcaService {
+        - _marcaRepository : MarcaRepository
+        --
+        + Inicializar() : void
+        + Crear(...) : Marca
+        + Modificar(...) : Marca
+        + Desactivar(...) : void
+        + Reactivar(...) : void
+        + Listar(...) : List<Marca>
+        + ObtenerPorId(...) : Marca
+    }
+
+    class EquipoService {
+        - _equipoRepository : EquipoRepository
+        - _clienteRepository : ClienteRepository
+        - _tipoEquipoRepository : TipoEquipoRepository
+        - _marcaRepository : MarcaRepository
+        --
+        + Inicializar() : void
+        + Crear(...) : Equipo
+        + Modificar(...) : Equipo
+        + Desactivar(...) : void
+        + Reactivar(...) : void
+        + Listar(...) : List<Equipo>
+        + ListarPorCliente(...) : List<Equipo>
+        + ObtenerPorId(...) : Equipo
+    }
+
+    class OrdenServicioService {
+        - _ordenRepository : OrdenServicioRepository
+        - _historialRepository : HistorialEstadoOrdenRepository
+        - _diagnosticoRepository : DiagnosticoRepository
+        - _presupuestoRepository : PresupuestoRepository
+        - _entregaRepository : EntregaRepository
+        - _clienteRepository : ClienteRepository
+        - _equipoRepository : EquipoRepository
+        - _usuarioRepository : UsuarioRepository
+        - _usuarioPermisoService : UsuarioPermisoService
+        - _reparacionRepository : ReparacionRepository
+        - _repuestoRepository : RepuestoRepository
+        --
+        + Inicializar() : void
+        + InicializarReparaciones() : void
+        + CrearOrden(...) : OrdenServicio
+        + AsignarTecnico(...) : void
+        + IniciarDiagnostico(...) : void
+        + FinalizarDiagnostico(...) : Diagnostico
+        + EmitirPresupuesto(...) : Presupuesto
+        + RegistrarAprobacionPresupuesto(...) : void
+        + RegistrarRechazoPresupuesto(...) : void
+        + SolicitarAdicional(...) : void
+        + EmitirAdicional(...) : Presupuesto
+        + RegistrarAprobacionAdicional(...) : void
+        + RegistrarRechazoAdicional(...) : void
+        + CrearBorrador(...) : Presupuesto
+        + PublicarBorrador(...) : void
+        + EliminarBorrador(...) : void
+        + AnularPresupuesto(...) : void
+        + CancelarSolicitudAdicional(...) : void
+        + PuedeCancelarSolicitud(...) : bool
+        + CancelarOrden(...) : void
+        + ModificarRecepcion(...) : OrdenServicio
+        + IniciarReparacion(...) : Reparacion
+        + ConsumirRepuesto(...) : void
+        + QuitarConsumo(...) : void
+        + FinalizarReparacion(...) : void
+        + RegistrarPrueba(...) : Prueba
+        + AnularPrueba(...) : void
+        + FinalizarPruebas(...) : void
+        + ReabrirPruebas(...) : void
+        + EntregarOrden(...) : Entrega
+        + CancelarEntrega(...) : void
+        + CrearReingresoGarantia(...) : OrdenServicio
+        + EvaluarReingreso(..., continuarPago : bool) : void
+        + Listar(...) : List<OrdenServicio>
+        + ListarPorCliente(...) : List<OrdenServicio>
+        + ObtenerPorId(...) : OrdenServicio
+        + ObtenerDiagnostico(...) : Diagnostico
+        + ObtenerPresupuesto(...) : Presupuesto
+        + ObtenerPresupuestoOriginal(...) : Presupuesto
+        + ObtenerPresupuestoPorId(...) : Presupuesto
+        + ListarAdicionales(...) : List<Presupuesto>
+        + ListarTodosPresupuestos(...) : List<Presupuesto>
+        + ExisteAdicionalPendiente(...) : bool
+        + CalcularMontoAutorizado(...) : decimal
+        + ListarDetalle(...) : List<DetallePresupuesto>
+        + ListarHistorial(...) : List<HistorialEstadoOrden>
+        + ObtenerEntrega(...) : Entrega
+        + ListarTecnicosElegibles() : List<Usuario>
+        + ListarReparaciones(...) : List<Reparacion>
+        + ObtenerReparacion(...) : Reparacion
+        + ListarConsumidos(...) : List<ReparacionRepuesto>
+        + ListarPruebas(...) : List<Prueba>
+        + ObtenerReingresoGarantiaAbierto(...) : OrdenServicio
+        + ListarReingresosGarantia(...) : List<OrdenServicio>
+        + EsSoloConsultaPorReingresos(...) : bool
+    }
+
+    class RepuestoService {
+        - _repuestoRepository : RepuestoRepository
+        - _movimientoRepository : MovimientoStockRepository
+        --
+        + Inicializar() : void
+        + Crear(...) : Repuesto
+        + Modificar(...) : Repuesto
+        + AjustarStock(...) : void
+        + Desactivar(...) : void
+        + Reactivar(...) : void
+        + Listar(...) : List<Repuesto>
+        + ObtenerPorId(...) : Repuesto
+        + ObtenerPorCodigo(...) : Repuesto
+        + ListarMovimientos(...) : List<MovimientoStock>
+        + ListarMovimientosFiltros(...) : List<MovimientoStock>
+    }
+
+    class ProveedorService {
+        - _proveedorRepository : ProveedorRepository
+        --
+        + Inicializar() : void
+        + Crear(...) : Proveedor
+        + Modificar(...) : Proveedor
+        + Desactivar(...) : void
+        + Reactivar(...) : void
+        + Listar(...) : List<Proveedor>
+        + ObtenerPorId(...) : Proveedor
+    }
+
+    class CompraService {
+        - _compraRepository : CompraRepository
+        - _proveedorRepository : ProveedorRepository
+        - _repuestoRepository : RepuestoRepository
+        --
+        + Inicializar() : void
+        + CrearBorrador(...) : Compra
+        + AgregarItem(...) : void
+        + QuitarItem(...) : void
+        + Confirmar(...) : Compra
+        + Cancelar(...) : void
+        + Anular(...) : void
+        + ObtenerPorId(...) : Compra
+        + Listar(...) : List<Compra>
+        + ListarDetalle(...) : List<DetalleCompra>
+    }
+
+    class GarantiaService {
+        - _garantiaRepository : GarantiaRepository
+        - _evaluacionRepository : EvaluacionGarantiaRepository
+        --
+        + Inicializar() : void
+        + Crear(...) : Garantia
+        + ObtenerPorOrden(...) : Garantia
+        + ObtenerVigente(...) : Garantia
+        + Anular(...) : void
+        + ObtenerEvaluacionPorReingreso(...) : EvaluacionGarantia
+    }
+
+    class ReporteService {
+        - _reporteRepository : ReporteRepository
+        - _repuestoRepository : RepuestoRepository
+        --
+        + ContarOrdenesPorEstado(...) : DataTable
+        + ContarOrdenesPorResultado(...) : DataTable
+        + ReparacionesPorTecnico(...) : DataTable
+        + TiempoPromedioIngresoEntrega(...) : decimal
+        + ContarPresupuestosPorEstado(...) : DataTable
+        + TasaAprobacionPresupuestos(...) : decimal
+        + RepuestosMasUtilizados(...) : DataTable
+        + ComprasPorProveedor(...) : DataTable
+        + ContarReingresosGarantia(...) : int
+        + EvaluacionesPorEstado(...) : DataTable
+        + TasaAceptacionGarantia(...) : decimal
+        + MontoPresupuestosAprobados(...) : decimal
+        + RepuestosBajoMinimo() : List<Repuesto>
+        + DashboardResumen() : DataTable
+    }
+}
+
+package "Aspectos técnicos" {
+
+    class UsuarioService {
+        - _passwordHasher : IPasswordHasher
+        - _usuarioRepository : UsuarioRepository
+        --
+        + Inicializar() : void
+        + Login(username : string, password : string) : void
+        + Crear(...) : Usuario
+        + Listar() : List<Usuario>
+        + Eliminar(username : string) : void
+        + Reactivar(username : string) : void
+        + Modificar(...) : Usuario
+    }
+
+    class PermisoService {
+        - _permisoRepository : PermisoRepository
+        - _usuarioPermisoRepository : UsuarioPermisoRepository
+        --
+        + Inicializar() : void
+        + ListarArbol() : List<PermisoComponent>
+        + ListarFamilias() : List<FamiliaPermiso>
+        + ListarPermisosSimples() : List<PermisoSimple>
+        + CrearFamilia(...) : FamiliaPermiso
+        + EditarFamilia(...) : FamiliaPermiso
+        + EliminarFamilia(...) : void
+        + EsFamiliaAsignadaAlUsuarioActual(...) : bool
+        + AgregarComponente(...) : void
+        + QuitarComponente(...) : void
+    }
+
+    class UsuarioPermisoService {
+        - _usuarioRepository : UsuarioRepository
+        - _usuarioPermisoRepository : UsuarioPermisoRepository
+        - _permisoRepository : PermisoRepository
+        --
+        + ListarPermisosAsignados(...) : List<PermisoComponent>
+        + ListarPermisosDisponibles(...) : List<PermisoComponent>
+        + AsignarPermiso(...) : void
+        + QuitarPermiso(...) : void
+        + ListarPermisosEfectivos(...) : List<PermisoComponent>
+    }
+
+    class IdiomaService {
+        - _idiomaRepository : IdiomaRepository
+        --
+        + Inicializar() : void
+        + Listar() : List<Idioma>
+        + ObtenerPorId(...) : Idioma
+        + ObtenerPorNombre(...) : Idioma
+        + ObtenerIdiomaPorDefecto() : Idioma
+        + ListarTraduccionesPorIdioma(...) : List<TraduccionEditable>
+        + CrearIdioma(...) : Idioma
+        + ModificarIdioma(...) : void
+        + EliminarIdioma(...) : void
+        + GuardarTraduccion(...) : void
+    }
+
+    class ControlCambioService {
+        - _repository : ControlCambioRepository
+        - _idiomaRepository : IdiomaRepository
+        --
+        + Inicializar() : void
+        + Listar() : List<ControlCambio>
+        + RegistrarCambio(...) : void
+        + Restaurar(idCambio : int) : void
+    }
+
+    class BitacoraService {
+        - _repository : BitacoraRepository
+        --
+        + Inicializar() : void
+        + Registrar(actividad : string, detalle : string, tipoActividad : string) : void
+        + Registrar(usuario : string, actividad : string, detalle : string, tipoActividad : string) : void
+        + Listar() : List<EntradaBitacora>
+        + Buscar(...) : List<EntradaBitacora>
+        + ObtenerTiposActividad() : string[]
+    }
+
+    class IntegridadService {
+        - _usuarioRepository : UsuarioRepository
+        - _integridadRepository : IntegridadRepository
+        --
+        + Inicializar() : void
+        + VerificarIntegridadUsuarios() : bool
+        + RecalcularDVVUsuarios() : void
+        + RecalcularTodosDV() : void
+    }
+
+    class DigitoVerificadorHelper <<static>> {
+        + {static} CalcularDVH(usuario : Usuario) : string
+        + {static} CalcularDVV(filas : List<UserDVH>) : string
+    }
+
+    class DatosUsuarioIncorrectosException <<Exception>> {
+        + DatosUsuarioIncorrectosException()
+        + DatosUsuarioIncorrectosException(message : string)
+    }
+}
+
+OrdenServicioService --> UsuarioPermisoService : permisos técnicos
+OrdenServicioService ..> GarantiaService : garantías
+OrdenServicioService ..> BitacoraService : audita
+
+CompraService ..> BitacoraService
+RepuestoService ..> BitacoraService
+ClienteService ..> BitacoraService
+EquipoService ..> BitacoraService
+TipoEquipoService ..> BitacoraService
+MarcaService ..> BitacoraService
+ProveedorService ..> BitacoraService
+GarantiaService ..> BitacoraService
+
+UsuarioService ..> UsuarioPermisoService
+UsuarioService ..> IntegridadService
+UsuarioService ..> DigitoVerificadorHelper
+UsuarioService ..> BitacoraService
+UsuarioService ..> DatosUsuarioIncorrectosException
+
+PermisoService ..> BitacoraService
+UsuarioPermisoService ..> BitacoraService
+
+IdiomaService ..> ControlCambioService
+IdiomaService ..> BitacoraService
+ControlCambioService ..> BitacoraService
+
+IntegridadService ..> DigitoVerificadorHelper
+IntegridadService ..> BitacoraService
+
+System.Exception <|-- DatosUsuarioIncorrectosException
+
+@enduml
