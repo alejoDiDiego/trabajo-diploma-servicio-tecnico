@@ -1,4 +1,33 @@
 # Session Progress
+## Current documentation task (feat-013, 2026-10-20) - completed
+
+- Objective achieved: applied the owner's reviewed compact G06 PlantUML diagrams and Spanish Nombre/Características/Comportamientos tables; added the compact physical DER and its table descriptions. This dated section supersedes older Current State objectives for this documentation task only.
+- Checkout: checkpoint-6-arreglos-y-mejoras @ 9417b47. feat-013 is done; all five acceptance criteria are verified and no task remains in progress. Earlier feat-001..feat-012 evidence is historical and was not rewritten.
+- Deliverables: [G06 index](diagrams/G06-diagrama-de-clases-de-todos-los-modulos/README.md), the nine updated layer pairs and the new [compact DER](diagrams/G06-diagrama-de-clases-de-todos-los-modulos/G06.7-der.puml) with its companion description. Exactly 21 documentation files belong to this delivery (19 existing files updated, two DER files added), plus the two task-state files. The four repository groups now contain 8/5/6/6 own types, with ReparacionRepository in orders and ReporteRepository in stock/purchases/warranties.
+- Scope preserved: no application source, configuration, SQL, database data, older diagrams or local tooling changed. The baseline had no tracked changes. The preexisting .codegraph/, .playwright-mcp/ and skills-lock.json remain untouched; all 259 protected-file fingerprints match the pre-edit manifest. Nothing was staged, committed, pushed or switched.
+- Evidence boundary: class diagrams are source/documentation verified, not runtime accepted. DER evidence is the earlier read-only SQL metadata inspection in this same session on 2026-10-20, TPIntegrador dbo: 30 application tables, 42 enabled/trusted FKs, six nullable FK columns, four unique FK columns, three composite primary keys and one excluded SSMS sysdiagrams table. UX_Clientes_Documento is not installed in that inspected database. No business rows were read to infer why. No new database access was used for this documentation update.
+
+### Verification Evidence - feat-013
+
+| Check | Result |
+| --- | --- |
+| Baseline harness | PASS before edits: 12 tasks, 292 relative links and git diff --check; source base 9417b47, only the three preexisting local-tool entries untracked. |
+| Integrated diagram/table coverage | PASS: 10 pairs, 21 documentation files, 137 represented own class/contract types plus 30 DER tables, each with exactly one matching descriptive row. UI deliberately omits the 32 private nested helpers rather than claiming they were deleted. |
+| Source anchors and APIs | PASS: 955 represented member names found in their owner source; APP/REPO comparator also confirmed 382 public method name/return pairs and all 55 public operations of OrdenServicioService. |
+| DER structure | PASS: 30 entities, 42 FK edges, six identifying FK edges, six nullable FK fields and four unique FK fields; no invented relationships for Bitacora, ControlCambios or DigitosVerticales. |
+| Markdown, PlantUML and encoding | PASS: 151 relative links, table column counts, one start/end per diagram, balanced declaration/note/legend blocks and quotes, unique aliases, no remote includes; all 21 documents UTF-8 without BOM, LF, final newline and no trailing whitespace. |
+| Secret-pattern scan | PASS for added/updated documentation: no embedded connection credentials, password/hash values or cryptographic secret assignments. Private field names appear without values. |
+| Protected scope | PASS: 259 pre-edit hashes unchanged, including all protected tracked source/configuration/SQL/old diagrams and the preexisting local-tool files. Only the 23 authorized paths are changed or added. |
+| Independent documentation review | PASS, no blocking findings: one child reviewed the parent's five UI/DER/index documents; the other independently reviewed the six DOMAIN/ABSTRACTIONS/SERVICES documents. The parent reviewed APP/REPO content and source anchors independently of that writer and ran the integrated validator. |
+| Final structural gate | init.ps1 and git diff --check passed during verification; the closure re-run is recorded in the next line. Git emits only core.autocrlf warnings about a future conversion; byte checks confirm the documented LF files and no Git configuration was changed. |
+
+- Closure check: PASS after the final state update: init.ps1 (13 tasks, 294 relative links and git diff --check) and the integrated validator (10 pairs, 21 documents, 151 G06 links, 955 member-name anchors and 259 protected-file fingerprints), with no errors. One whitespace-only line introduced while indenting the new tracker entry was detected by the closure diff check and removed; the complete closure re-run then passed.
+- Temporary-validator corrections: a reused typed PowerShell variable and parsing of linked first-column Markdown labels initially caused validator failures; both were investigated and corrected only in the temporary validator, then the integrated run passed. They were not defects in application files or permission to change source.
+- Review artifacts are outside the repository under %TEMP%: g06-feat013-protected-manifest.json, g06-feat013-validate-4df874.ps1 and g06-feat013-validation.json. They are not application dependencies or deliverables.
+- Not run / limits: no build, application launch, migrations, seeds, behavior/concurrency/visual tests, database writes, tool installation or remote rendering. No local PlantUML renderer was found in this session. Structural syntax checks do not certify rendering; the DER 1920x1080 limit does not certify visual legibility. No runtime or cryptographic security claim is renewed.
+- Blockers: none for the authorized documentation acceptance; unavailable rendering is an explicitly disclosed verification limit, not a passing render.
+- Next Session: no remaining implementation action for feat-013. An owner-requested rendered-image/layout review or Git publication would be a separate authorization.
+
 ## Publication handoff (2026-10-18)
 
 - Owner explicitly authorised commit and push on the current branch, excluding the three local-tool entries. This supersedes historical no-Git-authorization statements below for this publication only; no branch switch, merge, rebase or force push was authorised or performed.

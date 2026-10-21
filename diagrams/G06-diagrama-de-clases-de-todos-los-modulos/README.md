@@ -1,280 +1,81 @@
-# G06 - Diagrama de clases de todos los modulos (estado actual del repositorio)
+# G06 - Diagramas de clases y Diagrama Entidad-Relación
 
-Indice del entregable **G06**: nueve diagramas de clases PlantUML y sus nueve descripciones en
-Markdown, reconstruidos contra el codigo fuente actual de este repositorio. El contenido esta en
-español academico y conserva los identificadores exactos del codigo.
+Entregable actualizado el **20/10/2026** conforme a los diagramas y tablas revisados con el propietario. Contiene **nueve diagramas de clases y un DER**, cada uno con su documento Markdown: **21 archivos** en total, incluido este índice.
 
-## Indice de los nueve pares
+Se conserva el formato resumido acordado: paquetes funcionales, miembros significativos, identificadores exactos y tablas con las columnas **Nombre**, **Características** y **Comportamientos**. No es una reproducción exhaustiva de cada miembro del código.
 
-| N.º | Modulo documentado | Diagrama | Descripcion |
-| --- | --- | --- | --- |
-| G06.1 | `DOMAIN` (49 tipos) | [G06.1-domain.puml](G06.1-domain.puml) | [G06.1-domain.md](G06.1-domain.md) |
-| G06.2 | `ABSTRACTIONS` (11 tipos) | [G06.2-abstractions.puml](G06.2-abstractions.puml) | [G06.2-abstractions.md](G06.2-abstractions.md) |
-| G06.3 | `APPLICATION` (19 tipos) | [G06.3-application.puml](G06.3-application.puml) | [G06.3-application.md](G06.3-application.md) |
-| G06.4.1 | `REPOSITORY` - tecnicos (9 tipos) | [G06.4.1-repository-tecnicos.puml](G06.4.1-repository-tecnicos.puml) | [G06.4.1-repository-tecnicos.md](G06.4.1-repository-tecnicos.md) |
-| G06.4.2 | `REPOSITORY` - maestros (5 tipos) | [G06.4.2-repository-maestros.puml](G06.4.2-repository-maestros.puml) | [G06.4.2-repository-maestros.md](G06.4.2-repository-maestros.md) |
-| G06.4.3 | `REPOSITORY` - ordenes (5 tipos) | [G06.4.3-repository-ordenes.puml](G06.4.3-repository-ordenes.puml) | [G06.4.3-repository-ordenes.md](G06.4.3-repository-ordenes.md) |
-| G06.4.4 | `REPOSITORY` - stock, compras y garantias (6 tipos) | [G06.4.4-repository-stock-compras-garantias.puml](G06.4.4-repository-stock-compras-garantias.puml) | [G06.4.4-repository-stock-compras-garantias.md](G06.4.4-repository-stock-compras-garantias.md) |
-| G06.5 | `SERVICES` (4 tipos) | [G06.5-services.puml](G06.5-services.puml) | [G06.5-services.md](G06.5-services.md) |
-| G06.6 | `UI` / `PRESENTATION` (61 tipos) | [G06.6-ui.puml](G06.6-ui.puml) | [G06.6-ui.md](G06.6-ui.md) |
+## Índice
 
-La subdivision de `REPOSITORY` en cuatro diagramas (G06.4.1 a G06.4.4) es **documental**: no crea
-namespaces, carpetas fisicas ni proyectos nuevos. Los cuatro diagramas describen el mismo assembly
-`REPOSITORY` de la carpeta fisica `INFRASTRUCTURE`.
+| N.º | Contenido | Tipos propios o entidades representadas | Diagrama | Descripción y tablas |
+| --- | --- | --- | --- | --- |
+| G06.1 | DOMAIN | 49 tipos propios; contratos externos como contexto | [G06.1-domain.puml](G06.1-domain.puml) | [G06.1-domain.md](G06.1-domain.md) |
+| G06.2 | ABSTRACTIONS | 10 interfaces y un DTO | [G06.2-abstractions.puml](G06.2-abstractions.puml) | [G06.2-abstractions.md](G06.2-abstractions.md) |
+| G06.3 | APPLICATION | 19 tipos propios | [G06.3-application.puml](G06.3-application.puml) | [G06.3-application.md](G06.3-application.md) |
+| G06.4.1 | REPOSITORY - Aspectos técnicos | SqlHelper y siete repositorios: 8 tipos | [G06.4.1-repository-tecnicos.puml](G06.4.1-repository-tecnicos.puml) | [G06.4.1-repository-tecnicos.md](G06.4.1-repository-tecnicos.md) |
+| G06.4.2 | REPOSITORY - Maestros | 5 repositorios; SqlHelper como referencia | [G06.4.2-repository-maestros.puml](G06.4.2-repository-maestros.puml) | [G06.4.2-repository-maestros.md](G06.4.2-repository-maestros.md) |
+| G06.4.3 | REPOSITORY - Órdenes | 6 repositorios, incluido ReparacionRepository | [G06.4.3-repository-ordenes.puml](G06.4.3-repository-ordenes.puml) | [G06.4.3-repository-ordenes.md](G06.4.3-repository-ordenes.md) |
+| G06.4.4 | REPOSITORY - Stock, Compras y Garantías | 6 repositorios, incluido ReporteRepository | [G06.4.4-repository-stock-compras-garantias.puml](G06.4.4-repository-stock-compras-garantias.puml) | [G06.4.4-repository-stock-compras-garantias.md](G06.4.4-repository-stock-compras-garantias.md) |
+| G06.5 | SERVICES | 4 clases; contratos externos como contexto | [G06.5-services.puml](G06.5-services.puml) | [G06.5-services.md](G06.5-services.md) |
+| G06.6 | UI / PRESENTATION | Program y 28 formularios: 29 tipos | [G06.6-ui.puml](G06.6-ui.puml) | [G06.6-ui.md](G06.6-ui.md) |
+| G06.7 | DER físico compacto | 30 tablas de la aplicación y 42 FK | [G06.7-der.puml](G06.7-der.puml) | [G06.7-der.md](G06.7-der.md) |
 
-## Leyenda de los diagramas
+Los cuatro diagramas REPOSITORY forman una sola capa. SqlHelper aparece desarrollado una vez y como referencia vacía en los otros tres: no son cuatro implementaciones distintas.
+
+## Organización y convenciones
 
 | Elemento | Significado |
 | --- | --- |
-| `class` | Clase concreta del proyecto; los miembros muestran visibilidad `+` publica, `#` protegida y `-` privada. |
-| `abstract class` | Clase abstracta (por ejemplo `PermisoComponent`). |
-| `interface` | Contrato de `ABSTRACTIONS` (no tiene implementacion en ese proyecto). |
-| `<<static>>` | Clase estatica de constantes o de metodos (por ejemplo `EstadoOrdenServicio`, `DigitoVerificadorHelper`). |
-| `package` | Carpeta/namespace real del proyecto; en el diagrama de UI cada paquete agrupa los formularios de una funcionalidad. |
-| Clase anidada dibujada dentro de otra | Ayudante `private` declarado dentro del formulario: pertenencia por anidamiento, no composicion de datos. En G06.6 los ayudantes se declaran al nivel del paquete con su nombre calificado (`FrmX.Ayudante`), su alias y el estereotipo `<<nested_private>>`; el nombre calificado conserva la relacion de anidamiento lexico y no implica composicion de datos. |
-| `<|--` | Generalizacion (herencia de clase o de contrato). |
-| `<|..` | Realizacion de interfaz. |
-| `o--` / `*--` | Agregacion / composicion **de objetos** cuando existe un campo o una lista real en el codigo. |
-| `-->` | Asociacion o dependencia con navegacion real (campo, parametro o retorno). |
-| `..>` | Dependencia de uso: instanciacion con `new`, llamada o referencia a un tipo externo. |
-| `..` con etiqueta **FK conceptual** | Clave foranea de tabla entre agregados: identidad por id, **sin** navegacion, coleccion ni composicion en C#. |
-| `note` | Aclaracion de una regla vigente o de un limite del diagrama. |
+| Paquetes funcionales | Agrupaciones documentales para conservar el formato solicitado; no crean carpetas, namespaces ni proyectos nuevos. |
+| `+`, `-`, `#` | Visibilidad pública, privada y protegida, respectivamente. Los manejadores de eventos de UI representados son privados. |
+| `{static}` y `<<static>>` | Miembro o clase estática. Los estados, tipos y resultados del dominio son constantes string, no enumeraciones de C#. |
+| `...` | Parámetros omitidos deliberadamente para reducir el ancho; no es una firma C# literal. Los parámetros relevantes para un cambio, como continuarPago o el resultado out, se hacen explícitos. |
+| `int?` y `DateTime?` | Tipos de valor anulables. La notación string? del diagrama de dominio expresa ausencia posible del valor; no afirma que el proyecto habilite nullable reference types de C#. |
+| Herencia y realización | Generalización mediante triángulo vacío y realización de interfaces con línea discontinua. En UI, los estereotipos Form e IObservador resumen la herencia y el contrato para no duplicar 28 aristas. |
+| Asociaciones de negocio de DOMAIN | Vínculos conceptuales por identificadores; no implican propiedades de navegación, colecciones ni composición C#. El DER separado representa las FK físicas. |
+| Asociación de permisos | Los componentes pueden compartirse entre familias; no hay propiedad exclusiva de los hijos. |
+| `<<referencia>>` | Tipo existente mostrado como contexto; no se redefine su implementación ni se agrega otra fila de clase propia en la tabla. |
+| DER | PK/FK, nulabilidad y cardinalidades físicas; sus líneas continuas identifican FK integrantes de PK compuesta y sus líneas discontinuas, FK no integrantes de PK. No confundir esta convención con las dependencias de los diagramas de clases. |
 
-## Tipos propios por proyecto y por diagrama
+## Cobertura y omisiones explícitas
 
-| Proyecto (assembly) | Carpeta fisica | Archivos `Compile` semanticos | Tipos propios | Diagramas |
-| --- | --- | --- | --- | --- |
-| `DOMAIN` | `DOMAIN` | 44 archivos (+ `AssemblyInfo`) | 49 | G06.1 |
-| `ABSTRACTIONS` | `ABSTRACTIONS` | 11 archivos (+ `AssemblyInfo`) | 11 | G06.2 |
-| `APPLICATION` | `APPLICATION` | 19 archivos (+ `AssemblyInfo`) | 19 | G06.3 |
-| `REPOSITORY` | `INFRASTRUCTURE` | 25 archivos (+ `AssemblyInfo`) | 25 | G06.4.1 a G06.4.4 |
-| `SERVICES` | `SERVICES` | 4 archivos (+ `AssemblyInfo`) | 4 | G06.5 |
-| `UI` | `PRESENTATION` | 57 archivos (+ `AssemblyInfo`, `Resources`, `Settings`) | 61 | G06.6 |
-| **Total** |  |  | **169** | 9 diagramas |
+- Los diagramas de clases representan **137 tipos propios**: 49 de DOMAIN, 11 de ABSTRACTIONS, 19 de APPLICATION, 25 de REPOSITORY, 4 de SERVICES y 29 de UI. Las interfaces y referencias de otras capas no se suman otra vez.
+- La versión extensa anterior incluía además 32 clases auxiliares privadas anidadas de UI. Se omiten en esta vista resumida por acuerdo de formato; no fueron eliminadas del código ni convertidas en clases públicas.
+- Los parciales Designer pertenecen al mismo formulario. Se omiten sus controles individuales y los tipos generados de recursos, configuración y metadatos de ensamblado, junto con las salidas bin y obj.
+- Se muestran las propiedades públicas de salida de los editores y miembros seleccionados del detalle de orden, no todos los campos, constructores o eventos de cada formulario.
+- Las clases de constantes del dominio se conservan sin desarrollar sus valores en el diagrama; sus tablas describen el vocabulario vigente.
+- El DER omite atributos descriptivos, tipos repetidos y varios índices secundarios para conservar las 42 relaciones en una sola imagen. Excluye explícitamente sysdiagrams.
 
-## Inventario archivo fuente a tipo y diagrama
+## Reglas y diferencias relevantes
 
-### DOMAIN - 44 archivos, 49 tipos (G06.1)
-
-| Archivo | Tipo(s) |
+| Aspecto | Representación vigente |
 | --- | --- |
-| `DOMAIN/Exceptions/ReglaNegocioException.cs` | `ReglaNegocioException` |
-| `DOMAIN/Features/Idiomas/Idioma.cs` | `Idioma` |
-| `DOMAIN/Features/Idiomas/Palabra.cs` | `Palabra` |
-| `DOMAIN/Features/Idiomas/Traduccion.cs` | `Traduccion` |
-| `DOMAIN/Features/Permisos/CodigosPermiso.cs` | `CodigosPermiso` |
-| `DOMAIN/Features/Permisos/FamiliaPermiso.cs` | `FamiliaPermiso` |
-| `DOMAIN/Features/Permisos/PermisoComponent.cs` | `PermisoComponent` |
-| `DOMAIN/Features/Permisos/PermisoSimple.cs` | `PermisoSimple` |
-| `DOMAIN/Features/Clientes/Cliente.cs` | `Cliente`, `ClienteDocumentoDuplicadoException` |
-| `DOMAIN/Features/TiposEquipo/TipoEquipo.cs` | `TipoEquipo` |
-| `DOMAIN/Features/Marcas/Marca.cs` | `Marca` |
-| `DOMAIN/Features/Equipos/Equipo.cs` | `Equipo` |
-| `DOMAIN/Features/Ordenes/EstadoOrdenServicio.cs` | `EstadoOrdenServicio` |
-| `DOMAIN/Features/Ordenes/ResultadoOrdenServicio.cs` | `ResultadoOrdenServicio` |
-| `DOMAIN/Features/Ordenes/TipoOrden.cs` | `TipoOrden` |
-| `DOMAIN/Features/Ordenes/EstadoPresupuesto.cs` | `EstadoPresupuesto` |
-| `DOMAIN/Features/Ordenes/TipoItemPresupuesto.cs` | `TipoItemPresupuesto` |
-| `DOMAIN/Features/Ordenes/TipoPresupuesto.cs` | `TipoPresupuesto` |
-| `DOMAIN/Features/Ordenes/OrdenServicio.cs` | `OrdenServicio`, `OrdenOriginalSoloConsultaException` |
-| `DOMAIN/Features/Proveedores/Proveedor.cs` | `Proveedor` |
-| `DOMAIN/Features/Compras/EstadoCompra.cs` | `EstadoCompra` |
-| `DOMAIN/Features/Compras/Compra.cs` | `Compra` |
-| `DOMAIN/Features/Compras/DetalleCompra.cs` | `DetalleCompra` |
-| `DOMAIN/Features/Garantias/Garantia.cs` | `Garantia`, `ReingresoGarantiaAbiertoException`, `ReingresoGarantiaOrigenNoDisponibleException` |
-| `DOMAIN/Features/Garantias/EstadoEvaluacionGarantia.cs` | `EstadoEvaluacionGarantia` |
-| `DOMAIN/Features/Garantias/EvaluacionGarantia.cs` | `EvaluacionGarantia` |
-| `DOMAIN/Features/Ordenes/HistorialEstadoOrden.cs` | `HistorialEstadoOrden` |
-| `DOMAIN/Features/Ordenes/Diagnostico.cs` | `Diagnostico` |
-| `DOMAIN/Features/Ordenes/Presupuesto.cs` | `Presupuesto` |
-| `DOMAIN/Features/Ordenes/DetallePresupuesto.cs` | `DetallePresupuesto`, `DetallePresupuestoInvalidoException` |
-| `DOMAIN/Features/Ordenes/Entrega.cs` | `Entrega` |
-| `DOMAIN/Features/Repuestos/TipoMovimientoStock.cs` | `TipoMovimientoStock` |
-| `DOMAIN/Features/Repuestos/Repuesto.cs` | `Repuesto` |
-| `DOMAIN/Features/Repuestos/MovimientoStock.cs` | `MovimientoStock` |
-| `DOMAIN/Features/Reparaciones/ResultadoPrueba.cs` | `ResultadoPrueba` |
-| `DOMAIN/Features/Reparaciones/Reparacion.cs` | `Reparacion` |
-| `DOMAIN/Features/Reparaciones/ReparacionRepuesto.cs` | `ReparacionRepuesto` |
-| `DOMAIN/Features/Reparaciones/Prueba.cs` | `Prueba` |
-| `DOMAIN/Features/Usuarios/Exceptions/UsuarioNoExisteException.cs` | `UsuarioNoExisteException` |
-| `DOMAIN/Features/Usuarios/Exceptions/UsuarioYaExisteException.cs` | `UsuarioYaExisteException` |
-| `DOMAIN/Features/Usuarios/Usuario.cs` | `Usuario` |
-| `DOMAIN/Features/ControlCambios/ControlCambio.cs` | `ControlCambio` |
-| `DOMAIN/Features/Usuarios/UserDVH.cs` | `UserDVH` |
-| `DOMAIN/Features/Bitacora/Bitacora.cs` | `EntradaBitacora` |
-| `DOMAIN/Properties/AssemblyInfo.cs` | *(excluido: metadatos de ensamblado)* |
+| Documento de cliente | Política de identidad para activos e inactivos, excepción con propietario y validación transaccional. No equivale a afirmar que el índice único esté instalado en toda base. |
+| Presupuesto con repuesto | Referencia comercial opcional, validación antes de guardar y precio cotizado separado del costo de consumo; no reserva ni consume stock. |
+| Presupuestos e intervenciones | Uno a muchos; el presupuesto Original no Anulado tiene unicidad filtrada, no unicidad global por orden. |
+| Pruebas | Intervención actual y finalización explícita; el historial de intervenciones queda disponible en consulta. |
+| Garantías | Cobertura 0..1 por orden original y visitas de reingreso 0..N; solo una visita abierta a la vez según la regla del programa. |
+| Original con reingresos | Solo consulta por existencia de cualquier hijo de garantía, aunque después cierre; se mantienen inspección y creación de nuevos reingresos sujetos a validación. El bloqueo de persistencia es específico de las rutas documentadas, no universal a todos los repositorios. |
+| Retornos de repositorios | Transiciones y cancelación de entrega devuelven códigos int; Registrar de MovimientoStockRepository devuelve MovimientoStock y ContarReingresosGarantia de ReporteRepository devuelve DataTable. |
+| Sesión y cifrado | SessionManager administra una sesión única creada por Login; SesionIdioma es el Singleton observable de inicialización diferida. EncryptionService no tiene consumidores encontrados en el código actual; no se publican secretos criptográficos. |
+| UI | Main y los eventos seleccionados son privados; Actualizar recibe idiomaObservado. Aperturas del menú como MDI y editores/detalles como diálogos modales. |
+| Reglas e integridad | Estados como const string; DVH/DVV de Usuarios; los montos presupuestados no son cobros y la autorización mayormente en UI no se presenta como barrera backend universal. |
 
-### ABSTRACTIONS - 11 archivos, 11 tipos (G06.2)
+## Evidencia y límites de verificación
 
-| Archivo | Tipo(s) |
-| --- | --- |
-| `ABSTRACTIONS/Entities/IEntity.cs` | `IEntity` |
-| `ABSTRACTIONS/Features/Idiomas/IIdioma.cs` | `IIdioma` |
-| `ABSTRACTIONS/Features/Idiomas/IObservado.cs` | `IObservado` |
-| `ABSTRACTIONS/Features/Idiomas/IObservador.cs` | `IObservador` |
-| `ABSTRACTIONS/Features/Idiomas/IPalabra.cs` | `IPalabra` |
-| `ABSTRACTIONS/Features/Idiomas/ITraduccion.cs` | `ITraduccion` |
-| `ABSTRACTIONS/Features/Idiomas/TraduccionEditable.cs` | `TraduccionEditable` |
-| `ABSTRACTIONS/Features/Permisos/IPermisoComponent.cs` | `IPermisoComponent` |
-| `ABSTRACTIONS/Features/Usuarios/IUsuario.cs` | `IUsuario` |
-| `ABSTRACTIONS/Services/IEncryptionService.cs` | `IEncryptionService` |
-| `ABSTRACTIONS/Services/IPasswordHasher.cs` | `IPasswordHasher` |
-| `ABSTRACTIONS/Properties/AssemblyInfo.cs` | *(excluido)* |
+### Código
 
-### APPLICATION - 19 archivos, 19 tipos (G06.3)
+Las capas fueron contrastadas con el código y manifiestos actuales durante esta sesión. Snapshot de fuente: rama `checkpoint-6-arreglos-y-mejoras`, base **9417b47**, el **20/10/2026**. Las modificaciones de esta tarea son documentales: no cambian el comportamiento del programa ni actualizan automáticamente diagramas ajenos a esta carpeta.
 
-| Archivo | Tipo(s) |
-| --- | --- |
-| `APPLICATION/Features/Bitacora/BitacoraService.cs` | `BitacoraService` |
-| `APPLICATION/Features/Clientes/ClienteService.cs` | `ClienteService` |
-| `APPLICATION/Features/Compras/CompraService.cs` | `CompraService` |
-| `APPLICATION/Features/ControlCambios/ControlCambioService.cs` | `ControlCambioService` |
-| `APPLICATION/Features/Equipos/EquipoService.cs` | `EquipoService` |
-| `APPLICATION/Features/Garantias/GarantiaService.cs` | `GarantiaService` |
-| `APPLICATION/Features/Idiomas/IdiomaService.cs` | `IdiomaService` |
-| `APPLICATION/Features/Integridad/DigitoVerificadorHelper.cs` | `DigitoVerificadorHelper` |
-| `APPLICATION/Features/Integridad/IntegridadService.cs` | `IntegridadService` |
-| `APPLICATION/Features/Marcas/MarcaService.cs` | `MarcaService` |
-| `APPLICATION/Features/Ordenes/OrdenServicioService.cs` | `OrdenServicioService` |
-| `APPLICATION/Features/Permisos/PermisoService.cs` | `PermisoService` |
-| `APPLICATION/Features/Proveedores/ProveedorService.cs` | `ProveedorService` |
-| `APPLICATION/Features/Reportes/ReporteService.cs` | `ReporteService` |
-| `APPLICATION/Features/Repuestos/RepuestoService.cs` | `RepuestoService` |
-| `APPLICATION/Features/TiposEquipo/TipoEquipoService.cs` | `TipoEquipoService` |
-| `APPLICATION/Features/Usuarios/Exceptions/DatosUsuarioIncorrectosException.cs` | `DatosUsuarioIncorrectosException` |
-| `APPLICATION/Features/Usuarios/UsuarioPermisoService.cs` | `UsuarioPermisoService` |
-| `APPLICATION/Features/Usuarios/UsuarioService.cs` | `UsuarioService` |
-| `APPLICATION/Properties/AssemblyInfo.cs` | *(excluido)* |
+Anclas de proyectos: [DOMAIN](../../DOMAIN/DOMAIN.csproj), [ABSTRACTIONS](../../ABSTRACTIONS/ABSTRACTIONS.csproj), [APPLICATION](../../APPLICATION/APPLICATION.csproj), [REPOSITORY](../../INFRASTRUCTURE/REPOSITORY.csproj), [SERVICES](../../SERVICES/SERVICES.csproj) y [UI](../../PRESENTATION/UI.csproj). Para contexto: [arquitectura](../../docs/agents/architecture.md) y [persistencia](../../docs/agents/persistence.md).
 
-### REPOSITORY - 25 archivos, 25 tipos (G06.4.1 a G06.4.4)
+### Base de datos
 
-| Archivo | Tipo(s) | Diagrama |
-| --- | --- | --- |
-| `INFRASTRUCTURE/SQLHelper.cs` | `SqlHelper` | G06.4.1 |
-| `INFRASTRUCTURE/Features/Usuarios/UsuarioRepository.cs` | `UsuarioRepository` | G06.4.1 |
-| `INFRASTRUCTURE/Features/Usuarios/UsuarioPermisoRepository.cs` | `UsuarioPermisoRepository` | G06.4.1 |
-| `INFRASTRUCTURE/Features/Permisos/PermisoRepository.cs` | `PermisoRepository` | G06.4.1 |
-| `INFRASTRUCTURE/Features/Idiomas/IdiomaRepository.cs` | `IdiomaRepository` | G06.4.1 |
-| `INFRASTRUCTURE/Features/ControlCambios/ControlCambioRepository.cs` | `ControlCambioRepository` | G06.4.1 |
-| `INFRASTRUCTURE/Features/Integridad/IntegridadRepository.cs` | `IntegridadRepository` | G06.4.1 |
-| `INFRASTRUCTURE/Features/Bitacora/BitacoraRepository.cs` | `BitacoraRepository` | G06.4.1 |
-| `INFRASTRUCTURE/Features/Reportes/ReporteRepository.cs` | `ReporteRepository` | G06.4.1 |
-| `INFRASTRUCTURE/Features/Clientes/ClienteRepository.cs` | `ClienteRepository` | G06.4.2 |
-| `INFRASTRUCTURE/Features/Equipos/EquipoRepository.cs` | `EquipoRepository` | G06.4.2 |
-| `INFRASTRUCTURE/Features/TiposEquipo/TipoEquipoRepository.cs` | `TipoEquipoRepository` | G06.4.2 |
-| `INFRASTRUCTURE/Features/Marcas/MarcaRepository.cs` | `MarcaRepository` | G06.4.2 |
-| `INFRASTRUCTURE/Features/Proveedores/ProveedorRepository.cs` | `ProveedorRepository` | G06.4.2 |
-| `INFRASTRUCTURE/Features/Ordenes/OrdenServicioRepository.cs` | `OrdenServicioRepository` | G06.4.3 |
-| `INFRASTRUCTURE/Features/Ordenes/HistorialEstadoOrdenRepository.cs` | `HistorialEstadoOrdenRepository` | G06.4.3 |
-| `INFRASTRUCTURE/Features/Ordenes/DiagnosticoRepository.cs` | `DiagnosticoRepository` | G06.4.3 |
-| `INFRASTRUCTURE/Features/Ordenes/PresupuestoRepository.cs` | `PresupuestoRepository` | G06.4.3 |
-| `INFRASTRUCTURE/Features/Ordenes/EntregaRepository.cs` | `EntregaRepository` | G06.4.3 |
-| `INFRASTRUCTURE/Features/Repuestos/RepuestoRepository.cs` | `RepuestoRepository` | G06.4.4 |
-| `INFRASTRUCTURE/Features/Repuestos/MovimientoStockRepository.cs` | `MovimientoStockRepository` | G06.4.4 |
-| `INFRASTRUCTURE/Features/Compras/CompraRepository.cs` | `CompraRepository` | G06.4.4 |
-| `INFRASTRUCTURE/Features/Reparaciones/ReparacionRepository.cs` | `ReparacionRepository` | G06.4.4 |
-| `INFRASTRUCTURE/Features/Garantias/GarantiaRepository.cs` | `GarantiaRepository` | G06.4.4 |
-| `INFRASTRUCTURE/Features/Garantias/EvaluacionGarantiaRepository.cs` | `EvaluacionGarantiaRepository` | G06.4.4 |
-| `INFRASTRUCTURE/Properties/AssemblyInfo.cs` | *(excluido)* |  |
+El DER conserva la **consulta real de metadatos realizada el 20/10/2026 en esta misma sesión** sobre TPIntegrador, esquema dbo. Se observaron 30 tablas de aplicación, 42 FK habilitadas y confiables y una tabla sysdiagrams excluida. **No existe un índice único de documento de cliente en la base inspeccionada.** No se consultaron filas de negocio para explicar su ausencia.
 
-### SERVICES - 4 archivos, 4 tipos (G06.5)
+Ese estado físico no se sustituye por lo que el DDL condicional del código intentaría instalar en otra base. Las tablas de clase describen responsabilidades y reglas del programa; el DER describe restricciones físicas observadas. Más detalle en [la descripción del DER](G06.7-der.md).
 
-| Archivo | Tipo(s) |
-| --- | --- |
-| `SERVICES/Auth/SessionManager.cs` | `SessionManager` |
-| `SERVICES/Idiomas/SesionIdioma.cs` | `SesionIdioma` |
-| `SERVICES/Security/EncryptionService.cs` | `EncryptionService` |
-| `SERVICES/Security/PasswordHasher.cs` | `PasswordHasher` |
-| `SERVICES/Properties/AssemblyInfo.cs` | *(excluido)* |
+### Comprobaciones y exclusiones
 
-### UI - 57 archivos, 61 tipos (G06.6)
+La aceptación documental incluye revisión de fuente y contenido, correspondencia entre diagramas y tablas, enlaces relativos, estructura PlantUML, estado JSON, alcance de archivos y comprobaciones del repositorio. La evidencia final de ejecución de esos controles se registra en [progress.md](../../progress.md); no se toma un resultado histórico como aprobación automática de esta revisión.
 
-| Archivo | Tipo(s) |
-| --- | --- |
-| `PRESENTATION/Program.cs` | `Program` |
-| `PRESENTATION/Forms/FrmPrincipal.cs` | `FrmPrincipal` |
-| `PRESENTATION/Forms/Auth/FrmLogin.cs` | `FrmLogin` |
-| `PRESENTATION/Forms/Auth/FrmAdministrarUsuarios.cs` | `FrmAdministrarUsuarios` |
-| `PRESENTATION/Forms/Auth/FrmAdministrarPermisos.cs` | `FrmAdministrarPermisos`, `NodoPermiso` (anidado) |
-| `PRESENTATION/Forms/Auth/FrmAsignarPermisosUsuario.cs` | `FrmAsignarPermisosUsuario` |
-| `PRESENTATION/Forms/Ordenes/FrmOrdenesServicio.cs` | `FrmOrdenesServicio`, `FilaOrden`, `ItemCliente`, `ItemEstado` (anidados) |
-| `PRESENTATION/Forms/Ordenes/FrmOrdenServicioDetalle.cs` | `FrmOrdenServicioDetalle` y sus 12 ayudantes anidados |
-| `PRESENTATION/Forms/Clientes/FrmClientes.cs` | `FrmClientes` |
-| `PRESENTATION/Forms/Clientes/FrmClienteEditar.cs` | `FrmClienteEditar` |
-| `PRESENTATION/Forms/Equipos/FrmEquipos.cs` | `FrmEquipos`, `FilaEquipo`, `ItemCliente` (anidados) |
-| `PRESENTATION/Forms/Equipos/FrmEquipoEditar.cs` | `FrmEquipoEditar`, `ItemCliente` (anidado) |
-| `PRESENTATION/Forms/Catalogos/FrmTiposEquipo.cs` | `FrmTiposEquipo` |
-| `PRESENTATION/Forms/Catalogos/FrmMarcas.cs` | `FrmMarcas` |
-| `PRESENTATION/Forms/Catalogos/FrmCatalogoEditar.cs` | `FrmCatalogoEditar` |
-| `PRESENTATION/Forms/Repuestos/FrmRepuestos.cs` | `FrmRepuestos`, `FilaRepuesto` (anidado) |
-| `PRESENTATION/Forms/Repuestos/FrmRepuestoEditar.cs` | `FrmRepuestoEditar` |
-| `PRESENTATION/Forms/Repuestos/FrmAjusteStock.cs` | `FrmAjusteStock` |
-| `PRESENTATION/Forms/Repuestos/FrmMovimientosStock.cs` | `FrmMovimientosStock`, `ItemRepuesto`, `ItemTipo`, `FilaMovimiento` (anidados) |
-| `PRESENTATION/Forms/Proveedores/FrmProveedores.cs` | `FrmProveedores` |
-| `PRESENTATION/Forms/Proveedores/FrmProveedorEditar.cs` | `FrmProveedorEditar` |
-| `PRESENTATION/Forms/Compras/FrmCompras.cs` | `FrmCompras`, `FilaCompra`, `ItemProveedor`, `ItemEstado` (anidados) |
-| `PRESENTATION/Forms/Compras/FrmCompraDetalle.cs` | `FrmCompraDetalle`, `ItemProveedor`, `ItemRepuesto`, `FilaDetalle` (anidados) |
-| `PRESENTATION/Forms/Garantias/FrmGarantias.cs` | `FrmGarantias`, `FilaGarantia`, `ItemVigencia` (anidados) |
-| `PRESENTATION/Forms/Dashboard/FrmDashboard.cs` | `FrmDashboard` |
-| `PRESENTATION/Forms/Reportes/FrmReportes.cs` | `FrmReportes`, `ItemReporte` (anidado) |
-| `PRESENTATION/Forms/Idiomas/FrmAdministrarTraducciones.cs` | `FrmAdministrarTraducciones` |
-| `PRESENTATION/Forms/Bitacora/FrmBitacora.cs` | `FrmBitacora` |
-| `PRESENTATION/Forms/ControlCambios/FrmControlCambios.cs` | `FrmControlCambios` |
-| `PRESENTATION/Forms/*/*.Designer.cs` (28 archivos) | *(partial de la misma clase: no es un tipo propio)* |
-| `PRESENTATION/Properties/AssemblyInfo.cs`, `Resources.Designer.cs`, `Settings.Designer.cs` | *(excluidos: metadatos y codigo generado)* |
-
-## Criterio de abstraccion de miembros
-
-1. Cada clase muestra sus **propiedades de estado**, sus **constructores de fabrica** (`CrearNuevo`,
-   `CargarDesdeDB`, `Crear`, etc.) y los **metodos que expresan reglas o casos de uso**.
-2. No se listan propiedades triviales repetidas ni los controles de los `*.Designer.cs`.
-3. En los contratos de `ABSTRACTIONS` solo figuran las operaciones que las implementaciones reales
-   ofrecen; no se inventan constantes ni acciones.
-4. En los ayudantes anidados de UI se listan sus **propiedades de proyeccion**; su comportamiento
-   vive en el formulario contenedor.
-5. Los tipos de otro proyecto que aparecen como contexto (por ejemplo `SqlHelper` en los diagramas de
-   repositorio, o `IObservador` en el de UI) se referencian como **externos** y no se redefinen.
-
-## Que NO se incluye (exclusiones explicitas)
-
-- `Properties/AssemblyInfo.cs` de los seis proyectos: metadatos de ensamblado.
-- `Properties/Resources.Designer.cs` y `Properties/Settings.Designer.cs` de `UI`: codigo generado.
-- Los 28 `*.Designer.cs` de formularios: parcial de la misma clase, solo construccion de controles.
-- Carpetas `bin/` y `obj/`: salidas de compilacion, no fuente versionada.
-- Diagramas de secuencia/actividad historicos en `diagrams/` (por ejemplo `01-PermisosFormLoad.puml`):
-  pertenecen a entregables anteriores y **no** se modificaron ni se reescribieron aqui.
-
-## Reglas vigentes que el conjunto documenta
-
-| Regla | Donde se ve |
-| --- | --- |
-| Ensamblados y carpetas: `PRESENTATION` -> `UI`, `INFRASTRUCTURE` -> `REPOSITORY` | G06.6, G06.4.x |
-| .NET Framework 4.7.2 y WinForms en los seis proyectos | G06.6 |
-| Repositorios concretos construidos con `new`; sin interfaces de repositorio ni contenedor de DI | G06.3, G06.4.x |
-| Estados, tipos y resultados son `const string`, no enumeraciones | G06.1 |
-| Documento de cliente unico, activo o inactivo | G06.1, G06.3, G06.4.2 |
-| Presupuesto con item de repuesto: referencia, validacion y economia solo de cotizacion | G06.1, G06.3, G06.4.3 |
-| Pruebas sobre la intervencion actual y finalizacion explicita | G06.3, G06.6 |
-| Cobertura de garantia 0..1 y reingresos 0..N con un unico reingreso abierto | G06.1, G06.4.3, G06.4.4 |
-| Orden original de solo consulta por existencia de reingresos, con excepciones tipadas y codigos de resultado | G06.1, G06.3, G06.4.3 |
-| Permisos efectivos compartidos; la composicion no implica propiedad exclusiva | G06.1, G06.2, G06.5 |
-
-## Snapshot y limites de verificacion
-
-- **Snapshot**: rama `checkpoint-6-arreglos-y-mejoras` con los cambios locales de `feat-006` a
-  `feat-011` sin commitear (incluye el congelamiento por reingresos de garantia y sus excepciones y
-  codigos de resultado). Los diagramas describen **ese** estado del codigo fuente.
-- **Verificacion hecha**: lectura del codigo fuente y de los manifiestos `Compile` de los seis
-  proyectos (conteo de tipos y de miembros); revision estructural de los `.puml` (un solo
-  `@startuml`/`@enduml`, llaves y comillas balanceadas, alias unicos, sin `!include` remoto) y
-  revision de los enlaces relativos de estos documentos.
-- **No se ejecuto**: compilacion, lanzamiento de la aplicacion, acceso a la base de datos ni
-  representacion grafica de los diagramas. El unico renderizador PlantUML local no fue identificado
-  en el entorno, de modo que la sintaxis se valido de forma **estructural** y no con un render real.
-- Los diagramas describen estructura y reglas del codigo; no son evidencia de comportamiento en
-  runtime ni del contenido de una base de datos concreta.
-
-## Archivos de este entregable
-
-Los 19 archivos de esta carpeta son: este indice, los nueve `.puml` y los nueve `.md` enlazados en
-la tabla del indice. Ningun otro archivo del repositorio forma parte del entregable G06.
+No se encontró un renderizador PlantUML local. No se instalaron herramientas ni se enviaron diagramas a servicios externos. La estructura se revisa sin afirmar un render real: el límite 1920 por 1080 del DER no certifica su legibilidad visual. Tampoco se ejecutaron compilación, inicio de aplicación, migraciones, semillas, pruebas de formularios, concurrencia ni escrituras de base de datos para actualizar estos documentos.

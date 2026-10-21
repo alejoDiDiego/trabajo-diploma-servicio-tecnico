@@ -1,106 +1,126 @@
-@startuml G06.4.3-repository-ordenes
+@startuml
+title G06 - Capa INFRASTRUCTURE / REPOSITORY - Órdenes
 
-' G06.4.3 - REPOSITORIO: subconjunto ordenes (estado actual del repositorio)
-' Fuente: los 25 tipos propios de INFRASTRUCTURE\REPOSITORY.csproj, agrupados en cuatro diagramas.
-' Este diagrama reune los repositorios del ciclo de la orden: orden e historial, diagnostico,
-' presupuestos y entregas. Agrupacion documental: no crea namespaces ni proyectos nuevos.
-' OrdenServicioRepository es el unico que declara constantes de codigo de resultado de sus lotes.
-
+left to right direction
 skinparam classAttributeIconSize 0
-skinparam linetype ortho
+hide circle
 
-package "REPOSITORY.Features.Ordenes" as PKG_ORDENES {
-  class OrdenServicioRepository {
-    + ResultadoOk = 0
-    + ResultadoReingresoAbierto = -1
-    + ResultadoOrdenSoloConsulta = -2
-    + ResultadoOrigenNoDisponible = -3
-    + PredicadoReingresoAbierto : string
-    + Inicializar() : void
-    + CrearConHistorial(orden, idUsuario, observacion, out codigoResultado) : OrdenServicio
-    + CambiarEstadoConHistorial(idOrden, estadoAnterior, estadoNuevo, idUsuario, observacion, resultado, observacionResultado, idTecnico) : int
-    + ReabrirPruebasConTransicion(idOrden, estadoAnterior, estadoNuevo, idUsuario, observacion) : int
-    + AsignarTecnico(idOrden : int, idTecnico : int) : void
-    + ActualizarRecepcion(idOrden, problema, estadoFisico, accesorios, observacionesIngreso) : void
-    + ObtenerPorId(id : int) : OrdenServicio
-    + Listar(incluirEntregadas : bool) : List<OrdenServicio>
-    + ListarPorCliente(idCliente : int, incluirEntregadas : bool) : List<OrdenServicio>
-    + ObtenerReingresoGarantiaAbierto(idOrdenOrigen : int) : OrdenServicio
-    + ListarReingresosGarantia(idOrdenOrigen : int) : List<OrdenServicio>
-    + TieneReingresosGarantia(idOrdenOrigen : int) : bool
-  }
-  class HistorialEstadoOrdenRepository {
-    + Inicializar() : void
-    + Insertar(historial : HistorialEstadoOrden) : HistorialEstadoOrden
-    + ListarPorOrden(idOrden : int) : List<HistorialEstadoOrden>
-  }
-  class DiagnosticoRepository {
-    + Inicializar() : void
-    + Crear(diagnostico : Diagnostico) : Diagnostico
-    + CrearConTransicion(diagnostico, estadoAnterior, estadoNuevo, idUsuario, observacion) : Diagnostico
-    + ObtenerPorOrden(idOrden : int) : Diagnostico
-  }
-  class PresupuestoRepository {
-    + Inicializar() : void
-    + EmitirConDetalle(presupuesto, items, idUsuario, estadoOrdenAnterior, estadoOrdenNuevo) : Presupuesto
-    + AprobarConTransicion(idPresupuesto, idOrden, estadoOrdenAnterior, estadoOrdenNuevo, idUsuario, medioRespuesta, observaciones) : void
-    + RechazarConTransicion(idPresupuesto, idOrden, estadoOrdenAnterior, estadoOrdenNuevo, idUsuario, motivo, medioRespuesta, observaciones) : void
-    + ObtenerPorId(id : int) : Presupuesto
-    + ObtenerPorOrden(idOrden : int) : Presupuesto
-    + ObtenerOriginal(idOrden : int) : Presupuesto
-    + ListarAdicionales(idOrden : int) : List<Presupuesto>
-    + ExisteAdicionalPendiente(idOrden : int) : bool
-    + CalcularMontoAutorizado(idOrden : int) : decimal
-    + EmitirAdicional(presupuesto, items, idUsuario) : Presupuesto
-    + AprobarAdicionalConTransicion(idPresupuesto, idUsuario, estadoOrdenAnterior, estadoOrdenNuevo, medioRespuesta, observaciones) : void
-    + RechazarAdicionalConTransicion(idPresupuesto, idUsuario, estadoOrdenAnterior, estadoOrdenNuevo, motivo, medioRespuesta, observaciones) : void
-    + CrearBorrador(presupuesto, items) : Presupuesto
-    + PublicarBorrador(idPresupuesto : int, idUsuario : int) : void
-    + EliminarBorrador(idPresupuesto : int) : void
-    + AnularConTransicion(idPresupuesto, motivo, estadoOrdenAnterior, estadoOrdenNuevo, idUsuario) : void
-    + AnularRechazadoConTransicion(idPresupuesto, motivo, estadoOrdenAnterior, estadoOrdenNuevo, idUsuario) : void
-    + CancelarSolicitudAdicional(idOrden, estadoOrigen, estadoAnterior, estadoNuevo, idUsuario) : void
-    + ExisteOriginalActivo(idOrden : int) : bool
-    + ListarPorOrden(idOrden : int) : List<Presupuesto>
-    + HasActividadPosterior(idPresupuesto : int) : bool
-    + ListarDetalle(idPresupuesto : int) : List<DetallePresupuesto>
-  }
-  class EntregaRepository {
-    + Inicializar() : void
-    + CrearConTransicion(entrega, estadoAnterior, estadoNuevo, idUsuarioHistorial, observacionHistorial) : Entrega
-    + CancelarEntregaConTransicion(idOrden, estadoAnterior, estadoNuevo, limpiarResultado, idUsuarioHistorial, observacionHistorial) : int
-    + ObtenerPorOrden(idOrden : int) : Entrega
-  }
+class SqlHelper <<referencia>>
+
+package "Negocio - Órdenes" {
+
+    class OrdenServicioRepository {
+        - _db : SqlHelper
+        + ResultadoOk : const int = 0
+        + ResultadoReingresoAbierto : const int = -1
+        + ResultadoOrdenSoloConsulta : const int = -2
+        + ResultadoOrigenNoDisponible : const int = -3
+        + PredicadoReingresoAbierto : const string
+        --
+        + Inicializar() : void
+        + CrearConHistorial(..., out codigoResultado : int) : OrdenServicio
+        + CambiarEstadoConHistorial(...) : int
+        + ReabrirPruebasConTransicion(...) : int
+        + AsignarTecnico(...) : void
+        + ActualizarRecepcion(...) : void
+        + ObtenerPorId(...) : OrdenServicio
+        + Listar(...) : List<OrdenServicio>
+        + ListarPorCliente(...) : List<OrdenServicio>
+        + ObtenerReingresoGarantiaAbierto(...) : OrdenServicio
+        + ListarReingresosGarantia(...) : List<OrdenServicio>
+        + TieneReingresosGarantia(...) : bool
+    }
+
+    class DiagnosticoRepository {
+        - _db : SqlHelper
+        --
+        + Inicializar() : void
+        + Crear(...) : Diagnostico
+        + CrearConTransicion(...) : Diagnostico
+        + ObtenerPorOrden(...) : Diagnostico
+    }
+
+    class HistorialEstadoOrdenRepository {
+        - _db : SqlHelper
+        --
+        + Inicializar() : void
+        + Insertar(...) : HistorialEstadoOrden
+        + ListarPorOrden(...) : List<HistorialEstadoOrden>
+    }
+
+    class PresupuestoRepository {
+        - _db : SqlHelper
+        --
+        + Inicializar() : void
+        + EmitirConDetalle(...) : Presupuesto
+        + AprobarConTransicion(...) : void
+        + RechazarConTransicion(...) : void
+        + EmitirAdicional(...) : Presupuesto
+        + AprobarAdicionalConTransicion(...) : void
+        + RechazarAdicionalConTransicion(...) : void
+        + CrearBorrador(...) : Presupuesto
+        + PublicarBorrador(...) : void
+        + EliminarBorrador(...) : void
+        + AnularConTransicion(...) : void
+        + AnularRechazadoConTransicion(...) : void
+        + CancelarSolicitudAdicional(...) : void
+        + CalcularMontoAutorizado(...) : decimal
+        + ObtenerPorId(...) : Presupuesto
+        + ObtenerPorOrden(...) : Presupuesto
+        + ObtenerOriginal(...) : Presupuesto
+        + ListarAdicionales(...) : List<Presupuesto>
+        + ExisteAdicionalPendiente(...) : bool
+        + ExisteOriginalActivo(...) : bool
+        + HasActividadPosterior(...) : bool
+        + ListarPorOrden(...) : List<Presupuesto>
+        + ListarDetalle(...) : List<DetallePresupuesto>
+    }
+
+    class EntregaRepository {
+        - _db : SqlHelper
+        --
+        + Inicializar() : void
+        + CrearConTransicion(...) : Entrega
+        + CancelarEntregaConTransicion(...) : int
+        + ObtenerPorOrden(...) : Entrega
+    }
+
+    class ReparacionRepository {
+        - _db : SqlHelper
+        --
+        + Inicializar() : void
+        + IniciarReparacion(...) : int
+        + IniciarIntervencionAdicional(...) : int
+        + ConsumirRepuesto(...) : void
+        + DevolverConsumo(...) : void
+        + FinalizarReparacion(...) : void
+        + RegistrarPrueba(...) : int
+        + FinalizarPruebas(...) : void
+        + AnularPrueba(...) : void
+        + CerrarAbiertaYCancelar(...) : void
+        + ObtenerPorId(...) : Reparacion
+        + ObtenerAbierta(...) : Reparacion
+        + ObtenerPruebaPorId(...) : Prueba
+        + ListarPorOrden(...) : List<Reparacion>
+        + ListarConsumidos(...) : List<ReparacionRepuesto>
+        + ListarPruebas(...) : List<Prueba>
+    }
 }
 
-' --- Relaciones entre los repositorios del ciclo y el helper de datos ---
-OrdenServicioRepository ..> SqlHelper : _db
-HistorialEstadoOrdenRepository ..> SqlHelper : _db
-DiagnosticoRepository ..> SqlHelper : _db
-PresupuestoRepository ..> SqlHelper : _db
-EntregaRepository ..> SqlHelper : _db
-EntregaRepository ..> OrdenServicioRepository : reutiliza PredicadoReingresoAbierto
+SqlHelper <-- OrdenServicioRepository
+SqlHelper <-- DiagnosticoRepository
+SqlHelper <-- HistorialEstadoOrdenRepository
+SqlHelper <-- PresupuestoRepository
+SqlHelper <-- EntregaRepository
+SqlHelper <-- ReparacionRepository
 
-note right of OrdenServicioRepository
-  CrearConHistorial (lote unico, TABLOCKX + HOLDLOCK):
-  -3 si el origen dejo de estar Entregado + Reparado con entrega;
-  -1 si ya hay un reingreso abierto; 0/positivo solo si inserta,
-  numera la orden e inserta el historial. El service traduce el codigo.
-  CambiarEstadoConHistorial y ReabrirPruebasConTransicion devuelven -2
-  sin ejecutar DML cuando la orden ya tiene hijos de garantia.
-end note
+EntregaRepository ..> OrdenServicioRepository : PredicadoReingresoAbierto
 
-note right of PresupuestoRepository
-  EmitirConDetalle, EmitirAdicional y CrearBorrador persisten el detalle
-  con @IdRepuesto<i> nullable (NULL para mano de obra y servicio) en un
-  lote unico; publicar revalida subtotal. No reserva ni consume stock.
-end note
-
-note bottom of EntregaRepository
-  UX_Entrega_Orden (unico por id_orden) hace que la entrega sea 0..1.
-  CancelarEntregaConTransicion borra la entrega e inserta historial;
-  devuelve -2 (orden con reingresos) o -1 (hermano de garantia abierto)
-  sin escribir, para que las dos operaciones no puedan commitear juntas.
-end note
+' CrearConHistorial devuelve la orden y comunica el resultado mediante out.
+' En el alta exitosa, codigoResultado contiene el identificador creado.
+' Los codigos negativos identifican rechazos del lote transaccional.
+'
+' TieneReingresosGarantia consulta existencia, no solamente reingresos abiertos.
+' CerrarAbiertaYCancelar existe, pero no lo usa el flujo actual de APPLICATION.
 
 @enduml

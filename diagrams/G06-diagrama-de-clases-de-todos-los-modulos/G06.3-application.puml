@@ -1,330 +1,342 @@
-@startuml G06.3-application
+@startuml
+title G06 - Capa APPLICATION
 
-' G06.3 - Diagrama de clases del modulo APPLICATION (estado actual del repositorio)
-' Fuente: los 19 tipos propios declarados en los archivos Compile de APPLICATION\APPLICATION.csproj.
-' 17 servicios + DigitoVerificadorHelper (estatica) + DatosUsuarioIncorrectosException.
-' Los servicios construyen sus repositorios con new: no hay inyeccion de dependencias.
-' Los tipos de otros proyectos se referencian como contexto y no se redefinen aqui.
-
+left to right direction
 skinparam classAttributeIconSize 0
-skinparam linetype ortho
+hide circle
 
-package "APPLICATION.Features.Ordenes" as PKG_ORDENES {
-  class OrdenServicioService {
-    + Inicializar() : void
-    + InicializarReparaciones() : void
-    + CrearOrden(idCliente, idEquipo, problema, estadoFisico, accesorios, observacionesIngreso) : OrdenServicio
-    + AsignarTecnico(idOrden : int, idTecnico : int) : void
-    + IniciarDiagnostico(idOrden : int) : void
-    + FinalizarDiagnostico(idOrden, descripcion, esReparable, tiempoEstimadoDias, observaciones) : Diagnostico
-    + EmitirPresupuesto(idOrden, items, descuento, diasGarantia, observaciones) : Presupuesto
-    + RegistrarAprobacionPresupuesto(idOrden, medioRespuesta, observaciones) : void
-    + RegistrarRechazoPresupuesto(idOrden, motivo, medioRespuesta, observaciones) : void
-    + SolicitarAdicional(idOrden : int, motivo : string) : void
-    + EmitirAdicional(idOrden, items, descuento, diasGarantia, observaciones) : Presupuesto
-    + RegistrarAprobacionAdicional(idPresupuesto, medioRespuesta, observaciones) : void
-    + RegistrarRechazoAdicional(idPresupuesto, motivo, medioRespuesta, observaciones) : void
-    + CrearBorrador(idOrden, tipo, items, descuento, diasGarantia, observaciones) : Presupuesto
-    + PublicarBorrador(idPresupuesto : int) : void
-    + EliminarBorrador(idPresupuesto : int) : void
-    + AnularPresupuesto(idPresupuesto : int, motivo : string) : void
-    + CancelarSolicitudAdicional(idOrden : int) : void
-    + PuedeCancelarSolicitud(idOrden : int) : bool
-    + QuitarConsumo(idReparacion, idRepuesto, cantidad) : void
-    + CancelarOrden(idOrden : int, motivo : string) : void
-    + EntregarOrden(idOrden, entregadoA, documentoReceptor, observaciones) : Entrega
-    + CrearReingresoGarantia(idOrdenOriginal, idCliente, problema, estadoFisico, accesorios, observacionesIngreso) : OrdenServicio
-    + EvaluarReingreso(idOrdenReingreso, aceptada, motivo, observaciones, continuarPago) : void
-    + CancelarEntrega(idOrden : int, motivo : string) : void
-    + ModificarRecepcion(idOrden, problema, estadoFisico, accesorios, observacionesIngreso) : OrdenServicio
-    + Listar(incluirEntregadas : bool) : List<OrdenServicio>
-    + ListarPorCliente(idCliente : int, incluirEntregadas : bool) : List<OrdenServicio>
-    + ObtenerReingresoGarantiaAbierto(idOrdenOriginal : int) : OrdenServicio
-    + ListarReingresosGarantia(idOrdenOriginal : int) : List<OrdenServicio>
-    + ObtenerPorId(id : int) : OrdenServicio
-    + ObtenerDiagnostico(idOrden : int) : Diagnostico
-    + ObtenerPresupuesto(idOrden : int) : Presupuesto
-    + ObtenerPresupuestoOriginal(idOrden : int) : Presupuesto
-    + ListarAdicionales(idOrden : int) : List<Presupuesto>
-    + ObtenerPresupuestoPorId(idPresupuesto : int) : Presupuesto
-    + ListarTodosPresupuestos(idOrden : int) : List<Presupuesto>
-    + ExisteAdicionalPendiente(idOrden : int) : bool
-    + CalcularMontoAutorizado(idOrden : int) : decimal
-    + ListarDetalle(idPresupuesto : int) : List<DetallePresupuesto>
-    + ListarHistorial(idOrden : int) : List<HistorialEstadoOrden>
-    + ObtenerEntrega(idOrden : int) : Entrega
-    + ListarTecnicosElegibles() : List<Usuario>
-    + IniciarReparacion(idOrden : int) : Reparacion
-    + ConsumirRepuesto(idReparacion, idRepuesto, cantidad) : void
-    + FinalizarReparacion(idReparacion, trabajoRealizado, observaciones) : void
-    + RegistrarPrueba(idReparacion, descripcion, aprobada, observaciones) : Prueba
-    + FinalizarPruebas(idOrden : int) : void
-    + ReabrirPruebas(idOrden : int, motivo : string) : void
-    + AnularPrueba(idPrueba : int, motivo : string) : void
-    + ListarReparaciones(idOrden : int) : List<Reparacion>
-    + ObtenerReparacion(idReparacion : int) : Reparacion
-    + ListarConsumidos(idReparacion : int) : List<ReparacionRepuesto>
-    + ListarPruebas(idReparacion : int) : List<Prueba>
-    + EsSoloConsultaPorReingresos(idOrden : int) : bool
-    - ValidarItemsYCalcularSubtotal(items : List<DetallePresupuesto>) : decimal
-    - ValidarRepuestoDelItem(item : DetallePresupuesto) : void
-    - ObtenerOrdenParaModificar(idOrden : int) : OrdenServicio
-    - ValidarBloqueoSoloConsulta(resultado : int) : void
-    - ObtenerUltimaIntervencion(idOrden : int) : Reparacion
-    - ValidarTecnicoElegible(idTecnico : int) : Usuario
-  }
+package "Negocio" {
+
+    class ClienteService {
+        - _clienteRepository : ClienteRepository
+        --
+        + Inicializar() : void
+        + Crear(...) : Cliente
+        + Modificar(...) : Cliente
+        + Desactivar(id : int) : void
+        + Reactivar(id : int) : void
+        + Listar(...) : List<Cliente>
+        + ObtenerPorId(id : int) : Cliente
+    }
+
+    class TipoEquipoService {
+        - _tipoEquipoRepository : TipoEquipoRepository
+        --
+        + Inicializar() : void
+        + Crear(...) : TipoEquipo
+        + Modificar(...) : TipoEquipo
+        + Desactivar(...) : void
+        + Reactivar(...) : void
+        + Listar(...) : List<TipoEquipo>
+        + ObtenerPorId(...) : TipoEquipo
+    }
+
+    class MarcaService {
+        - _marcaRepository : MarcaRepository
+        --
+        + Inicializar() : void
+        + Crear(...) : Marca
+        + Modificar(...) : Marca
+        + Desactivar(...) : void
+        + Reactivar(...) : void
+        + Listar(...) : List<Marca>
+        + ObtenerPorId(...) : Marca
+    }
+
+    class EquipoService {
+        - _equipoRepository : EquipoRepository
+        - _clienteRepository : ClienteRepository
+        - _tipoEquipoRepository : TipoEquipoRepository
+        - _marcaRepository : MarcaRepository
+        --
+        + Inicializar() : void
+        + Crear(...) : Equipo
+        + Modificar(...) : Equipo
+        + Desactivar(...) : void
+        + Reactivar(...) : void
+        + Listar(...) : List<Equipo>
+        + ListarPorCliente(...) : List<Equipo>
+        + ObtenerPorId(...) : Equipo
+    }
+
+    class OrdenServicioService {
+        - _ordenRepository : OrdenServicioRepository
+        - _historialRepository : HistorialEstadoOrdenRepository
+        - _diagnosticoRepository : DiagnosticoRepository
+        - _presupuestoRepository : PresupuestoRepository
+        - _entregaRepository : EntregaRepository
+        - _clienteRepository : ClienteRepository
+        - _equipoRepository : EquipoRepository
+        - _usuarioRepository : UsuarioRepository
+        - _usuarioPermisoService : UsuarioPermisoService
+        - _reparacionRepository : ReparacionRepository
+        - _repuestoRepository : RepuestoRepository
+        --
+        + Inicializar() : void
+        + InicializarReparaciones() : void
+        + CrearOrden(...) : OrdenServicio
+        + AsignarTecnico(...) : void
+        + IniciarDiagnostico(...) : void
+        + FinalizarDiagnostico(...) : Diagnostico
+        + EmitirPresupuesto(...) : Presupuesto
+        + RegistrarAprobacionPresupuesto(...) : void
+        + RegistrarRechazoPresupuesto(...) : void
+        + SolicitarAdicional(...) : void
+        + EmitirAdicional(...) : Presupuesto
+        + RegistrarAprobacionAdicional(...) : void
+        + RegistrarRechazoAdicional(...) : void
+        + CrearBorrador(...) : Presupuesto
+        + PublicarBorrador(...) : void
+        + EliminarBorrador(...) : void
+        + AnularPresupuesto(...) : void
+        + CancelarSolicitudAdicional(...) : void
+        + PuedeCancelarSolicitud(...) : bool
+        + CancelarOrden(...) : void
+        + ModificarRecepcion(...) : OrdenServicio
+        + IniciarReparacion(...) : Reparacion
+        + ConsumirRepuesto(...) : void
+        + QuitarConsumo(...) : void
+        + FinalizarReparacion(...) : void
+        + RegistrarPrueba(...) : Prueba
+        + AnularPrueba(...) : void
+        + FinalizarPruebas(...) : void
+        + ReabrirPruebas(...) : void
+        + EntregarOrden(...) : Entrega
+        + CancelarEntrega(...) : void
+        + CrearReingresoGarantia(...) : OrdenServicio
+        + EvaluarReingreso(..., continuarPago : bool) : void
+        + Listar(...) : List<OrdenServicio>
+        + ListarPorCliente(...) : List<OrdenServicio>
+        + ObtenerPorId(...) : OrdenServicio
+        + ObtenerDiagnostico(...) : Diagnostico
+        + ObtenerPresupuesto(...) : Presupuesto
+        + ObtenerPresupuestoOriginal(...) : Presupuesto
+        + ObtenerPresupuestoPorId(...) : Presupuesto
+        + ListarAdicionales(...) : List<Presupuesto>
+        + ListarTodosPresupuestos(...) : List<Presupuesto>
+        + ExisteAdicionalPendiente(...) : bool
+        + CalcularMontoAutorizado(...) : decimal
+        + ListarDetalle(...) : List<DetallePresupuesto>
+        + ListarHistorial(...) : List<HistorialEstadoOrden>
+        + ObtenerEntrega(...) : Entrega
+        + ListarTecnicosElegibles() : List<Usuario>
+        + ListarReparaciones(...) : List<Reparacion>
+        + ObtenerReparacion(...) : Reparacion
+        + ListarConsumidos(...) : List<ReparacionRepuesto>
+        + ListarPruebas(...) : List<Prueba>
+        + ObtenerReingresoGarantiaAbierto(...) : OrdenServicio
+        + ListarReingresosGarantia(...) : List<OrdenServicio>
+        + EsSoloConsultaPorReingresos(...) : bool
+    }
+
+    class RepuestoService {
+        - _repuestoRepository : RepuestoRepository
+        - _movimientoRepository : MovimientoStockRepository
+        --
+        + Inicializar() : void
+        + Crear(...) : Repuesto
+        + Modificar(...) : Repuesto
+        + AjustarStock(...) : void
+        + Desactivar(...) : void
+        + Reactivar(...) : void
+        + Listar(...) : List<Repuesto>
+        + ObtenerPorId(...) : Repuesto
+        + ObtenerPorCodigo(...) : Repuesto
+        + ListarMovimientos(...) : List<MovimientoStock>
+        + ListarMovimientosFiltros(...) : List<MovimientoStock>
+    }
+
+    class ProveedorService {
+        - _proveedorRepository : ProveedorRepository
+        --
+        + Inicializar() : void
+        + Crear(...) : Proveedor
+        + Modificar(...) : Proveedor
+        + Desactivar(...) : void
+        + Reactivar(...) : void
+        + Listar(...) : List<Proveedor>
+        + ObtenerPorId(...) : Proveedor
+    }
+
+    class CompraService {
+        - _compraRepository : CompraRepository
+        - _proveedorRepository : ProveedorRepository
+        - _repuestoRepository : RepuestoRepository
+        --
+        + Inicializar() : void
+        + CrearBorrador(...) : Compra
+        + AgregarItem(...) : void
+        + QuitarItem(...) : void
+        + Confirmar(...) : Compra
+        + Cancelar(...) : void
+        + Anular(...) : void
+        + ObtenerPorId(...) : Compra
+        + Listar(...) : List<Compra>
+        + ListarDetalle(...) : List<DetalleCompra>
+    }
+
+    class GarantiaService {
+        - _garantiaRepository : GarantiaRepository
+        - _evaluacionRepository : EvaluacionGarantiaRepository
+        --
+        + Inicializar() : void
+        + Crear(...) : Garantia
+        + ObtenerPorOrden(...) : Garantia
+        + ObtenerVigente(...) : Garantia
+        + Anular(...) : void
+        + ObtenerEvaluacionPorReingreso(...) : EvaluacionGarantia
+    }
+
+    class ReporteService {
+        - _reporteRepository : ReporteRepository
+        - _repuestoRepository : RepuestoRepository
+        --
+        + ContarOrdenesPorEstado(...) : DataTable
+        + ContarOrdenesPorResultado(...) : DataTable
+        + ReparacionesPorTecnico(...) : DataTable
+        + TiempoPromedioIngresoEntrega(...) : decimal
+        + ContarPresupuestosPorEstado(...) : DataTable
+        + TasaAprobacionPresupuestos(...) : decimal
+        + RepuestosMasUtilizados(...) : DataTable
+        + ComprasPorProveedor(...) : DataTable
+        + ContarReingresosGarantia(...) : int
+        + EvaluacionesPorEstado(...) : DataTable
+        + TasaAceptacionGarantia(...) : decimal
+        + MontoPresupuestosAprobados(...) : decimal
+        + RepuestosBajoMinimo() : List<Repuesto>
+        + DashboardResumen() : DataTable
+    }
 }
 
-package "APPLICATION.Features.Clientes" as PKG_CLIENTES {
-  class ClienteService {
-    + Inicializar() : void
-    + Crear(nombre, apellido, documento, telefono, email, direccion, observaciones) : Cliente
-    + Modificar(id, nombre, apellido, documento, telefono, email, direccion, observaciones) : Cliente
-    + Desactivar(id : int) : void
-    + Reactivar(id : int) : void
-    + Listar(incluirInactivos : bool) : List<Cliente>
-    + ObtenerPorId(id : int) : Cliente
-  }
+package "Aspectos técnicos" {
+
+    class UsuarioService {
+        - _passwordHasher : IPasswordHasher
+        - _usuarioRepository : UsuarioRepository
+        --
+        + Inicializar() : void
+        + Login(username : string, password : string) : void
+        + Crear(...) : Usuario
+        + Listar() : List<Usuario>
+        + Eliminar(username : string) : void
+        + Reactivar(username : string) : void
+        + Modificar(...) : Usuario
+    }
+
+    class PermisoService {
+        - _permisoRepository : PermisoRepository
+        - _usuarioPermisoRepository : UsuarioPermisoRepository
+        --
+        + Inicializar() : void
+        + ListarArbol() : List<PermisoComponent>
+        + ListarFamilias() : List<FamiliaPermiso>
+        + ListarPermisosSimples() : List<PermisoSimple>
+        + CrearFamilia(...) : FamiliaPermiso
+        + EditarFamilia(...) : FamiliaPermiso
+        + EliminarFamilia(...) : void
+        + EsFamiliaAsignadaAlUsuarioActual(...) : bool
+        + AgregarComponente(...) : void
+        + QuitarComponente(...) : void
+    }
+
+    class UsuarioPermisoService {
+        - _usuarioRepository : UsuarioRepository
+        - _usuarioPermisoRepository : UsuarioPermisoRepository
+        - _permisoRepository : PermisoRepository
+        --
+        + ListarPermisosAsignados(...) : List<PermisoComponent>
+        + ListarPermisosDisponibles(...) : List<PermisoComponent>
+        + AsignarPermiso(...) : void
+        + QuitarPermiso(...) : void
+        + ListarPermisosEfectivos(...) : List<PermisoComponent>
+    }
+
+    class IdiomaService {
+        - _idiomaRepository : IdiomaRepository
+        --
+        + Inicializar() : void
+        + Listar() : List<Idioma>
+        + ObtenerPorId(...) : Idioma
+        + ObtenerPorNombre(...) : Idioma
+        + ObtenerIdiomaPorDefecto() : Idioma
+        + ListarTraduccionesPorIdioma(...) : List<TraduccionEditable>
+        + CrearIdioma(...) : Idioma
+        + ModificarIdioma(...) : void
+        + EliminarIdioma(...) : void
+        + GuardarTraduccion(...) : void
+    }
+
+    class ControlCambioService {
+        - _repository : ControlCambioRepository
+        - _idiomaRepository : IdiomaRepository
+        --
+        + Inicializar() : void
+        + Listar() : List<ControlCambio>
+        + RegistrarCambio(...) : void
+        + Restaurar(idCambio : int) : void
+    }
+
+    class BitacoraService {
+        - _repository : BitacoraRepository
+        --
+        + Inicializar() : void
+        + Registrar(actividad : string, detalle : string, tipoActividad : string) : void
+        + Registrar(usuario : string, actividad : string, detalle : string, tipoActividad : string) : void
+        + Listar() : List<EntradaBitacora>
+        + Buscar(...) : List<EntradaBitacora>
+        + ObtenerTiposActividad() : string[]
+    }
+
+    class IntegridadService {
+        - _usuarioRepository : UsuarioRepository
+        - _integridadRepository : IntegridadRepository
+        --
+        + Inicializar() : void
+        + VerificarIntegridadUsuarios() : bool
+        + RecalcularDVVUsuarios() : void
+        + RecalcularTodosDV() : void
+    }
+
+    class DigitoVerificadorHelper <<static>> {
+        + {static} CalcularDVH(usuario : Usuario) : string
+        + {static} CalcularDVV(filas : List<UserDVH>) : string
+    }
+
+    class DatosUsuarioIncorrectosException <<Exception>> {
+        + DatosUsuarioIncorrectosException()
+        + DatosUsuarioIncorrectosException(message : string)
+    }
 }
 
-package "APPLICATION.Features.Equipos" as PKG_EQUIPOS {
-  class EquipoService {
-    + Inicializar() : void
-    + Crear(idCliente, idTipoEquipo, idMarca, modelo, numeroSerie, imei, color, observaciones) : Equipo
-    + Modificar(id, idCliente, idTipoEquipo, idMarca, modelo, numeroSerie, imei, color, observaciones) : Equipo
-    + Desactivar(id : int) : void
-    + Reactivar(id : int) : void
-    + Listar(incluirInactivos : bool) : List<Equipo>
-    + ListarPorCliente(idCliente : int, incluirInactivos : bool) : List<Equipo>
-    + ObtenerPorId(id : int) : Equipo
-  }
-}
+OrdenServicioService --> UsuarioPermisoService : permisos técnicos
+OrdenServicioService ..> GarantiaService : garantías
+OrdenServicioService ..> BitacoraService : audita
 
-package "APPLICATION.Features.TiposEquipo" as PKG_TIPOSEQUIPO {
-  class TipoEquipoService {
-    + Inicializar() : void
-    + Crear(nombre : string) : TipoEquipo
-    + Modificar(id : int, nombre : string) : TipoEquipo
-    + Desactivar(id : int) : void
-    + Reactivar(id : int) : void
-    + Listar(incluirInactivos : bool) : List<TipoEquipo>
-    + ObtenerPorId(id : int) : TipoEquipo
-  }
-}
+CompraService ..> BitacoraService
+RepuestoService ..> BitacoraService
+ClienteService ..> BitacoraService
+EquipoService ..> BitacoraService
+TipoEquipoService ..> BitacoraService
+MarcaService ..> BitacoraService
+ProveedorService ..> BitacoraService
+GarantiaService ..> BitacoraService
 
-package "APPLICATION.Features.Marcas" as PKG_MARCAS {
-  class MarcaService {
-    + Inicializar() : void
-    + Crear(nombre : string) : Marca
-    + Modificar(id : int, nombre : string) : Marca
-    + Desactivar(id : int) : void
-    + Reactivar(id : int) : void
-    + Listar(incluirInactivos : bool) : List<Marca>
-    + ObtenerPorId(id : int) : Marca
-  }
-}
+UsuarioService ..> UsuarioPermisoService
+UsuarioService ..> IntegridadService
+UsuarioService ..> DigitoVerificadorHelper
+UsuarioService ..> BitacoraService
+UsuarioService ..> DatosUsuarioIncorrectosException
 
-package "APPLICATION.Features.Proveedores" as PKG_PROVEEDORES {
-  class ProveedorService {
-    + Inicializar() : void
-    + Crear(razonSocial, cuit, telefono, email, direccion, contacto) : Proveedor
-    + Modificar(id, razonSocial, cuit, telefono, email, direccion, contacto) : Proveedor
-    + Desactivar(id : int) : void
-    + Reactivar(id : int) : void
-    + Listar(incluirInactivos : bool) : List<Proveedor>
-    + ObtenerPorId(id : int) : Proveedor
-  }
-}
+PermisoService ..> BitacoraService
+UsuarioPermisoService ..> BitacoraService
 
-package "APPLICATION.Features.Repuestos" as PKG_REPUESTOS {
-  class RepuestoService {
-    + Inicializar() : void
-    + Crear(codigo, descripcion, stockInicial, stockMinimo, costoActual, precioReferencia) : Repuesto
-    + Modificar(id, codigo, descripcion, stockMinimo, costoActual, precioReferencia) : Repuesto
-    + AjustarStock(idRepuesto, cantidadFirmada, motivo, idUsuario) : void
-    + Desactivar(id : int) : void
-    + Reactivar(id : int) : void
-    + Listar(incluirInactivos : bool) : List<Repuesto>
-    + ObtenerPorId(id : int) : Repuesto
-    + ObtenerPorCodigo(codigo : string) : Repuesto
-    + ListarMovimientos(idRepuesto : int) : List<MovimientoStock>
-    + ListarMovimientosFiltros(idRepuesto, tipo, desde, hasta) : List<MovimientoStock>
-  }
-}
+IdiomaService ..> ControlCambioService
+IdiomaService ..> BitacoraService
+ControlCambioService ..> BitacoraService
 
-package "APPLICATION.Features.Compras" as PKG_COMPRAS {
-  class CompraService {
-    + Inicializar() : void
-    + CrearBorrador(idProveedor : int, items : List<DetalleCompra>, observaciones : string) : Compra
-    + AgregarItem(idCompra, idRepuesto, cantidad, costoUnitario) : void
-    + QuitarItem(idCompra : int, idDetalle : int) : void
-    + Confirmar(idCompra : int) : Compra
-    + Cancelar(idCompra : int) : void
-    + Anular(idCompra : int, motivo : string) : void
-    + ObtenerPorId(id : int) : Compra
-    + Listar() : List<Compra>
-    + ListarDetalle(idCompra : int) : List<DetalleCompra>
-  }
-}
+IntegridadService ..> DigitoVerificadorHelper
+IntegridadService ..> BitacoraService
 
-package "APPLICATION.Features.Garantias" as PKG_GARANTIAS {
-  class GarantiaService {
-    + Inicializar() : void
-    + Crear(idOrdenOriginal, fechaInicio, fechaFin, observaciones) : Garantia
-    + ObtenerPorOrden(idOrdenOriginal : int) : Garantia
-    + ObtenerVigente(idOrdenOriginal : int) : Garantia
-    + Anular(id : int) : void
-    + ObtenerEvaluacionPorReingreso(idOrdenReingreso : int) : EvaluacionGarantia
-    - ValidarOrdenOriginalModificable(idOrdenOriginal : int) : void
-  }
-}
-
-package "APPLICATION.Features.Usuarios" as PKG_USUARIOS {
-  class UsuarioService {
-    + Inicializar() : void
-    + Login(username : string, password : string) : void
-    + Crear(username : string, password : string) : Usuario
-    + Listar() : List<Usuario>
-    + Eliminar(username : string) : void
-    + Reactivar(username : string) : void
-    + Modificar(id : int, username : string, password : string) : Usuario
-  }
-  class DatosUsuarioIncorrectosException {
-    + DatosUsuarioIncorrectosException()
-    + DatosUsuarioIncorrectosException(message : string)
-  }
-}
-
-package "APPLICATION.Features.Usuarios" as PKG_USUARIOS2 {
-  class UsuarioPermisoService {
-    + ListarPermisosAsignados(idUsuario : int) : List<PermisoComponent>
-    + ListarPermisosDisponibles(idUsuario : int) : List<PermisoComponent>
-    + AsignarPermiso(idUsuario : int, idPermiso : int) : void
-    + QuitarPermiso(idUsuario : int, idPermiso : int) : void
-    + ListarPermisosEfectivos(idUsuario : int) : List<PermisoComponent>
-  }
-}
-
-package "APPLICATION.Features.Permisos" as PKG_PERMISOS {
-  class PermisoService {
-    + Inicializar() : void
-    + ListarArbol() : List<PermisoComponent>
-    + ListarFamilias() : List<FamiliaPermiso>
-    + ListarPermisosSimples() : List<PermisoSimple>
-    + CrearFamilia(nombre : string) : FamiliaPermiso
-    + EditarFamilia(idFamilia : int, nombre : string) : FamiliaPermiso
-    + EliminarFamilia(idFamilia : int) : void
-    + EsFamiliaAsignadaAlUsuarioActual(idFamilia : int) : bool
-    + AgregarComponente(idPadre : int, idHijo : int) : void
-    + QuitarComponente(idPadre : int, idHijo : int) : void
-  }
-}
-
-package "APPLICATION.Features.Idiomas" as PKG_IDIOMAS {
-  class IdiomaService {
-    + Inicializar() : void
-    + Listar() : List<Idioma>
-    + ObtenerPorId(id : int) : Idioma
-    + ObtenerPorNombre(nombre : string) : Idioma
-    + ObtenerIdiomaPorDefecto() : Idioma
-    + ListarTraduccionesPorIdioma(idIdioma : int) : List<TraduccionEditable>
-    + CrearIdioma(nombre : string) : Idioma
-    + ModificarIdioma(id : int, nombre : string) : void
-    + EliminarIdioma(id : int) : void
-    + GuardarTraduccion(idIdioma, idPalabra, texto, registrarCambio) : void
-  }
-}
-
-package "APPLICATION.Features.ControlCambios" as PKG_CONTROLCAMBIOS {
-  class ControlCambioService {
-    + Inicializar() : void
-    + Listar() : List<ControlCambio>
-    + RegistrarCambio(tablaAfectada, idIdioma, idPalabra, claveRegistro, campoModificado, valorAnterior, valorNuevo, usuarioModifico, tipoCambio) : void
-    + Restaurar(idCambio : int) : void
-  }
-}
-
-package "APPLICATION.Features.Bitacora" as PKG_BITACORA {
-  class BitacoraService {
-    + Inicializar() : void
-    + Registrar(actividad, detalle, tipoActividad) : void
-    + Registrar(usuario, actividad, detalle, tipoActividad) : void
-    + Listar() : List<EntradaBitacora>
-    + Buscar(usuario, desde, hasta, tipoActividad) : List<EntradaBitacora>
-    + ObtenerTiposActividad() : string[]
-  }
-}
-
-package "APPLICATION.Features.Integridad" as PKG_INTEGRIDAD {
-  class IntegridadService {
-    + Inicializar() : void
-    + VerificarIntegridadUsuarios() : bool
-    + RecalcularDVVUsuarios() : void
-    + RecalcularTodosDV() : void
-  }
-  class DigitoVerificadorHelper <<static>> {
-    + CalcularDVH(usuario : Usuario) : string
-    + CalcularDVV(filas : List<UserDVH>) : string
-  }
-}
-
-package "APPLICATION.Features.Reportes" as PKG_REPORTES {
-  class ReporteService {
-    + ContarOrdenesPorEstado(desde, hasta) : DataTable
-    + ContarOrdenesPorResultado(desde, hasta) : DataTable
-    + ReparacionesPorTecnico(desde, hasta) : DataTable
-    + TiempoPromedioIngresoEntrega(desde, hasta) : decimal
-    + ContarPresupuestosPorEstado(desde, hasta) : DataTable
-    + TasaAprobacionPresupuestos(desde, hasta) : decimal
-    + RepuestosMasUtilizados(top, desde, hasta) : DataTable
-    + ComprasPorProveedor(desde, hasta) : DataTable
-    + ContarReingresosGarantia(desde, hasta) : int
-    + EvaluacionesPorEstado(desde, hasta) : DataTable
-    + TasaAceptacionGarantia(desde, hasta) : decimal
-    + MontoPresupuestosAprobados(desde, hasta) : decimal
-    + RepuestosBajoMinimo() : List<Repuesto>
-    + DashboardResumen() : DataTable
-    - _reporteRepository : ReporteRepository
-    - _repuestoRepository : RepuestoRepository
-  }
-}
-
-' --- Dependencias: el service construye repositorios concretos con new (sin interfaces de repositorio) ---
-OrdenServicioService ..> OrdenServicioRepository : new (10 repositorios)
-ClienteService ..> ClienteRepository : new
-EquipoService ..> EquipoRepository : new
-TipoEquipoService ..> TipoEquipoRepository : new
-MarcaService ..> MarcaRepository : new
-ProveedorService ..> ProveedorRepository : new
-RepuestoService ..> RepuestoRepository : new
-CompraService ..> CompraRepository : new
-GarantiaService ..> GarantiaRepository : new
-UsuarioService ..> UsuarioRepository : new
-UsuarioPermisoService ..> UsuarioPermisoRepository : new
-PermisoService ..> PermisoRepository : new
-IdiomaService ..> IdiomaRepository : new
-ControlCambioService ..> ControlCambioRepository : new
-BitacoraService ..> BitacoraRepository : new
-IntegridadService ..> IntegridadRepository : new
-ReporteService ..> ReporteRepository : new
-
-UsuarioService ..> SessionManager : Login y sesion
-OrdenServicioService ..> SessionManager : usuario y permisos efectivos
-
-note right of OrdenServicioService
-  Reglas vigentes del service:
-  - ValidarItemsYCalcularSubtotal valida cada item y exige un repuesto
-    activo (sin exigir stock) para los items Repuesto.
-  - ObtenerOrdenParaModificar + ValidarBloqueoSoloConsulta: la orden con
-    reingresos de garantia es de solo consulta.
-  - RegistrarPrueba solo acepta la ultima intervencion finalizada y no
-    finaliza las pruebas; FinalizarPruebas evalua las validas.
-  - CrearReingresoGarantia traduce los codigos 0/-1/-3 del lote.
-end note
-
-note bottom of ReporteService
-  Devuelve DataTable y valores escalares para dashboard y reportes.
-  No existe un DashboardService ni un PresupuestoService separados.
-end note
+System.Exception <|-- DatosUsuarioIncorrectosException
 
 @enduml

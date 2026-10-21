@@ -1,168 +1,120 @@
-@startuml G06.4.1-repository-tecnicos
+@startuml
+title G06 - Capa INFRASTRUCTURE / REPOSITORY - Aspectos técnicos
 
-' G06.4.1 - REPOSITORIO: subconjunto tecnico (estado actual del repositorio)
-' Fuente: los 25 tipos propios de INFRASTRUCTURE\REPOSITORY.csproj, agrupados en cuatro diagramas.
-' Esta subdivision reune los repositorios de infraestructura transversal: helper de datos,
-' seguridad/usuarios, permisos, idiomas, control de cambios, integridad, bitacora y reportes.
-' La agrupacion es documental: no crea namespaces ni proyectos nuevos.
-' Assembly y namespace reales: REPOSITORY (carpeta fisica INFRASTRUCTURE).
-
+left to right direction
 skinparam classAttributeIconSize 0
-skinparam linetype ortho
+hide circle
 
-package "REPOSITORY (raiz)" as PKG_RAIZ {
-  class SqlHelper {
-    - _cadenaConexion : string
-    + SqlHelper(cadenaConexion : string)
-    + ExecuteTransaction(query : string, parametros : SqlParameter[]) : int
-    + ExecuteQuery(query : string, parametros : SqlParameter[]) : DataTable
-  }
+package "Aspectos técnicos" {
+
+    class SqlHelper {
+        - _cadenaConexion : string
+        --
+        + SqlHelper(cadenaConexion : string)
+        + ExecuteTransaction(query : string, parametros : SqlParameter[] = null) : int
+        + ExecuteQuery(query : string, parametros : SqlParameter[] = null) : DataTable
+    }
+
+    class IntegridadRepository {
+        - _db : SqlHelper
+        --
+        + Inicializar() : void
+        + GuardarDVV(nombreTabla : string, dvv : string) : void
+        + ObtenerDVV(nombreTabla : string) : string
+    }
+
+    class BitacoraRepository {
+        - _db : SqlHelper
+        --
+        + Inicializar() : void
+        + Insertar(entrada : EntradaBitacora) : void
+        + Listar() : List<EntradaBitacora>
+        + Buscar(...) : List<EntradaBitacora>
+    }
+
+    class ControlCambioRepository {
+        - _db : SqlHelper
+        --
+        + Inicializar() : void
+        + Insertar(cambio : ControlCambio) : void
+        + Listar() : List<ControlCambio>
+        + ObtenerPorId(...) : ControlCambio
+        + ObtenerPorTablaYRegistro(...) : ControlCambio
+    }
+
+    class IdiomaRepository {
+        - _db : SqlHelper
+        --
+        + Inicializar() : void
+        + Listar() : List<Idioma>
+        + ObtenerPorId(...) : Idioma
+        + ObtenerPorNombre(...) : Idioma
+        + ListarTraduccionesPorIdioma(...) : List<TraduccionEditable>
+        + ObtenerTraduccionEditable(...) : TraduccionEditable
+        + AgregarIdioma(...) : Idioma
+        + AgregarIdiomaConId(...) : void
+        + ModificarIdioma(...) : void
+        + EliminarIdioma(...) : void
+        + GuardarTraduccion(...) : void
+        + EliminarTraduccion(...) : void
+    }
+
+    class UsuarioRepository {
+        - _db : SqlHelper
+        --
+        + Inicializar() : void
+        + Agregar(usuario : Usuario) : Usuario
+        + Eliminar(id : int) : void
+        + CambiarEstado(...) : void
+        + ObtenerPorUsername(...) : Usuario
+        + ObtenerPorId(...) : Usuario
+        + Listar() : List<Usuario>
+        + Modificar(...) : void
+        + ObtenerTodosDVH() : List<UserDVH>
+        + ActualizarDVH(...) : void
+    }
+
+    class PermisoRepository {
+        - _db : SqlHelper
+        + NombreRaizSistema : const string
+        --
+        + Inicializar() : void
+        + ListarArbol() : List<PermisoComponent>
+        + ListarSubArbol(...) : List<PermisoComponent>
+        + ListarFamilias() : List<FamiliaPermiso>
+        + ListarPermisosSimples() : List<PermisoSimple>
+        + AgregarFamilia(...) : FamiliaPermiso
+        + ModificarFamilia(...) : void
+        + EliminarFamilia(...) : void
+        + AgregarComponente(...) : void
+        + QuitarComponente(...) : void
+        + ExisteRelacion(...) : bool
+        + ObtenerRaizSistema() : PermisoComponent
+        + EsRaizSistema(...) : bool
+        + ObtenerPorId(...) : PermisoComponent
+        + ObtenerPorCodigo(...) : PermisoComponent
+    }
+
+    class UsuarioPermisoRepository {
+        - _db : SqlHelper
+        --
+        + Inicializar() : void
+        + AsignarPermiso(...) : void
+        + QuitarPermiso(...) : void
+        + TienePermisoAsignado(...) : bool
+        + ListarPermisosAsignados(...) : List<PermisoComponent>
+        + ListarPermisosDisponibles(...) : List<PermisoComponent>
+    }
 }
 
-package "REPOSITORY.Features.Usuarios" as PKG_USUARIOS {
-  class UsuarioRepository {
-    - _db : SqlHelper
-    + UsuarioRepository()
-    + UsuarioRepository(cadenaConexion : string)
-    + Inicializar() : void
-    + Agregar(usuario : Usuario) : Usuario
-    + Eliminar(id : int) : void
-    + CambiarEstado(id : int, activo : bool) : void
-    + ObtenerPorUsername(userName : string) : Usuario
-    + ObtenerPorId(id : int) : Usuario
-    + Listar() : List<Usuario>
-    + Modificar(usuario : Usuario) : void
-    + ObtenerTodosDVH() : List<UserDVH>
-    + ActualizarDVH(id : int, dvh : string) : void
-  }
-  class UsuarioPermisoRepository {
-    - _db : SqlHelper
-    + Inicializar() : void
-    + ListarPermisosAsignados(idUsuario : int) : List<PermisoComponent>
-    + ListarPermisosDisponibles(idUsuario : int) : List<PermisoComponent>
-    + TienePermisoAsignado(idUsuario : int, idPermiso : int) : bool
-    + AsignarPermiso(idUsuario : int, idPermiso : int) : void
-    + QuitarPermiso(idUsuario : int, idPermiso : int) : void
-  }
-}
+SqlHelper <-- IntegridadRepository
+SqlHelper <-- BitacoraRepository
+SqlHelper <-- ControlCambioRepository
+SqlHelper <-- IdiomaRepository
+SqlHelper <-- UsuarioRepository
+SqlHelper <-- PermisoRepository
+SqlHelper <-- UsuarioPermisoRepository
 
-package "REPOSITORY.Features.Permisos" as PKG_PERMISOS {
-  class PermisoRepository {
-    - _db : SqlHelper
-    + NombreRaizSistema = "Raiz"
-    + Inicializar() : void
-    + ListarArbol() : List<PermisoComponent>
-    + ListarSubArbol(idRaiz : int) : List<PermisoComponent>
-    + ListarFamilias() : List<FamiliaPermiso>
-    + ListarPermisosSimples() : List<PermisoSimple>
-    + AgregarFamilia(nombre : string) : FamiliaPermiso
-    + ModificarFamilia(id : int, nombre : string) : void
-    + EliminarFamilia(id : int) : void
-    + AgregarComponente(idPadre : int, idHijo : int) : void
-    + QuitarComponente(idPadre : int, idHijo : int) : void
-    + ExisteRelacion(idPadre : int, idHijo : int) : bool
-    + ObtenerRaizSistema() : PermisoComponent
-    + EsRaizSistema(idPermiso : int) : bool
-    + ObtenerPorId(id : int) : PermisoComponent
-    + ObtenerPorCodigo(codigo : string) : PermisoComponent
-  }
-}
-
-package "REPOSITORY.Features.Idiomas" as PKG_IDIOMAS {
-  class IdiomaRepository {
-    - _db : SqlHelper
-    + Inicializar() : void
-    + Listar() : List<Idioma>
-    + ObtenerPorId(id : int) : Idioma
-    + ObtenerPorNombre(nombre : string) : Idioma
-    + ListarTraduccionesPorIdioma(idIdioma : int) : List<TraduccionEditable>
-    + AgregarIdioma(nombre : string) : Idioma
-    + ModificarIdioma(id : int, nombre : string) : void
-    + EliminarIdioma(id : int) : void
-    + ObtenerTraduccionEditable(idIdioma : int, idPalabra : int) : TraduccionEditable
-    + AgregarIdiomaConId(id : int, nombre : string) : void
-    + EliminarTraduccion(idIdioma : int, idPalabra : int) : void
-    + GuardarTraduccion(idIdioma : int, idPalabra : int, texto : string) : void
-  }
-}
-
-package "REPOSITORY.Features.ControlCambios" as PKG_CONTROLCAMBIOS {
-  class ControlCambioRepository {
-    - _db : SqlHelper
-    + Inicializar() : void
-    + Insertar(cambio : ControlCambio) : void
-    + Listar() : List<ControlCambio>
-    + ObtenerPorTablaYRegistro(tablaAfectada : string, idIdioma : int, tipoCambio : string) : ControlCambio
-    + ObtenerPorId(id : int) : ControlCambio
-  }
-}
-
-package "REPOSITORY.Features.Integridad" as PKG_INTEGRIDAD {
-  class IntegridadRepository {
-    - _db : SqlHelper
-    + Inicializar() : void
-    + GuardarDVV(nombreTabla : string, dvv : string) : void
-    + ObtenerDVV(nombreTabla : string) : string
-  }
-}
-
-package "REPOSITORY.Features.Bitacora" as PKG_BITACORA {
-  class BitacoraRepository {
-    - _db : SqlHelper
-    + Inicializar() : void
-    + Insertar(entrada : EntradaBitacora) : void
-    + Listar() : List<EntradaBitacora>
-    + Buscar(usuario : string, desde : DateTime?, hasta : DateTime?, tipoActividad : string) : List<EntradaBitacora>
-    - CrearDesdeFila(fila : DataRow) : EntradaBitacora
-  }
-}
-
-package "REPOSITORY.Features.Reportes" as PKG_REPORTES {
-  class ReporteRepository {
-    - _db : SqlHelper
-    + ContarOrdenesPorEstado(desde, hasta) : DataTable
-    + ContarOrdenesPorResultado(desde, hasta) : DataTable
-    + ReparacionesPorTecnico(desde, hasta) : DataTable
-    + TiempoPromedioIngresoEntrega(desde, hasta) : DataTable
-    + ContarPresupuestosPorEstado(desde, hasta) : DataTable
-    + RepuestosMasUtilizados(top, desde, hasta) : DataTable
-    + ComprasPorProveedor(desde, hasta) : DataTable
-    + ContarReingresosGarantia(desde, hasta) : DataTable
-    + EvaluacionesPorEstado(desde, hasta) : DataTable
-    + MontoPresupuestosAprobados(desde, hasta) : DataTable
-    + DashboardResumen() : DataTable
-  }
-}
-
-' --- Uso comun del helper de datos ---
-UsuarioRepository ..> SqlHelper : _db
-UsuarioPermisoRepository ..> SqlHelper : _db
-PermisoRepository ..> SqlHelper : _db
-IdiomaRepository ..> SqlHelper : _db
-ControlCambioRepository ..> SqlHelper : _db
-IntegridadRepository ..> SqlHelper : _db
-BitacoraRepository ..> SqlHelper : _db
-ReporteRepository ..> SqlHelper : _db
-
-note right of SqlHelper
-  ExecuteTransaction abre conexion, ejecuta el lote en una
-  transaccion y hace COMMIT; ante excepcion hace ROLLBACK y
-  reenvia la excepcion original. ExecuteQuery devuelve DataTable.
-end note
-
-note bottom of UsuarioRepository
-  UX_Usuarios_Username respalda la unicidad del nombre de usuario.
-  Modificar traduce 2601/2627 a UsuarioYaExisteException.
-end note
-
-note bottom of PermisoRepository
-  Los descendientes de una familia pueden compartirse entre
-  familias: la composicion no implica propiedad exclusiva.
-end note
-
-note bottom of ReporteRepository
-  Las consultas de rango usan < DATEADD(day, 1, @Hasta) para incluir
-  el dia final completo.
-end note
+UsuarioPermisoRepository ..> PermisoRepository : NombreRaizSistema
 
 @enduml

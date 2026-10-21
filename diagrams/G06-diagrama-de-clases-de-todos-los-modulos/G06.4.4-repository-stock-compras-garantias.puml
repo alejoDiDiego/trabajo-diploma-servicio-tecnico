@@ -1,116 +1,96 @@
-@startuml G06.4.4-repository-stock-compras-garantias
+@startuml
+title G06 - Capa INFRASTRUCTURE / REPOSITORY - Stock, Compras y Garantías
 
-' G06.4.4 - REPOSITORIO: subconjunto stock, compras y garantias (estado actual)
-' Fuente: los 25 tipos propios de INFRASTRUCTURE\REPOSITORY.csproj, agrupados en cuatro diagramas.
-' Este diagrama reune repuestos y movimientos de stock, compras, reparaciones y garantias.
-' Agrupacion documental: no crea namespaces ni proyectos nuevos.
-
+left to right direction
 skinparam classAttributeIconSize 0
-skinparam linetype ortho
+hide circle
 
-package "REPOSITORY.Features.Repuestos" as PKG_REPUESTOS {
-  class RepuestoRepository {
-    + Inicializar() : void
-    + Crear(repuesto : Repuesto, idUsuario : int) : Repuesto
-    + Modificar(repuesto : Repuesto) : void
-    + AjustarStock(idRepuesto, cantidadFirmada, motivo, idUsuario) : void
-    + Desactivar(id : int) : void
-    + Reactivar(id : int) : void
-    + ObtenerPorId(id : int) : Repuesto
-    + ObtenerPorCodigo(codigo : string) : Repuesto
-    + Listar(incluirInactivos : bool) : List<Repuesto>
-  }
-  class MovimientoStockRepository {
-    + Inicializar() : void
-    + Registrar(movimiento : MovimientoStock) : MovimientoStock
-    + ObtenerPorId(id : int) : MovimientoStock
-    + ListarPorRepuesto(idRepuesto : int) : List<MovimientoStock>
-    + ListarFiltros(idRepuesto, tipo, desde, hasta) : List<MovimientoStock>
-  }
+class SqlHelper <<referencia>>
+
+package "Negocio - Stock, Compras y Garantías" {
+
+    class RepuestoRepository {
+        - _db : SqlHelper
+        --
+        + Inicializar() : void
+        + Crear(...) : Repuesto
+        + Modificar(...) : void
+        + AjustarStock(...) : void
+        + Desactivar(...) : void
+        + Reactivar(...) : void
+        + ObtenerPorId(...) : Repuesto
+        + ObtenerPorCodigo(...) : Repuesto
+        + Listar(...) : List<Repuesto>
+    }
+
+    class MovimientoStockRepository {
+        - _db : SqlHelper
+        --
+        + Inicializar() : void
+        + Registrar(...) : MovimientoStock
+        + ObtenerPorId(...) : MovimientoStock
+        + ListarPorRepuesto(...) : List<MovimientoStock>
+        + ListarFiltros(...) : List<MovimientoStock>
+    }
+
+    class CompraRepository {
+        - _db : SqlHelper
+        --
+        + Inicializar() : void
+        + CrearBorradorConDetalle(...) : Compra
+        + AgregarItem(...) : void
+        + QuitarItem(...) : void
+        + ConfirmarConStock(...) : Compra
+        + CancelarBorrador(...) : void
+        + AnularConfirmadaConStock(...) : void
+        + ObtenerPorId(...) : Compra
+        + Listar(...) : List<Compra>
+        + ListarDetalle(...) : List<DetalleCompra>
+    }
+
+    class GarantiaRepository {
+        - _db : SqlHelper
+        --
+        + Inicializar() : void
+        + Crear(...) : Garantia
+        + ObtenerPorId(...) : Garantia
+        + ObtenerPorOrden(...) : Garantia
+        + ObtenerVigente(...) : Garantia
+        + Anular(...) : void
+    }
+
+    class EvaluacionGarantiaRepository {
+        - _db : SqlHelper
+        --
+        + Inicializar() : void
+        + Crear(...) : EvaluacionGarantia
+        + Evaluar(...) : void
+        + ObtenerPorId(...) : EvaluacionGarantia
+        + ObtenerPorReingreso(...) : EvaluacionGarantia
+    }
+
+    class ReporteRepository {
+        - _db : SqlHelper
+        --
+        + ContarOrdenesPorEstado(...) : DataTable
+        + ContarOrdenesPorResultado(...) : DataTable
+        + ReparacionesPorTecnico(...) : DataTable
+        + TiempoPromedioIngresoEntrega(...) : DataTable
+        + ContarPresupuestosPorEstado(...) : DataTable
+        + RepuestosMasUtilizados(...) : DataTable
+        + ComprasPorProveedor(...) : DataTable
+        + ContarReingresosGarantia(...) : DataTable
+        + EvaluacionesPorEstado(...) : DataTable
+        + MontoPresupuestosAprobados(...) : DataTable
+        + DashboardResumen() : DataTable
+    }
 }
 
-package "REPOSITORY.Features.Compras" as PKG_COMPRAS {
-  class CompraRepository {
-    + Inicializar() : void
-    + CrearBorradorConDetalle(compra : Compra, items : List<DetalleCompra>) : Compra
-    + AgregarItem(idCompra : int, item : DetalleCompra) : void
-    + QuitarItem(idDetalle : int) : void
-    + ConfirmarConStock(idCompra : int, idUsuario : int) : Compra
-    + CancelarBorrador(idCompra : int) : void
-    + AnularConfirmadaConStock(idCompra : int, motivo : string, idUsuario : int) : void
-    + ObtenerPorId(id : int) : Compra
-    + Listar(incluirNoBorrador : bool) : List<Compra>
-    + ListarDetalle(idCompra : int) : List<DetalleCompra>
-  }
-}
-
-package "REPOSITORY.Features.Reparaciones" as PKG_REPARACIONES {
-  class ReparacionRepository {
-    + Inicializar() : void
-    + IniciarReparacion(idOrden : int, idTecnico : int, idUsuario : int) : int
-    + IniciarIntervencionAdicional(idOrden : int, idTecnico : int, idUsuario : int) : int
-    + ConsumirRepuesto(idReparacion, idRepuesto, cantidad, idUsuario) : void
-    + DevolverConsumo(idReparacion : int, idRepuesto : int, cantidad : int, idUsuario : int) : void
-    + FinalizarReparacion(idReparacion, trabajoRealizado, observaciones, idUsuario) : void
-    + RegistrarPrueba(idReparacion, idTecnico, descripcion, resultado, observaciones) : int
-    + FinalizarPruebas(idOrden : int, todasAprobadas : bool, idUsuario : int) : void
-    + AnularPrueba(idPrueba : int, motivo : string, idUsuario : int) : void
-    + CerrarAbiertaYCancelar(idOrden : int, motivo : string, idUsuario : int) : void
-    + ObtenerPorId(id : int) : Reparacion
-    + ObtenerAbierta(idOrden : int) : Reparacion
-    + ListarPorOrden(idOrden : int) : List<Reparacion>
-    + ListarConsumidos(idReparacion : int) : List<ReparacionRepuesto>
-    + ListarPruebas(idReparacion : int) : List<Prueba>
-    + ObtenerPruebaPorId(idPrueba : int) : Prueba
-  }
-}
-
-package "REPOSITORY.Features.Garantias" as PKG_GARANTIAS {
-  class GarantiaRepository {
-    + Inicializar() : void
-    + Crear(garantia : Garantia) : Garantia
-    + ObtenerPorId(id : int) : Garantia
-    + ObtenerPorOrden(idOrdenOriginal : int) : Garantia
-    + ObtenerVigente(idOrdenOriginal : int) : Garantia
-    + Anular(id : int) : void
-  }
-  class EvaluacionGarantiaRepository {
-    + Inicializar() : void
-    + Crear(evaluacion : EvaluacionGarantia) : EvaluacionGarantia
-    + Evaluar(id : int, estado : string, motivo : string, observaciones : string) : void
-    + ObtenerPorId(id : int) : EvaluacionGarantia
-    + ObtenerPorReingreso(idOrdenReingreso : int) : EvaluacionGarantia
-  }
-}
-
-' --- Uso del helper de datos y relaciones entre repositorios ---
-RepuestoRepository ..> SqlHelper : _db
-MovimientoStockRepository ..> SqlHelper : _db
-CompraRepository ..> SqlHelper : _db
-ReparacionRepository ..> SqlHelper : _db
-GarantiaRepository ..> SqlHelper : _db
-EvaluacionGarantiaRepository ..> SqlHelper : _db
-
-note right of CompraRepository
-  ConfirmarConStock y AnularConfirmadaConStock mueven stock y registran
-  movimientos en un lote unico. La anulacion valida la cantidad agregada
-  por repuesto antes de revertir, para no dejar stock negativo.
-end note
-
-note right of ReparacionRepository
-  ConsumirRepuesto guarda ReparacionRepuesto con el costo de adquisicion
-  del momento y su movimiento; DevolverConsumo sigue FIFO por id de
-  consumo. RegistrarPrueba solo inserta: la decision es del service.
-end note
-
-note bottom of GarantiaRepository
-  UX_Garantias_OrdenOriginal garantiza la cobertura 0..1 por orden.
-  Los reingresos no son filas de Garantias: son ordenes hijas.
-end note
-
-note bottom of EvaluacionGarantiaRepository
-  Una evaluacion por reingreso: ObtenerPorReingreso devuelve la fila
-  del reingreso pedido y Evaluar fija estado, motivo y observaciones.
-end note
+SqlHelper <-- RepuestoRepository
+SqlHelper <-- MovimientoStockRepository
+SqlHelper <-- CompraRepository
+SqlHelper <-- GarantiaRepository
+SqlHelper <-- EvaluacionGarantiaRepository
+SqlHelper <-- ReporteRepository
 
 @enduml

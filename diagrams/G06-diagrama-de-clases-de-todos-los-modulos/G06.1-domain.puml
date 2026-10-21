@@ -1,648 +1,571 @@
-@startuml G06.1-domain
+@startuml
+title G06 - Capa DOMAIN
 
-' G06.1 - Diagrama de clases del modulo DOMAIN (estado actual del repositorio)
-' Fuente: los 49 tipos propios declarados en los archivos Compile de DOMAIN\DOMAIN.csproj.
-' Se muestran miembros significativos; el inventario completo y la trazabilidad estan en G06.1-domain.md.
-' Convencion: las asociaciones punteadas con etiqueta "FK conceptual" son claves foraneas de las tablas
-' (relaciones de identidad entre agregados), NO navegacion, coleccion ni composicion de objetos C#.
-' En DOMAIN la unica coleccion real es Idioma.Traducciones y la unica lista interna es
-' PermisoComponent._hijos; la unica referencia de objeto es Traduccion.Palabra. Por eso el resto de
-' las relaciones entre agregados se dibuja punteada, con la cardinalidad del lado de la clave foranea.
-
+left to right direction
 skinparam classAttributeIconSize 0
-skinparam linetype ortho
+hide circle
 
-package "DOMAIN.Features.Idiomas" as PKG_IDIOMAS {
-  class Idioma {
-    + Id : int
-    + Nombre : string
-    + Traducciones : IList<ITraduccion>
-    + Crear(id : int, nombre : string) : Idioma
-    + AgregarTraduccion(traduccion : ITraduccion) : void
-    + BuscarTraduccion(texto : string) : string
-  }
-  class Palabra {
-    + Id : int
-    + Texto : string
-    + Crear(id : int, texto : string) : Palabra
-  }
-  class Traduccion {
-    + IdIdioma : int
-    + IdPalabra : int
-    + PalabraTraducida : string
-    + Palabra : IPalabra
-    + Crear(idIdioma : int, idPalabra : int, palabra : IPalabra, palabraTraducida : string) : Traduccion
-  }
+package "Negocio - Clientes y Equipos" {
+
+    class Cliente {
+        + Id : int
+        + Nombre : string
+        + Apellido : string
+        + Documento : string
+        + Telefono : string
+        + Email : string
+        + Direccion : string
+        + Observaciones : string
+        + Activo : bool
+        + FechaAlta : DateTime
+        --
+        + {static} CrearNuevo(...) : Cliente
+        + {static} CargarDesdeDB(...) : Cliente
+    }
+
+    class Equipo {
+        + Id : int
+        + IdCliente : int
+        + IdTipoEquipo : int
+        + IdMarca : int
+        + Modelo : string
+        + NumeroSerie : string
+        + Imei : string
+        + Color : string
+        + Observaciones : string
+        + Activo : bool
+        --
+        + {static} CrearNuevo(...) : Equipo
+        + {static} CargarDesdeDB(...) : Equipo
+    }
+
+    class TipoEquipo {
+        + Id : int
+        + Nombre : string
+        + Activo : bool
+        --
+        + {static} CrearNuevo(...) : TipoEquipo
+        + {static} CargarDesdeDB(...) : TipoEquipo
+    }
+
+    class Marca {
+        + Id : int
+        + Nombre : string
+        + Activo : bool
+        --
+        + {static} CrearNuevo(...) : Marca
+        + {static} CargarDesdeDB(...) : Marca
+    }
 }
 
-package "DOMAIN.Features.Permisos" as PKG_PERMISOS {
-  abstract class PermisoComponent {
-    + Id : int
-    + Nombre : string
-    + Codigo : string
-    + EsFamilia : bool
-    + Hijos : IList<IPermisoComponent>
-    + AgregarHijo(permiso : IPermisoComponent) : void
-    + Contiene(permiso : IPermisoComponent) : bool
-    # ValidarDatos(nombre : string) : void
-    # TieneMismoIdentificador(permiso : IPermisoComponent) : bool
-  }
-  class FamiliaPermiso {
-    + EsFamilia : bool
-    + CrearNuevo(nombre : string) : FamiliaPermiso
-    + CargarDesdeDB(id : int, nombre : string) : FamiliaPermiso
-    + AgregarHijo(permiso : IPermisoComponent) : void
-    + Contiene(permiso : IPermisoComponent) : bool
-  }
-  class PermisoSimple {
-    + EsFamilia : bool
-    + CargarDesdeDB(id : int, nombre : string, codigo : string) : PermisoSimple
-    + AgregarHijo(permiso : IPermisoComponent) : void
-  }
-  class CodigosPermiso <<static>> {
-    + UsuariosVer = "USUARIOS_VER"
-    + UsuariosCrear = "USUARIOS_CREAR"
-    + UsuariosEditar = "USUARIOS_EDITAR"
-    + UsuariosEliminar = "USUARIOS_ELIMINAR"
-    + PermisosVer = "PERMISOS_VER"
-    + PermisosCrear = "PERMISOS_CREAR"
-    + PermisosEditar = "PERMISOS_EDITAR"
-    + PermisosEliminar = "PERMISOS_ELIMINAR"
-    + PermisosComponer = "PERMISOS_COMPONER"
-    + PermisosAsignarUsuarios = "PERMISOS_ASIGNAR_USUARIOS"
-    + IdiomasVer = "IDIOMAS_VER"
-    + IdiomasCambiar = "IDIOMAS_CAMBIAR"
-    + IdiomasCrear = "IDIOMAS_CREAR"
-    + IdiomasEditar = "IDIOMAS_EDITAR"
-    + IdiomasEliminar = "IDIOMAS_ELIMINAR"
-    + TraduccionesVer = "TRADUCCIONES_VER"
-    + TraduccionesCrear = "TRADUCCIONES_CREAR"
-    + TraduccionesEditar = "TRADUCCIONES_EDITAR"
-    + TraduccionesEliminar = "TRADUCCIONES_ELIMINAR"
-    + ControlCambiosVer = "CONTROL_CAMBIOS_VER"
-    + ControlCambiosRestaurar = "CONTROL_CAMBIOS_RESTAURAR"
-    + IntegridadRecalcular = "INTEGRIDAD_RECALCULAR"
-    + BitacoraVer = "BITACORA_VER"
-    + ClientesVer = "CLIENTES_VER"
-    + ClientesCrear = "CLIENTES_CREAR"
-    + ClientesEditar = "CLIENTES_EDITAR"
-    + ClientesDesactivar = "CLIENTES_DESACTIVAR"
-    + EquiposVer = "EQUIPOS_VER"
-    + EquiposCrear = "EQUIPOS_CREAR"
-    + EquiposEditar = "EQUIPOS_EDITAR"
-    + EquiposDesactivar = "EQUIPOS_DESACTIVAR"
-    + TiposEquipoVer = "TIPOS_EQUIPO_VER"
-    + TiposEquipoCrear = "TIPOS_EQUIPO_CREAR"
-    + TiposEquipoEditar = "TIPOS_EQUIPO_EDITAR"
-    + TiposEquipoDesactivar = "TIPOS_EQUIPO_DESACTIVAR"
-    + MarcasVer = "MARCAS_VER"
-    + MarcasCrear = "MARCAS_CREAR"
-    + MarcasEditar = "MARCAS_EDITAR"
-    + MarcasDesactivar = "MARCAS_DESACTIVAR"
-    + OrdenesVer = "ORDENES_VER"
-    + OrdenesCrear = "ORDENES_CREAR"
-    + OrdenesEditar = "ORDENES_EDITAR"
-    + OrdenesCancelar = "ORDENES_CANCELAR"
-    + OrdenesEntregar = "ORDENES_ENTREGAR"
-    + PresupuestosDecidir = "PRESUPUESTOS_DECIDIR"
-    + RepuestosVer = "REPUESTOS_VER"
-    + RepuestosCrear = "REPUESTOS_CREAR"
-    + RepuestosEditar = "REPUESTOS_EDITAR"
-    + RepuestosDesactivar = "REPUESTOS_DESACTIVAR"
-    + ProveedoresVer = "PROVEEDORES_VER"
-    + ProveedoresCrear = "PROVEEDORES_CREAR"
-    + ProveedoresEditar = "PROVEEDORES_EDITAR"
-    + ProveedoresDesactivar = "PROVEEDORES_DESACTIVAR"
-    + ComprasVer = "COMPRAS_VER"
-    + ComprasCrear = "COMPRAS_CREAR"
-    + ComprasCancelar = "COMPRAS_CANCELAR"
-    + ReportesVer = "REPORTES_VER"
-  }
+package "Negocio - Orden de Servicio" {
+
+    class OrdenServicio {
+        + Id : int
+        + NumeroOrden : int
+        + IdCliente : int
+        + IdEquipo : int
+        + IdTecnicoAsignado : int?
+        + IdOrdenOrigen : int?
+        + TipoOrden : string
+        + Estado : string
+        + Resultado : string?
+        + FechaIngreso : DateTime
+        + ProblemaInformado : string
+        + EstadoFisicoIngreso : string
+        + AccesoriosIngreso : string
+        + ObservacionesIngreso : string
+        + ObservacionResultado : string?
+        + IdUsuarioAlta : int
+        --
+        + {static} CrearNuevo(...) : OrdenServicio
+        + {static} CrearNuevoGarantia(...) : OrdenServicio
+        + {static} CargarDesdeDB(...) : OrdenServicio
+        + AsignarTecnico(...) : void
+        + ActualizarRecepcion(...) : void
+        + IniciarDiagnostico() : void
+        + MarcarPendientePresupuesto() : void
+        + MarcarPendientePresupuestoDesdeEvaluacion() : void
+        + MarcarEsperandoRespuesta() : void
+        + AutorizarReparacion() : void
+        + MarcarNoReparable(...) : void
+        + MarcarPresupuestoRechazado(...) : void
+        + IniciarReparacion() : void
+        + FinalizarReparacion() : void
+        + SolicitarAdicional() : void
+        + RevertirAPendientePresupuesto() : void
+        + CancelarSolicitudAdicional(...) : void
+        + FinalizarPruebasAprobadas() : void
+        + FinalizarPruebasRequiereRevision() : void
+        + Cancelar(...) : void
+        + Entregar() : void
+        + CancelarEntrega() : void
+        + MarcarPendienteEvaluacionGarantia() : void
+        + AutorizarReparacionGarantia() : void
+        + MarcarGarantiaNoCubierta(...) : void
+        + ReabrirPruebas() : void
+    }
+
+    class Diagnostico {
+        + Id : int
+        + IdOrden : int
+        + IdUsuarioTecnico : int
+        + Fecha : DateTime
+        + Descripcion : string
+        + EsReparable : bool
+        + TiempoEstimadoDias : int?
+        + Observaciones : string
+        --
+        + {static} CrearNuevo(...) : Diagnostico
+        + {static} CargarDesdeDB(...) : Diagnostico
+    }
+
+    class HistorialEstadoOrden {
+        + Id : int
+        + IdOrden : int
+        + EstadoAnterior : string?
+        + EstadoNuevo : string
+        + FechaHora : DateTime
+        + IdUsuario : int
+        + Observacion : string
+        --
+        + {static} CrearNuevo(...) : HistorialEstadoOrden
+        + {static} CargarDesdeDB(...) : HistorialEstadoOrden
+    }
+
+    class Presupuesto {
+        + Id : int
+        + IdOrden : int
+        + Tipo : string
+        + FechaEmision : DateTime
+        + Estado : string
+        + Subtotal : decimal
+        + Descuento : decimal
+        + Total : decimal
+        + DiasGarantia : int
+        + FechaRespuesta : DateTime?
+        + MedioRespuesta : string?
+        + MotivoRechazo : string?
+        + MotivoAnulacion : string?
+        + Observaciones : string
+        --
+        + {static} CrearNuevo(...) : Presupuesto
+        + {static} CrearBorrador(...) : Presupuesto
+        + {static} CargarDesdeDB(...) : Presupuesto
+        + Aprobar(...) : void
+        + Rechazar(...) : void
+        + Anular(...) : void
+    }
+
+    class DetallePresupuesto {
+        + Id : int
+        + IdPresupuesto : int
+        + IdRepuesto : int?
+        + TipoItem : string
+        + Descripcion : string
+        + Cantidad : int
+        + PrecioUnitario : decimal
+        + Subtotal : decimal
+        --
+        + {static} CrearNuevo(...) : DetallePresupuesto
+        + {static} CargarDesdeDB(...) : DetallePresupuesto
+        + ValidarParaGuardar() : void
+    }
+
+    class Entrega {
+        + Id : int
+        + IdOrden : int
+        + FechaEntrega : DateTime
+        + IdUsuario : int
+        + EntregadoA : string
+        + DocumentoReceptor : string
+        + Observaciones : string
+        --
+        + {static} CrearNuevo(...) : Entrega
+        + {static} CargarDesdeDB(...) : Entrega
+    }
 }
 
-package "DOMAIN.Features.Clientes" as PKG_CLIENTES {
-  class Cliente {
-    + Id : int
-    + Nombre : string
-    + Apellido : string
-    + Documento : string
-    + Telefono : string
-    + Email : string
-    + Direccion : string
-    + Observaciones : string
-    + Activo : bool
-    + FechaAlta : DateTime
-    + CrearNuevo(nombre, apellido, documento, telefono, email, direccion, observaciones) : Cliente
-    + CargarDesdeDB(id, nombre, apellido, documento, telefono, email, direccion, observaciones, activo, fechaAlta) : Cliente
-  }
-  class ClienteDocumentoDuplicadoException {
-    + Documento : string
-    + IdClienteExistente : int
-    + NombreExistente : string
-    + ApellidoExistente : string
-    + ActivoExistente : bool
-    + TienePropietario : bool
-    + NombrePropietario : string
-    + ClienteDocumentoDuplicadoException(documento : string)
-    + ClienteDocumentoDuplicadoException(idClienteExistente, nombreExistente, apellidoExistente, documento, activoExistente)
-  }
+package "Negocio - Reparación e Inventario" {
+
+    class Reparacion {
+        + Id : int
+        + IdOrden : int
+        + NumeroIntervencion : int
+        + IdUsuarioTecnico : int
+        + FechaInicio : DateTime
+        + FechaFin : DateTime?
+        + TrabajoRealizado : string?
+        + Observaciones : string
+        --
+        + {static} CrearNuevo(...) : Reparacion
+        + {static} CargarDesdeDB(...) : Reparacion
+        + Finalizar(...) : void
+    }
+
+    class ReparacionRepuesto {
+        + IdConsumo : int
+        + IdReparacion : int
+        + IdRepuesto : int
+        + Cantidad : int
+        + CostoUnitario : decimal
+        --
+        + {static} CrearNuevo(...) : ReparacionRepuesto
+        + {static} CargarDesdeDB(...) : ReparacionRepuesto
+    }
+
+    class Prueba {
+        + Id : int
+        + IdReparacion : int
+        + IdUsuarioTecnico : int
+        + Fecha : DateTime
+        + Descripcion : string
+        + Resultado : string
+        + Observaciones : string
+        + MotivoAnulacion : string?
+        + FechaAnulacion : DateTime?
+        + IdUsuarioAnulacion : int?
+        --
+        + {static} CrearNuevo(...) : Prueba
+        + {static} CargarDesdeDB(...) : Prueba
+        + Anular(...) : void
+    }
+
+    class Repuesto {
+        + Id : int
+        + Codigo : string
+        + Descripcion : string
+        + StockActual : int
+        + StockMinimo : int
+        + CostoActual : decimal
+        + PrecioReferencia : decimal
+        + Activo : bool
+        --
+        + {static} CrearNuevo(...) : Repuesto
+        + {static} CargarDesdeDB(...) : Repuesto
+    }
+
+    class MovimientoStock {
+        + Id : int
+        + IdRepuesto : int
+        + Fecha : DateTime
+        + Tipo : string
+        + Cantidad : int
+        + StockAnterior : int
+        + StockPosterior : int
+        + IdUsuario : int
+        + IdCompra : int?
+        + IdReparacion : int?
+        + Observacion : string
+        --
+        + {static} CrearNuevo(...) : MovimientoStock
+        + {static} CargarDesdeDB(...) : MovimientoStock
+    }
 }
 
-package "DOMAIN.Features.Equipos" as PKG_EQUIPOS {
-  class Equipo {
-    + Id : int
-    + IdCliente : int
-    + IdTipoEquipo : int
-    + IdMarca : int
-    + Modelo : string
-    + NumeroSerie : string
-    + Imei : string
-    + Color : string
-    + Observaciones : string
-    + Activo : bool
-    + CrearNuevo(idCliente, idTipoEquipo, idMarca, modelo, numeroSerie, imei, color, observaciones) : Equipo
-    + CargarDesdeDB(id, idCliente, idTipoEquipo, idMarca, modelo, numeroSerie, imei, color, observaciones, activo) : Equipo
-  }
+package "Negocio - Compras y Garantías" {
+
+    class Proveedor {
+        + Id : int
+        + RazonSocial : string
+        + Cuit : string
+        + Telefono : string
+        + Email : string
+        + Direccion : string
+        + Contacto : string
+        + Activo : bool
+        --
+        + {static} CrearNuevo(...) : Proveedor
+        + {static} CargarDesdeDB(...) : Proveedor
+    }
+
+    class Compra {
+        + Id : int
+        + IdProveedor : int
+        + Fecha : DateTime
+        + Estado : string
+        + Total : decimal
+        + IdUsuario : int
+        + Observaciones : string
+        + MotivoAnulacion : string?
+        --
+        + {static} CrearBorrador(...) : Compra
+        + {static} CargarDesdeDB(...) : Compra
+        + CancelarBorrador() : void
+        + AnularConfirmada(...) : void
+    }
+
+    class DetalleCompra {
+        + Id : int
+        + IdCompra : int
+        + IdRepuesto : int
+        + Cantidad : int
+        + CostoUnitario : decimal
+        + Subtotal : decimal
+        --
+        + {static} CrearNuevo(...) : DetalleCompra
+        + {static} CargarDesdeDB(...) : DetalleCompra
+    }
+
+    class Garantia {
+        + Id : int
+        + IdOrdenOriginal : int
+        + FechaInicio : DateTime
+        + FechaFin : DateTime
+        + Observaciones : string
+        + Anulada : bool
+        --
+        + {static} CrearNuevo(...) : Garantia
+        + {static} CargarDesdeDB(...) : Garantia
+    }
+
+    class EvaluacionGarantia {
+        + Id : int
+        + IdOrdenReingreso : int
+        + IdGarantia : int
+        + Estado : string
+        + Fecha : DateTime
+        + IdUsuario : int
+        + Motivo : string
+        + Observaciones : string
+        --
+        + {static} CrearPendiente(...) : EvaluacionGarantia
+        + {static} CargarDesdeDB(...) : EvaluacionGarantia
+    }
 }
 
-package "DOMAIN.Features.TiposEquipo" as PKG_TIPOSEQUIPO {
-  class TipoEquipo {
-    + Id : int
-    + Nombre : string
-    + Activo : bool
-    + CrearNuevo(nombre : string) : TipoEquipo
-    + CargarDesdeDB(id : int, nombre : string, activo : bool) : TipoEquipo
-  }
+package "Aspectos técnicos - Seguridad y permisos" {
+
+    class Usuario {
+        + Id : int
+        + Username : string
+        + Password : string
+        + Activo : bool
+        + DVH : string
+        --
+        + {static} CrearNuevo(...) : Usuario
+        + {static} CargarDesdeDB(...) : Usuario
+        + Desactivar() : void
+        + Reactivar() : void
+        + SetDVH(...) : void
+    }
+
+    class UserDVH <<DTO>> {
+        + Id : int
+        + DVH : string
+    }
+
+    abstract class PermisoComponent {
+        + Id : int
+        + Nombre : string
+        + Codigo : string
+        + {abstract} EsFamilia : bool
+        + Hijos : IList<IPermisoComponent>
+        --
+        + Contiene(...) : bool
+        + {abstract} AgregarHijo(...) : void
+    }
+
+    class PermisoSimple {
+        + EsFamilia : bool
+        + {static} CargarDesdeDB(...) : PermisoSimple
+        + AgregarHijo(...) : void
+    }
+
+    class FamiliaPermiso {
+        + EsFamilia : bool
+        + {static} CrearNuevo(...) : FamiliaPermiso
+        + {static} CargarDesdeDB(...) : FamiliaPermiso
+        + AgregarHijo(...) : void
+        + Contiene(...) : bool
+    }
+
+    interface IUsuario
+    interface IPermisoComponent
 }
 
-package "DOMAIN.Features.Marcas" as PKG_MARCAS {
-  class Marca {
-    + Id : int
-    + Nombre : string
-    + Activo : bool
-    + CrearNuevo(nombre : string) : Marca
-    + CargarDesdeDB(id : int, nombre : string, activo : bool) : Marca
-  }
+package "Aspectos técnicos - Idiomas y auditoría" {
+
+    class Idioma {
+        + Id : int
+        + Nombre : string
+        + Traducciones : IList<ITraduccion>
+        --
+        + {static} Crear(...) : Idioma
+        + AgregarTraduccion(...) : void
+        + BuscarTraduccion(...) : string
+    }
+
+    class Palabra {
+        + Id : int
+        + Texto : string
+        --
+        + {static} Crear(...) : Palabra
+    }
+
+    class Traduccion {
+        + IdIdioma : int
+        + IdPalabra : int
+        + PalabraTraducida : string
+        + Palabra : IPalabra
+        --
+        + {static} Crear(...) : Traduccion
+    }
+
+    class EntradaBitacora {
+        + Id : int
+        + Fecha : DateTime
+        + Usuario : string
+        + Actividad : string
+        + Detalle : string
+        + TipoActividad : string
+        --
+        + {static} Crear(...) : EntradaBitacora
+    }
+
+    class ControlCambio {
+        + Id : int
+        + TablaAfectada : string
+        + IdIdioma : int
+        + IdPalabra : int
+        + ClaveRegistro : string
+        + CampoModificado : string
+        + ValorAnterior : string
+        + ValorNuevo : string
+        + UsuarioModifico : string
+        + FechaCambio : DateTime
+        + TipoCambio : string
+        + NombreIdioma : string
+        --
+        + {static} Crear(...) : ControlCambio
+    }
+
+    interface IIdioma
+    interface IPalabra
+    interface ITraduccion
 }
 
-package "DOMAIN.Features.Proveedores" as PKG_PROVEEDORES {
-  class Proveedor {
-    + Id : int
-    + RazonSocial : string
-    + Cuit : string
-    + Telefono : string
-    + Email : string
-    + Direccion : string
-    + Contacto : string
-    + Activo : bool
-    + CrearNuevo(razonSocial, cuit, telefono, email, direccion, contacto) : Proveedor
-    + CargarDesdeDB(id, razonSocial, cuit, telefono, email, direccion, contacto, activo) : Proveedor
-  }
+package "Aspectos técnicos - Excepciones" {
+
+    class ReglaNegocioException <<Exception>>
+    class UsuarioYaExisteException <<Exception>>
+    class UsuarioNoExisteException <<Exception>>
+
+    class ClienteDocumentoDuplicadoException <<Exception>> {
+        + Documento : string
+        + IdClienteExistente : int
+        + NombreExistente : string
+        + ApellidoExistente : string
+        + ActivoExistente : bool
+        + TienePropietario : bool
+        + NombrePropietario : string
+    }
+
+    class DetallePresupuestoInvalidoException <<Exception>> {
+        + ClaveMensaje : string
+    }
+
+    class OrdenOriginalSoloConsultaException <<Exception>> {
+        + ClaveMensaje : string
+    }
+
+    class ReingresoGarantiaAbiertoException <<Exception>> {
+        + ClaveMensaje : string
+    }
+
+    class ReingresoGarantiaOrigenNoDisponibleException <<Exception>> {
+        + ClaveMensaje : string
+    }
 }
 
-package "DOMAIN.Features.Usuarios" as PKG_USUARIOS {
-  class Usuario {
-    + Id : int
-    + Username : string
-    + Password : string
-    + Activo : bool
-    + DVH : string
-    + CrearNuevo(userName : string, password : string) : Usuario
-    + CargarDesdeDB(id, userName, password, dvh, activo) : Usuario
-    + Desactivar() : void
-    + Reactivar() : void
-    + SetDVH(dvh : string) : void
-  }
-  class UserDVH {
-    + Id : int
-    + DVH : string
-  }
-  class UsuarioNoExisteException {
-    + UsuarioNoExisteException()
-  }
-  class UsuarioYaExisteException {
-    + UsuarioYaExisteException()
-  }
+package "Constantes del dominio" {
+
+    class EstadoOrdenServicio <<static>>
+    class ResultadoOrdenServicio <<static>>
+    class TipoOrden <<static>>
+    class EstadoPresupuesto <<static>>
+    class TipoPresupuesto <<static>>
+    class TipoItemPresupuesto <<static>>
+    class ResultadoPrueba <<static>>
+    class TipoMovimientoStock <<static>>
+    class EstadoCompra <<static>>
+    class EstadoEvaluacionGarantia <<static>>
+    class CodigosPermiso <<static>>
 }
 
-package "DOMAIN.Features.Ordenes" as PKG_ORDENES {
-  class OrdenServicio {
-    + Id : int
-    + NumeroOrden : int
-    + IdCliente : int
-    + IdEquipo : int
-    + IdTecnicoAsignado : int?
-    + IdOrdenOrigen : int?
-    + TipoOrden : string
-    + Estado : string
-    + Resultado : string
-    + FechaIngreso : DateTime
-    + ProblemaInformado : string
-    + EstadoFisicoIngreso : string
-    + AccesoriosIngreso : string
-    + ObservacionesIngreso : string
-    + ObservacionResultado : string
-    + IdUsuarioAlta : int
-    + CrearNuevo(idCliente, idEquipo, problema, estadoFisico, accesorios, observacionesIngreso, idUsuarioAlta) : OrdenServicio
-    + CrearNuevoGarantia(idCliente, idEquipo, idOrdenOrigen, problema, estadoFisico, accesorios, observacionesIngreso, idUsuarioAlta) : OrdenServicio
-    + CargarDesdeDB(id, numeroOrden, idCliente, idEquipo, idTecnicoAsignado, idOrdenOrigen, tipoOrden, estado, resultado, fechaIngreso, problemaInformado, estadoFisicoIngreso, accesoriosIngreso, observacionesIngreso, observacionResultado, idUsuarioAlta) : OrdenServicio
-    + AsignarTecnico(idTecnico : int) : void
-    + ActualizarRecepcion(problema, estadoFisico, accesorios, observacionesIngreso) : void
-    + IniciarDiagnostico() : void
-    + MarcarPendientePresupuesto() : void
-    + MarcarPendientePresupuestoDesdeEvaluacion() : void
-    + MarcarEsperandoRespuesta() : void
-    + AutorizarReparacion() : void
-    + MarcarNoReparable(motivo : string) : void
-    + MarcarPresupuestoRechazado(motivo : string) : void
-    + IniciarReparacion() : void
-    + FinalizarReparacion() : void
-    + SolicitarAdicional() : void
-    + RevertirAPendientePresupuesto() : void
-    + CancelarSolicitudAdicional(estadoOrigen : string) : void
-    + FinalizarPruebasAprobadas() : void
-    + FinalizarPruebasRequiereRevision() : void
-    + Cancelar(motivo : string) : void
-    + Entregar() : void
-    + CancelarEntrega() : void
-    + MarcarPendienteEvaluacionGarantia() : void
-    + AutorizarReparacionGarantia() : void
-    + MarcarGarantiaNoCubierta(motivo : string) : void
-    + ReabrirPruebas() : void
-  }
-  class OrdenOriginalSoloConsultaException {
-    + ClaveMensaje : string
-    + OrdenOriginalSoloConsultaException(claveMensaje : string, mensaje : string)
-  }
-  class EstadoOrdenServicio <<static>> {
-    + Recibido = "Recibido"
-    + EnDiagnostico = "EnDiagnostico"
-    + PendientePresupuesto = "PendientePresupuesto"
-    + EsperandoRespuesta = "EsperandoRespuesta"
-    + AutorizadoReparacion = "AutorizadoReparacion"
-    + EnReparacion = "EnReparacion"
-    + EnPruebas = "EnPruebas"
-    + PendienteEvaluacionGarantia = "PendienteEvaluacionGarantia"
-    + ListoRetiro = "ListoRetiro"
-    + Entregado = "Entregado"
-  }
-  class ResultadoOrdenServicio <<static>> {
-    + Reparado = "Reparado"
-    + NoReparable = "NoReparable"
-    + PresupuestoRechazado = "PresupuestoRechazado"
-    + Cancelado = "Cancelado"
-    + GarantiaNoCubierta = "GarantiaNoCubierta"
-  }
-  class TipoOrden <<static>> {
-    + Normal = "Normal"
-    + Garantia = "Garantia"
-  }
-  class EstadoPresupuesto <<static>> {
-    + Borrador = "Borrador"
-    + Pendiente = "Pendiente"
-    + Aprobado = "Aprobado"
-    + Rechazado = "Rechazado"
-    + Anulado = "Anulado"
-  }
-  class TipoItemPresupuesto <<static>> {
-    + ManoObra = "ManoObra"
-    + Servicio = "Servicio"
-    + Repuesto = "Repuesto"
-  }
-  class TipoPresupuesto <<static>> {
-    + Original = "Original"
-    + Adicional = "Adicional"
-  }
-  class HistorialEstadoOrden {
-    + Id : int
-    + IdOrden : int
-    + EstadoAnterior : string
-    + EstadoNuevo : string
-    + FechaHora : DateTime
-    + IdUsuario : int
-    + Observacion : string
-    + CrearNuevo(idOrden, estadoAnterior, estadoNuevo, idUsuario, observacion) : HistorialEstadoOrden
-    + CargarDesdeDB(id, idOrden, estadoAnterior, estadoNuevo, fechaHora, idUsuario, observacion) : HistorialEstadoOrden
-  }
-  class Diagnostico {
-    + Id : int
-    + IdOrden : int
-    + IdUsuarioTecnico : int
-    + Fecha : DateTime
-    + Descripcion : string
-    + EsReparable : bool
-    + TiempoEstimadoDias : int?
-    + Observaciones : string
-    + CrearNuevo(idOrden, idUsuarioTecnico, descripcion, esReparable, tiempoEstimadoDias, observaciones) : Diagnostico
-    + CargarDesdeDB(id, idOrden, idUsuarioTecnico, fecha, descripcion, esReparable, tiempoEstimadoDias, observaciones) : Diagnostico
-  }
-  class Presupuesto {
-    + Id : int
-    + IdOrden : int
-    + Tipo : string
-    + FechaEmision : DateTime
-    + Estado : string
-    + Subtotal : decimal
-    + Descuento : decimal
-    + Total : decimal
-    + DiasGarantia : int
-    + FechaRespuesta : DateTime?
-    + MedioRespuesta : string
-    + MotivoRechazo : string
-    + MotivoAnulacion : string
-    + Observaciones : string
-    + CrearNuevo(idOrden, subtotal, descuento, diasGarantia, observaciones, tipo) : Presupuesto
-    + CrearBorrador(idOrden, subtotal, descuento, diasGarantia, observaciones, tipo) : Presupuesto
-    + CargarDesdeDB(id, idOrden, tipo, fechaEmision, estado, subtotal, descuento, total, diasGarantia, fechaRespuesta, medioRespuesta, motivoRechazo, observaciones, motivoAnulacion) : Presupuesto
-    + Aprobar(medioRespuesta : string, observaciones : string) : void
-    + Rechazar(motivo : string, medioRespuesta : string, observaciones : string) : void
-    + Anular(motivo : string) : void
-  }
-  class DetallePresupuesto {
-    + Id : int
-    + IdPresupuesto : int
-    + IdRepuesto : int?
-    + TipoItem : string
-    + Descripcion : string
-    + Cantidad : int
-    + PrecioUnitario : decimal
-    + Subtotal : decimal
-    + CrearNuevo(idPresupuesto, tipoItem, descripcion, cantidad, precioUnitario, idRepuesto) : DetallePresupuesto
-    + ValidarParaGuardar() : void
-    + CargarDesdeDB(id, idPresupuesto, idRepuesto, tipoItem, descripcion, cantidad, precioUnitario, subtotal) : DetallePresupuesto
-    - ImporteMaximoRepresentable = 9999999999999999.99
-  }
-  class DetallePresupuestoInvalidoException {
-    + ClaveMensaje : string
-    + DetallePresupuestoInvalidoException(claveMensaje : string, mensaje : string)
-  }
-  class Entrega {
-    + Id : int
-    + IdOrden : int
-    + FechaEntrega : DateTime
-    + IdUsuario : int
-    + EntregadoA : string
-    + DocumentoReceptor : string
-    + Observaciones : string
-    + CrearNuevo(idOrden, idUsuario, entregadoA, documentoReceptor, observaciones) : Entrega
-    + CargarDesdeDB(id, idOrden, fechaEntrega, idUsuario, entregadoA, documentoReceptor, observaciones) : Entrega
-  }
-}
+' Asociaciones conceptuales por identificadores.
+' No representan propiedades de navegacion ni composicion.
 
-package "DOMAIN.Features.Repuestos" as PKG_REPUESTOS {
-  class Repuesto {
-    + Id : int
-    + Codigo : string
-    + Descripcion : string
-    + StockActual : int
-    + StockMinimo : int
-    + CostoActual : decimal
-    + PrecioReferencia : decimal
-    + Activo : bool
-    + CrearNuevo(codigo, descripcion, stockInicial, stockMinimo, costoActual, precioReferencia) : Repuesto
-    + CargarDesdeDB(id, codigo, descripcion, stockActual, stockMinimo, costoActual, precioReferencia, activo) : Repuesto
-  }
-  class MovimientoStock {
-    + Id : int
-    + IdRepuesto : int
-    + Fecha : DateTime
-    + Tipo : string
-    + Cantidad : int
-    + StockAnterior : int
-    + StockPosterior : int
-    + IdUsuario : int
-    + IdCompra : int?
-    + IdReparacion : int?
-    + Observacion : string
-    + CrearNuevo(idRepuesto, tipo, cantidad, stockAnterior, stockPosterior, idUsuario, idCompra, idReparacion, observacion) : MovimientoStock
-    + CargarDesdeDB(id, idRepuesto, fecha, tipo, cantidad, stockAnterior, stockPosterior, idUsuario, idCompra, idReparacion, observacion) : MovimientoStock
-  }
-  class TipoMovimientoStock <<static>> {
-    + Compra = "Compra"
-    + ConsumoReparacion = "ConsumoReparacion"
-    + DevolucionConsumo = "DevolucionConsumo"
-    + AjustePositivo = "AjustePositivo"
-    + AjusteNegativo = "AjusteNegativo"
-  }
-}
+Cliente "1" -- "0..*" Equipo
+TipoEquipo "1" -- "0..*" Equipo
+Marca "1" -- "0..*" Equipo
 
-package "DOMAIN.Features.Compras" as PKG_COMPRAS {
-  class Compra {
-    + Id : int
-    + IdProveedor : int
-    + Fecha : DateTime
-    + Estado : string
-    + Total : decimal
-    + IdUsuario : int
-    + Observaciones : string
-    + MotivoAnulacion : string
-    + CrearBorrador(idProveedor : int, idUsuario : int, observaciones : string) : Compra
-    + CancelarBorrador() : void
-    + AnularConfirmada(motivo : string) : void
-    + CargarDesdeDB(id, idProveedor, fecha, estado, total, idUsuario, observaciones, motivoAnulacion) : Compra
-  }
-  class DetalleCompra {
-    + Id : int
-    + IdCompra : int
-    + IdRepuesto : int
-    + Cantidad : int
-    + CostoUnitario : decimal
-    + Subtotal : decimal
-    + CrearNuevo(idCompra : int, idRepuesto : int, cantidad : int, costoUnitario : decimal) : DetalleCompra
-    + CargarDesdeDB(id, idCompra, idRepuesto, cantidad, costoUnitario, subtotal) : DetalleCompra
-  }
-  class EstadoCompra <<static>> {
-    + Borrador = "Borrador"
-    + Confirmada = "Confirmada"
-    + Cancelada = "Cancelada"
-  }
-}
+Cliente "1" -- "0..*" OrdenServicio
+Equipo "1" -- "0..*" OrdenServicio
 
-package "DOMAIN.Features.Garantias" as PKG_GARANTIAS {
-  class Garantia {
-    + Id : int
-    + IdOrdenOriginal : int
-    + FechaInicio : DateTime
-    + FechaFin : DateTime
-    + Observaciones : string
-    + Anulada : bool
-    + CrearNuevo(idOrdenOriginal : int, fechaInicio : DateTime, fechaFin : DateTime, observaciones : string) : Garantia
-    + CargarDesdeDB(id, idOrdenOriginal, fechaInicio, fechaFin, observaciones, anulada) : Garantia
-  }
-  class ReingresoGarantiaAbiertoException {
-    + ClaveMensaje : string
-    + ReingresoGarantiaAbiertoException(claveMensaje : string, mensaje : string)
-  }
-  class ReingresoGarantiaOrigenNoDisponibleException {
-    + ClaveMensaje : string
-    + ReingresoGarantiaOrigenNoDisponibleException(claveMensaje : string, mensaje : string)
-  }
-  class EvaluacionGarantia {
-    + Id : int
-    + IdOrdenReingreso : int
-    + IdGarantia : int
-    + Estado : string
-    + Fecha : DateTime
-    + IdUsuario : int
-    + Motivo : string
-    + Observaciones : string
-    + CrearPendiente(idOrdenReingreso : int, idGarantia : int, idUsuario : int) : EvaluacionGarantia
-    + CargarDesdeDB(id, idOrdenReingreso, idGarantia, estado, fecha, idUsuario, motivo, observaciones) : EvaluacionGarantia
-  }
-  class EstadoEvaluacionGarantia <<static>> {
-    + Pendiente = "Pendiente"
-    + Aceptada = "Aceptada"
-    + Rechazada = "Rechazada"
-  }
-}
+' Una orden puede tener 0..1 origen; un origen puede tener 0..* reingresos.
+' Solo se permite un reingreso abierto por origen a la vez.
+' Con cualquier reingreso creado, el origen queda de solo consulta.
+' Estas restricciones se aplican en APPLICATION/REPOSITORY.
+OrdenServicio "0..*" --> "0..1" OrdenServicio : origen
 
-package "DOMAIN.Features.Reparaciones" as PKG_REPARACIONES {
-  class Reparacion {
-    + Id : int
-    + IdOrden : int
-    + NumeroIntervencion : int
-    + IdUsuarioTecnico : int
-    + FechaInicio : DateTime
-    + FechaFin : DateTime?
-    + TrabajoRealizado : string
-    + Observaciones : string
-    + CrearNuevo(idOrden : int, numeroIntervencion : int, idUsuarioTecnico : int) : Reparacion
-    + CargarDesdeDB(id, idOrden, numeroIntervencion, idUsuarioTecnico, fechaInicio, fechaFin, trabajoRealizado, observaciones) : Reparacion
-    + Finalizar(trabajoRealizado : string, observaciones : string) : void
-  }
-  class ReparacionRepuesto {
-    + IdConsumo : int
-    + IdReparacion : int
-    + IdRepuesto : int
-    + Cantidad : int
-    + CostoUnitario : decimal
-    + CrearNuevo(idReparacion : int, idRepuesto : int, cantidad : int, costoUnitario : decimal) : ReparacionRepuesto
-    + CargarDesdeDB(idReparacion, idRepuesto, cantidad, costoUnitario) : ReparacionRepuesto
-  }
-  class Prueba {
-    + Id : int
-    + IdReparacion : int
-    + IdUsuarioTecnico : int
-    + Fecha : DateTime
-    + Descripcion : string
-    + Resultado : string
-    + Observaciones : string
-    + MotivoAnulacion : string
-    + FechaAnulacion : DateTime?
-    + IdUsuarioAnulacion : int?
-    + CrearNuevo(idReparacion, idUsuarioTecnico, descripcion, resultado, observaciones) : Prueba
-    + CargarDesdeDB(id, idReparacion, idUsuarioTecnico, fecha, descripcion, resultado, observaciones, motivoAnulacion, fechaAnulacion, idUsuarioAnulacion) : Prueba
-    + Anular(motivo : string, idUsuario : int) : void
-  }
-  class ResultadoPrueba <<static>> {
-    + Aprobada = "Aprobada"
-    + RequiereRevision = "RequiereRevision"
-    + Anulada = "Anulada"
-  }
-}
+OrdenServicio "1" -- "0..1" Diagnostico
+OrdenServicio "1" -- "1..*" HistorialEstadoOrden
+OrdenServicio "1" -- "0..*" Presupuesto
+Presupuesto "1" -- "0..*" DetallePresupuesto
+OrdenServicio "1" -- "0..1" Entrega
 
-package "DOMAIN.Features.ControlCambios" as PKG_CONTROLCAMBIOS {
-  class ControlCambio {
-    + Id : int
-    + TablaAfectada : string
-    + IdIdioma : int
-    + IdPalabra : int
-    + ClaveRegistro : string
-    + CampoModificado : string
-    + ValorAnterior : string
-    + ValorNuevo : string
-    + UsuarioModifico : string
-    + FechaCambio : DateTime
-    + TipoCambio : string
-    + NombreIdioma : string
-    + Crear(id, tablaAfectada, idIdioma, idPalabra, claveRegistro, campoModificado, valorAnterior, valorNuevo, usuarioModifico, fechaCambio, tipoCambio, nombreIdioma) : ControlCambio
-  }
-}
+' Referencia comercial opcional: cotizar no reserva ni consume stock.
+Repuesto "0..1" -- "0..*" DetallePresupuesto
 
-package "DOMAIN.Features.Bitacora" as PKG_BITACORA {
-  class EntradaBitacora {
-    + Id : int
-    + Fecha : DateTime
-    + Usuario : string
-    + Actividad : string
-    + Detalle : string
-    + TipoActividad : string
-    + Crear(id, fecha, usuario, actividad, detalle, tipoActividad) : EntradaBitacora
-  }
-}
+OrdenServicio "1" -- "0..*" Reparacion
+Reparacion "1" -- "0..*" Prueba
+Reparacion "1" -- "0..*" ReparacionRepuesto
+Repuesto "1" -- "0..*" ReparacionRepuesto
+Repuesto "1" -- "0..*" MovimientoStock
 
-package "DOMAIN.Exceptions" as PKG_EXCEPCIONES {
-  class ReglaNegocioException {
-    + ReglaNegocioException(mensaje : string)
-  }
-}
+Proveedor "1" -- "0..*" Compra
+Compra "1" -- "0..*" DetalleCompra
+Repuesto "1" -- "0..*" DetalleCompra
 
-' --- Relaciones dentro del dominio ---
-Idioma "1" o-- "0..*" Traduccion : Traducciones
-Traduccion --> IPalabra : Palabra
-PermisoComponent <|-- FamiliaPermiso
+' La cobertura es unica por orden original; los reingresos son otras ordenes.
+OrdenServicio "1" -- "0..1" Garantia
+Garantia "1" -- "0..*" EvaluacionGarantia
+OrdenServicio "1" -- "0..1" EvaluacionGarantia
+
+IUsuario <|.. Usuario
+IPermisoComponent <|.. PermisoComponent
 PermisoComponent <|-- PermisoSimple
-' PermisoComponent declara Hijos (IList<IPermisoComponent>) en la clase base: el compuesto es el
-' propio PermisoComponent, no la subclase FamiliaPermiso, y la pertenencia no es exclusiva.
-PermisoComponent "0..*" --> "0..*" PermisoComponent : Hijos (lista real; no exclusiva)
+PermisoComponent <|-- FamiliaPermiso
+
+' Un componente puede ser compartido por varias familias.
+FamiliaPermiso "0..*" --> "0..*" IPermisoComponent
+
+IIdioma <|.. Idioma
+IPalabra <|.. Palabra
+ITraduccion <|.. Traduccion
+Idioma "1" --> "0..*" ITraduccion
+Traduccion --> IPalabra
+
+Exception <|-- ReglaNegocioException
+Exception <|-- UsuarioYaExisteException
+Exception <|-- UsuarioNoExisteException
+
 ReglaNegocioException <|-- ClienteDocumentoDuplicadoException
-ReglaNegocioException <|-- OrdenOriginalSoloConsultaException
 ReglaNegocioException <|-- DetallePresupuestoInvalidoException
+ReglaNegocioException <|-- OrdenOriginalSoloConsultaException
 ReglaNegocioException <|-- ReingresoGarantiaAbiertoException
 ReglaNegocioException <|-- ReingresoGarantiaOrigenNoDisponibleException
-' --- Relaciones entre agregados: identidad por clave foranea, sin navegacion de objeto ---
-OrdenServicio "1" .. "0..*" HistorialEstadoOrden : FK conceptual id_orden
-OrdenServicio "1" .. "0..1" Diagnostico : FK conceptual id_orden (UX_Diagnostico_Orden)
-OrdenServicio "1" .. "0..*" Presupuesto : FK conceptual id_orden
-Presupuesto "1" .. "1..*" DetallePresupuesto : FK conceptual id_presupuesto (presupuesto emitido)
-OrdenServicio "1" .. "0..1" Entrega : FK conceptual id_orden (UX_Entrega_Orden)
-OrdenServicio "1" .. "0..*" Reparacion : FK conceptual id_orden
-Reparacion "1" .. "0..*" ReparacionRepuesto : FK conceptual id_reparacion
-Reparacion "1" .. "0..*" Prueba : FK conceptual id_reparacion
-Repuesto "1" .. "0..*" MovimientoStock : FK conceptual id_repuesto
-Compra "1" .. "0..*" DetalleCompra : FK conceptual id_compra (0..* en el ciclo de vida del documento)
-Garantia "1" .. "0..*" EvaluacionGarantia : FK conceptual id_garantia (una por reingreso)
-OrdenServicio "1" .. "0..1" Garantia : FK conceptual id_orden_original (cobertura 0..1)
-OrdenServicio "0..1" .. "0..*" OrdenServicio : FK conceptual id_orden_origen (reingresos)
 
-' --- Claves foraneas conceptuales: identidad entre agregados, sin navegacion C# ---
-Cliente "1" .. "0..*" Equipo : FK conceptual id_cliente
-Cliente "1" .. "0..*" OrdenServicio : FK conceptual id_cliente
-Equipo "1" .. "0..*" OrdenServicio : FK conceptual id_equipo
-TipoEquipo "1" .. "0..*" Equipo : FK conceptual id_tipo_equipo
-Marca "1" .. "0..*" Equipo : FK conceptual id_marca
-Usuario "1" .. "0..*" OrdenServicio : FK conceptual id_usuario_alta
-Usuario "1" .. "0..*" Reparacion : FK conceptual id_usuario_tecnico
-Usuario "1" .. "0..*" Prueba : FK conceptual id_usuario_tecnico
-Proveedor "1" .. "0..*" Compra : FK conceptual id_proveedor
-Repuesto "1" .. "0..*" DetalleCompra : FK conceptual id_repuesto
-Repuesto "0..1" .. "0..*" DetallePresupuesto : FK conceptual id_repuesto (nulo en items que no son repuesto)
-Repuesto "1" .. "0..1" DetallePresupuesto : FK conceptual id_repuesto (exactamente uno por item Repuesto)
-Repuesto "1" .. "0..*" ReparacionRepuesto : FK conceptual id_repuesto
-Usuario "1" .. "0..*" Entrega : FK conceptual id_usuario
-
-note bottom of ClienteDocumentoDuplicadoException
-  La unicidad del documento la impone el indice UX_Clientes_Documento
-  y la validacion del repositorio; la excepcion transporta al propietario.
-end note
-
-note bottom of PermisoComponent
-  El compuesto es PermisoComponent y su lista Hijos es real (IList<IPermisoComponent>).
-  Las familias aceptan hijos; los permisos simples siempre los rechazan. La misma familia o
-  permiso puede aparecer en ramas distintas: AgregarHijo solo impide repetirlo en el mismo nivel.
-end note
-
-note bottom of OrdenServicio
-  Auto-relacion por id_orden_origen: es NULL en las ordenes de taller y obligatorio en un
-  reingreso de garantia (CrearNuevoGarantia). La cobertura de garantia es 0..1 por orden
-  original; los reingresos son 0..N visitas y solo una puede estar abierta a la vez, de modo
-  que "un unico hijo abierto" es una regla condicional y no una cardinalidad de 0..1 de por vida.
-end note
-
-note bottom of OrdenOriginalSoloConsultaException
-  Existencia de cualquier hijo con tipo_orden = Garantia:
-  sin filtro de estado, cobertura ni vigencia. La inspeccion y el alta
-  de nuevos reingresos siguen permitidas.
-end note
+OrdenServicio ..> EstadoOrdenServicio
+OrdenServicio ..> ResultadoOrdenServicio
+OrdenServicio ..> TipoOrden
+Presupuesto ..> EstadoPresupuesto
+Presupuesto ..> TipoPresupuesto
+DetallePresupuesto ..> TipoItemPresupuesto
+Prueba ..> ResultadoPrueba
+MovimientoStock ..> TipoMovimientoStock
+Compra ..> EstadoCompra
+EvaluacionGarantia ..> EstadoEvaluacionGarantia
 
 @enduml
