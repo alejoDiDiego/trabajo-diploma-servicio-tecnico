@@ -1,0 +1,112 @@
+@startuml
+title N02-15 - Clases de información de bitácora e historial
+
+left to right direction
+skinparam classAttributeIconSize 0
+
+class EntradaBitacora {
+    + Id : int
+    + Fecha : DateTime
+    + Usuario : string
+    + Actividad : string
+    + Detalle : string
+    + TipoActividad : string
+    --
+    - EntradaBitacora()
+    + {static} Crear(id : int, fecha : DateTime, usuario : string, actividad : string, detalle : string, tipoActividad : string) : EntradaBitacora
+}
+
+class HistorialEstadoOrden {
+    + Id : int
+    + IdOrden : int
+    + EstadoAnterior : string
+    + EstadoNuevo : string
+    + FechaHora : DateTime
+    + IdUsuario : int
+    + Observacion : string
+    --
+    - HistorialEstadoOrden()
+    + {static} CrearNuevo(idOrden : int, estadoAnterior : string, estadoNuevo : string, idUsuario : int, observacion : string) : HistorialEstadoOrden
+    + {static} CargarDesdeDB(id : int, idOrden : int, estadoAnterior : string, estadoNuevo : string, fechaHora : DateTime, idUsuario : int, observacion : string) : HistorialEstadoOrden
+}
+
+class OrdenServicio {
+    + Id : int
+    + NumeroOrden : int
+    + IdCliente : int
+    + IdEquipo : int
+    + IdTecnicoAsignado : int?
+    + IdOrdenOrigen : int?
+    + TipoOrden : string
+    + Estado : string
+    + Resultado : string
+    + FechaIngreso : DateTime
+    + ProblemaInformado : string
+    + EstadoFisicoIngreso : string
+    + AccesoriosIngreso : string
+    + ObservacionesIngreso : string
+    + ObservacionResultado : string
+    + IdUsuarioAlta : int
+    --
+    - OrdenServicio()
+    + {static} CrearNuevo(idCliente : int, idEquipo : int, problema : string, estadoFisico : string, accesorios : string, observacionesIngreso : string, idUsuarioAlta : int) : OrdenServicio
+    + {static} CrearNuevoGarantia(idCliente : int, idEquipo : int, idOrdenOrigen : int, problema : string, estadoFisico : string, accesorios : string, observacionesIngreso : string, idUsuarioAlta : int) : OrdenServicio
+    + {static} CargarDesdeDB(id : int, numeroOrden : int, idCliente : int, idEquipo : int, idTecnicoAsignado : int?, idOrdenOrigen : int?, tipoOrden : string, estado : string, resultado : string, fechaIngreso : DateTime, problemaInformado : string, estadoFisicoIngreso : string, accesoriosIngreso : string, observacionesIngreso : string, observacionResultado : string, idUsuarioAlta : int) : OrdenServicio
+    + AsignarTecnico(idTecnico : int) : void
+    + ActualizarRecepcion(problema : string, estadoFisico : string, accesorios : string, observacionesIngreso : string) : void
+    + IniciarDiagnostico() : void
+    + MarcarPendientePresupuesto() : void
+    + MarcarPendientePresupuestoDesdeEvaluacion() : void
+    + MarcarEsperandoRespuesta() : void
+    + AutorizarReparacion() : void
+    + MarcarNoReparable(motivo : string) : void
+    + MarcarPresupuestoRechazado(motivo : string) : void
+    + IniciarReparacion() : void
+    + FinalizarReparacion() : void
+    + SolicitarAdicional() : void
+    + RevertirAPendientePresupuesto() : void
+    + CancelarSolicitudAdicional(estadoOrigen : string) : void
+    + FinalizarPruebasAprobadas() : void
+    + FinalizarPruebasRequiereRevision() : void
+    + Cancelar(motivo : string) : void
+    + Entregar() : void
+    + CancelarEntrega() : void
+    + MarcarPendienteEvaluacionGarantia() : void
+    + AutorizarReparacionGarantia() : void
+    + MarcarGarantiaNoCubierta(motivo : string) : void
+    + ReabrirPruebas() : void
+}
+
+class Usuario {
+    + Id : int
+    + Username : string
+    + Password : string
+    + Activo : bool
+    + DVH : string
+    --
+    - Usuario()
+    + {static} CrearNuevo(userName : string, password : string) : Usuario
+    + {static} CargarDesdeDB(id : int, userName : string, password : string, dvh : string = "", activo : bool = true) : Usuario
+    + Desactivar() : void
+    + Reactivar() : void
+    + SetDVH(dvh : string) : void
+}
+
+OrdenServicio "1" .. "0..*" HistorialEstadoOrden : IdOrden
+Usuario "1" .. "0..*" HistorialEstadoOrden : IdUsuario actuante
+Usuario "1" .. "0..*" OrdenServicio : IdUsuarioAlta
+Usuario "0..1" .. "0..*" OrdenServicio : IdTecnicoAsignado
+OrdenServicio "0..1" .. "0..*" OrdenServicio : IdOrdenOrigen
+
+note bottom of EntradaBitacora
+Usuario y Detalle son texto.
+No existen propiedades IdUsuario o IdOrden.
+No tiene referencia de objeto a una orden.
+end note
+
+note bottom of HistorialEstadoOrden
+No posee métodos de edición o eliminación.
+La consulta no vuelve a ejecutar la transición.
+end note
+
+@enduml

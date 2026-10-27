@@ -1,0 +1,26 @@
+@startuml
+title N02-06 - Caso de uso Gestionar presupuestos
+
+left to right direction
+
+actor Recepcionista
+actor Tecnico
+actor Encargado
+
+rectangle "Sistema Integral de Gestión para Servicios Técnicos" {
+    usecase "CU-06\nGestionar presupuestos" as GestionarPresupuestos
+}
+
+Recepcionista -- GestionarPresupuestos
+Tecnico -- GestionarPresupuestos
+Encargado -- GestionarPresupuestos
+
+note bottom of GestionarPresupuestos
+El personal registra propuestas y decisiones.
+El cliente comunica su respuesta externamente.
+
+Las acciones de preparación y decisión
+requieren permisos diferentes.
+end note
+
+@enduml

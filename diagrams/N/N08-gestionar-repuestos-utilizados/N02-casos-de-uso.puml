@@ -1,0 +1,25 @@
+@startuml
+title N02-08 - Caso de uso Gestionar repuestos utilizados
+
+left to right direction
+
+actor Tecnico
+actor Encargado
+actor Recepcionista
+
+rectangle "Sistema Integral de Gestión para Servicios Técnicos" {
+    usecase "CU-08\nGestionar repuestos utilizados" as GestionarConsumos
+}
+
+Tecnico -- GestionarConsumos
+Encargado -- GestionarConsumos
+Recepcionista -- GestionarConsumos
+
+note bottom of GestionarConsumos
+Comprende consulta, consumo y devolución.
+Las devoluciones admiten cantidades parciales.
+
+Las actuaciones requieren autorización de edición.
+end note
+
+@enduml

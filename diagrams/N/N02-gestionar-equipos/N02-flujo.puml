@@ -1,0 +1,55 @@
+@startuml
+title N02-02 - Flujo de Gestión de equipos
+
+start
+:Verificar acceso y mostrar listado;
+:Recibir operación solicitada;
+:Validar permiso y selección;
+
+if (¿Consulta?) then (sí)
+    :Recibir cliente, búsqueda e inclusión de inactivos;
+    :Recuperar equipos;
+    :Filtrar por modelo o número de serie;
+    :Mostrar coincidencias;
+
+elseif (¿Registro?) then (sí)
+    :Presentar formulario de registro;
+    :Recibir cliente, tipo, marca y características;
+    :Validar referencias obligatorias;
+    :Verificar existencia y condición activa;
+
+    if (¿Referencias admitidas?) then (sí)
+        :Registrar equipo activo;
+        :Registrar actividad;
+    else (no)
+        :Informar impedimento;
+    endif
+
+elseif (¿Modificación?) then (sí)
+    :Presentar datos actuales;
+    :Recibir datos y referencias propuestos;
+    :Verificar existencia y condición activa de referencias;
+
+    if (¿Modificación admitida?) then (sí)
+        :Actualizar conservando identificador y vigencia;
+        :Registrar actividad;
+    else (no)
+        :Informar impedimento;
+    endif
+
+else (Cambio de vigencia)
+    :Solicitar confirmación;
+
+    if (¿Confirma?) then (sí)
+        :Verificar existencia del equipo;
+        :Desactivar o reactivar;
+        :Registrar actividad;
+    else (no)
+        :Conservar condición existente;
+    endif
+endif
+
+:Presentar resultado y listado;
+stop
+
+@enduml

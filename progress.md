@@ -1,4 +1,20 @@
 # Session Progress
+## Publication authorization (feat-014, 2026-10-27)
+
+- The owner explicitly authorized both a commit and a push to origin/main for the 149 diagrams/N archive files and the two tracking files; preexisting local tooling is excluded.
+- Preflight observed main at aff17b4 with origin/main equal to that commit; the archive remained byte-identical to its 129 public chat sources (268,095 bytes), and the structural gate passed. Publication identity and remote verification are reported in the conversation and Git history.
+- Sequence-diagram refinement is authorized only as an N04 proposal in chat. Do not overwrite the archived sequence or propagate changes to other cases until the owner approves the proposal.
+
+## feat-014 Checker verification (2026-10-27) - PASS
+
+- Independent verdict: PASS. `feat-014` is `done`; all five acceptance criteria are verified. This dated Checker record was prepended and does not rewrite the Builder record farther down.
+- Fidelity: a fresh read-only decode of the public session archive (concatenated ZSTD frames; the live file grows, 1347 frames in the last pass) used only assistant `text` content for the allowlist seq 913, 987, 1048, 1126, 1197, 1285, 1359, 1451, 1587, 1729, 1809, 1905, 1977, 2062, 2140, 2211 and 2366, with CRLF-to-LF canonicalization only. All 129 bodies matched byte-for-byte against the files: 268,095 UTF-8 bytes. The N04 extra keeps sha256 `c74f23c887b05ec33d96c0a78fc9695bd7244186e35469047fe44efa650a16a3` and does not replace `N02-clases`. Old rejected seqs 601/637/687/773/863/879/888 are excluded.
+- Manifest/layout: 129 unique records (128 standard + 1 extra) match path/case/cuOrder/original N01/N02/folder/file/seq/UTC ISO/block/title/bytes/sha; the allowlist is exact and the totals 129/128/1/2/18/18/268,095 match. The delivery is 149 new files: 129 `.puml`, 19 README (root + 18 cases) and `source-manifest.json`, in 18 case folders. N17/N18 are README-only with zero placeholder `.puml`.
+- READMEs: 184/184 relative Markdown links resolve; the CU01-18 mapping and every listed title/seq/UTC/block match the extraction; the root wording was checked for the agreed-format presentation (not individual approval), 16 x 8 + 1 = 129, rendering-not-executed, and the absence of a current-source or runtime certification claim.
+- Hygiene: all 149 files are UTF-8 without BOM, LF, final LF and no trailing whitespace; each `.puml` has exactly one `@startuml` and one `@enduml`, an exact title, and no include or URL. `source-manifest.json` parses.
+- Preservation/scope: 280/280 protected-baseline records (275 tracked plus 5 preexisting untracked files under `.codegraph/`, `.playwright-mcp/` and `skills-lock.json`; 13,930,341 bytes) rehashed identically, including 21 old G06 files and 40 tracked `.puml`. Exactly 149 untracked files under `diagrams/N` plus these two state files changed; the 13 prior feature entries are semantically identical to HEAD `aff17b4`; branch `main`, HEAD unchanged, nothing staged.
+- Gates after the state update: `git diff --check` clean; `init.ps1` PASS with 14 tasks and 296 relative links.
+- Limits: no PlantUML renderer was executed; syntax, layout and visual legibility are not certified. No build, application startup, database, concurrency or runtime test was performed. The 18-20 Oct chat extracts are provenance evidence, not a new current-source proof. Temporary Checker artifacts remain outside the repository under `%TEMP%\feat014-checker`.
 ## Current documentation task (feat-013, 2026-10-20) - completed
 
 - Objective achieved: applied the owner's reviewed compact G06 PlantUML diagrams and Spanish Nombre/Características/Comportamientos tables; added the compact physical DER and its table descriptions. This dated section supersedes older Current State objectives for this documentation task only.
@@ -1267,3 +1283,30 @@ database access, install, download, remote rendering or Git write was performed.
   per-file baseline was recorded, although all of them were re-verified correct against source.
 - Recommended next step: none for `feat-012`; the pending checkpoint-6 work (17 dirty tracked paths plus
   the new G06 folder) may be committed when the owner authorises a Git write.
+
+## feat-014 Builder: archivo general de diagramas N (2026-10-27)
+
+Objetivo autorizado: crear un unico directorio general `diagrams/N/` con un subdirectorio por caso y archivar alli los 129 cuerpos PlantUML ya presentados en el chat, sin regenerar, modernizar, corregir ni renderizar diagramas. Solo se autorizan 149 archivos nuevos en `diagrams/N/**` y la edicion de `feature_list.json` y `progress.md`.
+
+Observacion del checkout: rama `main` en `aff17b416a351fe1d91a5f465994e1cbdb7b372c`. El estado inicial mostraba exactamente tres entradas no rastreadas preexistentes: `.codegraph/`, `.playwright-mcp/` y `skills-lock.json`. Las 13 tareas anteriores estaban `done`; `feat-014` no existia. No se ejecutaron escrituras Git ni cambios de rama.
+
+Preservacion: antes de cualquier mutacion se capturo un manifiesto externo en TEMP con 280 registros y 13.930.341 bytes: los 275 archivos rastreados preexistentes excluyendo los dos archivos de estado, mas los cinco archivos de las tres raices no rastreadas de herramientas. Incluye los 21 archivos G06 rastreados. La captura tardo 89,286 s por la latencia de Google Drive; se uso hashing nativo SHA-256 y no se modifico ninguna herramienta. Esta baseline es la referencia de preservacion del Checker.
+
+Extraccion: se leyo el archivo de sesion en modo solo lectura y se descomprimieron sus 1283-1286 frames concatenados ZSTD observados durante la etapa (el archivo crece con la sesion activa; los eventos seleccionados permanecen estables). Se filtraron exclusivamente los eventos `assistant/message` con seq 913, 987, 1048, 1126, 1197, 1285, 1359, 1451, 1587, 1729, 1809, 1905, 1977, 2062, 2140, 2211 y 2366; de `data.message.content` se conservaron unicamente las partes `text`, unidas con salto de linea. No se exportaron partes de razonamiento, tool calls, resultados, usuarios, credenciales ni el chat completo. Se obtuvieron 16 casos x 8 cuerpos mas el cuerpo extra N04: 129 cuerpos, 268.095 bytes UTF-8 canonicos (solo normalizacion CRLF a LF). El extra es `Relaciones principales de Gestión de órdenes`, sha256 `c74f23c887b05ec33d96c0a78fc9695bd7244186e35469047fe44efa650a16a3`.
+
+Estructura entregada: `diagrams/N/` con 18 subdirectorios `N01`-`N18`, 129 archivos `.puml` (los 16 casos disponibles con los ocho nombres fijos y el extra solo en N04), 18 README de caso, un README raiz y `source-manifest.json`. Los casos 17 y 18 quedan solo con README pendiente, sin archivos PlantUML inventados ni vacios. El indice raiz y el manifiesto enlazan el contenido y conservan la numeracion original N01/N02 y el orden CU.
+
+Estado: `feat-014` queda `in-progress` con dependencia `feat-013`; sus cinco criterios de aceptacion quedan sin verificar para la revision independiente del Checker. No se declara completada la tarea. Enlaces de referencia: [README del archivo N](diagrams/N/README.md) y [manifiesto de procedencia](diagrams/N/source-manifest.json).
+
+Limites: no se ejecuto renderizado; `plantuml` y `dot` no estan en PATH, Java esta disponible pero no se encontro `PLANTUML_JAR` ni un jar en el workspace. La validacion es estructural y de fidelidad byte a byte, no una certificacion de render, layout ni sintaxis PlantUML completa. Los extractos publicos del chat del 18 al 20/10 son evidencia historica, no una nueva prueba de fuente actual ni certificacion de ejecucion. Una futura mejora de los diagramas sera una tarea separada y no forma parte de `feat-014`.
+
+Checks de esta etapa: JSON de `feature_list.json` parseable con 14 tareas, solo `feat-014` en progreso y 151 rutas autorizadas; extraccion reproducible con 129 cuerpos y el total de bytes esperado; ninguna escritura fuera de alcance. La validacion final de estructura, enlaces, UTF-8/LF, manifiesto, preservacion e `init.ps1` se ejecuta despues de crear el archivo y se registra en el cierre del Builder.
+
+### Cierre de verificacion del Builder (2026-10-27)
+
+- Estructura y enlaces: 149/149 archivos nuevos; 129 `.puml`; 19 README; 18 carpetas de caso; 129 registros en `source-manifest.json`; 184 enlaces Markdown resueltos. El JSON parsea, las rutas del manifiesto son unicas y relativas a la raiz del repositorio, y N17/N18 solo contienen README, con cero `.puml`.
+- Fidelidad: una reextraccion fresca del archivo de sesion (1318 frames, 2713 eventos en la ultima pasada; el archivo crece con la sesion activa) comparo los 129 cuerpos byte a byte contra el disco: 129/129 coinciden, 268.095 bytes UTF-8 en total, y el extra N04 conserva el sha256 `c74f23c887b05ec33d96c0a78fc9695bd7244186e35469047fe44efa650a16a3`. Los titulos y las horas UTC del manifiesto coinciden con el cuerpo y el evento.
+- Higiene: 149/149 archivos UTF-8 sin BOM, solo LF, con LF final y sin espacios finales; cada `.puml` tiene un unico `@startuml` y un unico `@enduml`, titulo exacto y ninguna inclusion o URL remota. No se modifico ningun cuerpo PlantUML.
+- Preservacion y alcance: 280/280 hashes de la baseline externa permanecen iguales (275 archivos rastreados salvo los dos de estado, mas los cinco archivos de las tres raices no rastreadas). Rama `main` en `aff17b4`; no hubo escrituras Git. El estado final esperado es dos archivos de estado modificados y 152 entradas no rastreadas: 149 dentro de `diagrams/N` y las tres raices preexistentes.
+- Checks: `git diff --check` termino con codigo 0; `init.ps1` proceso `-ExecutionPolicy Bypass` dio PASS con 14 tareas, 296 enlaces relativos y `git diff --check`. No se ejecuto render, build, aplicacion, base de datos ni red. La sonda local encontro `plantuml` y `dot` fuera del PATH, Java 21 disponible, `PLANTUML_JAR` vacio y cero jar en el workspace; por tanto no se certifica sintaxis PlantUML completa ni legibilidad.
+- Estado: `feat-014` sigue `in-progress`; sus cinco criterios continuan `false` y la decision corresponde al Checker independiente. No se hace commit, push ni cambio de rama.

@@ -1,0 +1,74 @@
+@startuml
+title N02-08 - Secuencia de Gestión de repuestos utilizados
+
+actor "Técnico, encargado o recepcionista" as Operador
+participant "detalle : FrmOrdenServicioDetalle" as Detalle
+participant "servicio : OrdenServicioService" as Servicio
+participant "reparaciones : ReparacionRepository" as Reparaciones
+participant "ordenes : OrdenServicioRepository" as Ordenes
+participant "repuestos : RepuestoRepository" as Repuestos
+participant "diálogo de cantidad" as Cantidad
+participant "auditoria : BitacoraService" as Auditoria
+
+Operador -> Detalle : Seleccionar intervención
+Detalle -> Servicio : ListarConsumidos
+Servicio -> Reparaciones : ListarConsumidos
+Reparaciones --> Servicio : Filas individuales
+Servicio --> Detalle : Consumos
+Detalle -> Detalle : Agrupar por repuesto y costo
+Detalle --> Operador : Mostrar cantidades e importes
+
+alt Consumo
+    Operador -> Detalle : Seleccionar repuesto, cantidad y consumir
+    Detalle -> Servicio : ConsumirRepuesto
+    Servicio -> Reparaciones : ObtenerPorId
+    Reparaciones --> Servicio : Intervención
+    Servicio -> Ordenes : Obtener orden y condición de bloqueo
+    Ordenes --> Servicio : Orden y condición
+    Servicio -> Repuestos : ObtenerPorId
+    Repuestos --> Servicio : Repuesto y costo actual
+    Servicio -> Servicio : Validar apertura, estado, activo y cantidad
+    Servicio -> Reparaciones : ConsumirRepuesto con costo obtenido
+    Reparaciones -> Reparaciones : Validar stock y guardar consumo, saldo y movimiento
+    Reparaciones --> Servicio : Resultado
+    Servicio -> Auditoria : Registrar consumo
+    Auditoria --> Servicio : Resultado
+    Servicio --> Detalle : Operación completada
+
+else Devolución
+    Operador -> Detalle : Seleccionar renglón y quitar consumo
+    Detalle -> Servicio : ListarConsumidos
+    Servicio -> Reparaciones : ListarConsumidos
+    Reparaciones --> Servicio : Filas
+    Servicio --> Detalle : Consumos actuales
+    Detalle -> Detalle : Sumar cantidad del repuesto entre todos los costos
+    Detalle -> Cantidad : Solicitar cantidad con máximo de referencia
+    Operador -> Cantidad : Indicar cantidad y aceptar
+    Cantidad --> Detalle : Cantidad elegida
+    Detalle --> Operador : Solicitar confirmación de devolución
+    Operador -> Detalle : Confirmar
+    Detalle -> Servicio : QuitarConsumo
+    Servicio -> Reparaciones : Obtener intervención y consumos
+    Reparaciones --> Servicio : Datos
+    Servicio -> Ordenes : Obtener orden y condición de bloqueo
+    Ordenes --> Servicio : Orden y condición
+    Servicio -> Servicio : Validar apertura, estado y cantidad
+    Servicio -> Reparaciones : DevolverConsumo
+    Reparaciones -> Reparaciones : Recorrer consumos por IdConsumo
+    Reparaciones -> Reparaciones : Restituir stock y registrar movimientos
+    Reparaciones --> Servicio : Resultado
+    Servicio -> Auditoria : Registrar devolución
+    Auditoria --> Servicio : Resultado
+    Servicio --> Detalle : Operación completada
+end
+
+Detalle -> Detalle : Recargar información
+Detalle --> Operador : Presentar resultado y mantener abierto
+
+note over Reparaciones, Auditoria
+Consumos, stock y movimientos se modifican
+en la operación transaccional del repositorio.
+La bitácora se registra después, separadamente.
+end note
+
+@enduml

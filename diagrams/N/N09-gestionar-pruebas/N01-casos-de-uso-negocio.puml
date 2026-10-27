@@ -1,0 +1,25 @@
+@startuml
+title N01.4.5 - Gestionar pruebas
+
+left to right direction
+
+actor Tecnico
+actor Encargado
+actor Recepcionista
+
+rectangle "Servicio técnico - Gestión de pruebas" {
+    usecase "CU-09\nGestionar pruebas" as GestionarPruebas
+}
+
+Tecnico -- GestionarPruebas : realiza y registra verificaciones
+Encargado -- GestionarPruebas : supervisa y actúa según permisos
+Recepcionista -- GestionarPruebas : consulta resultados
+
+note bottom of GestionarPruebas
+Comprende consulta, registro, anulación,
+finalización y reapertura permitida.
+
+Registrar una prueba no finaliza la etapa.
+end note
+
+@enduml

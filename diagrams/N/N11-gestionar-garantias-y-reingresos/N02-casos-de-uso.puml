@@ -1,0 +1,25 @@
+@startuml
+title N02-11 - Caso de uso Gestionar garantías y reingresos
+
+left to right direction
+
+actor Recepcionista
+actor Tecnico
+actor Encargado
+
+rectangle "Sistema Integral de Gestión para Servicios Técnicos" {
+    usecase "CU-11\nGestionar garantías y reingresos" as GestionarGarantias
+}
+
+Recepcionista -- GestionarGarantias
+Tecnico -- GestionarGarantias
+Encargado -- GestionarGarantias
+
+note bottom of GestionarGarantias
+Consulta, nueva visita y evaluación.
+
+Crear, aceptar y rechazar
+requieren sus autorizaciones correspondientes.
+end note
+
+@enduml

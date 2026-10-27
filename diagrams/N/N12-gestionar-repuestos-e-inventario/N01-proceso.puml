@@ -1,0 +1,60 @@
+@startuml
+title N01.5 - Proceso de Gestión de repuestos e inventario
+
+|Responsable de inventario, encargado o técnico|
+start
+:Acceder al módulo;
+:Seleccionar operación;
+
+|Sistema|
+:Verificar autorización;
+
+if (¿Consulta de catálogo?) then (sí)
+    :Aplicar filtros;
+    :Mostrar existencias, valores y alertas;
+
+elseif (¿Alta o modificación?) then (sí)
+    |Responsable de inventario o encargado|
+    :Completar datos y aceptar;
+
+    |Sistema|
+    :Validar información;
+    :Guardar maestro;
+
+    if (¿Alta con stock inicial positivo?) then (sí)
+        :Registrar movimiento inicial;
+    endif
+
+    :Registrar actividad;
+
+elseif (¿Desactivar o reactivar?) then (sí)
+    :Solicitar confirmación;
+    |Responsable de inventario o encargado|
+
+    if (¿Confirma?) then (sí)
+        |Sistema|
+        :Cambiar condición activa;
+        :Registrar actividad;
+    endif
+
+elseif (¿Ajustar stock?) then (sí)
+    |Responsable de inventario o encargado|
+    :Informar cantidad firmada y motivo;
+    :Aceptar;
+
+    |Sistema|
+    :Validar cantidad y saldo;
+    :Actualizar stock y registrar movimiento;
+    :Registrar actividad;
+
+else (Consultar movimientos)
+    |Responsable de inventario, encargado o técnico|
+    :Indicar filtros opcionales;
+    |Sistema|
+    :Presentar movimientos coincidentes;
+endif
+
+:Presentar resultado;
+stop
+
+@enduml

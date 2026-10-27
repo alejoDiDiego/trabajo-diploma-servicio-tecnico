@@ -1,0 +1,99 @@
+@startuml
+title N02-04 - Secuencia de Gestión de órdenes
+
+actor "Recepcionista, encargado o técnico" as Operador
+participant "listado : FrmOrdenesServicio" as Listado
+participant "detalle : FrmOrdenServicioDetalle" as Detalle
+participant "servicio : OrdenServicioService" as Servicio
+participant "ordenes : OrdenServicioRepository" as Ordenes
+participant "clientes : ClienteRepository" as Clientes
+participant "equipos : EquipoRepository" as Equipos
+participant "usuarios : UsuarioRepository" as Usuarios
+participant "auditoria : BitacoraService" as Auditoria
+
+Operador -> Listado : Acceder a Órdenes
+Listado -> Listado : Verificar permiso de consulta
+Listado -> Servicio : Consultar órdenes según criterios
+Servicio -> Ordenes : Recuperar órdenes
+Ordenes --> Servicio : Órdenes
+Servicio --> Listado : Órdenes
+Listado --> Operador : Mostrar listado
+
+Operador -> Listado : Seleccionar operación
+
+alt Consulta de detalle
+    Listado -> Detalle : Abrir orden seleccionada
+    Detalle -> Servicio : Obtener orden y condición de solo consulta
+    Servicio -> Ordenes : Consultar orden y existencia de reingresos
+    Ordenes --> Servicio : Datos
+    Servicio --> Detalle : Orden y restricciones
+    Detalle --> Operador : Mostrar detalle
+
+else Registro
+    Listado -> Detalle : Abrir nueva recepción
+    Operador -> Detalle : Informar datos y crear
+    Detalle -> Servicio : CrearOrden
+    Servicio -> Clientes : ObtenerPorId
+    Clientes --> Servicio : Cliente
+    Servicio -> Equipos : ObtenerPorId
+    Equipos --> Servicio : Equipo
+    Servicio -> Servicio : Validar activos y pertenencia
+    Servicio -> Ordenes : CrearConHistorial
+    Ordenes -> Ordenes : Guardar orden, número e historial inicial
+    Ordenes --> Servicio : Orden creada
+    Servicio -> Auditoria : Registrar creación
+    Auditoria --> Servicio : Resultado
+    Servicio --> Detalle : Orden
+    Detalle -> Detalle : Cambiar a modo existente
+    Detalle --> Operador : Mostrar orden y mantener abierto
+
+else Modificación de recepción
+    Operador -> Detalle : Guardar datos de recepción
+    Detalle -> Servicio : ModificarRecepcion
+    Servicio -> Ordenes : Consultar orden y bloqueo
+    Ordenes --> Servicio : Datos
+    Servicio -> Servicio : Validar estado y problema
+    Servicio -> Ordenes : ActualizarRecepcion
+    Ordenes --> Servicio : Resultado
+    Servicio -> Auditoria : Registrar modificación
+    Auditoria --> Servicio : Resultado
+    Servicio --> Detalle : Recargar detalle
+
+else Asignación
+    Operador -> Detalle : Seleccionar técnico y asignar
+    Detalle -> Servicio : AsignarTecnico
+    Servicio -> Ordenes : Consultar orden y bloqueo
+    Ordenes --> Servicio : Datos
+    Servicio -> Usuarios : ObtenerPorId
+    Usuarios --> Servicio : Usuario
+    Servicio -> Servicio : Verificar activo y permiso efectivo
+    Servicio -> Ordenes : AsignarTecnico
+    Ordenes --> Servicio : Resultado
+    Servicio -> Auditoria : Registrar asignación
+    Auditoria --> Servicio : Resultado
+    Servicio --> Detalle : Recargar detalle
+
+else Cancelación confirmada con motivo
+    Operador -> Listado : Cancelar orden
+    Listado -> Servicio : Consultar bloqueo
+    Servicio -> Ordenes : Verificar reingresos
+    Ordenes --> Servicio : Resultado
+    Servicio --> Listado : Restricciones
+    Listado --> Operador : Solicitar confirmación y motivo
+    Operador -> Listado : Confirmar e informar motivo
+    Listado -> Servicio : CancelarOrden
+    Servicio -> Servicio : Revalidar estado y motivo
+    Servicio -> Ordenes : CambiarEstadoConHistorial
+    Ordenes -> Ordenes : Revalidar bloqueo y guardar cancelación
+    Ordenes --> Servicio : Resultado
+    Servicio -> Auditoria : Registrar cancelación
+    Auditoria --> Servicio : Resultado
+    Servicio --> Listado : Actualizar listado
+end
+
+note over Ordenes, Auditoria
+La auditoría se realiza separadamente.
+La creación y la asignación también son independientes.
+end note
+
+@enduml

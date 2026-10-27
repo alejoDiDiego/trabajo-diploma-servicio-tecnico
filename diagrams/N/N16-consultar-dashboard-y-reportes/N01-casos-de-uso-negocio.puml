@@ -1,0 +1,26 @@
+@startuml
+title N01.9 - Consultar dashboard y reportes
+
+left to right direction
+
+actor Encargado
+actor Administrador
+actor "Usuario de consulta autorizado" as UsuarioConsulta
+
+rectangle "Servicio técnico - Información de gestión" {
+    usecase "CU-16\nConsultar dashboard y reportes" as ConsultarInformacion
+}
+
+Encargado -- ConsultarInformacion
+Administrador -- ConsultarInformacion
+UsuarioConsulta -- ConsultarInformacion
+
+note bottom of ConsultarInformacion
+Presenta indicadores, tablas y valores calculados.
+No modifica las operaciones consultadas.
+
+Los montos aprobados son compromisos,
+no ingresos cobrados.
+end note
+
+@enduml

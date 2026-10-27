@@ -1,0 +1,42 @@
+@startuml
+title N02-16 - Flujo de Consulta de dashboard y reportes
+
+start
+:Verificar acceso REPORTES_VER;
+:Seleccionar vista;
+
+if (¿Dashboard?) then (sí)
+    :Cargar indicadores al abrir nueva ventana;
+    :Presentar seis tarjetas;
+
+    if (¿Actualizar?) then (sí)
+        :Volver a consultar;
+        :Actualizar valores;
+    endif
+
+else (Reportes)
+    :Seleccionar tipo;
+    :Activar fechas opcionales;
+    :Indicar máximo si es repuestos utilizados;
+    :Solicitar Buscar;
+
+    if (¿Criterios válidos?) then (sí)
+        :Consultar datos;
+        :Calcular resultado;
+
+        if (¿Resultado tabular?) then (sí)
+            :Mostrar grilla;
+        elseif (¿Tasa?) then (sí)
+            :Mostrar tabla y porcentaje;
+        else (Escalar)
+            :Mostrar valor;
+        endif
+    else (no)
+        :Informar error sin resultado nuevo;
+    endif
+endif
+
+:Leer resultados sin modificar negocio;
+stop
+
+@enduml

@@ -1,0 +1,58 @@
+@startuml
+title N01.4.7 - Proceso de Gestión de garantías y reingresos
+
+|Cliente|
+start
+:Presentar reclamo;
+
+|Recepcionista, encargado o técnico|
+:Consultar original y cobertura;
+:Seleccionar operación;
+
+|Sistema|
+if (¿Solo consulta?) then (sí)
+    :Presentar cobertura, visitas y evaluación disponible;
+
+elseif (¿Registrar reingreso?) then (sí)
+    :Comprobar original elegible y ausencia de visita abierta;
+    |Recepcionista, encargado o técnico|
+    :Informar nuevo problema y confirmar;
+    |Sistema|
+    :Validar referencias y cobertura;
+    :Crear nueva orden Garantía / Recibido;
+    :Conservar original sin modificaciones;
+    :Registrar historial inicial y actividad;
+    :Mostrar número del reingreso;
+
+else (Evaluar reingreso)
+    :Comprobar evaluación pendiente y coherencia;
+    |Recepcionista, encargado o técnico|
+    :Informar motivo y observaciones;
+
+    if (¿Acepta cobertura?) then (sí)
+        :Confirmar aceptación;
+        |Sistema|
+        :Registrar evaluación Aceptada;
+        :Autorizar reparación sin presupuesto comercial;
+    else (no)
+        |Cliente|
+        :Comunicar continuidad deseada;
+        |Recepcionista, encargado o técnico|
+        :Seleccionar destino del rechazo;
+        |Sistema|
+        :Registrar evaluación Rechazada;
+
+        if (¿Continúa mediante presupuesto?) then (sí)
+            :Pendiente de presupuesto;
+        else (no)
+            :Listo para retiro / Garantía no cubierta;
+        endif
+    endif
+
+    :Registrar historial y actividad;
+endif
+
+:Actualizar información y presentar resultado;
+stop
+
+@enduml

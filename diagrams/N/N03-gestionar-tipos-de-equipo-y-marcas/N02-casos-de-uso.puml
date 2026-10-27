@@ -1,0 +1,25 @@
+@startuml
+title N02-03 - Caso de uso Gestionar tipos de equipo y marcas
+
+left to right direction
+
+actor Recepcionista
+actor Encargado
+
+rectangle "Sistema Integral de Gestión para Servicios Técnicos" {
+    usecase "CU-03\nGestionar tipos de equipo y marcas" as GestionarCatalogos
+}
+
+Recepcionista -- GestionarCatalogos
+Encargado -- GestionarCatalogos
+
+note bottom of GestionarCatalogos
+El mismo caso de uso comprende:
+consulta, registro, modificación,
+desactivación y reactivación.
+
+Cada operación se aplica al catálogo elegido
+y requiere la autorización correspondiente.
+end note
+
+@enduml

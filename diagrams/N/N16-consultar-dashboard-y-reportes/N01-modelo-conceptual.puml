@@ -1,0 +1,97 @@
+@startuml
+title N01.9 - Modelo conceptual de información de gestión
+
+left to right direction
+hide methods
+skinparam classAttributeIconSize 0
+
+class OrdenServicio {
+    identificador
+    tipoOrden
+    estado
+    resultado
+    fechaIngreso
+}
+
+class Presupuesto {
+    identificador
+    orden
+    tipo
+    estado
+    fechaEmision
+    total
+}
+
+class Reparacion {
+    identificador
+    orden
+    tecnico
+    numeroIntervencion
+    fechaInicio
+}
+
+class ReparacionRepuesto {
+    identificadorConsumo
+    reparacion
+    repuesto
+    cantidad
+    costoUnitario
+}
+
+class Repuesto {
+    identificador
+    codigo
+    descripcion
+    stockActual
+    stockMinimo
+    activo
+}
+
+class Entrega {
+    identificador
+    orden
+    fechaEntrega
+}
+
+class Compra {
+    identificador
+    proveedor
+    fecha
+    estado
+    total
+}
+
+class Proveedor {
+    identificador
+    razonSocial
+}
+
+class EvaluacionGarantia {
+    identificador
+    ordenReingreso
+    estado
+    fecha
+}
+
+class Usuario {
+    identificador
+    nombreUsuario
+}
+
+OrdenServicio "1" -- "0..*" Presupuesto
+OrdenServicio "1" -- "0..*" Reparacion
+OrdenServicio "1" -- "0..1" Entrega
+OrdenServicio "1" -- "0..1" EvaluacionGarantia
+
+Usuario "1" -- "0..*" Reparacion : técnico de intervención
+Reparacion "1" -- "0..*" ReparacionRepuesto
+Repuesto "1" -- "0..*" ReparacionRepuesto
+
+Proveedor "1" -- "0..*" Compra
+
+note bottom
+Los resultados se calculan al consultar.
+No existe una tabla nueva de reportes o indicadores.
+end note
+
+@enduml

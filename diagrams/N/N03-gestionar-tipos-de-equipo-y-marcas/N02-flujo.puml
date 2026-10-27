@@ -1,0 +1,53 @@
+@startuml
+title N02-03 - Flujo de Gestión de tipos de equipo y marcas
+
+start
+:Acceder al catálogo seleccionado;
+:Verificar acceso y mostrar listado;
+:Recibir operación solicitada;
+:Validar permiso y selección;
+
+if (¿Consulta?) then (sí)
+    :Aplicar nombre e inclusión de inactivos;
+    :Mostrar coincidencias;
+
+elseif (¿Registro?) then (sí)
+    :Presentar formulario vacío;
+    :Recibir nombre aceptado;
+    :Validar nombre obligatorio;
+    :Intentar registrar respetando unicidad;
+
+    if (¿Guardado satisfactorio?) then (sí)
+        :Registrar actividad;
+    else (no)
+        :Informar error de creación;
+    endif
+
+elseif (¿Modificación?) then (sí)
+    :Presentar nombre actual;
+    :Recibir nombre aceptado;
+    :Validar registro y nombre;
+    :Intentar actualizar conservando identificador y vigencia;
+
+    if (¿Guardado satisfactorio?) then (sí)
+        :Registrar actividad;
+    else (no)
+        :Informar error de modificación;
+    endif
+
+else (Cambio de vigencia)
+    :Solicitar confirmación;
+
+    if (¿Confirma?) then (sí)
+        :Verificar existencia;
+        :Desactivar o reactivar;
+        :Registrar actividad;
+    else (no)
+        :Conservar condición existente;
+    endif
+endif
+
+:Presentar resultado y listado;
+stop
+
+@enduml

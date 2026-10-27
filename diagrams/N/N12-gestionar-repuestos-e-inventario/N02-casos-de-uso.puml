@@ -1,0 +1,25 @@
+@startuml
+title N02-12 - Caso de uso Gestionar repuestos e inventario
+
+left to right direction
+
+actor "Responsable de inventario" as ResponsableInventario
+actor Encargado
+actor Tecnico
+
+rectangle "Sistema Integral de Gestión para Servicios Técnicos" {
+    usecase "CU-12\nGestionar repuestos e inventario" as GestionarInventario
+}
+
+ResponsableInventario -- GestionarInventario
+Encargado -- GestionarInventario
+Tecnico -- GestionarInventario : consulta autorizada
+
+note bottom of GestionarInventario
+Catálogo, condición activa,
+ajustes y consulta de movimientos.
+
+Las actuaciones dependen de permisos efectivos.
+end note
+
+@enduml

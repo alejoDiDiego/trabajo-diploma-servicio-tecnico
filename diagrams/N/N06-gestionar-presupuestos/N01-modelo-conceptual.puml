@@ -1,0 +1,83 @@
+@startuml
+title N01.4.2 - Modelo conceptual de Gestión de presupuestos
+
+left to right direction
+hide methods
+skinparam classAttributeIconSize 0
+
+class OrdenServicio {
+    identificador
+    numeroOrden
+    tipoOrden
+    estado
+    resultado
+}
+
+class Presupuesto {
+    identificador
+    orden
+    tipo
+    fechaEmision
+    estado
+    subtotal
+    descuento
+    total
+    diasGarantia
+    fechaRespuesta
+    medioRespuesta
+    motivoRechazo
+    motivoAnulacion
+    observaciones
+}
+
+class DetallePresupuesto {
+    identificador
+    presupuesto
+    repuestoOpcional
+    tipoItem
+    descripcion
+    cantidad
+    precioUnitario
+    subtotal
+}
+
+class Repuesto {
+    identificador
+    codigo
+    descripcion
+    stockActual
+    stockMinimo
+    costoActual
+    precioReferencia
+    activo
+}
+
+class Reparacion {
+    identificador
+    orden
+    numeroIntervencion
+    tecnico
+    fechaInicio
+    fechaFin
+    trabajoRealizado
+    observaciones
+}
+
+OrdenServicio "1" -- "0..*" Presupuesto
+Presupuesto "1" -- "1..*" DetallePresupuesto : propuesta válida
+Repuesto "0..1" -- "0..*" DetallePresupuesto : referencia cotizada
+OrdenServicio "1" -- "0..*" Reparacion
+
+note bottom of Presupuesto
+Como máximo un Original no anulado.
+El monto autorizado se calcula sobre aprobados;
+no es un importe cobrado.
+end note
+
+note bottom of DetallePresupuesto
+La referencia al repuesto es obligatoria
+solo para conceptos de tipo Repuesto.
+No reserva ni descuenta existencias.
+end note
+
+@enduml

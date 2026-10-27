@@ -1,0 +1,23 @@
+@startuml
+title N02-14 - Caso de uso Gestionar compras
+
+left to right direction
+
+actor "Responsable de compras" as ResponsableCompras
+actor Encargado
+
+rectangle "Sistema Integral de Gestión para Servicios Técnicos" {
+    usecase "CU-14\nGestionar compras" as GestionarCompras
+}
+
+ResponsableCompras -- GestionarCompras
+Encargado -- GestionarCompras
+
+note bottom of GestionarCompras
+Consulta, preparación, confirmación,
+cancelación y anulación.
+
+No registra pagos ni facturación fiscal.
+end note
+
+@enduml

@@ -1,0 +1,65 @@
+@startuml
+title N01.3 - Proceso de Gestión de tipos de equipo y marcas
+
+|Recepcionista o encargado|
+start
+:Acceder a Tipos de equipo o Marcas;
+
+|Sistema|
+:Verificar permiso de consulta;
+
+if (¿Acceso permitido?) then (sí)
+    :Cargar catálogo seleccionado;
+else (no)
+    :Informar acceso denegado;
+    stop
+endif
+
+|Recepcionista o encargado|
+:Seleccionar operación;
+
+|Sistema|
+:Verificar autorización y selección requerida;
+
+if (¿Consulta?) then (sí)
+    |Recepcionista o encargado|
+    :Informar nombre e inclusión de inactivos;
+    |Sistema|
+    :Presentar coincidencias;
+
+elseif (¿Registro o modificación?) then (sí)
+    :Presentar formulario de nombre;
+    |Recepcionista o encargado|
+    :Ingresar nombre;
+    :Aceptar;
+    |Sistema|
+    :Validar nombre obligatorio;
+    :Intentar guardar respetando unicidad;
+
+    if (¿Guardado satisfactorio?) then (sí)
+        :Registrar actividad;
+        :Actualizar listado;
+    else (no)
+        :Informar error de operación;
+    endif
+
+else (Desactivación o reactivación)
+    :Solicitar confirmación;
+    |Recepcionista o encargado|
+
+    if (¿Confirma?) then (sí)
+        |Sistema|
+        :Actualizar condición activa;
+        :Registrar actividad;
+        :Actualizar listado;
+    else (no)
+        |Sistema|
+        :Mantener información sin cambios;
+    endif
+endif
+
+|Recepcionista o encargado|
+:Consultar resultado;
+stop
+
+@enduml

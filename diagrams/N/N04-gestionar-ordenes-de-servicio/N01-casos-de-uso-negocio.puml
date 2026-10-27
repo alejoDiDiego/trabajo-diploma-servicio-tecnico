@@ -1,0 +1,29 @@
+@startuml
+title N01.4 - Gestionar órdenes de servicio
+
+left to right direction
+
+actor Cliente
+actor Recepcionista
+actor Encargado
+actor Tecnico
+
+rectangle "Servicio técnico - Gestión de órdenes" {
+    usecase "CU-04\nGestionar órdenes de servicio" as GestionarOrdenes
+}
+
+Cliente -- GestionarOrdenes : solicita atención y aporta datos
+Recepcionista -- GestionarOrdenes : registra y consulta
+Encargado -- GestionarOrdenes : organiza y administra
+Tecnico -- GestionarOrdenes : consulta y actúa según permisos
+
+note bottom of GestionarOrdenes
+Comprende recepción, consulta,
+modificación de datos de ingreso,
+asignación de técnico y cancelación.
+
+Las etapas técnicas y comerciales
+se desarrollan en sus propios casos de uso.
+end note
+
+@enduml

@@ -1,0 +1,52 @@
+@startuml
+title N01.3 - Modelo conceptual de tipos de equipo y marcas
+
+left to right direction
+hide methods
+skinparam classAttributeIconSize 0
+
+class TipoEquipo {
+    identificador
+    nombre
+    activo
+}
+
+class Marca {
+    identificador
+    nombre
+    activo
+}
+
+class Equipo {
+    identificador
+    clienteActual
+    tipoEquipo
+    marca
+    modelo
+    numeroSerie
+    imei
+    color
+    observaciones
+    activo
+}
+
+TipoEquipo "1" -- "0..*" Equipo : clasifica
+Marca "1" -- "0..*" Equipo : identifica marca
+
+note bottom of TipoEquipo
+Su desactivación no elimina
+los equipos que lo utilizan.
+end note
+
+note bottom of Marca
+Su condición activa es independiente
+de la condición de los equipos.
+end note
+
+note bottom of Equipo
+Cada equipo posee un tipo y una marca.
+No se administra una combinación exclusiva
+entre ambos catálogos.
+end note
+
+@enduml

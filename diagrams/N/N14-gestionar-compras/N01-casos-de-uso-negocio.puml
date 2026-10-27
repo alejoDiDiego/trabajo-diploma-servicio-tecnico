@@ -1,0 +1,25 @@
+@startuml
+title N01.7 - Gestionar compras
+
+left to right direction
+
+actor "Responsable de compras" as ResponsableCompras
+actor Encargado
+actor Proveedor
+
+rectangle "Servicio técnico - Gestión de compras" {
+    usecase "CU-14\nGestionar compras" as GestionarCompras
+}
+
+ResponsableCompras -- GestionarCompras : prepara y confirma
+Encargado -- GestionarCompras : supervisa y revierte según permisos
+Proveedor -- GestionarCompras : suministra repuestos e información
+
+note bottom of GestionarCompras
+Comprende borrador, renglones, confirmación,
+cancelación y anulación.
+
+No comprende pagos ni facturación fiscal.
+end note
+
+@enduml

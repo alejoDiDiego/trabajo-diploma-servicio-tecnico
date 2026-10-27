@@ -1,0 +1,51 @@
+@startuml
+title N02-12 - Flujo de Gestión de repuestos e inventario
+
+start
+:Verificar acceso y seleccionar operación;
+
+if (¿Consulta catálogo?) then (sí)
+    :Aplicar filtros y mostrar alertas;
+
+elseif (¿Alta?) then (sí)
+    :Capturar y validar datos;
+    :Crear repuesto;
+    if (¿Stock inicial positivo?) then (sí)
+        :Registrar AjustePositivo desde cero;
+    endif
+    :Registrar actividad;
+
+elseif (¿Modificar?) then (sí)
+    :Capturar datos permitidos;
+    :Validar y actualizar maestro sin stock;
+    :Registrar actividad;
+
+elseif (¿Cambiar condición activa?) then (sí)
+    :Solicitar confirmación;
+    if (¿Confirma?) then (sí)
+        :Desactivar o reactivar;
+        :Registrar actividad;
+    endif
+
+elseif (¿Ajustar?) then (sí)
+    :Capturar delta firmado y motivo;
+    :Validar delta distinto de cero y motivo;
+    :Leer stock vigente y comprobar saldo;
+
+    if (¿Saldo no negativo?) then (sí)
+        :Actualizar stock;
+        :Registrar movimiento con cantidad absoluta;
+        :Registrar actividad;
+    else (no)
+        :Rechazar ajuste;
+    endif
+
+else (Consultar movimientos)
+    :Recibir filtros opcionales;
+    :Consultar y presentar movimientos;
+endif
+
+:Presentar resultado;
+stop
+
+@enduml

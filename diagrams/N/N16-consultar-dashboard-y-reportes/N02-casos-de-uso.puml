@@ -1,0 +1,23 @@
+@startuml
+title N02-16 - Caso de uso Consultar dashboard y reportes
+
+left to right direction
+
+actor Encargado
+actor Administrador
+actor "Usuario de consulta autorizado" as UsuarioConsulta
+
+rectangle "Sistema Integral de Gestión para Servicios Técnicos" {
+    usecase "CU-16\nConsultar dashboard y reportes" as ConsultarInformacion
+}
+
+Encargado -- ConsultarInformacion
+Administrador -- ConsultarInformacion
+UsuarioConsulta -- ConsultarInformacion
+
+note bottom of ConsultarInformacion
+Ambas vistas requieren REPORTES_VER.
+Las consultas no ejecutan modificaciones de negocio.
+end note
+
+@enduml

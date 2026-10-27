@@ -1,0 +1,24 @@
+@startuml
+title N02-02 - Caso de uso Gestionar equipos
+
+left to right direction
+
+actor Recepcionista
+actor Encargado
+
+rectangle "Sistema Integral de Gestión para Servicios Técnicos" {
+    usecase "CU-02\nGestionar equipos" as GestionarEquipos
+}
+
+Recepcionista -- GestionarEquipos
+Encargado -- GestionarEquipos
+
+note bottom of GestionarEquipos
+El mismo caso de uso comprende:
+consulta, registro, modificación,
+desactivación y reactivación.
+
+Las operaciones dependen de permisos efectivos.
+end note
+
+@enduml

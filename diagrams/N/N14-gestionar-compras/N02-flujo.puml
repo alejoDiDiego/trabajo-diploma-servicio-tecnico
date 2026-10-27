@@ -1,0 +1,57 @@
+@startuml
+title N02-14 - Flujo de Gestión de compras
+
+start
+:Verificar acceso y seleccionar operación;
+
+if (¿Consulta?) then (sí)
+    :Filtrar por proveedor y estado;
+    :Mostrar cabecera y detalle;
+
+elseif (¿Preparar borrador?) then (sí)
+    :Capturar proveedor y observaciones;
+    :Agregar o quitar renglones;
+    :Guardar cabecera y detalle sin stock;
+
+elseif (¿Mantener renglones?) then (sí)
+    :Validar Borrador;
+    :Agregar o quitar una fila;
+    :Actualizar total;
+
+elseif (¿Confirmar?) then (sí)
+    :Solicitar confirmación;
+    if (¿Confirma?) then (sí)
+        if (¿Compra nueva?) then (sí)
+            :Crear primero borrador;
+        endif
+        :Validar Borrador y detalle no vacío;
+        :Confirmar, incrementar stock y actualizar costos;
+        :Registrar movimientos Compra;
+    endif
+
+elseif (¿Cancelar borrador?) then (sí)
+    :Solicitar confirmación;
+    if (¿Confirma?) then (sí)
+        :Conservar Cancelada sin mover stock;
+    endif
+
+else (Anular confirmada)
+    :Solicitar y validar motivo;
+    :Solicitar confirmación;
+    if (¿Confirma?) then (sí)
+        :Comprobar stock agrupado por repuesto;
+        if (¿Alcanza para todo?) then (sí)
+            :Conservar Cancelada con motivo;
+            :Descontar cantidades y registrar ajustes;
+            :No restaurar costo maestro;
+        else (no)
+            :Rechazar anulación completa;
+        endif
+    endif
+endif
+
+:Registrar actividad correspondiente;
+:Presentar resultado;
+stop
+
+@enduml

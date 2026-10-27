@@ -1,0 +1,55 @@
+@startuml
+title N02-03 - Clases de información afectadas
+
+left to right direction
+skinparam classAttributeIconSize 0
+
+class TipoEquipo {
+    + Id : int
+    + Nombre : string
+    + Activo : bool
+    --
+    - TipoEquipo()
+    + {static} CrearNuevo(nombre : string) : TipoEquipo
+    + {static} CargarDesdeDB(id : int, nombre : string, activo : bool) : TipoEquipo
+}
+
+class Marca {
+    + Id : int
+    + Nombre : string
+    + Activo : bool
+    --
+    - Marca()
+    + {static} CrearNuevo(nombre : string) : Marca
+    + {static} CargarDesdeDB(id : int, nombre : string, activo : bool) : Marca
+}
+
+class EntradaBitacora {
+    + Id : int
+    + Fecha : DateTime
+    + Usuario : string
+    + Actividad : string
+    + Detalle : string
+    + TipoActividad : string
+    --
+    - EntradaBitacora()
+    + {static} Crear(id : int, fecha : DateTime, usuario : string, actividad : string, detalle : string, tipoActividad : string) : EntradaBitacora
+}
+
+note bottom of TipoEquipo
+No contiene una colección de marcas.
+Su mantenimiento es independiente.
+end note
+
+note bottom of Marca
+No contiene una colección de tipos de equipo.
+La clasificación conjunta se realiza en Equipo.
+end note
+
+note bottom of EntradaBitacora
+La actuación se identifica mediante texto.
+No contiene una referencia de objeto
+a TipoEquipo o Marca.
+end note
+
+@enduml

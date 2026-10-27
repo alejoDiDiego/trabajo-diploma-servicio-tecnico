@@ -1,0 +1,88 @@
+@startuml
+title N02-12 - Entidades de repuestos e inventario
+
+hide circle
+skinparam linetype ortho
+
+entity Repuestos {
+    * id_repuesto : int <<PK, IDENTITY(1,1)>>
+    --
+    * codigo : nvarchar(50)
+    * descripcion : nvarchar(200)
+    * stock_actual : int <<DEFAULT 0>>
+    * stock_minimo : int <<DEFAULT 0>>
+    * costo_actual : decimal(18,2) <<DEFAULT 0>>
+    * precio_referencia : decimal(18,2) <<DEFAULT 0>>
+    * activo : bit <<DEFAULT 1>>
+}
+
+entity MovimientosStock {
+    * id_movimiento : int <<PK, IDENTITY(1,1)>>
+    --
+    * id_repuesto : int <<FK>>
+    * fecha : datetime <<DEFAULT GETDATE()>>
+    * tipo : nvarchar(30)
+    * cantidad : int
+    * stock_anterior : int
+    * stock_posterior : int
+    * id_usuario : int <<FK>>
+    id_compra : int <<FK Compras.id_compra, NULL>>
+    id_reparacion : int <<FK Reparaciones.id_reparacion, NULL>>
+    observacion : nvarchar(max) <<NULL>>
+}
+
+entity Usuarios {
+    * id_usuario : int <<PK, IDENTITY(1,1)>>
+    --
+    * username : nvarchar(100)
+    * password : nvarchar(max)
+    * activo : bit <<DEFAULT 1>>
+    * dvh : nvarchar(100) <<DEFAULT ''>>
+}
+
+entity Bitacora {
+    * id_bitacora : int <<PK, IDENTITY(1,1)>>
+    --
+    * fecha : datetime
+    * usuario : nvarchar(100)
+    * actividad : nvarchar(200)
+    * detalle : nvarchar(max) <<DEFAULT ''>>
+    * tipo_actividad : nvarchar(50)
+}
+
+Repuestos "1" -- "0..*" MovimientosStock : id_repuesto
+Usuarios "1" -- "0..*" MovimientosStock : id_usuario
+
+legend bottom
+* = NOT NULL.
+NULL = admite valores nulos.
+Sin DEFAULT indicado = sin valor predeterminado
+declarado para una tabla nueva.
+endlegend
+
+note right of Repuestos
+UX_Repuestos_Codigo(codigo),
+sin filtro por activo.
+No existe columna StockMaximo.
+end note
+
+note right of MovimientosStock
+Sin unicidad adicional ni CHECK
+de tipos o cantidades en esta definición.
+
+Alta y ajuste manual guardan
+id_compra e id_reparacion nulos.
+end note
+
+note right of Usuarios
+UX_Usuarios_Username(username).
+Es referencia y resolución del responsable;
+este caso no modifica usuarios.
+end note
+
+note right of Bitacora
+Sin FK a Usuarios o Repuestos.
+fecha no tiene DEFAULT SQL.
+end note
+
+@enduml

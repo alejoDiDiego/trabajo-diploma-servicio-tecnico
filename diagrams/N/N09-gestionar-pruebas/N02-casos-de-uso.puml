@@ -1,0 +1,25 @@
+@startuml
+title N02-09 - Caso de uso Gestionar pruebas
+
+left to right direction
+
+actor Tecnico
+actor Encargado
+actor Recepcionista
+
+rectangle "Sistema Integral de Gestión para Servicios Técnicos" {
+    usecase "CU-09\nGestionar pruebas" as GestionarPruebas
+}
+
+Tecnico -- GestionarPruebas
+Encargado -- GestionarPruebas
+Recepcionista -- GestionarPruebas
+
+note bottom of GestionarPruebas
+Consulta, registro, anulación,
+finalización y reapertura permitida.
+
+Las actuaciones requieren autorización de edición.
+end note
+
+@enduml

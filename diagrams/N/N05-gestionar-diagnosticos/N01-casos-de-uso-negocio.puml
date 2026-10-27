@@ -1,0 +1,26 @@
+@startuml
+title N01.4.1 - Gestionar diagnósticos
+
+left to right direction
+
+actor Tecnico
+actor Encargado
+actor Recepcionista
+
+rectangle "Servicio técnico - Gestión de diagnósticos" {
+    usecase "CU-05\nGestionar diagnósticos" as GestionarDiagnosticos
+}
+
+Tecnico -- GestionarDiagnosticos : analiza y registra
+Encargado -- GestionarDiagnosticos : supervisa y actúa según permisos
+Recepcionista -- GestionarDiagnosticos : consulta
+
+note bottom of GestionarDiagnosticos
+Comprende consulta, inicio del análisis
+y registro de la conclusión.
+
+No comprende edición, eliminación
+ni anulación de diagnósticos registrados.
+end note
+
+@enduml

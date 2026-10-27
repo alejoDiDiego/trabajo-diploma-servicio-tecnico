@@ -1,0 +1,24 @@
+@startuml
+title N01.3 - Gestionar tipos de equipo y marcas
+
+left to right direction
+
+actor Recepcionista
+actor Encargado
+
+rectangle "Servicio técnico - Gestión de catálogos" {
+    usecase "CU-03\nGestionar tipos de equipo y marcas" as GestionarCatalogos
+}
+
+Recepcionista -- GestionarCatalogos : consulta
+Encargado -- GestionarCatalogos : consulta y mantiene
+
+note bottom of GestionarCatalogos
+Comprende consulta, registro, modificación,
+desactivación y reactivación.
+
+Tipos de equipo y marcas son catálogos independientes.
+Las operaciones dependen de los permisos asignados.
+end note
+
+@enduml

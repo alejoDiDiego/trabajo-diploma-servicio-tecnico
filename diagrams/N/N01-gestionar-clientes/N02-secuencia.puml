@@ -1,0 +1,95 @@
+@startuml
+title N02-01 - Secuencia de Gestión de clientes
+
+actor "Recepcionista o encargado" as Operador
+participant "pantalla : FrmClientes" as Pantalla
+participant "dialogo : FrmClienteEditar" as Dialogo
+participant "servicio : ClienteService" as Servicio
+participant "repositorio : ClienteRepository" as Repositorio
+participant "auditoria : BitacoraService" as Auditoria
+
+Operador -> Pantalla : Acceder a Clientes
+Pantalla -> Pantalla : Verificar permiso de consulta
+Pantalla -> Servicio : Listar(incluirInactivos)
+Servicio -> Repositorio : Listar(incluirInactivos)
+Repositorio --> Servicio : Clientes
+Servicio --> Pantalla : Clientes
+Pantalla --> Operador : Mostrar listado
+
+Operador -> Pantalla : Seleccionar operación
+
+alt Consulta
+    Operador -> Pantalla : Informar filtros
+    Pantalla -> Pantalla : Aplicar filtros al listado
+
+else Registro
+    Pantalla -> Dialogo : Mostrar formulario nuevo
+    Operador -> Dialogo : Completar y aceptar
+    Dialogo -> Dialogo : Validar obligatorios
+    Dialogo --> Pantalla : Datos aceptados
+    Pantalla -> Servicio : Crear(nombre, apellido, documento, telefono, email, direccion, observaciones)
+    Servicio -> Repositorio : ObtenerConflictoDocumento(documento)
+    Repositorio --> Servicio : Resultado de identidad
+    Servicio -> Repositorio : Agregar(cliente)
+    Repositorio --> Servicio : Cliente persistido
+    Servicio -> Auditoria : Registrar(actividad, detalle, tipoActividad)
+    Auditoria --> Servicio : Resultado
+    Servicio --> Pantalla : Cliente creado
+
+else Modificación
+    Pantalla -> Dialogo : Mostrar cliente seleccionado
+    Operador -> Dialogo : Modificar y aceptar
+    Dialogo -> Dialogo : Validar obligatorios
+    Dialogo --> Pantalla : Datos aceptados
+    Pantalla -> Servicio : Modificar(id, nombre, apellido, documento, telefono, email, direccion, observaciones)
+    Servicio -> Repositorio : ObtenerPorId(id)
+    Repositorio --> Servicio : Cliente actual
+    Servicio -> Repositorio : ObtenerConflictoDocumento(documento, id)
+    Repositorio --> Servicio : Resultado de identidad
+    Servicio -> Repositorio : Modificar(clienteActualizado)
+    Repositorio --> Servicio : Resultado
+    Servicio -> Auditoria : Registrar(actividad, detalle, tipoActividad)
+    Auditoria --> Servicio : Resultado
+    Servicio --> Pantalla : Cliente actualizado
+
+else Desactivación confirmada
+    Pantalla --> Operador : Solicitar confirmación
+    Operador -> Pantalla : Confirmar
+    Pantalla -> Servicio : Desactivar(id)
+    Servicio -> Repositorio : ObtenerPorId(id)
+    Repositorio --> Servicio : Cliente
+    Servicio -> Repositorio : Desactivar(id)
+    Repositorio --> Servicio : Resultado
+    Servicio -> Auditoria : Registrar(actividad, detalle, tipoActividad)
+    Auditoria --> Servicio : Resultado
+    Servicio --> Pantalla : Operación finalizada
+
+else Reactivación confirmada
+    Pantalla --> Operador : Solicitar confirmación
+    Operador -> Pantalla : Confirmar
+    Pantalla -> Servicio : Reactivar(id)
+    Servicio -> Repositorio : ObtenerPorId(id)
+    Repositorio --> Servicio : Cliente
+    Servicio -> Repositorio : Reactivar(id)
+    Repositorio --> Servicio : Resultado
+    Servicio -> Auditoria : Registrar(actividad, detalle, tipoActividad)
+    Auditoria --> Servicio : Resultado
+    Servicio --> Pantalla : Operación finalizada
+end
+
+opt Mantenimiento satisfactorio
+    Pantalla -> Servicio : Listar(incluirInactivos)
+    Servicio -> Repositorio : Listar(incluirInactivos)
+    Repositorio --> Servicio : Clientes
+    Servicio --> Pantalla : Clientes
+    Pantalla -> Pantalla : Reaplicar filtros vigentes
+end
+
+Pantalla --> Operador : Presentar resultado
+
+note over Repositorio, Auditoria
+La escritura principal y la auditoría
+no son una transacción global única.
+end note
+
+@enduml

@@ -1,0 +1,26 @@
+@startuml
+title N02-04 - Caso de uso Gestionar órdenes de servicio
+
+left to right direction
+
+actor Recepcionista
+actor Encargado
+actor Tecnico
+
+rectangle "Sistema Integral de Gestión para Servicios Técnicos" {
+    usecase "CU-04\nGestionar órdenes de servicio" as GestionarOrdenes
+}
+
+Recepcionista -- GestionarOrdenes
+Encargado -- GestionarOrdenes
+Tecnico -- GestionarOrdenes
+
+note bottom of GestionarOrdenes
+Comprende consulta, recepción,
+modificación de datos de ingreso,
+asignación de técnico y cancelación.
+
+Cada operación depende de permisos y condiciones.
+end note
+
+@enduml

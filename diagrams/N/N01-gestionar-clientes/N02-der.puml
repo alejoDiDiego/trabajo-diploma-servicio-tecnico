@@ -1,0 +1,58 @@
+@startuml
+title N02-01 - Entidades afectadas por Gestión de clientes
+
+hide circle
+skinparam linetype ortho
+
+entity Clientes {
+    * id_cliente : int <<PK, IDENTITY(1,1)>>
+    --
+    * nombre : nvarchar(100)
+    * apellido : nvarchar(100)
+    * documento : nvarchar(50)
+    telefono : nvarchar(100) <<NULL>>
+    email : nvarchar(200) <<NULL>>
+    direccion : nvarchar(300) <<NULL>>
+    observaciones : nvarchar(max) <<NULL>>
+    * activo : bit <<DEFAULT 1>>
+    * fecha_alta : datetime <<DEFAULT GETDATE()>>
+}
+
+entity Bitacora {
+    * id_bitacora : int <<PK, IDENTITY(1,1)>>
+    --
+    * fecha : datetime
+    * usuario : nvarchar(100)
+    * actividad : nvarchar(200)
+    * detalle : nvarchar(max) <<DEFAULT ''>>
+    * tipo_actividad : nvarchar(50)
+}
+
+legend bottom
+* = NOT NULL.
+NULL = admite valores nulos.
+Sin DEFAULT indicado = sin valor predeterminado
+declarado para una tabla nueva.
+endlegend
+
+note right of Clientes
+UX_Clientes_Documento(documento):
+índice único sin filtro por activo.
+
+Se instala si no existe
+y no hay documentos duplicados históricos.
+
+Sin unicidad de teléfono o correo.
+Sin clave foránea saliente.
+end note
+
+note right of Bitacora
+Sin clave foránea a Clientes o Usuarios.
+
+usuario conserva texto del responsable.
+El cliente se identifica en el detalle textual.
+
+fecha no posee DEFAULT SQL.
+end note
+
+@enduml

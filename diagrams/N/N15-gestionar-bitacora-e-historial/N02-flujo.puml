@@ -1,0 +1,32 @@
+@startuml
+title N02-15 - Flujo de Gestión de bitácora e historial
+
+start
+:Seleccionar consulta;
+
+if (¿Bitácora general?) then (sí)
+    :Verificar BITACORA_VER al acceder;
+    :Cargar consulta inicial;
+    :Recibir usuario, fechas opcionales y tipo;
+    :Buscar coincidencias;
+    :Presentar registros por fecha descendente;
+
+else (Historial de orden)
+    :Seleccionar y abrir orden;
+    :Verificar ORDENES_VER;
+    :Cargar detalle e historial;
+    :Seleccionar pestaña Historial;
+    :Mostrar cronología por fecha e identificador;
+endif
+
+:Leer información sin modificarla;
+
+if (¿Otra consulta?) then (sí)
+    :Cambiar criterios o contexto;
+else (no)
+    :Cerrar vista;
+endif
+
+stop
+
+@enduml

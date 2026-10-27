@@ -1,0 +1,91 @@
+@startuml
+title N02-12 - Clases de información de repuestos e inventario
+
+left to right direction
+skinparam classAttributeIconSize 0
+
+class Repuesto {
+    + Id : int
+    + Codigo : string
+    + Descripcion : string
+    + StockActual : int
+    + StockMinimo : int
+    + CostoActual : decimal
+    + PrecioReferencia : decimal
+    + Activo : bool
+    --
+    - Repuesto()
+    + {static} CrearNuevo(codigo : string, descripcion : string, stockInicial : int, stockMinimo : int, costoActual : decimal, precioReferencia : decimal) : Repuesto
+    + {static} CargarDesdeDB(id : int, codigo : string, descripcion : string, stockActual : int, stockMinimo : int, costoActual : decimal, precioReferencia : decimal, activo : bool) : Repuesto
+}
+
+class MovimientoStock {
+    + Id : int
+    + IdRepuesto : int
+    + Fecha : DateTime
+    + Tipo : string
+    + Cantidad : int
+    + StockAnterior : int
+    + StockPosterior : int
+    + IdUsuario : int
+    + IdCompra : int?
+    + IdReparacion : int?
+    + Observacion : string
+    --
+    - MovimientoStock()
+    + {static} CrearNuevo(idRepuesto : int, tipo : string, cantidad : int, stockAnterior : int, stockPosterior : int, idUsuario : int, observacion : string, idCompra : int? = null, idReparacion : int? = null) : MovimientoStock
+    + {static} CargarDesdeDB(id : int, idRepuesto : int, fecha : DateTime, tipo : string, cantidad : int, stockAnterior : int, stockPosterior : int, idUsuario : int, idCompra : int?, idReparacion : int?, observacion : string) : MovimientoStock
+}
+
+class TipoMovimientoStock <<static>> {
+    + {static} Compra : string = "Compra" <<const>>
+    + {static} ConsumoReparacion : string = "ConsumoReparacion" <<const>>
+    + {static} DevolucionConsumo : string = "DevolucionConsumo" <<const>>
+    + {static} AjustePositivo : string = "AjustePositivo" <<const>>
+    + {static} AjusteNegativo : string = "AjusteNegativo" <<const>>
+}
+
+class Usuario {
+    + Id : int
+    + Username : string
+    + Password : string
+    + Activo : bool
+    + DVH : string
+    --
+    - Usuario()
+    + {static} CrearNuevo(userName : string, password : string) : Usuario
+    + {static} CargarDesdeDB(id : int, userName : string, password : string, dvh : string = "", activo : bool = true) : Usuario
+    + Desactivar() : void
+    + Reactivar() : void
+    + SetDVH(dvh : string) : void
+}
+
+class EntradaBitacora {
+    + Id : int
+    + Fecha : DateTime
+    + Usuario : string
+    + Actividad : string
+    + Detalle : string
+    + TipoActividad : string
+    --
+    - EntradaBitacora()
+    + {static} Crear(id : int, fecha : DateTime, usuario : string, actividad : string, detalle : string, tipoActividad : string) : EntradaBitacora
+}
+
+Repuesto "1" .. "0..*" MovimientoStock : IdRepuesto
+Usuario "1" .. "0..*" MovimientoStock : IdUsuario
+MovimientoStock ..> TipoMovimientoStock : valores de Tipo
+
+note bottom of MovimientoStock
+TipoMovimientoStock no es un enum.
+
+Las referencias opcionales a compra y reparación
+pertenecen a movimientos de otros procesos.
+end note
+
+note bottom of EntradaBitacora
+Usuario es texto.
+No existe una referencia de objeto o FK a Usuario.
+end note
+
+@enduml

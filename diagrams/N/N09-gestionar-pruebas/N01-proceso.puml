@@ -1,0 +1,60 @@
+@startuml
+title N01.4.5 - Proceso de Gestión de pruebas
+
+|Técnico, encargado o recepcionista|
+start
+:Acceder al detalle de la orden;
+:Seleccionar operación;
+
+|Sistema|
+:Verificar autorización y condiciones;
+
+if (¿Consulta?) then (sí)
+    |Técnico, encargado o recepcionista|
+    :Seleccionar intervención;
+    |Sistema|
+    :Presentar pruebas de esa intervención;
+
+elseif (¿Registrar?) then (sí)
+    |Técnico, encargado o recepcionista|
+    :Informar descripción, resultado y observaciones;
+    |Sistema|
+    :Validar intervención actual y condiciones;
+    :Guardar prueba sin cambiar estado;
+
+elseif (¿Anular?) then (sí)
+    |Técnico, encargado o recepcionista|
+    :Seleccionar prueba y confirmar;
+    :Informar motivo;
+    |Sistema|
+    :Validar y conservar prueba como Anulada;
+
+elseif (¿Finalizar etapa?) then (sí)
+    |Técnico, encargado o recepcionista|
+    :Confirmar finalización;
+    |Sistema|
+    :Evaluar pruebas válidas actuales;
+
+    if (¿Existe alguna válida?) then (sí)
+        if (¿Todas aprobadas?) then (sí)
+            :Listo para retiro / Reparado;
+        else (no)
+            :En reparación / sin resultado final;
+        endif
+    else (no)
+        :Rechazar finalización;
+    endif
+
+else (Reabrir)
+    |Técnico, encargado o recepcionista|
+    :Confirmar reapertura e informar motivo;
+    |Sistema|
+    :Validar Listo para retiro / Reparado;
+    :Volver a En pruebas sin resultado final;
+endif
+
+:Registrar trazabilidad correspondiente;
+:Actualizar detalle;
+stop
+
+@enduml

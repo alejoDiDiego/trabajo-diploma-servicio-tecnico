@@ -1,0 +1,72 @@
+@startuml
+title N02-07 - Secuencia de Gestión de reparaciones
+
+actor "Técnico, encargado o recepcionista" as Operador
+participant "detalle : FrmOrdenServicioDetalle" as Detalle
+participant "servicio : OrdenServicioService" as Servicio
+participant "ordenes : OrdenServicioRepository" as Ordenes
+participant "reparaciones : ReparacionRepository" as Reparaciones
+participant "usuarios : UsuarioRepository" as Usuarios
+participant "auditoria : BitacoraService" as Auditoria
+
+Operador -> Detalle : Acceder a Reparaciones
+Detalle -> Servicio : ListarReparaciones
+Servicio -> Reparaciones : ListarPorOrden
+Reparaciones --> Servicio : Intervenciones
+Servicio --> Detalle : Intervenciones
+Detalle --> Operador : Mostrar grilla
+
+alt Inicio
+    Operador -> Detalle : Iniciar reparación
+    Detalle -> Servicio : IniciarReparacion
+    Servicio -> Ordenes : Obtener orden y condición de bloqueo
+    Ordenes --> Servicio : Orden y condición
+    Servicio -> Usuarios : Obtener técnico asignado
+    Usuarios --> Servicio : Usuario
+    Servicio -> Servicio : Validar activo y permiso efectivo
+
+    alt Orden Autorizado para reparación
+        Servicio -> Reparaciones : IniciarReparacion
+        Reparaciones -> Reparaciones : Crear intervención, actualizar orden e historial
+    else Orden En reparación
+        Servicio -> Reparaciones : ObtenerAbierta
+        Reparaciones --> Servicio : Resultado
+        Servicio -> Reparaciones : IniciarIntervencionAdicional si no existe abierta
+        Reparaciones -> Reparaciones : Crear intervención sin transición
+    end
+
+    Reparaciones --> Servicio : Identificador
+    Servicio -> Auditoria : Registrar inicio
+    Auditoria --> Servicio : Resultado
+    Servicio -> Reparaciones : ObtenerPorId
+    Reparaciones --> Servicio : Intervención
+    Servicio --> Detalle : Resultado
+    Detalle -> Detalle : Recargar orden
+
+else Finalización
+    Operador -> Detalle : Seleccionar abierta e informar trabajo
+    Operador -> Detalle : Finalizar reparación
+    Detalle -> Servicio : FinalizarReparacion
+    Servicio -> Reparaciones : ObtenerPorId de la seleccionada
+    Reparaciones --> Servicio : Intervención
+    Servicio -> Ordenes : Obtener orden y condición de bloqueo
+    Ordenes --> Servicio : Orden y condición
+    Servicio -> Servicio : Validar apertura, estado y trabajo
+    Servicio -> Reparaciones : FinalizarReparacion
+    Reparaciones -> Reparaciones : Guardar cierre, En pruebas e historial
+    Reparaciones --> Servicio : Resultado
+    Servicio -> Auditoria : Registrar finalización
+    Auditoria --> Servicio : Resultado
+    Servicio --> Detalle : Operación completada
+    Detalle -> Detalle : Limpiar captura y recargar
+end
+
+Detalle --> Operador : Presentar resultado y mantener abierto
+
+note over Reparaciones, Auditoria
+Cada operación principal tiene su transacción.
+La auditoría y las lecturas posteriores
+no integran una transacción global con ella.
+end note
+
+@enduml

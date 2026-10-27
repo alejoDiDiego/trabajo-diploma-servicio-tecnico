@@ -1,0 +1,44 @@
+@startuml
+title N02-16 - Secuencia de Consulta de dashboard y reportes
+
+actor "Encargado, administrador o usuario autorizado" as Operador
+participant FrmDashboard as Dashboard
+participant FrmReportes as Reportes
+participant ReporteService as Servicio
+participant ReporteRepository as Consultas
+
+alt Dashboard
+    Operador -> Dashboard : Abrir o solicitar Actualizar
+    Dashboard -> Servicio : Consultar indicadores
+    Servicio -> Consultas : Obtener indicadores actuales
+    Consultas --> Servicio : Una fila con seis cantidades
+    Servicio --> Dashboard : Datos
+    Dashboard --> Operador : Mostrar tarjetas
+
+else Reporte
+    Operador -> Reportes : Seleccionar tipo y criterios
+    Operador -> Reportes : Buscar
+    Reportes -> Servicio : Solicitar reporte
+    Servicio -> Servicio : Validar rango y máximo cuando corresponde
+    Servicio -> Consultas : Ejecutar consulta definida
+    Consultas --> Servicio : Tabla o valor
+    Servicio --> Reportes : Resultado
+
+    opt Reporte de tasa
+        Reportes -> Servicio : Solicitar tasa
+        Servicio -> Consultas : Consultar cantidades para cálculo
+        Consultas --> Servicio : Cantidades
+        Servicio -> Servicio : Calcular proporción o cero
+        Servicio --> Reportes : Tasa
+    end
+
+    Reportes --> Operador : Mostrar grilla, valor o tabla y tasa
+end
+
+note over Servicio, Consultas
+Solo se realizan lecturas.
+Las consultas separadas no constituyen
+una fotografía transaccional única.
+end note
+
+@enduml

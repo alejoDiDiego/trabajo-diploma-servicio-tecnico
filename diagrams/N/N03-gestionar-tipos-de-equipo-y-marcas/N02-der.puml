@@ -1,0 +1,63 @@
+@startuml
+title N02-03 - Entidades afectadas por Gestión de catálogos
+
+hide circle
+skinparam linetype ortho
+
+entity TiposEquipo {
+    * id_tipo_equipo : int <<PK, IDENTITY(1,1)>>
+    --
+    * nombre : nvarchar(100)
+    * activo : bit <<DEFAULT 1>>
+}
+
+entity Marcas {
+    * id_marca : int <<PK, IDENTITY(1,1)>>
+    --
+    * nombre : nvarchar(100)
+    * activo : bit <<DEFAULT 1>>
+}
+
+entity Bitacora {
+    * id_bitacora : int <<PK, IDENTITY(1,1)>>
+    --
+    * fecha : datetime
+    * usuario : nvarchar(100)
+    * actividad : nvarchar(200)
+    * detalle : nvarchar(max) <<DEFAULT ''>>
+    * tipo_actividad : nvarchar(50)
+}
+
+legend bottom
+* = NOT NULL.
+Sin DEFAULT indicado = sin valor predeterminado
+declarado para una tabla nueva.
+endlegend
+
+note right of TiposEquipo
+UX_TiposEquipo_Nombre(nombre):
+índice único sin filtro por activo.
+
+DF_TiposEquipo_Activo:
+DEFAULT 1.
+
+Sin claves foráneas salientes.
+end note
+
+note right of Marcas
+UX_Marcas_Nombre(nombre):
+índice único sin filtro por activo.
+
+DF_Marcas_Activo:
+DEFAULT 1.
+
+Sin claves foráneas salientes.
+end note
+
+note right of Bitacora
+Sin claves foráneas a los catálogos o a Usuarios.
+El registro afectado se identifica en el detalle textual.
+fecha no posee DEFAULT SQL.
+end note
+
+@enduml

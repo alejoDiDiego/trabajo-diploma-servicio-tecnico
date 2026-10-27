@@ -1,0 +1,93 @@
+@startuml
+title N02-14 - Secuencia de Gestión de compras
+
+actor "Responsable de compras o encargado" as Operador
+participant FrmCompras as Lista
+participant FrmCompraDetalle as Detalle
+participant CompraService as Servicio
+participant CompraRepository as Compras
+participant BitacoraService as Auditoria
+
+Operador -> Lista : Crear o abrir compra
+Lista -> Detalle : Mostrar detalle
+
+alt Preparación nueva
+    Operador -> Detalle : Seleccionar proveedor y agregar renglones
+    Detalle -> Detalle : Mantener preparación en memoria
+    Operador -> Detalle : Guardar borrador
+    Detalle -> Servicio : CrearBorrador
+    Servicio -> Servicio : Validar proveedor y renglones
+    Servicio -> Compras : CrearBorradorConDetalle
+    Compras --> Servicio : Compra persistida
+    Servicio -> Auditoria : Registrar creación
+    Auditoria --> Servicio : Resultado
+    Servicio --> Detalle : Borrador
+    Detalle -> Detalle : Recargar y bloquear cabecera
+
+else Renglones de borrador existente
+    Operador -> Detalle : Agregar o quitar
+    Detalle -> Servicio : AgregarItem o QuitarItem
+    Servicio -> Servicio : Validar Borrador y datos
+    Servicio -> Compras : Guardar cambio de detalle y total
+    Compras --> Servicio : Resultado
+    Servicio -> Auditoria : Registrar actividad
+    Auditoria --> Servicio : Resultado
+    Servicio --> Detalle : Recargar
+
+else Confirmación
+    Operador -> Detalle : Confirmar compra
+    Detalle --> Operador : Solicitar confirmación
+    Operador -> Detalle : Confirmar
+
+    opt Compra todavía nueva
+        Detalle -> Servicio : CrearBorrador
+        Servicio -> Compras : CrearBorradorConDetalle
+        Compras --> Servicio : Borrador
+        Servicio -> Auditoria : Registrar creación
+        Auditoria --> Servicio : Resultado
+        Servicio --> Detalle : Borrador creado
+    end
+
+    Detalle -> Servicio : Confirmar
+    Servicio -> Compras : ConfirmarConStock
+    Compras -> Compras : Validar estado y detalle
+    Compras -> Compras : Incrementar stock, actualizar costos y movimientos
+    Compras --> Servicio : Compra confirmada
+    Servicio -> Auditoria : Registrar confirmación
+    Auditoria --> Servicio : Resultado
+    Servicio --> Detalle : Recargar
+
+else Cancelación de borrador
+    Operador -> Detalle : Cancelar compra
+    Detalle --> Operador : Solicitar confirmación
+    Operador -> Detalle : Confirmar
+    Detalle -> Servicio : Cancelar
+    Servicio -> Compras : CancelarBorrador
+    Compras --> Servicio : Resultado
+    Servicio -> Auditoria : Registrar cancelación
+    Auditoria --> Servicio : Resultado
+    Servicio --> Detalle : Recargar
+
+else Anulación de confirmada
+    Operador -> Detalle : Anular
+    Detalle --> Operador : Solicitar motivo
+    Operador -> Detalle : Informar motivo
+    Detalle --> Operador : Solicitar confirmación
+    Operador -> Detalle : Confirmar
+    Detalle -> Servicio : Anular
+    Servicio -> Compras : AnularConfirmadaConStock
+    Compras -> Compras : Comprobar cantidades agrupadas
+    Compras -> Compras : Cancelar, descontar stock y registrar ajustes
+    Compras --> Servicio : Resultado
+    Servicio -> Auditoria : Registrar anulación
+    Auditoria --> Servicio : Resultado
+    Servicio --> Detalle : Recargar
+end
+
+note over Compras, Auditoria
+Cada escritura principal precede a su auditoría.
+La compra nueva y su confirmación
+no son una única transacción global.
+end note
+
+@enduml

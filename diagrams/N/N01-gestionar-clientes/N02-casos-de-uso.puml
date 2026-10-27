@@ -1,0 +1,24 @@
+@startuml
+title N02-01 - Caso de uso Gestionar clientes
+
+left to right direction
+
+actor Recepcionista
+actor Encargado
+
+rectangle "Sistema Integral de Gestión para Servicios Técnicos" {
+    usecase "CU-01\nGestionar clientes" as GestionarClientes
+}
+
+Recepcionista -- GestionarClientes
+Encargado -- GestionarClientes
+
+note bottom of GestionarClientes
+El mismo caso de uso comprende:
+consulta, registro, modificación,
+desactivación y reactivación.
+
+Cada operación requiere su autorización.
+end note
+
+@enduml

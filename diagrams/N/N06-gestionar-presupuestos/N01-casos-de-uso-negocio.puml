@@ -1,0 +1,29 @@
+@startuml
+title N01.4.2 - Gestionar presupuestos
+
+left to right direction
+
+actor Cliente
+actor Recepcionista
+actor Tecnico
+actor Encargado
+
+rectangle "Servicio técnico - Gestión de presupuestos" {
+    usecase "CU-06\nGestionar presupuestos" as GestionarPresupuestos
+}
+
+Cliente -- GestionarPresupuestos : comunica decisión
+Recepcionista -- GestionarPresupuestos : consulta y prepara
+Tecnico -- GestionarPresupuestos : informa necesidades y adicionales
+Encargado -- GestionarPresupuestos : administra propuestas y decisiones
+
+note bottom of GestionarPresupuestos
+Comprende borradores, emisión, respuestas,
+anulación y solicitudes adicionales.
+
+El personal registra la decisión del cliente.
+No existe aprobación mediante portal,
+facturación ni registro de cobros.
+end note
+
+@enduml

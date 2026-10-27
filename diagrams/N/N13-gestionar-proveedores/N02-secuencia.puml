@@ -1,0 +1,67 @@
+@startuml
+title N02-13 - Secuencia de Gestión de proveedores
+
+actor "Responsable de compras o encargado" as Operador
+participant FrmProveedores as Lista
+participant FrmProveedorEditar as Editor
+participant ProveedorService as Servicio
+participant ProveedorRepository as Proveedores
+participant BitacoraService as Auditoria
+
+Operador -> Lista : Acceder y aplicar filtros
+Lista -> Servicio : Listar
+Servicio -> Proveedores : Listar
+Proveedores --> Servicio : Proveedores
+Servicio --> Lista : Datos
+Lista -> Lista : Aplicar filtros locales
+Lista --> Operador : Mostrar resultados
+
+alt Alta o modificación
+    Operador -> Lista : Crear o editar
+    Lista -> Editor : Abrir formulario
+    Operador -> Editor : Completar datos y aceptar
+    Editor -> Editor : Validar razón social
+    Editor --> Lista : Datos aceptados y formulario cerrado
+
+    alt Alta
+        Lista -> Servicio : Crear
+        Servicio -> Servicio : Validar mediante Proveedor.CrearNuevo
+        Servicio -> Proveedores : Agregar
+        Proveedores -> Proveedores : Insertar y obtener registro
+    else Modificación
+        Lista -> Servicio : Modificar
+        Servicio -> Proveedores : ObtenerPorId
+        Proveedores --> Servicio : Registro existente
+        Servicio -> Servicio : Validar y conservar Activo
+        Servicio -> Proveedores : Modificar
+    end
+
+    Proveedores --> Servicio : Resultado
+    Servicio -> Auditoria : Registrar actividad
+    Auditoria --> Servicio : Resultado
+    Servicio --> Lista : Operación completada
+    Lista -> Lista : Recargar proveedores
+
+else Desactivación o reactivación
+    Operador -> Lista : Solicitar cambio
+    Lista --> Operador : Solicitar confirmación
+    Operador -> Lista : Confirmar
+    Lista -> Servicio : Desactivar o Reactivar
+    Servicio -> Proveedores : ObtenerPorId
+    Proveedores --> Servicio : Registro
+    Servicio -> Proveedores : Cambiar Activo
+    Proveedores --> Servicio : Resultado
+    Servicio -> Auditoria : Registrar actividad
+    Auditoria --> Servicio : Resultado
+    Servicio --> Lista : Operación completada
+    Lista -> Lista : Recargar proveedores
+end
+
+Lista --> Operador : Presentar resultado
+
+note over Proveedores, Auditoria
+La escritura del proveedor y la auditoría
+son operaciones separadas.
+end note
+
+@enduml

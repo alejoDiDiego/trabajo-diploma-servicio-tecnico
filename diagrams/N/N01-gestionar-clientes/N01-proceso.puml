@@ -1,0 +1,65 @@
+@startuml
+title N01.1 - Proceso de Gestión de clientes
+
+|Recepcionista o encargado|
+start
+:Acceder a Gestión de clientes;
+
+|Sistema|
+:Verificar permiso de consulta;
+
+if (¿Acceso permitido?) then (sí)
+    :Cargar y presentar clientes;
+else (no)
+    :Informar acceso denegado;
+    stop
+endif
+
+|Recepcionista o encargado|
+:Seleccionar operación;
+
+|Sistema|
+:Verificar autorización y selección requerida;
+
+if (¿Consulta?) then (sí)
+    |Recepcionista o encargado|
+    :Indicar filtros y opción de inactivos;
+    |Sistema|
+    :Presentar coincidencias;
+
+elseif (¿Registro o modificación?) then (sí)
+    :Presentar formulario de datos;
+    |Recepcionista o encargado|
+    :Completar o modificar información;
+    :Aceptar;
+    |Sistema|
+    :Validar campos obligatorios y documento;
+
+    if (¿Información admitida?) then (sí)
+        :Guardar cliente;
+        :Registrar actividad;
+        :Actualizar listado;
+    else (no)
+        :Informar impedimento;
+    endif
+
+else (Desactivación o reactivación)
+    :Solicitar confirmación;
+    |Recepcionista o encargado|
+
+    if (¿Confirma?) then (sí)
+        |Sistema|
+        :Actualizar condición activa;
+        :Registrar actividad;
+        :Actualizar listado;
+    else (no)
+        |Sistema|
+        :Mantener información sin cambios;
+    endif
+endif
+
+|Recepcionista o encargado|
+:Consultar resultado;
+stop
+
+@enduml

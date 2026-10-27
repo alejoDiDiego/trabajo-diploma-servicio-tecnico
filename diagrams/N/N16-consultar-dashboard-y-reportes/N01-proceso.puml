@@ -1,0 +1,37 @@
+@startuml
+title N01.9 - Proceso de Consulta de dashboard y reportes
+
+|Encargado, administrador o usuario de consulta autorizado|
+start
+:Seleccionar Dashboard o Reportes;
+
+|Sistema|
+:Verificar autorización;
+
+if (¿Dashboard?) then (sí)
+    :Consultar indicadores actuales;
+    :Presentar seis indicadores;
+
+    |Encargado, administrador o usuario de consulta autorizado|
+    if (¿Solicita actualizar?) then (sí)
+        |Sistema|
+        :Volver a consultar indicadores;
+    endif
+
+else (Reportes)
+    |Encargado, administrador o usuario de consulta autorizado|
+    :Seleccionar reporte;
+    :Indicar fechas opcionales;
+    :Indicar máximo si corresponde;
+    :Solicitar búsqueda;
+
+    |Sistema|
+    :Validar criterios;
+    :Consultar y calcular resultados;
+    :Presentar tabla, valor o tasa;
+endif
+
+:Conservar datos de negocio sin modificaciones;
+stop
+
+@enduml

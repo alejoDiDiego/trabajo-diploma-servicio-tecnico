@@ -1,0 +1,26 @@
+@startuml
+title N01.2 - Gestionar equipos
+
+left to right direction
+
+actor Cliente
+actor Recepcionista
+actor Encargado
+
+rectangle "Servicio técnico - Gestión de equipos" {
+    usecase "CU-02\nGestionar equipos" as GestionarEquipos
+}
+
+Cliente -- GestionarEquipos : proporciona información
+Recepcionista -- GestionarEquipos : consulta y mantiene
+Encargado -- GestionarEquipos : consulta y administra vigencia
+
+note bottom of GestionarEquipos
+Comprende consulta, registro, modificación,
+desactivación y reactivación.
+
+La participación del cliente no implica
+acceso directo a la aplicación.
+end note
+
+@enduml

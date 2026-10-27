@@ -1,0 +1,26 @@
+@startuml
+title N01.4.4 - Gestionar repuestos utilizados
+
+left to right direction
+
+actor Tecnico
+actor Encargado
+actor Recepcionista
+
+rectangle "Servicio técnico - Repuestos utilizados" {
+    usecase "CU-08\nGestionar repuestos utilizados" as GestionarConsumos
+}
+
+Tecnico -- GestionarConsumos : registra consumos y devoluciones
+Encargado -- GestionarConsumos : consulta y actúa según permisos
+Recepcionista -- GestionarConsumos : consulta
+
+note bottom of GestionarConsumos
+Comprende consulta, consumo y devolución.
+
+La cantidad a devolver puede ser parcial.
+Los costos registrados son internos;
+no modifican automáticamente los presupuestos.
+end note
+
+@enduml

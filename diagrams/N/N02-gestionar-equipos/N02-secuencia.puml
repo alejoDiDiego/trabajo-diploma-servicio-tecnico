@@ -1,0 +1,108 @@
+@startuml
+title N02-02 - Secuencia de Gestión de equipos
+
+actor "Recepcionista o encargado" as Operador
+participant "pantalla : FrmEquipos" as Pantalla
+participant "dialogo : FrmEquipoEditar" as Dialogo
+participant "servicio : EquipoService" as Servicio
+participant "equipos : EquipoRepository" as Equipos
+participant "clientes : ClienteRepository" as Clientes
+participant "tipos : TipoEquipoRepository" as Tipos
+participant "marcas : MarcaRepository" as Marcas
+participant "auditoria : BitacoraService" as Auditoria
+
+Operador -> Pantalla : Acceder a Equipos
+Pantalla -> Pantalla : Verificar permiso de consulta
+Pantalla -> Servicio : Consultar según cliente e inactivos
+Servicio -> Equipos : Recuperar equipos
+Equipos --> Servicio : Equipos
+Servicio --> Pantalla : Equipos
+Pantalla --> Operador : Mostrar listado
+
+Operador -> Pantalla : Seleccionar operación
+
+alt Consulta
+    Operador -> Pantalla : Informar filtros
+    opt Cambia cliente o inclusión de inactivos
+        Pantalla -> Servicio : Consultar equipos
+        Servicio -> Equipos : Recuperar según criterios
+        Equipos --> Servicio : Equipos
+        Servicio --> Pantalla : Equipos
+    end
+    Pantalla -> Pantalla : Filtrar por modelo o número de serie
+
+else Registro o modificación
+    Pantalla -> Dialogo : Mostrar formulario y referencias
+    Operador -> Dialogo : Completar y aceptar
+    Dialogo -> Dialogo : Validar referencias seleccionadas
+    Dialogo --> Pantalla : Datos aceptados
+
+    alt Registro
+        Pantalla -> Servicio : Crear equipo con los datos aceptados
+    else Modificación
+        Pantalla -> Servicio : Modificar equipo con los datos aceptados
+        Servicio -> Equipos : ObtenerPorId(id)
+        Equipos --> Servicio : Equipo actual
+    end
+
+    Servicio -> Clientes : ObtenerPorId(idCliente)
+    Clientes --> Servicio : Cliente
+    Servicio -> Tipos : ObtenerPorId(idTipoEquipo)
+    Tipos --> Servicio : Tipo de equipo
+    Servicio -> Marcas : ObtenerPorId(idMarca)
+    Marcas --> Servicio : Marca
+    Servicio -> Servicio : Validar existencia y condición activa
+
+    alt Registro admitido
+        Servicio -> Equipos : Agregar(equipo)
+        Equipos --> Servicio : Equipo persistido
+    else Modificación admitida
+        Servicio -> Equipos : Modificar(equipoActualizado)
+        Equipos --> Servicio : Resultado
+    end
+
+    Servicio -> Auditoria : Registrar(actividad, detalle, tipoActividad)
+    Auditoria --> Servicio : Resultado
+    Servicio --> Pantalla : Resultado del mantenimiento
+
+else Desactivación o reactivación confirmada
+    Pantalla --> Operador : Solicitar confirmación
+    Operador -> Pantalla : Confirmar
+
+    alt Desactivación
+        Pantalla -> Servicio : Desactivar(id)
+    else Reactivación
+        Pantalla -> Servicio : Reactivar(id)
+    end
+
+    Servicio -> Equipos : ObtenerPorId(id)
+    Equipos --> Servicio : Equipo existente
+
+    alt Desactivación
+        Servicio -> Equipos : Desactivar(id)
+    else Reactivación
+        Servicio -> Equipos : Reactivar(id)
+    end
+
+    Equipos --> Servicio : Resultado
+    Servicio -> Auditoria : Registrar(actividad, detalle, tipoActividad)
+    Auditoria --> Servicio : Resultado
+    Servicio --> Pantalla : Resultado del mantenimiento
+end
+
+opt Mantenimiento satisfactorio
+    Pantalla -> Servicio : Consultar equipos según filtros vigentes
+    Servicio -> Equipos : Recuperar equipos
+    Equipos --> Servicio : Equipos
+    Servicio --> Pantalla : Equipos
+    Pantalla -> Pantalla : Reaplicar búsqueda
+end
+
+Pantalla --> Operador : Presentar resultado
+
+note over Equipos, Auditoria
+La escritura principal y la auditoría
+son operaciones separadas.
+end note
+
+@enduml

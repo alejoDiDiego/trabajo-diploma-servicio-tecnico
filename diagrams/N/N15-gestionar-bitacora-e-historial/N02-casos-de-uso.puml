@@ -1,0 +1,27 @@
+@startuml
+title N02-15 - Caso de uso Gestionar bitácora e historial
+
+left to right direction
+
+actor Administrador
+actor Encargado
+actor Recepcionista
+actor Tecnico
+
+rectangle "Sistema Integral de Gestión para Servicios Técnicos" {
+    usecase "CU-15\nGestionar bitácora e historial" as GestionarTrazabilidad
+}
+
+Administrador -- GestionarTrazabilidad
+Encargado -- GestionarTrazabilidad
+Recepcionista -- GestionarTrazabilidad : historial
+Tecnico -- GestionarTrazabilidad : historial
+
+note bottom of GestionarTrazabilidad
+Bitácora general: BITACORA_VER.
+Historial de orden: ORDENES_VER.
+
+No ofrece actuaciones manuales de modificación.
+end note
+
+@enduml

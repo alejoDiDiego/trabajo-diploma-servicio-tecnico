@@ -1,0 +1,45 @@
+@startuml
+title N02-15 - Secuencia de Gestión de bitácora e historial
+
+actor "Personal autorizado" as Operador
+participant FrmBitacora as PantallaBitacora
+participant BitacoraService as ServicioBitacora
+participant BitacoraRepository as Bitacora
+participant FrmOrdenServicioDetalle as DetalleOrden
+participant OrdenServicioService as ServicioOrdenes
+participant HistorialEstadoOrdenRepository as Historial
+
+alt Consulta de bitácora
+    Operador -> PantallaBitacora : Abrir vista autorizada
+    PantallaBitacora -> ServicioBitacora : ObtenerTiposActividad
+    ServicioBitacora --> PantallaBitacora : Códigos de categorías
+    PantallaBitacora -> ServicioBitacora : Buscar con filtros iniciales
+    ServicioBitacora -> Bitacora : Buscar
+    Bitacora --> ServicioBitacora : Registros
+    ServicioBitacora --> PantallaBitacora : Resultados
+    PantallaBitacora --> Operador : Mostrar grilla
+
+    Operador -> PantallaBitacora : Ajustar criterios y Buscar
+    PantallaBitacora -> ServicioBitacora : Buscar
+    ServicioBitacora -> Bitacora : Consultar condiciones combinadas
+    Bitacora --> ServicioBitacora : Coincidencias
+    ServicioBitacora --> PantallaBitacora : Resultados
+    PantallaBitacora --> Operador : Presentar datos de solo lectura
+
+else Consulta de historial
+    Operador -> DetalleOrden : Abrir orden autorizada
+    DetalleOrden -> ServicioOrdenes : ListarHistorial
+    ServicioOrdenes -> Historial : ListarPorOrden
+    Historial --> ServicioOrdenes : Entradas ordenadas
+    ServicioOrdenes --> DetalleOrden : Historial
+    DetalleOrden -> DetalleOrden : Traducir estados y resolver usuario disponible
+    Operador -> DetalleOrden : Seleccionar Historial
+    DetalleOrden --> Operador : Mostrar datos ya cargados
+end
+
+note over Bitacora, Historial
+Estas consultas no modifican registros.
+No existe unión automática entre ambas tablas.
+end note
+
+@enduml

@@ -1,0 +1,38 @@
+@startuml
+title N01.8 - Proceso de Gestión de bitácora e historial
+
+|Administrador, encargado, recepcionista o técnico|
+start
+:Seleccionar consulta;
+
+|Sistema|
+if (¿Bitácora general?) then (sí)
+    :Verificar autorización de bitácora;
+
+    |Administrador o encargado|
+    :Indicar filtros opcionales;
+    :Solicitar búsqueda;
+
+    |Sistema|
+    :Consultar actividades coincidentes;
+    :Presentar resultados por fecha descendente;
+
+else (Historial de orden)
+    |Administrador, encargado, recepcionista o técnico|
+    :Seleccionar y abrir una orden;
+
+    |Sistema|
+    :Verificar autorización de consulta;
+    :Cargar información e historial;
+
+    |Administrador, encargado, recepcionista o técnico|
+    :Acceder a Historial;
+
+    |Sistema|
+    :Presentar cronología registrada;
+endif
+
+:Conservar datos sin modificaciones;
+stop
+
+@enduml

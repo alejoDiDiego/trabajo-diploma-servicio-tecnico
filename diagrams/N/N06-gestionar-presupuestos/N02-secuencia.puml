@@ -1,0 +1,91 @@
+@startuml
+title N02-06 - Secuencia de Gestión de presupuestos
+
+actor "Recepcionista, encargado o técnico" as Operador
+participant FrmOrdenServicioDetalle as Pantalla
+participant OrdenServicioService as Servicio
+participant PresupuestoRepository as Presupuestos
+participant DiagnosticoRepository as Diagnosticos
+participant RepuestoRepository as Repuestos
+participant HistorialEstadoOrdenRepository as Historial
+participant OrdenServicioRepository as Ordenes
+participant BitacoraService as Auditoria
+
+Operador -> Pantalla : Seleccionar documento y operación
+
+alt Consulta
+    Pantalla -> Servicio : Consultar presupuestos y detalle
+    Servicio -> Presupuestos : Recuperar documentos, conceptos y monto autorizado
+    Presupuestos --> Servicio : Datos
+    Servicio --> Pantalla : Presentar información
+
+else Guardar borrador o emitir
+    Operador -> Pantalla : Preparar conceptos e importes
+    Pantalla -> Servicio : Solicitar guardado, emisión o publicación
+
+    opt Emisión o publicación de Original
+        Servicio -> Diagnosticos : ObtenerPorOrden
+        Diagnosticos --> Servicio : Diagnóstico
+    end
+
+    opt Conceptos de repuesto
+        Servicio -> Repuestos : ObtenerPorId
+        Repuestos --> Servicio : Referencia y condición activa
+    end
+
+    Servicio -> Servicio : Validar documento, conceptos e importes
+    Servicio -> Presupuestos : Persistir operación correspondiente
+    Presupuestos --> Servicio : Documento
+
+else Aprobación o rechazo
+    Operador -> Pantalla : Informar respuesta y solicitar registro
+    Pantalla -> Servicio : Registrar decisión según tipo
+
+    opt Aprobación de Adicional
+        Servicio -> Historial : Recuperar origen de solicitud
+        Historial --> Servicio : Historial
+    end
+
+    Servicio -> Presupuestos : Registrar respuesta y transición
+    Presupuestos --> Servicio : Resultado
+
+else Eliminar borrador o anular
+    Operador -> Pantalla : Solicitar operación
+    Pantalla --> Operador : Pedir motivo si es anulación y confirmación
+    Operador -> Pantalla : Completar y confirmar
+    Pantalla -> Servicio : EliminarBorrador o AnularPresupuesto
+    Servicio -> Servicio : Validar estado y ventana
+    Servicio -> Presupuestos : Aplicar eliminación o anulación
+    Presupuestos --> Servicio : Resultado
+
+else Solicitar adicional
+    Operador -> Pantalla : Informar motivo
+    Pantalla -> Servicio : SolicitarAdicional
+    Servicio -> Servicio : Validar Original y ausencia de adicional bloqueante
+    Servicio -> Ordenes : CambiarEstadoConHistorial
+    Ordenes --> Servicio : Resultado
+
+else Cancelar solicitud adicional
+    Operador -> Pantalla : Confirmar cancelación
+    Pantalla -> Servicio : CancelarSolicitudAdicional
+    Servicio -> Historial : Recuperar origen
+    Historial --> Servicio : Historial
+    Servicio -> Presupuestos : Eliminar borradores adicionales y restaurar origen
+    Presupuestos --> Servicio : Resultado
+end
+
+opt Mantenimiento completado
+    Servicio -> Auditoria : Registrar actividad
+    Auditoria --> Servicio : Resultado
+    Servicio --> Pantalla : Resultado de operación
+    Pantalla -> Pantalla : Recargar orden y presupuesto
+end
+
+Pantalla --> Operador : Presentar resultado
+
+note over Presupuestos, Auditoria
+Las escrituras operativas y la auditoría
+no forman una transacción global única.
+end note
+
+@enduml

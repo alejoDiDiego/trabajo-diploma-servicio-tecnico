@@ -1,0 +1,106 @@
+@startuml
+title N02-02 - Entidades afectadas por Gestión de equipos
+
+hide circle
+skinparam linetype ortho
+
+entity Clientes {
+    * id_cliente : int <<PK, IDENTITY(1,1)>>
+    --
+    * nombre : nvarchar(100)
+    * apellido : nvarchar(100)
+    * documento : nvarchar(50)
+    telefono : nvarchar(100) <<NULL>>
+    email : nvarchar(200) <<NULL>>
+    direccion : nvarchar(300) <<NULL>>
+    observaciones : nvarchar(max) <<NULL>>
+    * activo : bit <<DEFAULT 1>>
+    * fecha_alta : datetime <<DEFAULT GETDATE()>>
+}
+
+entity TiposEquipo {
+    * id_tipo_equipo : int <<PK, IDENTITY(1,1)>>
+    --
+    * nombre : nvarchar(100)
+    * activo : bit <<DEFAULT 1>>
+}
+
+entity Marcas {
+    * id_marca : int <<PK, IDENTITY(1,1)>>
+    --
+    * nombre : nvarchar(100)
+    * activo : bit <<DEFAULT 1>>
+}
+
+entity Equipos {
+    * id_equipo : int <<PK, IDENTITY(1,1)>>
+    --
+    * id_cliente : int <<FK>>
+    * id_tipo_equipo : int <<FK>>
+    * id_marca : int <<FK>>
+    modelo : nvarchar(150) <<NULL>>
+    numero_serie : nvarchar(150) <<NULL>>
+    imei : nvarchar(100) <<NULL>>
+    color : nvarchar(100) <<NULL>>
+    observaciones : nvarchar(max) <<NULL>>
+    * activo : bit <<DEFAULT 1>>
+}
+
+entity Bitacora {
+    * id_bitacora : int <<PK, IDENTITY(1,1)>>
+    --
+    * fecha : datetime
+    * usuario : nvarchar(100)
+    * actividad : nvarchar(200)
+    * detalle : nvarchar(max) <<DEFAULT ''>>
+    * tipo_actividad : nvarchar(50)
+}
+
+Clientes "1" -- "0..*" Equipos : id_cliente
+TiposEquipo "1" -- "0..*" Equipos : id_tipo_equipo
+Marcas "1" -- "0..*" Equipos : id_marca
+
+legend bottom
+* = NOT NULL.
+NULL = admite valores nulos.
+Sin DEFAULT indicado = sin valor predeterminado
+declarado para una tabla nueva.
+endlegend
+
+note bottom of Equipos
+FK_Equipos_Clientes:
+id_cliente -> Clientes.id_cliente
+
+FK_Equipos_TiposEquipo:
+id_tipo_equipo -> TiposEquipo.id_tipo_equipo
+
+FK_Equipos_Marcas:
+id_marca -> Marcas.id_marca
+
+Sin eliminación ni actualización en cascada.
+Sin unicidad de modelo, serie o IMEI.
+end note
+
+note right of Clientes
+UX_Clientes_Documento(documento):
+índice único sin filtro por activo.
+
+Su instalación se omite cuando existen
+documentos duplicados históricos.
+end note
+
+note right of TiposEquipo
+UX_TiposEquipo_Nombre(nombre).
+end note
+
+note right of Marcas
+UX_Marcas_Nombre(nombre).
+end note
+
+note right of Bitacora
+Sin clave foránea a Equipos o Usuarios.
+El equipo se identifica en el detalle textual.
+fecha no posee DEFAULT SQL.
+end note
+
+@enduml

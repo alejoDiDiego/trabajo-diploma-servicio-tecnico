@@ -1,0 +1,57 @@
+@startuml
+title N01.4.4 - Proceso de Gestión de repuestos utilizados
+
+|Técnico, encargado o recepcionista|
+start
+:Seleccionar orden e intervención;
+
+|Sistema|
+:Cargar consumos y acciones disponibles;
+
+|Técnico, encargado o recepcionista|
+:Seleccionar operación;
+
+|Sistema|
+if (¿Consulta?) then (sí)
+    :Presentar consumos agrupados y costo total;
+
+elseif (¿Consumo?) then (sí)
+    |Técnico, encargado o recepcionista|
+    :Seleccionar repuesto e informar cantidad;
+    :Solicitar consumo;
+
+    |Sistema|
+    :Validar permisos, intervención y orden;
+    :Verificar repuesto activo y stock;
+    :Obtener costo actual;
+    :Registrar consumo;
+    :Descontar existencias;
+    :Registrar movimiento y actividad;
+
+else (Devolución)
+    |Técnico, encargado o recepcionista|
+    :Seleccionar repuesto consumido;
+    |Sistema|
+    :Solicitar cantidad a devolver;
+    |Técnico, encargado o recepcionista|
+    :Informar cantidad;
+    |Sistema|
+    :Solicitar confirmación;
+    |Técnico, encargado o recepcionista|
+
+    if (¿Confirma?) then (sí)
+        |Sistema|
+        :Validar cantidad y condiciones;
+        :Aplicar devolución a consumos más antiguos;
+        :Restituir existencias;
+        :Registrar movimientos y actividad;
+    else (no)
+        |Sistema|
+        :Mantener información sin cambios;
+    endif
+endif
+
+:Actualizar información y presentar resultado;
+stop
+
+@enduml

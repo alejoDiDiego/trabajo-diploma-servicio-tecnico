@@ -1,0 +1,84 @@
+@startuml
+title N01.7 - Modelo conceptual de Gestión de compras
+
+left to right direction
+hide methods
+skinparam classAttributeIconSize 0
+
+class Compra {
+    identificador
+    proveedor
+    fecha
+    estado
+    total
+    usuarioCreador
+    observaciones
+    motivoAnulacion
+}
+
+class DetalleCompra {
+    identificador
+    compra
+    repuesto
+    cantidad
+    costoUnitario
+    subtotal
+}
+
+class Proveedor {
+    identificador
+    razonSocial
+    activo
+}
+
+class Repuesto {
+    identificador
+    codigo
+    descripcion
+    stockActual
+    costoActual
+    precioReferencia
+    activo
+}
+
+class MovimientoStock {
+    identificador
+    repuesto
+    fecha
+    tipo
+    cantidad
+    stockAnterior
+    stockPosterior
+    usuarioResponsable
+    compraOpcional
+    reparacionOpcional
+    observacion
+}
+
+class Usuario {
+    identificador
+    nombreUsuario
+    activo
+}
+
+Proveedor "1" -- "0..*" Compra
+Compra "1" -- "0..*" DetalleCompra
+Repuesto "1" -- "0..*" DetalleCompra
+
+Compra "0..1" -- "0..*" MovimientoStock
+Repuesto "1" -- "0..*" MovimientoStock
+Usuario "1" -- "0..*" Compra : crea
+Usuario "1" -- "0..*" MovimientoStock : registra
+
+note bottom of Compra
+La preparación inicial está en memoria.
+Guardar incorpora el documento.
+Confirmar y cancelar son actuaciones diferentes.
+end note
+
+note bottom of DetalleCompra
+No hay unicidad por compra y repuesto.
+Confirmar exige detalle no vacío.
+end note
+
+@enduml

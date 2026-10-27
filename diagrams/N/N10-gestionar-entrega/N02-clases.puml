@@ -1,0 +1,188 @@
+@startuml
+title N02-10 - Clases de información afectadas
+
+left to right direction
+skinparam classAttributeIconSize 0
+
+class Entrega {
+    + Id : int
+    + IdOrden : int
+    + FechaEntrega : DateTime
+    + IdUsuario : int
+    + EntregadoA : string
+    + DocumentoReceptor : string
+    + Observaciones : string
+    --
+    - Entrega()
+    + {static} CrearNuevo(idOrden : int, idUsuario : int, entregadoA : string, documentoReceptor : string, observaciones : string) : Entrega
+    + {static} CargarDesdeDB(id : int, idOrden : int, fechaEntrega : DateTime, idUsuario : int, entregadoA : string, documentoReceptor : string, observaciones : string) : Entrega
+}
+
+class OrdenServicio {
+    + Id : int
+    + NumeroOrden : int
+    + IdCliente : int
+    + IdEquipo : int
+    + IdTecnicoAsignado : int?
+    + IdOrdenOrigen : int?
+    + TipoOrden : string
+    + Estado : string
+    + Resultado : string
+    + FechaIngreso : DateTime
+    + ProblemaInformado : string
+    + EstadoFisicoIngreso : string
+    + AccesoriosIngreso : string
+    + ObservacionesIngreso : string
+    + ObservacionResultado : string
+    + IdUsuarioAlta : int
+    --
+    - OrdenServicio()
+    + {static} CrearNuevo(idCliente : int, idEquipo : int, problema : string, estadoFisico : string, accesorios : string, observacionesIngreso : string, idUsuarioAlta : int) : OrdenServicio
+    + {static} CrearNuevoGarantia(idCliente : int, idEquipo : int, idOrdenOrigen : int, problema : string, estadoFisico : string, accesorios : string, observacionesIngreso : string, idUsuarioAlta : int) : OrdenServicio
+    + {static} CargarDesdeDB(id : int, numeroOrden : int, idCliente : int, idEquipo : int, idTecnicoAsignado : int?, idOrdenOrigen : int?, tipoOrden : string, estado : string, resultado : string, fechaIngreso : DateTime, problemaInformado : string, estadoFisicoIngreso : string, accesoriosIngreso : string, observacionesIngreso : string, observacionResultado : string, idUsuarioAlta : int) : OrdenServicio
+    + AsignarTecnico(idTecnico : int) : void
+    + ActualizarRecepcion(problema : string, estadoFisico : string, accesorios : string, observacionesIngreso : string) : void
+    + IniciarDiagnostico() : void
+    + MarcarPendientePresupuesto() : void
+    + MarcarPendientePresupuestoDesdeEvaluacion() : void
+    + MarcarEsperandoRespuesta() : void
+    + AutorizarReparacion() : void
+    + MarcarNoReparable(motivo : string) : void
+    + MarcarPresupuestoRechazado(motivo : string) : void
+    + IniciarReparacion() : void
+    + FinalizarReparacion() : void
+    + SolicitarAdicional() : void
+    + RevertirAPendientePresupuesto() : void
+    + CancelarSolicitudAdicional(estadoOrigen : string) : void
+    + FinalizarPruebasAprobadas() : void
+    + FinalizarPruebasRequiereRevision() : void
+    + Cancelar(motivo : string) : void
+    + Entregar() : void
+    + CancelarEntrega() : void
+    + MarcarPendienteEvaluacionGarantia() : void
+    + AutorizarReparacionGarantia() : void
+    + MarcarGarantiaNoCubierta(motivo : string) : void
+    + ReabrirPruebas() : void
+}
+
+class Garantia {
+    + Id : int
+    + IdOrdenOriginal : int
+    + FechaInicio : DateTime
+    + FechaFin : DateTime
+    + Observaciones : string
+    + Anulada : bool
+    --
+    - Garantia()
+    + {static} CrearNuevo(idOrdenOriginal : int, fechaInicio : DateTime, fechaFin : DateTime, observaciones : string) : Garantia
+    + {static} CargarDesdeDB(id : int, idOrdenOriginal : int, fechaInicio : DateTime, fechaFin : DateTime, observaciones : string, anulada : bool) : Garantia
+}
+
+class Presupuesto {
+    + Id : int
+    + IdOrden : int
+    + Tipo : string
+    + FechaEmision : DateTime
+    + Estado : string
+    + Subtotal : decimal
+    + Descuento : decimal
+    + Total : decimal
+    + DiasGarantia : int
+    + FechaRespuesta : DateTime?
+    + MedioRespuesta : string
+    + MotivoRechazo : string
+    + MotivoAnulacion : string
+    + Observaciones : string
+    --
+    - Presupuesto()
+    + {static} CrearNuevo(idOrden : int, subtotal : decimal, descuento : decimal, diasGarantia : int, observaciones : string, tipo : string) : Presupuesto
+    + {static} CrearBorrador(idOrden : int, subtotal : decimal, descuento : decimal, diasGarantia : int, observaciones : string, tipo : string) : Presupuesto
+    + {static} CargarDesdeDB(id : int, idOrden : int, tipo : string, fechaEmision : DateTime, estado : string, subtotal : decimal, descuento : decimal, total : decimal, diasGarantia : int, fechaRespuesta : DateTime?, medioRespuesta : string, motivoRechazo : string, observaciones : string, motivoAnulacion : string = null) : Presupuesto
+    + Aprobar(medioRespuesta : string, observaciones : string) : void
+    + Rechazar(motivo : string, medioRespuesta : string, observaciones : string) : void
+    + Anular(motivo : string) : void
+}
+
+class EvaluacionGarantia {
+    + Id : int
+    + IdOrdenReingreso : int
+    + IdGarantia : int
+    + Estado : string
+    + Fecha : DateTime
+    + IdUsuario : int
+    + Motivo : string
+    + Observaciones : string
+    --
+    - EvaluacionGarantia()
+    + {static} CrearPendiente(idOrdenReingreso : int, idGarantia : int, idUsuario : int) : EvaluacionGarantia
+    + {static} CargarDesdeDB(id : int, idOrdenReingreso : int, idGarantia : int, estado : string, fecha : DateTime, idUsuario : int, motivo : string, observaciones : string) : EvaluacionGarantia
+}
+
+class HistorialEstadoOrden {
+    + Id : int
+    + IdOrden : int
+    + EstadoAnterior : string
+    + EstadoNuevo : string
+    + FechaHora : DateTime
+    + IdUsuario : int
+    + Observacion : string
+    --
+    - HistorialEstadoOrden()
+    + {static} CrearNuevo(idOrden : int, estadoAnterior : string, estadoNuevo : string, idUsuario : int, observacion : string) : HistorialEstadoOrden
+    + {static} CargarDesdeDB(id : int, idOrden : int, estadoAnterior : string, estadoNuevo : string, fechaHora : DateTime, idUsuario : int, observacion : string) : HistorialEstadoOrden
+}
+
+class Usuario {
+    + Id : int
+    + Username : string
+    + Password : string
+    + Activo : bool
+    + DVH : string
+    --
+    - Usuario()
+    + {static} CrearNuevo(userName : string, password : string) : Usuario
+    + {static} CargarDesdeDB(id : int, userName : string, password : string, dvh : string = "", activo : bool = true) : Usuario
+    + Desactivar() : void
+    + Reactivar() : void
+    + SetDVH(dvh : string) : void
+}
+
+class EntradaBitacora {
+    + Id : int
+    + Fecha : DateTime
+    + Usuario : string
+    + Actividad : string
+    + Detalle : string
+    + TipoActividad : string
+    --
+    - EntradaBitacora()
+    + {static} Crear(id : int, fecha : DateTime, usuario : string, actividad : string, detalle : string, tipoActividad : string) : EntradaBitacora
+}
+
+OrdenServicio "1" .. "0..1" Entrega : IdOrden
+Usuario "1" .. "0..*" Entrega : IdUsuario
+OrdenServicio "1" .. "0..1" Garantia : IdOrdenOriginal
+OrdenServicio "1" .. "0..*" Presupuesto : IdOrden
+
+OrdenServicio "0..1" .. "0..*" OrdenServicio : IdOrdenOrigen
+OrdenServicio "1" .. "0..1" EvaluacionGarantia : IdOrdenReingreso
+Garantia "1" .. "0..*" EvaluacionGarantia : IdGarantia
+
+OrdenServicio "1" .. "0..*" HistorialEstadoOrden : IdOrden
+Usuario "1" .. "0..*" HistorialEstadoOrden : IdUsuario
+
+note bottom of Entrega
+No posee un método propio de cancelación.
+La coordinación ocurre en orden, servicio y repositorio.
+end note
+
+note bottom of Garantia
+Cancelar la entrega no modifica esta entidad.
+end note
+
+note bottom of EntradaBitacora
+El actor y la actuación se conservan como texto.
+No existe referencia de objeto a Entrega.
+end note
+
+@enduml

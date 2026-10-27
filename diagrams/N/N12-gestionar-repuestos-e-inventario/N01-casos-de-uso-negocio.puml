@@ -1,0 +1,26 @@
+@startuml
+title N01.5 - Gestionar repuestos e inventario
+
+left to right direction
+
+actor "Responsable de inventario" as ResponsableInventario
+actor Encargado
+actor Tecnico
+
+rectangle "Servicio técnico - Repuestos e inventario" {
+    usecase "CU-12\nGestionar repuestos e inventario" as GestionarInventario
+}
+
+ResponsableInventario -- GestionarInventario : mantiene catálogo y existencias
+Encargado -- GestionarInventario : supervisa y actúa según permisos
+Tecnico -- GestionarInventario : consulta
+
+note bottom of GestionarInventario
+Comprende catálogo, condición activa,
+ajustes y consulta de movimientos.
+
+Compras y consumos de reparación
+conservan sus gestiones específicas.
+end note
+
+@enduml

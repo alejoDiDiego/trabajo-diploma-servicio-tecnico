@@ -1,0 +1,42 @@
+@startuml
+title N02-07 - Flujo de Gestión de reparaciones
+
+start
+:Acceder a Reparaciones;
+:Verificar acceso y cargar intervenciones;
+:Seleccionar operación;
+
+if (¿Consulta?) then (sí)
+    :Presentar intervenciones y condición;
+
+elseif (¿Iniciar?) then (sí)
+    :Validar técnico asignado y elegible;
+    :Validar orden modificable;
+
+    if (¿Autorizado para reparación?) then (sí)
+        :Crear intervención;
+        :Pasar a En reparación;
+        :Registrar transición;
+    elseif (¿En reparación y sin intervención abierta?) then (sí)
+        :Crear siguiente intervención;
+        :Conservar estado En reparación;
+    else (no)
+        :Rechazar inicio;
+        stop
+    endif
+
+    :Registrar actividad;
+
+else (Finalizar)
+    :Tomar intervención seleccionada;
+    :Validar apertura y orden En reparación;
+    :Validar trabajo obligatorio;
+    :Guardar fecha de cierre, trabajo y observaciones;
+    :Pasar a En pruebas;
+    :Registrar historial y actividad;
+endif
+
+:Actualizar detalle y presentar resultado;
+stop
+
+@enduml

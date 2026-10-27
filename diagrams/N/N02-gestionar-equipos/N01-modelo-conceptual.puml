@@ -1,0 +1,60 @@
+@startuml
+title N01.2 - Modelo conceptual de Gestión de equipos
+
+left to right direction
+hide methods
+skinparam classAttributeIconSize 0
+
+class Cliente {
+    identificador
+    nombre
+    apellido
+    documento
+    telefono
+    correoElectronico
+    direccion
+    observaciones
+    activo
+    fechaAlta
+}
+
+class Equipo {
+    identificador
+    clienteActual
+    tipoEquipo
+    marca
+    modelo
+    numeroSerie
+    imei
+    color
+    observaciones
+    activo
+}
+
+class TipoEquipo {
+    identificador
+    nombre
+    activo
+}
+
+class Marca {
+    identificador
+    nombre
+    activo
+}
+
+Cliente "1" -- "0..*" Equipo : propietario actual
+TipoEquipo "1" -- "0..*" Equipo : clasificación
+Marca "1" -- "0..*" Equipo : marca
+
+note bottom of Equipo
+El equipo tiene una condición activa propia.
+
+Cambiar su propietario actual no modifica
+el cliente histórico de órdenes anteriores.
+
+Desactivar el equipo no elimina
+sus antecedentes de atención.
+end note
+
+@enduml

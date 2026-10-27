@@ -1,0 +1,208 @@
+@startuml
+title N02-06 - Clases de información afectadas
+
+left to right direction
+skinparam classAttributeIconSize 0
+
+class Presupuesto {
+    + Id : int
+    + IdOrden : int
+    + Tipo : string
+    + FechaEmision : DateTime
+    + Estado : string
+    + Subtotal : decimal
+    + Descuento : decimal
+    + Total : decimal
+    + DiasGarantia : int
+    + FechaRespuesta : DateTime?
+    + MedioRespuesta : string
+    + MotivoRechazo : string
+    + MotivoAnulacion : string
+    + Observaciones : string
+    --
+    - Presupuesto()
+    + {static} CrearNuevo(idOrden : int, subtotal : decimal, descuento : decimal, diasGarantia : int, observaciones : string, tipo : string) : Presupuesto
+    + {static} CrearBorrador(idOrden : int, subtotal : decimal, descuento : decimal, diasGarantia : int, observaciones : string, tipo : string) : Presupuesto
+    + {static} CargarDesdeDB(id : int, idOrden : int, tipo : string, fechaEmision : DateTime, estado : string, subtotal : decimal, descuento : decimal, total : decimal, diasGarantia : int, fechaRespuesta : DateTime?, medioRespuesta : string, motivoRechazo : string, observaciones : string, motivoAnulacion : string = null) : Presupuesto
+    + Aprobar(medioRespuesta : string, observaciones : string) : void
+    + Rechazar(motivo : string, medioRespuesta : string, observaciones : string) : void
+    + Anular(motivo : string) : void
+}
+
+class DetallePresupuesto {
+    + Id : int
+    + IdPresupuesto : int
+    + IdRepuesto : int?
+    + TipoItem : string
+    + Descripcion : string
+    + Cantidad : int
+    + PrecioUnitario : decimal
+    + Subtotal : decimal
+    - {static} ImporteMaximoRepresentable : decimal [const]
+    --
+    - DetallePresupuesto()
+    + {static} CrearNuevo(idPresupuesto : int, tipoItem : string, descripcion : string, cantidad : int, precioUnitario : decimal, idRepuesto : int? = null) : DetallePresupuesto
+    + ValidarParaGuardar() : void
+    - {static} ValidarReglas(tipoItem : string, idRepuesto : int?, descripcion : string, cantidad : int, precioUnitario : decimal) : void
+    + {static} CargarDesdeDB(id : int, idPresupuesto : int, idRepuesto : int?, tipoItem : string, descripcion : string, cantidad : int, precioUnitario : decimal, subtotal : decimal) : DetallePresupuesto
+}
+
+class OrdenServicio {
+    + Id : int
+    + NumeroOrden : int
+    + IdCliente : int
+    + IdEquipo : int
+    + IdTecnicoAsignado : int?
+    + IdOrdenOrigen : int?
+    + TipoOrden : string
+    + Estado : string
+    + Resultado : string
+    + FechaIngreso : DateTime
+    + ProblemaInformado : string
+    + EstadoFisicoIngreso : string
+    + AccesoriosIngreso : string
+    + ObservacionesIngreso : string
+    + ObservacionResultado : string
+    + IdUsuarioAlta : int
+    --
+    - OrdenServicio()
+    + {static} CrearNuevo(idCliente : int, idEquipo : int, problema : string, estadoFisico : string, accesorios : string, observacionesIngreso : string, idUsuarioAlta : int) : OrdenServicio
+    + {static} CrearNuevoGarantia(idCliente : int, idEquipo : int, idOrdenOrigen : int, problema : string, estadoFisico : string, accesorios : string, observacionesIngreso : string, idUsuarioAlta : int) : OrdenServicio
+    + {static} CargarDesdeDB(id : int, numeroOrden : int, idCliente : int, idEquipo : int, idTecnicoAsignado : int?, idOrdenOrigen : int?, tipoOrden : string, estado : string, resultado : string, fechaIngreso : DateTime, problemaInformado : string, estadoFisicoIngreso : string, accesoriosIngreso : string, observacionesIngreso : string, observacionResultado : string, idUsuarioAlta : int) : OrdenServicio
+    + AsignarTecnico(idTecnico : int) : void
+    + ActualizarRecepcion(problema : string, estadoFisico : string, accesorios : string, observacionesIngreso : string) : void
+    + IniciarDiagnostico() : void
+    + MarcarPendientePresupuesto() : void
+    + MarcarPendientePresupuestoDesdeEvaluacion() : void
+    + MarcarEsperandoRespuesta() : void
+    + AutorizarReparacion() : void
+    + MarcarNoReparable(motivo : string) : void
+    + MarcarPresupuestoRechazado(motivo : string) : void
+    + IniciarReparacion() : void
+    + FinalizarReparacion() : void
+    + SolicitarAdicional() : void
+    + RevertirAPendientePresupuesto() : void
+    + CancelarSolicitudAdicional(estadoOrigen : string) : void
+    + FinalizarPruebasAprobadas() : void
+    + FinalizarPruebasRequiereRevision() : void
+    + Cancelar(motivo : string) : void
+    + Entregar() : void
+    + CancelarEntrega() : void
+    + MarcarPendienteEvaluacionGarantia() : void
+    + AutorizarReparacionGarantia() : void
+    + MarcarGarantiaNoCubierta(motivo : string) : void
+    + ReabrirPruebas() : void
+}
+
+class Repuesto {
+    + Id : int
+    + Codigo : string
+    + Descripcion : string
+    + StockActual : int
+    + StockMinimo : int
+    + CostoActual : decimal
+    + PrecioReferencia : decimal
+    + Activo : bool
+    --
+    - Repuesto()
+    + {static} CrearNuevo(codigo : string, descripcion : string, stockInicial : int, stockMinimo : int, costoActual : decimal, precioReferencia : decimal) : Repuesto
+    + {static} CargarDesdeDB(id : int, codigo : string, descripcion : string, stockActual : int, stockMinimo : int, costoActual : decimal, precioReferencia : decimal, activo : bool) : Repuesto
+}
+
+class Reparacion {
+    + Id : int
+    + IdOrden : int
+    + NumeroIntervencion : int
+    + IdUsuarioTecnico : int
+    + FechaInicio : DateTime
+    + FechaFin : DateTime?
+    + TrabajoRealizado : string
+    + Observaciones : string
+    --
+    - Reparacion()
+    + {static} CrearNuevo(idOrden : int, numeroIntervencion : int, idUsuarioTecnico : int) : Reparacion
+    + {static} CargarDesdeDB(id : int, idOrden : int, numeroIntervencion : int, idUsuarioTecnico : int, fechaInicio : DateTime, fechaFin : DateTime?, trabajoRealizado : string, observaciones : string) : Reparacion
+    + Finalizar(trabajoRealizado : string, observaciones : string) : void
+}
+
+class Diagnostico {
+    + Id : int
+    + IdOrden : int
+    + IdUsuarioTecnico : int
+    + Fecha : DateTime
+    + Descripcion : string
+    + EsReparable : bool
+    + TiempoEstimadoDias : int?
+    + Observaciones : string
+    --
+    - Diagnostico()
+    + {static} CrearNuevo(idOrden : int, idUsuarioTecnico : int, descripcion : string, esReparable : bool, tiempoEstimadoDias : int?, observaciones : string) : Diagnostico
+    + {static} CargarDesdeDB(id : int, idOrden : int, idUsuarioTecnico : int, fecha : DateTime, descripcion : string, esReparable : bool, tiempoEstimadoDias : int?, observaciones : string) : Diagnostico
+}
+
+class HistorialEstadoOrden {
+    + Id : int
+    + IdOrden : int
+    + EstadoAnterior : string
+    + EstadoNuevo : string
+    + FechaHora : DateTime
+    + IdUsuario : int
+    + Observacion : string
+    --
+    - HistorialEstadoOrden()
+    + {static} CrearNuevo(idOrden : int, estadoAnterior : string, estadoNuevo : string, idUsuario : int, observacion : string) : HistorialEstadoOrden
+    + {static} CargarDesdeDB(id : int, idOrden : int, estadoAnterior : string, estadoNuevo : string, fechaHora : DateTime, idUsuario : int, observacion : string) : HistorialEstadoOrden
+}
+
+class Usuario {
+    + Id : int
+    + Username : string
+    + Password : string
+    + Activo : bool
+    + DVH : string
+    --
+    - Usuario()
+    + {static} CrearNuevo(userName : string, password : string) : Usuario
+    + {static} CargarDesdeDB(id : int, userName : string, password : string, dvh : string = "", activo : bool = true) : Usuario
+    + Desactivar() : void
+    + Reactivar() : void
+    + SetDVH(dvh : string) : void
+}
+
+class EntradaBitacora {
+    + Id : int
+    + Fecha : DateTime
+    + Usuario : string
+    + Actividad : string
+    + Detalle : string
+    + TipoActividad : string
+    --
+    - EntradaBitacora()
+    + {static} Crear(id : int, fecha : DateTime, usuario : string, actividad : string, detalle : string, tipoActividad : string) : EntradaBitacora
+}
+
+OrdenServicio "1" .. "0..*" Presupuesto : IdOrden
+Presupuesto "1" .. "0..*" DetallePresupuesto : IdPresupuesto
+Repuesto "0..1" .. "0..*" DetallePresupuesto : IdRepuesto
+OrdenServicio "1" .. "0..1" Diagnostico : IdOrden
+OrdenServicio "1" .. "0..*" Reparacion : IdOrden
+OrdenServicio "1" .. "0..*" HistorialEstadoOrden : IdOrden
+Usuario "1" .. "0..*" HistorialEstadoOrden : IdUsuario
+
+note bottom of Presupuesto
+No contiene una colección de detalles declarada.
+La relación se mantiene por identificadores.
+No existe método de instancia Publicar.
+end note
+
+note bottom of DetallePresupuesto
+Los conceptos válidos del proceso son no vacíos.
+No existe vínculo automático con consumos.
+end note
+
+note bottom of EntradaBitacora
+La actuación y el documento afectado
+se identifican mediante texto.
+end note
+
+@enduml

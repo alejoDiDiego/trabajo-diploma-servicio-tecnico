@@ -1,0 +1,58 @@
+@startuml
+title N01.4.3 - Modelo conceptual de Gestión de reparaciones
+
+left to right direction
+hide methods
+skinparam classAttributeIconSize 0
+
+class OrdenServicio {
+    identificador
+    numeroOrden
+    tipoOrden
+    estado
+    resultado
+    tecnicoAsignado
+    ordenOrigen
+}
+
+class Reparacion {
+    identificador
+    orden
+    numeroIntervencion
+    tecnicoResponsable
+    fechaInicio
+    fechaFin
+    trabajoRealizado
+    observaciones
+}
+
+class Usuario {
+    identificador
+    nombreUsuario
+    activo
+}
+
+class HistorialEstadoOrden {
+    identificador
+    orden
+    estadoAnterior
+    estadoNuevo
+    fechaHora
+    usuarioResponsable
+    observacion
+}
+
+OrdenServicio "1" -- "0..*" Reparacion : intervenciones
+Usuario "1" -- "0..*" Reparacion : técnico atribuido
+Usuario "0..1" -- "0..*" OrdenServicio : asignación actual
+
+OrdenServicio "1" -- "0..*" HistorialEstadoOrden
+Usuario "1" -- "0..*" HistorialEstadoOrden : usuario actuante
+
+note bottom of Reparacion
+La apertura se determina por ausencia de fechaFin.
+La finalización de trabajo habilita pruebas;
+no equivale a reparación aprobada.
+end note
+
+@enduml

@@ -1,0 +1,86 @@
+@startuml
+title N02-03 - Secuencia de Gestión de tipos de equipo y marcas
+
+actor "Recepcionista o encargado" as Operador
+participant "pantallaTipos : FrmTiposEquipo" as PantallaTipos
+participant "pantallaMarcas : FrmMarcas" as PantallaMarcas
+participant "dialogo : FrmCatalogoEditar" as Dialogo
+participant "servicioTipos : TipoEquipoService" as ServicioTipos
+participant "servicioMarcas : MarcaService" as ServicioMarcas
+participant "tipos : TipoEquipoRepository" as Tipos
+participant "marcas : MarcaRepository" as Marcas
+participant "auditoria : BitacoraService" as Auditoria
+
+alt Catálogo de tipos de equipo
+    Operador -> PantallaTipos : Acceder a Tipos de equipo
+    PantallaTipos -> PantallaTipos : Verificar permiso de consulta
+    PantallaTipos -> ServicioTipos : Listar(incluirInactivos)
+    ServicioTipos -> Tipos : Listar(incluirInactivos)
+    Tipos --> ServicioTipos : Tipos de equipo
+    ServicioTipos --> PantallaTipos : Tipos de equipo
+    PantallaTipos --> Operador : Mostrar listado
+
+    opt Mantenimiento solicitado y autorizado
+        Operador -> PantallaTipos : Seleccionar operación y registro si corresponde
+
+        opt Registro o modificación
+            PantallaTipos -> Dialogo : Solicitar nombre nuevo o precargado
+            Operador -> Dialogo : Ingresar nombre y aceptar
+            Dialogo -> Dialogo : Validar nombre obligatorio
+            Dialogo --> PantallaTipos : Nombre aceptado
+        end
+
+        opt Desactivación o reactivación
+            PantallaTipos --> Operador : Solicitar confirmación
+            Operador -> PantallaTipos : Confirmar
+        end
+
+        PantallaTipos -> ServicioTipos : Ejecutar mantenimiento seleccionado
+        ServicioTipos -> Tipos : Persistir operación sobre tipo de equipo
+        Tipos --> ServicioTipos : Resultado
+        ServicioTipos -> Auditoria : Registrar(actividad, detalle, tipoActividad)
+        Auditoria --> ServicioTipos : Resultado
+        ServicioTipos --> PantallaTipos : Resultado del mantenimiento
+        PantallaTipos -> PantallaTipos : Recargar y reaplicar filtros
+    end
+
+else Catálogo de marcas
+    Operador -> PantallaMarcas : Acceder a Marcas
+    PantallaMarcas -> PantallaMarcas : Verificar permiso de consulta
+    PantallaMarcas -> ServicioMarcas : Listar(incluirInactivos)
+    ServicioMarcas -> Marcas : Listar(incluirInactivos)
+    Marcas --> ServicioMarcas : Marcas
+    ServicioMarcas --> PantallaMarcas : Marcas
+    PantallaMarcas --> Operador : Mostrar listado
+
+    opt Mantenimiento solicitado y autorizado
+        Operador -> PantallaMarcas : Seleccionar operación y registro si corresponde
+
+        opt Registro o modificación
+            PantallaMarcas -> Dialogo : Solicitar nombre nuevo o precargado
+            Operador -> Dialogo : Ingresar nombre y aceptar
+            Dialogo -> Dialogo : Validar nombre obligatorio
+            Dialogo --> PantallaMarcas : Nombre aceptado
+        end
+
+        opt Desactivación o reactivación
+            PantallaMarcas --> Operador : Solicitar confirmación
+            Operador -> PantallaMarcas : Confirmar
+        end
+
+        PantallaMarcas -> ServicioMarcas : Ejecutar mantenimiento seleccionado
+        ServicioMarcas -> Marcas : Persistir operación sobre marca
+        Marcas --> ServicioMarcas : Resultado
+        ServicioMarcas -> Auditoria : Registrar(actividad, detalle, tipoActividad)
+        Auditoria --> ServicioMarcas : Resultado
+        ServicioMarcas --> PantallaMarcas : Resultado del mantenimiento
+        PantallaMarcas -> PantallaMarcas : Recargar y reaplicar filtros
+    end
+end
+
+note over Tipos, Auditoria
+La escritura del catálogo y la auditoría
+son operaciones separadas.
+end note
+
+@enduml

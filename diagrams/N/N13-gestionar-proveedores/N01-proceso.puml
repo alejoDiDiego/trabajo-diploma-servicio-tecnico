@@ -1,0 +1,42 @@
+@startuml
+title N01.6 - Proceso de Gestión de proveedores
+
+|Responsable de compras o encargado|
+start
+:Acceder a Proveedores;
+:Seleccionar operación;
+
+|Sistema|
+:Verificar autorización;
+
+if (¿Consulta?) then (sí)
+    :Aplicar filtros y presentar resultados;
+
+elseif (¿Alta o modificación?) then (sí)
+    |Responsable de compras o encargado|
+    :Completar datos;
+    :Aceptar;
+
+    |Sistema|
+    :Validar razón social;
+    :Guardar datos;
+    :Registrar actividad;
+    :Recargar catálogo;
+
+else (Desactivar o reactivar)
+    :Solicitar confirmación;
+
+    |Responsable de compras o encargado|
+    if (¿Confirma?) then (sí)
+        |Sistema|
+        :Comprobar existencia;
+        :Cambiar condición activa;
+        :Registrar actividad;
+        :Recargar catálogo;
+    endif
+endif
+
+:Presentar resultado;
+stop
+
+@enduml

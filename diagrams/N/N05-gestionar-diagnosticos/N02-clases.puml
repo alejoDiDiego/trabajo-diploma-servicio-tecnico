@@ -1,0 +1,164 @@
+@startuml
+title N02-05 - Clases de información afectadas
+
+left to right direction
+skinparam classAttributeIconSize 0
+
+class Diagnostico {
+    + Id : int
+    + IdOrden : int
+    + IdUsuarioTecnico : int
+    + Fecha : DateTime
+    + Descripcion : string
+    + EsReparable : bool
+    + TiempoEstimadoDias : int?
+    + Observaciones : string
+    --
+    - Diagnostico()
+    + {static} CrearNuevo(idOrden : int, idUsuarioTecnico : int, descripcion : string, esReparable : bool, tiempoEstimadoDias : int?, observaciones : string) : Diagnostico
+    + {static} CargarDesdeDB(id : int, idOrden : int, idUsuarioTecnico : int, fecha : DateTime, descripcion : string, esReparable : bool, tiempoEstimadoDias : int?, observaciones : string) : Diagnostico
+}
+
+class OrdenServicio {
+    + Id : int
+    + NumeroOrden : int
+    + IdCliente : int
+    + IdEquipo : int
+    + IdTecnicoAsignado : int?
+    + IdOrdenOrigen : int?
+    + TipoOrden : string
+    + Estado : string
+    + Resultado : string
+    + FechaIngreso : DateTime
+    + ProblemaInformado : string
+    + EstadoFisicoIngreso : string
+    + AccesoriosIngreso : string
+    + ObservacionesIngreso : string
+    + ObservacionResultado : string
+    + IdUsuarioAlta : int
+    --
+    - OrdenServicio()
+    + {static} CrearNuevo(idCliente : int, idEquipo : int, problema : string, estadoFisico : string, accesorios : string, observacionesIngreso : string, idUsuarioAlta : int) : OrdenServicio
+    + {static} CrearNuevoGarantia(idCliente : int, idEquipo : int, idOrdenOrigen : int, problema : string, estadoFisico : string, accesorios : string, observacionesIngreso : string, idUsuarioAlta : int) : OrdenServicio
+    + {static} CargarDesdeDB(id : int, numeroOrden : int, idCliente : int, idEquipo : int, idTecnicoAsignado : int?, idOrdenOrigen : int?, tipoOrden : string, estado : string, resultado : string, fechaIngreso : DateTime, problemaInformado : string, estadoFisicoIngreso : string, accesoriosIngreso : string, observacionesIngreso : string, observacionResultado : string, idUsuarioAlta : int) : OrdenServicio
+    + AsignarTecnico(idTecnico : int) : void
+    + ActualizarRecepcion(problema : string, estadoFisico : string, accesorios : string, observacionesIngreso : string) : void
+    + IniciarDiagnostico() : void
+    + MarcarPendientePresupuesto() : void
+    + MarcarPendientePresupuestoDesdeEvaluacion() : void
+    + MarcarEsperandoRespuesta() : void
+    + AutorizarReparacion() : void
+    + MarcarNoReparable(motivo : string) : void
+    + MarcarPresupuestoRechazado(motivo : string) : void
+    + IniciarReparacion() : void
+    + FinalizarReparacion() : void
+    + SolicitarAdicional() : void
+    + RevertirAPendientePresupuesto() : void
+    + CancelarSolicitudAdicional(estadoOrigen : string) : void
+    + FinalizarPruebasAprobadas() : void
+    + FinalizarPruebasRequiereRevision() : void
+    + Cancelar(motivo : string) : void
+    + Entregar() : void
+    + CancelarEntrega() : void
+    + MarcarPendienteEvaluacionGarantia() : void
+    + AutorizarReparacionGarantia() : void
+    + MarcarGarantiaNoCubierta(motivo : string) : void
+    + ReabrirPruebas() : void
+}
+
+class HistorialEstadoOrden {
+    + Id : int
+    + IdOrden : int
+    + EstadoAnterior : string
+    + EstadoNuevo : string
+    + FechaHora : DateTime
+    + IdUsuario : int
+    + Observacion : string
+    --
+    - HistorialEstadoOrden()
+    + {static} CrearNuevo(idOrden : int, estadoAnterior : string, estadoNuevo : string, idUsuario : int, observacion : string) : HistorialEstadoOrden
+    + {static} CargarDesdeDB(id : int, idOrden : int, estadoAnterior : string, estadoNuevo : string, fechaHora : DateTime, idUsuario : int, observacion : string) : HistorialEstadoOrden
+}
+
+class Usuario {
+    + Id : int
+    + Username : string
+    + Password : string
+    + Activo : bool
+    + DVH : string
+    --
+    - Usuario()
+    + {static} CrearNuevo(userName : string, password : string) : Usuario
+    + {static} CargarDesdeDB(id : int, userName : string, password : string, dvh : string = "", activo : bool = true) : Usuario
+    + Desactivar() : void
+    + Reactivar() : void
+    + SetDVH(dvh : string) : void
+}
+
+class Garantia {
+    + Id : int
+    + IdOrdenOriginal : int
+    + FechaInicio : DateTime
+    + FechaFin : DateTime
+    + Observaciones : string
+    + Anulada : bool
+    --
+    - Garantia()
+    + {static} CrearNuevo(idOrdenOriginal : int, fechaInicio : DateTime, fechaFin : DateTime, observaciones : string) : Garantia
+    + {static} CargarDesdeDB(id : int, idOrdenOriginal : int, fechaInicio : DateTime, fechaFin : DateTime, observaciones : string, anulada : bool) : Garantia
+}
+
+class EvaluacionGarantia {
+    + Id : int
+    + IdOrdenReingreso : int
+    + IdGarantia : int
+    + Estado : string
+    + Fecha : DateTime
+    + IdUsuario : int
+    + Motivo : string
+    + Observaciones : string
+    --
+    - EvaluacionGarantia()
+    + {static} CrearPendiente(idOrdenReingreso : int, idGarantia : int, idUsuario : int) : EvaluacionGarantia
+    + {static} CargarDesdeDB(id : int, idOrdenReingreso : int, idGarantia : int, estado : string, fecha : DateTime, idUsuario : int, motivo : string, observaciones : string) : EvaluacionGarantia
+}
+
+class EntradaBitacora {
+    + Id : int
+    + Fecha : DateTime
+    + Usuario : string
+    + Actividad : string
+    + Detalle : string
+    + TipoActividad : string
+    --
+    - EntradaBitacora()
+    + {static} Crear(id : int, fecha : DateTime, usuario : string, actividad : string, detalle : string, tipoActividad : string) : EntradaBitacora
+}
+
+OrdenServicio "1" .. "0..1" Diagnostico : IdOrden
+Usuario "1" .. "0..*" Diagnostico : IdUsuarioTecnico
+OrdenServicio "1" .. "0..*" HistorialEstadoOrden : IdOrden
+Usuario "1" .. "0..*" HistorialEstadoOrden : IdUsuario
+
+OrdenServicio "1" .. "0..1" Garantia : IdOrdenOriginal
+OrdenServicio "1" .. "0..1" EvaluacionGarantia : IdOrdenReingreso
+Garantia "1" .. "0..*" EvaluacionGarantia : IdGarantia
+Usuario "1" .. "0..*" EvaluacionGarantia : IdUsuario
+OrdenServicio "0..1" .. "0..*" OrdenServicio : IdOrdenOrigen
+
+note bottom of Diagnostico
+El técnico atribuido es el asignado a la orden.
+No necesariamente coincide con el usuario actuante.
+end note
+
+note bottom of EvaluacionGarantia
+Esta gestión solamente puede crearla Pendiente.
+No acepta ni rechaza la cobertura.
+end note
+
+note bottom of EntradaBitacora
+El usuario y la referencia a la orden son texto.
+No existe referencia de objeto a OrdenServicio.
+end note
+
+@enduml

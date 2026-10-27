@@ -1,0 +1,23 @@
+@startuml
+title N02-10 - Caso de uso Gestionar entrega
+
+left to right direction
+
+actor Recepcionista
+actor Encargado
+
+rectangle "Sistema Integral de Gestión para Servicios Técnicos" {
+    usecase "CU-10\nGestionar entrega" as GestionarEntrega
+}
+
+Recepcionista -- GestionarEntrega
+Encargado -- GestionarEntrega
+
+note bottom of GestionarEntrega
+Consulta, registro y cancelación permitida.
+
+El receptor se registra como dato;
+no utiliza directamente la aplicación.
+end note
+
+@enduml

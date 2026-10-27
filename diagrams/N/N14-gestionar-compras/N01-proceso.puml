@@ -1,0 +1,64 @@
+@startuml
+title N01.7 - Proceso de Gestión de compras
+
+|Responsable de compras o encargado|
+start
+:Acceder a Compras;
+:Seleccionar operación;
+
+|Sistema|
+:Verificar autorización;
+
+if (¿Consulta?) then (sí)
+    :Presentar compras y detalle;
+
+elseif (¿Preparar borrador?) then (sí)
+    |Responsable de compras o encargado|
+    :Seleccionar proveedor y preparar renglones;
+    :Solicitar guardar;
+    |Sistema|
+    :Validar datos;
+    :Guardar cabecera y detalle sin mover stock;
+
+elseif (¿Confirmar?) then (sí)
+    :Solicitar confirmación;
+    |Responsable de compras o encargado|
+    :Confirmar;
+    |Sistema|
+    :Guardar borrador previamente si es nuevo;
+    :Validar compra y renglones;
+    :Registrar Confirmada;
+    :Incrementar stock y actualizar costos;
+    :Registrar movimientos;
+
+elseif (¿Cancelar borrador?) then (sí)
+    :Solicitar confirmación;
+    |Responsable de compras o encargado|
+    :Confirmar;
+    |Sistema|
+    :Conservar compra como Cancelada sin mover stock;
+
+else (Anular confirmada)
+    |Responsable de compras o encargado|
+    :Informar motivo;
+    |Sistema|
+    :Solicitar confirmación;
+    |Responsable de compras o encargado|
+    :Confirmar;
+    |Sistema|
+    :Verificar stock acumulado por repuesto;
+
+    if (¿Stock suficiente?) then (sí)
+        :Revertir cantidades;
+        :Registrar ajustes y compra Cancelada;
+        :Conservar costo maestro actual;
+    else (no)
+        :Rechazar anulación;
+    endif
+endif
+
+:Registrar actividad correspondiente;
+:Actualizar información y presentar resultado;
+stop
+
+@enduml

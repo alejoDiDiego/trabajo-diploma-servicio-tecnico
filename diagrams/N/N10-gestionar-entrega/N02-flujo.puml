@@ -1,0 +1,58 @@
+@startuml
+title N02-10 - Flujo de Gestión de entrega
+
+start
+:Acceder a Entrega y seleccionar operación;
+:Verificar autorización;
+
+if (¿Consulta?) then (sí)
+    :Mostrar entrega o ausencia de registro;
+
+elseif (¿Registrar?) then (sí)
+    :Recibir receptor y datos opcionales;
+    :Validar receptor obligatorio;
+    :Solicitar confirmación;
+
+    if (¿Confirma?) then (sí)
+        :Validar Listo para retiro y ausencia de bloqueo;
+        :Registrar entrega y Entregado;
+        :Conservar resultado;
+        :Registrar historial;
+
+        if (¿Normal, Reparado, Original aprobado,
+        días positivos y sin cobertura previa?) then (sí)
+            :Generar cobertura si su estructura está disponible;
+        endif
+
+        :Registrar actividad;
+    endif
+
+else (Cancelar)
+    :Validar Entregado y original modificable;
+    :Solicitar confirmación;
+
+    if (¿Confirma?) then (sí)
+        :Solicitar y validar motivo;
+        :Comprobar entrega y restricciones actuales;
+
+        if (¿Otro hermano abierto aplicable?) then (sí)
+            :Rechazar cancelación;
+        else (no)
+            :Eliminar entrega;
+
+            if (¿Resultado Reparado?) then (sí)
+                :En pruebas / resultado vacío;
+            else (no)
+                :Listo para retiro / resultado conservado;
+            endif
+
+            :Conservar garantía sin cambios;
+            :Registrar historial y actividad;
+        endif
+    endif
+endif
+
+:Actualizar detalle y presentar resultado;
+stop
+
+@enduml

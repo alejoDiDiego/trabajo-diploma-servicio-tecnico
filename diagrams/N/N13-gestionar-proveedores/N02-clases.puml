@@ -1,0 +1,46 @@
+@startuml
+title N02-13 - Clases de información de Gestión de proveedores
+
+left to right direction
+skinparam classAttributeIconSize 0
+
+class Proveedor {
+    + Id : int
+    + RazonSocial : string
+    + Cuit : string
+    + Telefono : string
+    + Email : string
+    + Direccion : string
+    + Contacto : string
+    + Activo : bool
+    --
+    - Proveedor()
+    + {static} CrearNuevo(razonSocial : string, cuit : string, telefono : string, email : string, direccion : string, contacto : string) : Proveedor
+    + {static} CargarDesdeDB(id : int, razonSocial : string, cuit : string, telefono : string, email : string, direccion : string, contacto : string, activo : bool) : Proveedor
+}
+
+class EntradaBitacora {
+    + Id : int
+    + Fecha : DateTime
+    + Usuario : string
+    + Actividad : string
+    + Detalle : string
+    + TipoActividad : string
+    --
+    - EntradaBitacora()
+    + {static} Crear(id : int, fecha : DateTime, usuario : string, actividad : string, detalle : string, tipoActividad : string) : EntradaBitacora
+}
+
+note bottom of Proveedor
+No tiene métodos propios de modificación,
+desactivación o reactivación.
+La coordinación está en servicio y repositorio.
+end note
+
+note bottom of EntradaBitacora
+La referencia al proveedor está en Detalle.
+No existe una asociación miembro ni FK a Proveedor.
+Usuario es texto, no una referencia a Usuario.
+end note
+
+@enduml

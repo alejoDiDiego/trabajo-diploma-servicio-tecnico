@@ -1,0 +1,70 @@
+@startuml
+title N02-10 - Secuencia de Gestión de entrega
+
+actor "Recepcionista o encargado" as Operador
+actor "Receptor del equipo" as Receptor
+participant "detalle : FrmOrdenServicioDetalle" as Detalle
+participant "servicio : OrdenServicioService" as Servicio
+participant "ordenes : OrdenServicioRepository" as Ordenes
+participant "entregas : EntregaRepository" as Entregas
+participant "auditoria : BitacoraService" as Auditoria
+
+Operador -> Detalle : Acceder a Entrega
+Detalle -> Servicio : Consultar entrega de la orden
+Servicio -> Entregas : ObtenerPorOrden
+Entregas --> Servicio : Entrega o ausencia
+Servicio --> Detalle : Datos
+Detalle --> Operador : Mostrar información y acciones
+
+alt Registro
+    Operador -> Detalle : Informar receptor y solicitar entrega
+    Detalle -> Detalle : Validar receptor obligatorio
+    Detalle --> Operador : Solicitar confirmación
+    Operador -> Detalle : Confirmar
+    Detalle -> Servicio : EntregarOrden
+    Servicio -> Ordenes : Consultar orden y bloqueo
+    Ordenes --> Servicio : Orden y condición
+    Servicio -> Servicio : Validar Listo para retiro y datos
+    Servicio -> Entregas : CrearConTransicion
+    Entregas -> Entregas : Guardar entrega, Entregado e historial
+    Entregas -> Entregas : Consultar tipo, resultado y Original aprobado
+    Entregas -> Entregas : Crear cobertura si corresponde y no existe
+    Entregas --> Servicio : Entrega persistida
+    Servicio -> Auditoria : Registrar actividad
+    Auditoria --> Servicio : Resultado
+    Servicio --> Detalle : Operación completada
+    Detalle -> Detalle : Recargar y deshabilitar datos guardados
+    Operador -> Receptor : Completar devolución física del equipo
+
+else Cancelación
+    Operador -> Detalle : Cancelar entrega
+    Detalle -> Servicio : Verificar condición de solo consulta
+    Servicio -> Ordenes : Comprobar hijos de garantía
+    Ordenes --> Servicio : Resultado
+    Servicio --> Detalle : Condición
+    Detalle --> Operador : Solicitar confirmación
+    Operador -> Detalle : Confirmar
+    Detalle --> Operador : Solicitar motivo
+    Operador -> Detalle : Informar motivo
+    Detalle -> Servicio : CancelarEntrega
+    Servicio -> Servicio : Validar entrega y restricciones
+    Servicio -> Ordenes : Consultar hermano abierto si corresponde
+    Ordenes --> Servicio : Resultado
+    Servicio -> Entregas : CancelarEntregaConTransicion
+    Entregas -> Entregas : Revalidar bloqueo y hermano abierto
+    Entregas -> Entregas : Eliminar entrega y guardar estado e historial
+    Entregas --> Servicio : Resultado
+    Servicio -> Auditoria : Registrar actividad
+    Auditoria --> Servicio : Resultado
+    Servicio --> Detalle : Operación completada
+    Detalle -> Detalle : Recargar
+end
+
+Detalle --> Operador : Presentar resultado y mantener abierto
+
+note over Entregas, Auditoria
+La escritura principal y la auditoría
+son operaciones separadas.
+end note
+
+@enduml

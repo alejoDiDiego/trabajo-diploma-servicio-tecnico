@@ -1,0 +1,25 @@
+@startuml
+title N01.4.6 - Gestionar entrega
+
+left to right direction
+
+actor Recepcionista
+actor Encargado
+actor "Receptor del equipo" as Receptor
+
+rectangle "Servicio técnico - Gestión de entrega" {
+    usecase "CU-10\nGestionar entrega" as GestionarEntrega
+}
+
+Recepcionista -- GestionarEntrega : consulta y registra
+Encargado -- GestionarEntrega : supervisa y cancela según permisos
+Receptor -- GestionarEntrega : recibe el equipo
+
+note bottom of GestionarEntrega
+Comprende consulta, registro y cancelación permitida.
+
+La cobertura de garantía se genera automáticamente
+cuando se cumplen sus condiciones.
+end note
+
+@enduml

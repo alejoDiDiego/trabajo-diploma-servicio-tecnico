@@ -1,0 +1,77 @@
+@startuml
+title N02-11 - Secuencia de Gestión de garantías y reingresos
+
+actor "Recepcionista, técnico o encargado" as Operador
+participant "detalle : FrmOrdenServicioDetalle" as Detalle
+participant "servicio : OrdenServicioService" as Servicio
+participant "ordenes : OrdenServicioRepository" as Ordenes
+participant "garantias : GarantiaRepository" as Garantias
+participant "evaluaciones : EvaluacionGarantiaRepository" as Evaluaciones
+participant "auditoria : BitacoraService" as Auditoria
+
+Operador -> Detalle : Acceder a Garantía
+Detalle -> Servicio : Consultar cobertura, evaluación y visitas
+Servicio -> Garantias : Obtener cobertura
+Garantias --> Servicio : Datos
+Servicio -> Evaluaciones : Obtener evaluación
+Evaluaciones --> Servicio : Datos
+Servicio -> Ordenes : ListarReingresosGarantia
+Ordenes --> Servicio : Visitas
+Servicio --> Detalle : Información
+Detalle --> Operador : Mostrar datos y acciones
+
+alt Creación de visita
+    Operador -> Detalle : Crear reingreso
+    Detalle -> Servicio : Comprobar reingreso abierto
+    Servicio -> Ordenes : ObtenerReingresoGarantiaAbierto
+    Ordenes --> Servicio : Resultado
+    Servicio --> Detalle : Condición
+    Detalle --> Operador : Solicitar nuevo problema
+    Operador -> Detalle : Informar problema
+    Detalle --> Operador : Solicitar confirmación
+    Operador -> Detalle : Confirmar
+    Detalle -> Servicio : CrearReingresoGarantia
+    Servicio -> Servicio : Validar original y referencias
+    Servicio -> Garantias : ObtenerVigente
+    Garantias --> Servicio : Cobertura
+    Servicio -> Ordenes : CrearConHistorial
+    Ordenes -> Ordenes : Revalidar origen y ausencia de hermano abierto
+    Ordenes -> Ordenes : Crear hijo e historial inicial
+    Ordenes --> Servicio : Nueva orden
+    Servicio -> Auditoria : Registrar creación
+    Auditoria --> Servicio : Resultado
+    Servicio --> Detalle : Número del reingreso
+    Detalle -> Detalle : Recargar original
+
+else Aceptación o rechazo
+    Operador -> Detalle : Informar motivo y observaciones
+
+    alt Aceptación
+        Operador -> Detalle : Aceptar
+        Detalle --> Operador : Solicitar confirmación
+        Operador -> Detalle : Confirmar
+    else Rechazo
+        Operador -> Detalle : Rechazar
+        Detalle --> Operador : Solicitar destino
+        Operador -> Detalle : Seleccionar continuidad presupuestada o retiro
+    end
+
+    Detalle -> Servicio : EvaluarReingreso
+    Servicio -> Servicio : Validar estado, evaluación y coherencia
+    Servicio -> Evaluaciones : Evaluar
+    Evaluaciones --> Servicio : Decisión persistida
+    Servicio -> Ordenes : CambiarEstadoConHistorial
+    Ordenes --> Servicio : Transición persistida
+    Servicio -> Auditoria : Registrar decisión
+    Auditoria --> Servicio : Resultado
+    Servicio --> Detalle : Operación completada
+    Detalle -> Detalle : Recargar reingreso
+end
+
+note over Evaluaciones, Ordenes
+La decisión y la transición son transacciones separadas.
+Un error posterior puede dejar una decisión
+sin completar su destino operativo.
+end note
+
+@enduml

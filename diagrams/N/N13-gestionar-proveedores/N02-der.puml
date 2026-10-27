@@ -1,0 +1,50 @@
+@startuml
+title N02-13 - Entidades de Gestión de proveedores
+
+hide circle
+skinparam linetype ortho
+
+entity Proveedores {
+    * id_proveedor : int <<PK, IDENTITY(1,1)>>
+    --
+    * razon_social : nvarchar(200)
+    cuit : nvarchar(20) <<NULL>>
+    telefono : nvarchar(100) <<NULL>>
+    email : nvarchar(200) <<NULL>>
+    direccion : nvarchar(300) <<NULL>>
+    contacto : nvarchar(200) <<NULL>>
+    * activo : bit <<DEFAULT 1>>
+}
+
+entity Bitacora {
+    * id_bitacora : int <<PK, IDENTITY(1,1)>>
+    --
+    * fecha : datetime
+    * usuario : nvarchar(100)
+    * actividad : nvarchar(200)
+    * detalle : nvarchar(max) <<DEFAULT ''>>
+    * tipo_actividad : nvarchar(50)
+}
+
+legend bottom
+* = NOT NULL.
+NULL = admite valores nulos.
+Sin DEFAULT indicado = sin valor predeterminado
+declarado para una tabla nueva.
+endlegend
+
+note right of Proveedores
+UX_Proveedores_RazonSocial(razon_social),
+sin filtro por activo.
+
+CUIT no tiene índice único.
+No hay columnas de fecha de alta o usuario creador.
+end note
+
+note right of Bitacora
+Sin FK a Proveedores o Usuarios.
+La referencia al proveedor se conserva como texto.
+fecha no tiene DEFAULT SQL.
+end note
+
+@enduml

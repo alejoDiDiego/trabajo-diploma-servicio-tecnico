@@ -1,0 +1,128 @@
+@startuml
+title N02-09 - Entidades afectadas por Gestión de pruebas
+
+hide circle
+skinparam linetype ortho
+
+entity OrdenesServicio {
+    * id_orden : int <<PK, IDENTITY(1,1)>>
+    --
+    * numero_orden : int
+    * id_cliente : int <<FK Clientes.id_cliente>>
+    * id_equipo : int <<FK Equipos.id_equipo>>
+    id_tecnico_asignado : int <<FK, NULL>>
+    id_orden_origen : int <<FK, NULL>>
+    * tipo_orden : nvarchar(20) <<DEFAULT 'Normal'>>
+    * estado : nvarchar(50)
+    resultado : nvarchar(50) <<NULL>>
+    * fecha_ingreso : datetime <<DEFAULT GETDATE()>>
+    * problema_informado : nvarchar(max)
+    estado_fisico_ingreso : nvarchar(max) <<NULL>>
+    accesorios_ingreso : nvarchar(max) <<NULL>>
+    observaciones_ingreso : nvarchar(max) <<NULL>>
+    observacion_resultado : nvarchar(max) <<NULL>>
+    * id_usuario_alta : int <<FK>>
+}
+
+entity Reparaciones {
+    * id_reparacion : int <<PK, IDENTITY(1,1)>>
+    --
+    * id_orden : int <<FK>>
+    * numero_intervencion : int
+    * id_usuario_tecnico : int <<FK>>
+    * fecha_inicio : datetime <<DEFAULT GETDATE()>>
+    fecha_fin : datetime <<NULL>>
+    trabajo_realizado : nvarchar(max) <<NULL>>
+    observaciones : nvarchar(max) <<NULL>>
+}
+
+entity Pruebas {
+    * id_prueba : int <<PK, IDENTITY(1,1)>>
+    --
+    * id_reparacion : int <<FK>>
+    * id_usuario_tecnico : int <<FK>>
+    * fecha : datetime <<DEFAULT GETDATE()>>
+    * descripcion : nvarchar(max)
+    * resultado : nvarchar(30)
+    observaciones : nvarchar(max) <<NULL>>
+    motivo_anulacion : nvarchar(500) <<NULL>>
+    fecha_anulacion : datetime <<NULL>>
+    id_usuario_anulacion : int <<FK, NULL>>
+}
+
+entity HistorialOrdenes {
+    * id_historial : int <<PK, IDENTITY(1,1)>>
+    --
+    * id_orden : int <<FK>>
+    estado_anterior : nvarchar(50) <<NULL>>
+    * estado_nuevo : nvarchar(50)
+    * fecha_hora : datetime <<DEFAULT GETDATE()>>
+    * id_usuario : int <<FK>>
+    observacion : nvarchar(max) <<NULL>>
+}
+
+entity Usuarios {
+    * id_usuario : int <<PK, IDENTITY(1,1)>>
+    --
+    * username : nvarchar(100)
+    * password : nvarchar(max)
+    * activo : bit <<DEFAULT 1>>
+    * dvh : nvarchar(100) <<DEFAULT ''>>
+}
+
+entity Bitacora {
+    * id_bitacora : int <<PK, IDENTITY(1,1)>>
+    --
+    * fecha : datetime
+    * usuario : nvarchar(100)
+    * actividad : nvarchar(200)
+    * detalle : nvarchar(max) <<DEFAULT ''>>
+    * tipo_actividad : nvarchar(50)
+}
+
+OrdenesServicio "1" -- "0..*" Reparaciones : id_orden
+Reparaciones "1" -- "0..*" Pruebas : id_reparacion
+
+Usuarios "1" -- "0..*" Reparaciones : id_usuario_tecnico
+Usuarios "1" -- "0..*" Pruebas : id_usuario_tecnico
+Usuarios "0..1" -- "0..*" Pruebas : id_usuario_anulacion
+
+OrdenesServicio "1" -- "0..*" HistorialOrdenes : id_orden
+Usuarios "1" -- "0..*" HistorialOrdenes : id_usuario
+
+Usuarios "0..1" -- "0..*" OrdenesServicio : id_tecnico_asignado
+Usuarios "1" -- "0..*" OrdenesServicio : id_usuario_alta
+OrdenesServicio "0..1" -- "0..*" OrdenesServicio : id_orden_origen
+
+legend bottom
+* = NOT NULL.
+NULL = admite valores nulos.
+Sin DEFAULT indicado = sin valor predeterminado
+declarado para una tabla nueva.
+endlegend
+
+note right of Pruebas
+No hay unicidad por intervención.
+Se conservan múltiples pruebas.
+No existe eliminación física en esta gestión.
+end note
+
+note right of Reparaciones
+UX_Reparaciones_Orden_Nro
+(id_orden, numero_intervencion).
+No constituye una restricción de única intervención abierta.
+end note
+
+note right of OrdenesServicio
+UX_OrdenesServicio_Numero(numero_orden).
+La reapertura cambia estado y elimina resultado;
+no borra las pruebas.
+end note
+
+note right of Bitacora
+Sin FK a Pruebas, OrdenesServicio o Usuarios.
+El actor y la actuación se conservan como texto.
+fecha no tiene DEFAULT SQL.
+end note
+
+@enduml

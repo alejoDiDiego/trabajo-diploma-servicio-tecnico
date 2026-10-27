@@ -1,0 +1,95 @@
+@startuml
+title N01.4.6 - Modelo conceptual de Gestión de entrega
+
+left to right direction
+hide methods
+skinparam classAttributeIconSize 0
+
+class OrdenServicio {
+    identificador
+    numeroOrden
+    tipoOrden
+    estado
+    resultado
+    ordenOrigen
+    observacionResultado
+}
+
+class Entrega {
+    identificador
+    orden
+    fechaEntrega
+    usuarioResponsable
+    entregadoA
+    documentoReceptor
+    observaciones
+}
+
+class Garantia {
+    identificador
+    ordenOriginal
+    fechaInicio
+    fechaFin
+    observaciones
+    anulada
+}
+
+class Presupuesto {
+    identificador
+    orden
+    tipo
+    estado
+    diasGarantia
+}
+
+class EvaluacionGarantia {
+    identificador
+    ordenReingreso
+    garantia
+    estado
+    fecha
+    usuarioResponsable
+    motivo
+    observaciones
+}
+
+class Usuario {
+    identificador
+    nombreUsuario
+    activo
+}
+
+class HistorialEstadoOrden {
+    identificador
+    orden
+    estadoAnterior
+    estadoNuevo
+    fechaHora
+    usuarioResponsable
+    observacion
+}
+
+OrdenServicio "1" -- "0..1" Entrega
+Usuario "1" -- "0..*" Entrega : registra
+
+OrdenServicio "1" -- "0..1" Garantia : cobertura del original
+OrdenServicio "1" -- "0..*" Presupuesto
+
+OrdenServicio "0..1" -- "0..*" OrdenServicio : origen / reingresos
+OrdenServicio "1" -- "0..1" EvaluacionGarantia : evaluación del reingreso
+Garantia "1" -- "0..*" EvaluacionGarantia
+
+OrdenServicio "1" -- "0..*" HistorialEstadoOrden
+Usuario "1" -- "0..*" HistorialEstadoOrden : usuario actuante
+
+note bottom of Entrega
+La cancelación retira la entrega vigente.
+La actuación se conserva en historial y bitácora.
+end note
+
+note bottom of Garantia
+Una cancelación o nueva entrega
+no renueva la cobertura existente.
+end note
+
+@enduml

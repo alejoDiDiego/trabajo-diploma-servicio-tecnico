@@ -1,0 +1,54 @@
+@startuml
+title N02-04 - Flujo de Gestión de órdenes de servicio
+
+start
+:Verificar acceso y mostrar listado;
+:Recibir operación;
+:Validar permiso y selección;
+
+if (¿Consulta?) then (sí)
+    :Aplicar filtros;
+    :Mostrar coincidencias y detalle solicitado;
+
+elseif (¿Registro?) then (sí)
+    :Recibir cliente, equipo y datos de ingreso;
+    :Validar obligatorios, activos y pertenencia;
+
+    if (¿Recepción admitida?) then (sí)
+        :Crear orden normal Recibido;
+        :Registrar historial inicial;
+        :Registrar actividad;
+        :Mantener abierto el detalle existente;
+    else (no)
+        :Informar impedimento;
+    endif
+
+elseif (¿Modificar recepción?) then (sí)
+    :Validar orden no entregada y modificable;
+    :Guardar los cuatro datos de recepción;
+    :Registrar actividad;
+
+elseif (¿Asignar técnico?) then (sí)
+    :Validar orden modificable;
+    :Validar técnico activo y permiso efectivo;
+    :Guardar asignación;
+    :Registrar actividad;
+
+else (Cancelar)
+    :Validar estado y ausencia de bloqueo;
+    :Solicitar confirmación;
+
+    if (¿Confirma?) then (sí)
+        :Solicitar y validar motivo;
+        :Revalidar condiciones;
+        :Guardar Listo para retiro / Cancelado;
+        :Registrar historial y actividad;
+    else (no)
+        :Conservar orden;
+    endif
+endif
+
+:Presentar resultado;
+stop
+
+@enduml

@@ -1,0 +1,38 @@
+@startuml
+title N02-13 - Flujo de Gestión de proveedores
+
+start
+:Verificar acceso y seleccionar operación;
+
+if (¿Consulta?) then (sí)
+    :Cargar activos o incluir inactivos;
+    :Aplicar razón social y CUIT;
+    :Presentar coincidencias;
+
+elseif (¿Alta?) then (sí)
+    :Capturar datos;
+    :Validar razón social;
+    :Crear proveedor activo;
+    :Registrar actividad;
+
+elseif (¿Modificación?) then (sí)
+    :Seleccionar y capturar cambios;
+    :Validar razón social y existencia;
+    :Actualizar datos sin cambiar Activo;
+    :Registrar actividad;
+
+else (Desactivar o reactivar)
+    :Seleccionar proveedor;
+    :Solicitar confirmación;
+
+    if (¿Confirma?) then (sí)
+        :Comprobar existencia;
+        :Cambiar condición activa;
+        :Registrar actividad;
+    endif
+endif
+
+:Solicitar recarga y presentar resultado;
+stop
+
+@enduml

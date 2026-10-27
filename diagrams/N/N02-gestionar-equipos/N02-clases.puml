@@ -1,0 +1,91 @@
+@startuml
+title N02-02 - Clases de información afectadas
+
+left to right direction
+skinparam classAttributeIconSize 0
+
+class Equipo {
+    + Id : int
+    + IdCliente : int
+    + IdTipoEquipo : int
+    + IdMarca : int
+    + Modelo : string
+    + NumeroSerie : string
+    + Imei : string
+    + Color : string
+    + Observaciones : string
+    + Activo : bool
+    --
+    - Equipo()
+    + {static} CrearNuevo(idCliente : int, idTipoEquipo : int, idMarca : int, modelo : string, numeroSerie : string, imei : string, color : string, observaciones : string) : Equipo
+    + {static} CargarDesdeDB(id : int, idCliente : int, idTipoEquipo : int, idMarca : int, modelo : string, numeroSerie : string, imei : string, color : string, observaciones : string, activo : bool) : Equipo
+}
+
+class Cliente {
+    + Id : int
+    + Nombre : string
+    + Apellido : string
+    + Documento : string
+    + Telefono : string
+    + Email : string
+    + Direccion : string
+    + Observaciones : string
+    + Activo : bool
+    + FechaAlta : DateTime
+    --
+    - Cliente()
+    + {static} CrearNuevo(nombre : string, apellido : string, documento : string, telefono : string, email : string, direccion : string, observaciones : string) : Cliente
+    + {static} CargarDesdeDB(id : int, nombre : string, apellido : string, documento : string, telefono : string, email : string, direccion : string, observaciones : string, activo : bool, fechaAlta : DateTime) : Cliente
+}
+
+class TipoEquipo {
+    + Id : int
+    + Nombre : string
+    + Activo : bool
+    --
+    - TipoEquipo()
+    + {static} CrearNuevo(nombre : string) : TipoEquipo
+    + {static} CargarDesdeDB(id : int, nombre : string, activo : bool) : TipoEquipo
+}
+
+class Marca {
+    + Id : int
+    + Nombre : string
+    + Activo : bool
+    --
+    - Marca()
+    + {static} CrearNuevo(nombre : string) : Marca
+    + {static} CargarDesdeDB(id : int, nombre : string, activo : bool) : Marca
+}
+
+class EntradaBitacora {
+    + Id : int
+    + Fecha : DateTime
+    + Usuario : string
+    + Actividad : string
+    + Detalle : string
+    + TipoActividad : string
+    --
+    - EntradaBitacora()
+    + {static} Crear(id : int, fecha : DateTime, usuario : string, actividad : string, detalle : string, tipoActividad : string) : EntradaBitacora
+}
+
+Cliente "1" .. "0..*" Equipo : asociación por IdCliente
+TipoEquipo "1" .. "0..*" Equipo : asociación por IdTipoEquipo
+Marca "1" .. "0..*" Equipo : asociación por IdMarca
+
+note bottom of Equipo
+Las asociaciones se conservan mediante identificadores.
+No existen campos de navegación hacia Cliente,
+TipoEquipo o Marca dentro de Equipo.
+
+La modificación y vigencia son coordinadas
+por servicio y repositorio.
+end note
+
+note bottom of EntradaBitacora
+La referencia al equipo se registra en texto.
+No existe una referencia de objeto a Equipo.
+end note
+
+@enduml

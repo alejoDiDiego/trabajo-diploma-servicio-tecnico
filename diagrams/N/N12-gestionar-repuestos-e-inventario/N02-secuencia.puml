@@ -1,0 +1,86 @@
+@startuml
+title N02-12 - Secuencia de Gestión de repuestos e inventario
+
+actor "Responsable de inventario o encargado" as Operador
+participant FrmRepuestos as Maestro
+participant FrmRepuestoEditar as Editor
+participant FrmAjusteStock as Ajuste
+participant FrmMovimientosStock as Consulta
+participant RepuestoService as Servicio
+participant RepuestoRepository as Repuestos
+participant MovimientoStockRepository as Movimientos
+participant BitacoraService as Auditoria
+
+alt Alta o modificación
+    Operador -> Maestro : Crear o editar
+    Maestro -> Editor : Abrir formulario
+    Operador -> Editor : Completar datos y aceptar
+    Editor -> Editor : Validar captura
+    Editor --> Maestro : Datos aceptados y formulario cerrado
+
+    alt Alta
+        Maestro -> Servicio : Crear
+        Servicio -> Repuestos : Crear
+        Repuestos -> Repuestos : Insertar repuesto y movimiento inicial si corresponde
+    else Modificación
+        Maestro -> Servicio : Modificar
+        Servicio -> Repuestos : ObtenerPorId
+        Repuestos --> Servicio : Registro
+        Servicio -> Repuestos : Modificar sin stock
+    end
+
+    Repuestos --> Servicio : Resultado
+    Servicio -> Auditoria : Registrar actividad
+    Auditoria --> Servicio : Resultado
+    Servicio --> Maestro : Operación completada
+    Maestro -> Maestro : Recargar catálogo
+
+else Desactivar o reactivar
+    Operador -> Maestro : Solicitar cambio
+    Maestro --> Operador : Solicitar confirmación
+    Operador -> Maestro : Confirmar
+    Maestro -> Servicio : Desactivar o Reactivar
+    Servicio -> Repuestos : ObtenerPorId y cambiar condición
+    Repuestos --> Servicio : Resultado
+    Servicio -> Auditoria : Registrar actividad
+    Auditoria --> Servicio : Resultado
+    Servicio --> Maestro : Operación completada
+    Maestro -> Maestro : Recargar catálogo
+
+else Ajuste
+    Operador -> Maestro : Ajustar stock
+    Maestro -> Ajuste : Abrir con stock de referencia
+    Operador -> Ajuste : Informar delta y motivo
+    Operador -> Ajuste : Aceptar
+    Ajuste -> Ajuste : Validar cantidad y motivo
+    Ajuste --> Maestro : Datos aceptados y formulario cerrado
+    Maestro -> Servicio : AjustarStock
+    Servicio -> Repuestos : ObtenerPorId
+    Repuestos --> Servicio : Registro
+    Servicio -> Servicio : Validar saldo y determinar actor
+    Servicio -> Repuestos : AjustarStock
+    Repuestos -> Repuestos : Bloquear, releer y validar stock
+    Repuestos -> Repuestos : Actualizar stock e insertar movimiento
+    Repuestos --> Servicio : Resultado
+    Servicio -> Auditoria : Registrar actividad
+    Auditoria --> Servicio : Resultado
+    Servicio --> Maestro : Operación completada
+    Maestro -> Maestro : Recargar catálogo
+
+else Consulta de movimientos
+    Operador -> Consulta : Indicar filtros y Buscar
+    Consulta -> Servicio : ListarMovimientosFiltros
+    Servicio -> Movimientos : ListarFiltros
+    Movimientos --> Servicio : Movimientos
+    Servicio --> Consulta : Datos
+    Consulta -> Consulta : Filtrar observación y resolver etiquetas
+    Consulta --> Operador : Presentar resultados
+end
+
+note over Repuestos, Auditoria
+La bitácora es posterior y separada.
+Un error posterior no garantiza ausencia
+de cambios en catálogo o stock.
+end note
+
+@enduml

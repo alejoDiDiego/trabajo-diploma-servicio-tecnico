@@ -1,0 +1,82 @@
+@startuml
+title N02-09 - Secuencia de Gestión de pruebas
+
+actor "Técnico, encargado o recepcionista" as Operador
+participant "detalle : FrmOrdenServicioDetalle" as Detalle
+participant "servicio : OrdenServicioService" as Servicio
+participant "reparaciones : ReparacionRepository" as Reparaciones
+participant "ordenes : OrdenServicioRepository" as Ordenes
+participant "auditoria : BitacoraService" as Auditoria
+
+Operador -> Detalle : Consultar intervención
+Detalle -> Servicio : Listar pruebas de la intervención
+Servicio -> Reparaciones : ListarPruebas
+Reparaciones --> Servicio : Pruebas
+Servicio --> Detalle : Pruebas
+Detalle --> Operador : Mostrar grilla y acciones
+
+alt Registro
+    Operador -> Detalle : Informar datos y registrar
+    Detalle -> Servicio : RegistrarPrueba
+    Servicio -> Reparaciones : Obtener intervención y pruebas necesarias
+    Reparaciones --> Servicio : Datos
+    Servicio -> Ordenes : Consultar orden y bloqueo
+    Ordenes --> Servicio : Orden y condición
+    Servicio -> Servicio : Validar intervención actual y datos
+    Servicio -> Reparaciones : RegistrarPrueba
+    Reparaciones --> Servicio : Identificación
+    Servicio -> Auditoria : Registrar actividad
+    Auditoria --> Servicio : Resultado
+    Servicio --> Detalle : Prueba registrada
+    Detalle -> Detalle : Limpiar captura y recargar
+
+else Anulación
+    Operador -> Detalle : Seleccionar prueba y anular
+    Detalle --> Operador : Solicitar confirmación
+    Operador -> Detalle : Confirmar
+    Detalle --> Operador : Solicitar motivo
+    Operador -> Detalle : Informar motivo
+    Detalle -> Servicio : AnularPrueba
+    Servicio -> Servicio : Validar prueba, intervención actual y orden
+    Servicio -> Reparaciones : AnularPrueba
+    Reparaciones --> Servicio : Resultado
+    Servicio -> Auditoria : Registrar actividad
+    Auditoria --> Servicio : Resultado
+    Servicio --> Detalle : Recargar
+
+else Finalización
+    Operador -> Detalle : Finalizar pruebas
+    Detalle -> Detalle : Verificar vista actual
+    Detalle --> Operador : Solicitar confirmación
+    Operador -> Detalle : Confirmar
+    Detalle -> Servicio : FinalizarPruebas
+    Servicio -> Reparaciones : Recuperar intervención actual y pruebas
+    Reparaciones --> Servicio : Datos
+    Servicio -> Servicio : Evaluar pruebas válidas
+    Servicio -> Reparaciones : Guardar estado, resultado e historial
+    Reparaciones --> Servicio : Resultado
+    Servicio -> Auditoria : Registrar actividad
+    Auditoria --> Servicio : Resultado
+    Servicio --> Detalle : Mostrar destino
+
+else Reapertura
+    Operador -> Detalle : Volver a pruebas desde Entrega
+    Detalle --> Operador : Solicitar confirmación
+    Operador -> Detalle : Confirmar
+    Detalle --> Operador : Solicitar motivo
+    Operador -> Detalle : Informar motivo
+    Detalle -> Servicio : ReabrirPruebas
+    Servicio -> Servicio : Validar Listo para retiro y Reparado
+    Servicio -> Ordenes : ReabrirPruebasConTransicion
+    Ordenes --> Servicio : Resultado
+    Servicio -> Auditoria : Registrar actividad
+    Auditoria --> Servicio : Resultado
+    Servicio --> Detalle : Mostrar En pruebas
+end
+
+note over Reparaciones, Auditoria
+La auditoría es posterior a la escritura principal.
+Un error posterior no garantiza ausencia de cambios.
+end note
+
+@enduml

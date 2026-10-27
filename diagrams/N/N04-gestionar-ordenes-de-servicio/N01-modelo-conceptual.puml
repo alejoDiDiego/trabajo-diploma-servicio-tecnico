@@ -1,0 +1,91 @@
+@startuml
+title N01.4 - Modelo conceptual de Gestión de órdenes
+
+left to right direction
+hide methods
+skinparam classAttributeIconSize 0
+
+class Cliente {
+    identificador
+    nombre
+    apellido
+    documento
+    telefono
+    correoElectronico
+    direccion
+    observaciones
+    activo
+    fechaAlta
+}
+
+class Equipo {
+    identificador
+    clienteActual
+    tipoEquipo
+    marca
+    modelo
+    numeroSerie
+    imei
+    color
+    observaciones
+    activo
+}
+
+class Usuario {
+    identificador
+    nombreUsuario
+    activo
+}
+
+class OrdenServicio {
+    identificador
+    numeroOrden
+    clienteDeRecepcion
+    equipo
+    tecnicoAsignado
+    ordenOrigen
+    tipoOrden
+    estado
+    resultado
+    fechaIngreso
+    problemaInformado
+    estadoFisicoIngreso
+    accesoriosIngreso
+    observacionesIngreso
+    observacionResultado
+    usuarioAlta
+}
+
+class HistorialEstadoOrden {
+    identificador
+    orden
+    estadoAnterior
+    estadoNuevo
+    fechaHora
+    usuarioResponsable
+    observacion
+}
+
+Cliente "1" -- "0..*" Equipo : propietario actual
+Cliente "1" -- "0..*" OrdenServicio : cliente histórico
+Equipo "1" -- "0..*" OrdenServicio : equipo atendido
+
+Usuario "0..1" -- "0..*" OrdenServicio : técnico asignado
+Usuario "1" -- "0..*" OrdenServicio : responsable del alta
+
+OrdenServicio "1" -- "1..*" HistorialEstadoOrden : trayectoria normal
+Usuario "1" -- "0..*" HistorialEstadoOrden : responsable
+
+OrdenServicio "0..1" -- "0..*" OrdenServicio : origen / reingresos
+
+note bottom of OrdenServicio
+La condición de solo consulta por reingresos
+no es un nuevo estado de la orden.
+end note
+
+note bottom of Usuario
+Representa la cuenta del responsable.
+No constituye un maestro de empleados.
+end note
+
+@enduml

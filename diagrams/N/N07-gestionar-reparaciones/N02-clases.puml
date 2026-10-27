@@ -1,0 +1,132 @@
+@startuml
+title N02-07 - Clases de información afectadas
+
+left to right direction
+skinparam classAttributeIconSize 0
+
+class Reparacion {
+    + Id : int
+    + IdOrden : int
+    + NumeroIntervencion : int
+    + IdUsuarioTecnico : int
+    + FechaInicio : DateTime
+    + FechaFin : DateTime?
+    + TrabajoRealizado : string
+    + Observaciones : string
+    --
+    - Reparacion()
+    + {static} CrearNuevo(idOrden : int, numeroIntervencion : int, idUsuarioTecnico : int) : Reparacion
+    + {static} CargarDesdeDB(id : int, idOrden : int, numeroIntervencion : int, idUsuarioTecnico : int, fechaInicio : DateTime, fechaFin : DateTime?, trabajoRealizado : string, observaciones : string) : Reparacion
+    + Finalizar(trabajoRealizado : string, observaciones : string) : void
+}
+
+class OrdenServicio {
+    + Id : int
+    + NumeroOrden : int
+    + IdCliente : int
+    + IdEquipo : int
+    + IdTecnicoAsignado : int?
+    + IdOrdenOrigen : int?
+    + TipoOrden : string
+    + Estado : string
+    + Resultado : string
+    + FechaIngreso : DateTime
+    + ProblemaInformado : string
+    + EstadoFisicoIngreso : string
+    + AccesoriosIngreso : string
+    + ObservacionesIngreso : string
+    + ObservacionResultado : string
+    + IdUsuarioAlta : int
+    --
+    - OrdenServicio()
+    + {static} CrearNuevo(idCliente : int, idEquipo : int, problema : string, estadoFisico : string, accesorios : string, observacionesIngreso : string, idUsuarioAlta : int) : OrdenServicio
+    + {static} CrearNuevoGarantia(idCliente : int, idEquipo : int, idOrdenOrigen : int, problema : string, estadoFisico : string, accesorios : string, observacionesIngreso : string, idUsuarioAlta : int) : OrdenServicio
+    + {static} CargarDesdeDB(id : int, numeroOrden : int, idCliente : int, idEquipo : int, idTecnicoAsignado : int?, idOrdenOrigen : int?, tipoOrden : string, estado : string, resultado : string, fechaIngreso : DateTime, problemaInformado : string, estadoFisicoIngreso : string, accesoriosIngreso : string, observacionesIngreso : string, observacionResultado : string, idUsuarioAlta : int) : OrdenServicio
+    + AsignarTecnico(idTecnico : int) : void
+    + ActualizarRecepcion(problema : string, estadoFisico : string, accesorios : string, observacionesIngreso : string) : void
+    + IniciarDiagnostico() : void
+    + MarcarPendientePresupuesto() : void
+    + MarcarPendientePresupuestoDesdeEvaluacion() : void
+    + MarcarEsperandoRespuesta() : void
+    + AutorizarReparacion() : void
+    + MarcarNoReparable(motivo : string) : void
+    + MarcarPresupuestoRechazado(motivo : string) : void
+    + IniciarReparacion() : void
+    + FinalizarReparacion() : void
+    + SolicitarAdicional() : void
+    + RevertirAPendientePresupuesto() : void
+    + CancelarSolicitudAdicional(estadoOrigen : string) : void
+    + FinalizarPruebasAprobadas() : void
+    + FinalizarPruebasRequiereRevision() : void
+    + Cancelar(motivo : string) : void
+    + Entregar() : void
+    + CancelarEntrega() : void
+    + MarcarPendienteEvaluacionGarantia() : void
+    + AutorizarReparacionGarantia() : void
+    + MarcarGarantiaNoCubierta(motivo : string) : void
+    + ReabrirPruebas() : void
+}
+
+class HistorialEstadoOrden {
+    + Id : int
+    + IdOrden : int
+    + EstadoAnterior : string
+    + EstadoNuevo : string
+    + FechaHora : DateTime
+    + IdUsuario : int
+    + Observacion : string
+    --
+    - HistorialEstadoOrden()
+    + {static} CrearNuevo(idOrden : int, estadoAnterior : string, estadoNuevo : string, idUsuario : int, observacion : string) : HistorialEstadoOrden
+    + {static} CargarDesdeDB(id : int, idOrden : int, estadoAnterior : string, estadoNuevo : string, fechaHora : DateTime, idUsuario : int, observacion : string) : HistorialEstadoOrden
+}
+
+class Usuario {
+    + Id : int
+    + Username : string
+    + Password : string
+    + Activo : bool
+    + DVH : string
+    --
+    - Usuario()
+    + {static} CrearNuevo(userName : string, password : string) : Usuario
+    + {static} CargarDesdeDB(id : int, userName : string, password : string, dvh : string = "", activo : bool = true) : Usuario
+    + Desactivar() : void
+    + Reactivar() : void
+    + SetDVH(dvh : string) : void
+}
+
+class EntradaBitacora {
+    + Id : int
+    + Fecha : DateTime
+    + Usuario : string
+    + Actividad : string
+    + Detalle : string
+    + TipoActividad : string
+    --
+    - EntradaBitacora()
+    + {static} Crear(id : int, fecha : DateTime, usuario : string, actividad : string, detalle : string, tipoActividad : string) : EntradaBitacora
+}
+
+OrdenServicio "1" .. "0..*" Reparacion : IdOrden
+Usuario "1" .. "0..*" Reparacion : IdUsuarioTecnico
+Usuario "0..1" .. "0..*" OrdenServicio : IdTecnicoAsignado
+Usuario "1" .. "0..*" OrdenServicio : IdUsuarioAlta
+OrdenServicio "1" .. "0..*" HistorialEstadoOrden : IdOrden
+Usuario "1" .. "0..*" HistorialEstadoOrden : IdUsuario
+
+note bottom of Reparacion
+FechaFin determina apertura o cierre.
+No existe una propiedad Estado independiente.
+
+Los consumos y pruebas se registran
+mediante sus gestiones específicas.
+end note
+
+note bottom of EntradaBitacora
+La actuación y la referencia a la intervención
+se registran mediante texto.
+No existe una referencia de objeto a Reparacion.
+end note
+
+@enduml

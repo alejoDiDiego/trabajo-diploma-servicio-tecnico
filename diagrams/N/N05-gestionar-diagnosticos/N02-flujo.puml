@@ -1,0 +1,40 @@
+@startuml
+title N02-05 - Flujo de Gestión de diagnósticos
+
+start
+:Acceder a Diagnóstico de una orden;
+:Verificar acceso y cargar datos;
+:Seleccionar operación;
+
+if (¿Consulta?) then (sí)
+    :Mostrar diagnóstico o ausencia de registro;
+
+elseif (¿Iniciar?) then (sí)
+    :Validar Recibido, técnico asignado y orden modificable;
+    :Guardar En diagnóstico e historial;
+    :Registrar actividad;
+
+else (Registrar conclusión)
+    :Recibir datos;
+    :Validar descripción, estado, asignación y unicidad;
+    :Guardar diagnóstico y transición;
+
+    if (¿Reparable?) then (sí)
+        if (¿Orden de garantía?) then (sí)
+            :Pendiente de evaluación de garantía;
+            :Preparar evaluación pendiente en operación posterior;
+        else (no)
+            :Pendiente de presupuesto;
+        endif
+    else (no)
+        :Listo para retiro / No reparable;
+        :Conservar descripción en observación del resultado;
+    endif
+
+    :Registrar actividad si se completa el recorrido;
+endif
+
+:Presentar resultado;
+stop
+
+@enduml

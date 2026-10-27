@@ -1,0 +1,53 @@
+@startuml
+title N02-08 - Flujo de Gestión de repuestos utilizados
+
+start
+:Seleccionar intervención y operación;
+:Verificar autorización;
+
+if (¿Consulta?) then (sí)
+    :Recuperar consumos remanentes;
+    :Agrupar presentación por repuesto y costo;
+    :Mostrar cantidades e importes;
+
+elseif (¿Consumo?) then (sí)
+    :Validar intervención abierta y orden En reparación;
+    :Validar repuesto activo y cantidad;
+    :Obtener costo actual;
+
+    if (¿Stock suficiente?) then (sí)
+        :Registrar nueva fila de consumo;
+        :Disminuir stock;
+        :Registrar movimiento de consumo;
+        :Registrar actividad;
+    else (no)
+        :Rechazar sin consumo parcial;
+    endif
+
+else (Devolución)
+    :Identificar repuesto del renglón;
+    :Solicitar cantidad;
+
+    if (¿Cantidad aceptada?) then (sí)
+        :Solicitar confirmación;
+
+        if (¿Confirma?) then (sí)
+            :Validar intervención, orden y cantidad disponible;
+
+            while (¿Queda cantidad por devolver?) is (sí)
+                :Tomar consumo más antiguo del repuesto;
+                :Eliminar fila o reducir su cantidad;
+                :Conservar costo del remanente;
+                :Incrementar stock y registrar movimiento;
+                :Reducir cantidad pendiente;
+            endwhile (no)
+
+            :Registrar actividad;
+        endif
+    endif
+endif
+
+:Actualizar información y presentar resultado;
+stop
+
+@enduml

@@ -1,0 +1,137 @@
+@startuml
+title N02-08 - Entidades afectadas por repuestos utilizados
+
+hide circle
+skinparam linetype ortho
+
+entity ReparacionRepuesto {
+    * id_consumo : int <<PK, IDENTITY(1,1)>>
+    --
+    * id_reparacion : int <<FK>>
+    * id_repuesto : int <<FK>>
+    * cantidad : int
+    * costo_unitario : decimal(18,2) <<DEFAULT 0>>
+}
+
+entity Repuestos {
+    * id_repuesto : int <<PK, IDENTITY(1,1)>>
+    --
+    * codigo : nvarchar(50)
+    * descripcion : nvarchar(200)
+    * stock_actual : int <<DEFAULT 0>>
+    * stock_minimo : int <<DEFAULT 0>>
+    * costo_actual : decimal(18,2) <<DEFAULT 0>>
+    * precio_referencia : decimal(18,2) <<DEFAULT 0>>
+    * activo : bit <<DEFAULT 1>>
+}
+
+entity MovimientosStock {
+    * id_movimiento : int <<PK, IDENTITY(1,1)>>
+    --
+    * id_repuesto : int <<FK>>
+    * fecha : datetime <<DEFAULT GETDATE()>>
+    * tipo : nvarchar(30)
+    * cantidad : int
+    * stock_anterior : int
+    * stock_posterior : int
+    * id_usuario : int <<FK>>
+    id_compra : int <<FK Compras.id_compra, NULL>>
+    id_reparacion : int <<FK, NULL>>
+    observacion : nvarchar(max) <<NULL>>
+}
+
+entity Reparaciones {
+    * id_reparacion : int <<PK, IDENTITY(1,1)>>
+    --
+    * id_orden : int <<FK>>
+    * numero_intervencion : int
+    * id_usuario_tecnico : int <<FK>>
+    * fecha_inicio : datetime <<DEFAULT GETDATE()>>
+    fecha_fin : datetime <<NULL>>
+    trabajo_realizado : nvarchar(max) <<NULL>>
+    observaciones : nvarchar(max) <<NULL>>
+}
+
+entity OrdenesServicio {
+    * id_orden : int <<PK, IDENTITY(1,1)>>
+    --
+    * numero_orden : int
+    * id_cliente : int <<FK Clientes.id_cliente>>
+    * id_equipo : int <<FK Equipos.id_equipo>>
+    id_tecnico_asignado : int <<FK Usuarios.id_usuario, NULL>>
+    id_orden_origen : int <<FK OrdenesServicio.id_orden, NULL>>
+    * tipo_orden : nvarchar(20) <<DEFAULT 'Normal'>>
+    * estado : nvarchar(50)
+    resultado : nvarchar(50) <<NULL>>
+    * fecha_ingreso : datetime <<DEFAULT GETDATE()>>
+    * problema_informado : nvarchar(max)
+    estado_fisico_ingreso : nvarchar(max) <<NULL>>
+    accesorios_ingreso : nvarchar(max) <<NULL>>
+    observaciones_ingreso : nvarchar(max) <<NULL>>
+    observacion_resultado : nvarchar(max) <<NULL>>
+    * id_usuario_alta : int <<FK Usuarios.id_usuario>>
+}
+
+entity Usuarios {
+    * id_usuario : int <<PK, IDENTITY(1,1)>>
+    --
+    * username : nvarchar(100)
+    * password : nvarchar(max)
+    * activo : bit <<DEFAULT 1>>
+    * dvh : nvarchar(100) <<DEFAULT ''>>
+}
+
+entity Bitacora {
+    * id_bitacora : int <<PK, IDENTITY(1,1)>>
+    --
+    * fecha : datetime
+    * usuario : nvarchar(100)
+    * actividad : nvarchar(200)
+    * detalle : nvarchar(max) <<DEFAULT ''>>
+    * tipo_actividad : nvarchar(50)
+}
+
+OrdenesServicio "1" -- "0..*" Reparaciones : id_orden
+Usuarios "1" -- "0..*" Reparaciones : id_usuario_tecnico
+
+Reparaciones "1" -- "0..*" ReparacionRepuesto : id_reparacion
+Repuestos "1" -- "0..*" ReparacionRepuesto : id_repuesto
+
+Repuestos "1" -- "0..*" MovimientosStock : id_repuesto
+Reparaciones "0..1" -- "0..*" MovimientosStock : id_reparacion
+Usuarios "1" -- "0..*" MovimientosStock : id_usuario
+
+legend bottom
+* = NOT NULL.
+NULL = admite valores nulos.
+Sin DEFAULT indicado = sin valor predeterminado
+declarado para una tabla nueva.
+endlegend
+
+note right of ReparacionRepuesto
+IX_ReparacionRepuesto_Rep_Rep
+(id_reparacion, id_repuesto)
+es un índice NO único.
+
+Pueden existir varias filas
+del mismo repuesto en una intervención.
+end note
+
+note right of Repuestos
+UX_Repuestos_Codigo(codigo).
+Solo stock_actual cambia mediante este caso.
+end note
+
+note right of MovimientosStock
+La referencia a Compra existe en el esquema,
+pero permanece nula en consumos y devoluciones.
+No se accede a Compras para estas operaciones.
+end note
+
+note right of Bitacora
+Sin FK a Reparaciones o Usuarios.
+La identificación de la actuación es textual.
+fecha no tiene DEFAULT SQL.
+end note
+
+@enduml

@@ -1,0 +1,137 @@
+@startuml
+title N02-14 - Entidades de Gestión de compras
+
+hide circle
+skinparam linetype ortho
+
+entity Compras {
+    * id_compra : int <<PK, IDENTITY(1,1)>>
+    --
+    * id_proveedor : int <<FK>>
+    * fecha : datetime <<DEFAULT GETDATE()>>
+    * estado : nvarchar(20) <<DEFAULT 'Borrador'>>
+    * total : decimal(18,2) <<DEFAULT 0>>
+    * id_usuario : int <<FK>>
+    observaciones : nvarchar(max) <<NULL>>
+    motivo_anulacion : nvarchar(500) <<NULL>>
+}
+
+entity CompraDetalle {
+    * id_detalle : int <<PK, IDENTITY(1,1)>>
+    --
+    * id_compra : int <<FK>>
+    * id_repuesto : int <<FK>>
+    * cantidad : int
+    * costo_unitario : decimal(18,2) <<DEFAULT 0>>
+    * subtotal : decimal(18,2) <<DEFAULT 0>>
+}
+
+entity Proveedores {
+    * id_proveedor : int <<PK, IDENTITY(1,1)>>
+    --
+    * razon_social : nvarchar(200)
+    cuit : nvarchar(20) <<NULL>>
+    telefono : nvarchar(100) <<NULL>>
+    email : nvarchar(200) <<NULL>>
+    direccion : nvarchar(300) <<NULL>>
+    contacto : nvarchar(200) <<NULL>>
+    * activo : bit <<DEFAULT 1>>
+}
+
+entity Repuestos {
+    * id_repuesto : int <<PK, IDENTITY(1,1)>>
+    --
+    * codigo : nvarchar(50)
+    * descripcion : nvarchar(200)
+    * stock_actual : int <<DEFAULT 0>>
+    * stock_minimo : int <<DEFAULT 0>>
+    * costo_actual : decimal(18,2) <<DEFAULT 0>>
+    * precio_referencia : decimal(18,2) <<DEFAULT 0>>
+    * activo : bit <<DEFAULT 1>>
+}
+
+entity MovimientosStock {
+    * id_movimiento : int <<PK, IDENTITY(1,1)>>
+    --
+    * id_repuesto : int <<FK>>
+    * fecha : datetime <<DEFAULT GETDATE()>>
+    * tipo : nvarchar(30)
+    * cantidad : int
+    * stock_anterior : int
+    * stock_posterior : int
+    * id_usuario : int <<FK>>
+    id_compra : int <<FK, NULL>>
+    id_reparacion : int <<FK Reparaciones.id_reparacion, NULL>>
+    observacion : nvarchar(max) <<NULL>>
+}
+
+entity Usuarios {
+    * id_usuario : int <<PK, IDENTITY(1,1)>>
+    --
+    * username : nvarchar(100)
+    * password : nvarchar(max)
+    * activo : bit <<DEFAULT 1>>
+    * dvh : nvarchar(100) <<DEFAULT ''>>
+}
+
+entity Bitacora {
+    * id_bitacora : int <<PK, IDENTITY(1,1)>>
+    --
+    * fecha : datetime
+    * usuario : nvarchar(100)
+    * actividad : nvarchar(200)
+    * detalle : nvarchar(max) <<DEFAULT ''>>
+    * tipo_actividad : nvarchar(50)
+}
+
+Proveedores "1" -- "0..*" Compras : id_proveedor
+Usuarios "1" -- "0..*" Compras : id_usuario
+Compras "1" -- "0..*" CompraDetalle : id_compra
+Repuestos "1" -- "0..*" CompraDetalle : id_repuesto
+
+Compras "0..1" -- "0..*" MovimientosStock : id_compra
+Repuestos "1" -- "0..*" MovimientosStock : id_repuesto
+Usuarios "1" -- "0..*" MovimientosStock : id_usuario
+
+legend bottom
+* = NOT NULL.
+NULL = admite valores nulos.
+Sin DEFAULT indicado = sin valor predeterminado
+declarado para una tabla nueva.
+endlegend
+
+note right of Compras
+No existen columnas de factura fiscal,
+fecha de confirmación o usuario anulador.
+No se elimina la cabecera en esta gestión.
+end note
+
+note right of CompraDetalle
+Sin unicidad por compra y repuesto.
+cantidad no tiene DEFAULT en la creación nueva.
+No se declara eliminación en cascada.
+end note
+
+note right of MovimientosStock
+Confirmación y anulación vinculan id_compra.
+id_reparacion permanece nulo.
+Las cantidades registradas son positivas.
+end note
+
+note right of Proveedores
+UX_Proveedores_RazonSocial(razon_social).
+Este caso no modifica el maestro.
+end note
+
+note right of Repuestos
+UX_Repuestos_Codigo(codigo).
+Confirmar modifica stock y costo;
+anular no restaura el costo.
+end note
+
+note right of Bitacora
+Sin FK a Compras o Usuarios.
+fecha no tiene DEFAULT SQL.
+end note
+
+@enduml

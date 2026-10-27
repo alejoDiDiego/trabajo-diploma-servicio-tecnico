@@ -1,0 +1,70 @@
+@startuml
+title N01.4.6 - Proceso de Gestión de entrega
+
+|Recepcionista o encargado|
+start
+:Acceder a Entrega de una orden;
+:Seleccionar operación;
+
+|Sistema|
+:Verificar autorización y condiciones;
+
+if (¿Consulta?) then (sí)
+    :Presentar entrega existente
+    o indicar que no existe;
+
+elseif (¿Registrar entrega?) then (sí)
+    |Recepcionista o encargado|
+    :Informar receptor, documento y observaciones;
+    :Solicitar entrega;
+
+    |Sistema|
+    :Validar nombre del receptor;
+    :Solicitar confirmación;
+
+    |Recepcionista o encargado|
+    if (¿Confirma?) then (sí)
+        |Sistema|
+        :Validar orden lista para retiro y modificable;
+        :Registrar entrega;
+        :Pasar a Entregado conservando resultado;
+        :Registrar historial;
+
+        if (¿Corresponde cobertura nueva?) then (sí)
+            :Generar garantía;
+        endif
+
+        :Registrar actividad;
+    endif
+
+else (Cancelar entrega)
+    :Verificar estado y ausencia de bloqueo;
+    :Solicitar confirmación;
+
+    |Recepcionista o encargado|
+    if (¿Confirma?) then (sí)
+        |Sistema|
+        :Solicitar motivo;
+
+        |Recepcionista o encargado|
+        :Informar motivo;
+
+        |Sistema|
+        :Revalidar condiciones;
+        :Eliminar registro de entrega;
+
+        if (¿Resultado Reparado?) then (sí)
+            :Volver a En pruebas sin resultado;
+        else (no)
+            :Volver a Listo para retiro
+            conservando resultado;
+        endif
+
+        :Registrar historial y actividad;
+    endif
+endif
+
+:Actualizar detalle y presentar resultado;
+stop
+
+@enduml

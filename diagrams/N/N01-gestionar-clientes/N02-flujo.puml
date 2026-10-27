@@ -1,0 +1,45 @@
+@startuml
+title N02-01 - Flujo de Gestión de clientes
+
+start
+:Verificar acceso y mostrar listado;
+:Recibir operación solicitada;
+:Validar permiso y selección;
+
+if (¿Consulta?) then (sí)
+    :Aplicar criterios;
+    :Mostrar coincidencias;
+elseif (¿Registro?) then (sí)
+    :Presentar formulario vacío;
+    :Recibir datos aceptados;
+    :Validar obligatorios y documento;
+    if (¿Datos admitidos?) then (sí)
+        :Registrar cliente;
+        :Registrar actividad;
+    else (no)
+        :Informar impedimento;
+    endif
+elseif (¿Modificación?) then (sí)
+    :Presentar datos actuales;
+    :Recibir datos aceptados;
+    :Validar información y documento;
+    if (¿Modificación admitida?) then (sí)
+        :Actualizar conservando identidad y vigencia;
+        :Registrar actividad;
+    else (no)
+        :Informar impedimento;
+    endif
+else (Cambio de vigencia)
+    :Solicitar confirmación;
+    if (¿Confirma?) then (sí)
+        :Desactivar o reactivar;
+        :Registrar actividad;
+    else (no)
+        :Conservar condición existente;
+    endif
+endif
+
+:Presentar resultado y listado;
+stop
+
+@enduml

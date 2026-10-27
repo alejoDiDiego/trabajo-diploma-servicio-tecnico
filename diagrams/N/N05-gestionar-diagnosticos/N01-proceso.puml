@@ -1,0 +1,52 @@
+@startuml
+title N01.4.1 - Proceso de Gestión de diagnósticos
+
+|Recepcionista, encargado o técnico|
+start
+:Seleccionar orden y abrir Diagnóstico;
+
+|Sistema|
+:Verificar acceso y cargar información;
+
+|Recepcionista, encargado o técnico|
+:Seleccionar operación;
+
+|Sistema|
+if (¿Consulta?) then (sí)
+    :Mostrar diagnóstico o indicar que no existe;
+
+elseif (¿Iniciar análisis?) then (sí)
+    :Validar orden Recibido y técnico asignado;
+    :Verificar que la orden permita modificaciones;
+    :Pasar a En diagnóstico;
+    :Registrar historial y actividad;
+
+else (Registrar conclusión)
+    |Recepcionista, encargado o técnico|
+    :Informar descripción, reparabilidad,
+    estimación y observaciones;
+    :Solicitar registro;
+
+    |Sistema|
+    :Validar estado, datos y diagnóstico inexistente;
+    :Registrar diagnóstico;
+
+    if (¿Es reparable?) then (sí)
+        if (¿Orden de garantía?) then (sí)
+            :Pasar a Pendiente de evaluación de garantía;
+            :Intentar crear evaluación Pendiente;
+        else (no)
+            :Pasar a Pendiente de presupuesto;
+        endif
+    else (no)
+        :Pasar a Listo para retiro / No reparable;
+        :Conservar descripción como observación del resultado;
+    endif
+
+    :Registrar actividad cuando el recorrido se completa;
+endif
+
+:Actualizar detalle y presentar resultado;
+stop
+
+@enduml

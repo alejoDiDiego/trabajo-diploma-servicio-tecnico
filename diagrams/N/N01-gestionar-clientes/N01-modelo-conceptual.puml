@@ -1,0 +1,68 @@
+@startuml
+title N01.1 - Modelo conceptual de Gestión de clientes
+
+left to right direction
+hide methods
+skinparam classAttributeIconSize 0
+
+class Cliente {
+    identificador
+    nombre
+    apellido
+    documento
+    telefono
+    correoElectronico
+    direccion
+    observaciones
+    activo
+    fechaAlta
+}
+
+class Equipo {
+    identificador
+    clienteActual
+    tipoEquipo
+    marca
+    modelo
+    numeroSerie
+    imei
+    color
+    observaciones
+    activo
+}
+
+class OrdenServicio {
+    identificador
+    numeroOrden
+    clienteDeRecepcion
+    equipo
+    tecnicoAsignado
+    ordenOrigen
+    tipoOrden
+    estado
+    resultado
+    fechaIngreso
+    problemaInformado
+    estadoFisicoIngreso
+    accesoriosIngreso
+    observacionesIngreso
+    observacionResultado
+    usuarioAlta
+}
+
+Cliente "1" -- "0..*" Equipo : propietario actual
+Cliente "1" -- "0..*" OrdenServicio : cliente histórico
+Equipo "1" -- "0..*" OrdenServicio : equipo atendido
+
+note bottom of Cliente
+La desactivación no elimina las relaciones
+ni modifica automáticamente los equipos.
+end note
+
+note bottom of OrdenServicio
+El cliente registrado en la recepción
+se conserva aunque después cambie
+el propietario del equipo.
+end note
+
+@enduml

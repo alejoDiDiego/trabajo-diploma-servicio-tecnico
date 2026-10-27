@@ -1,0 +1,28 @@
+@startuml
+title N01.8 - Gestionar bitácora e historial
+
+left to right direction
+
+actor Administrador
+actor Encargado
+actor Recepcionista
+actor Tecnico
+
+rectangle "Servicio técnico - Bitácora e historial" {
+    usecase "CU-15\nGestionar bitácora e historial" as GestionarTrazabilidad
+}
+
+Administrador -- GestionarTrazabilidad
+Encargado -- GestionarTrazabilidad
+Recepcionista -- GestionarTrazabilidad : historial autorizado
+Tecnico -- GestionarTrazabilidad : historial autorizado
+
+note bottom of GestionarTrazabilidad
+Los registros se originan en las demás gestiones.
+Este caso permite consultarlos.
+
+No ofrece alta, edición, eliminación
+o restauración manual de registros.
+end note
+
+@enduml

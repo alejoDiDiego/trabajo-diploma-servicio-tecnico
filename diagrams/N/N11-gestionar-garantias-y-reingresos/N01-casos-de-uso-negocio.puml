@@ -1,0 +1,28 @@
+@startuml
+title N01.4.7 - Gestionar garantías y reingresos
+
+left to right direction
+
+actor Cliente
+actor Recepcionista
+actor Tecnico
+actor Encargado
+
+rectangle "Servicio técnico - Garantías y reingresos" {
+    usecase "CU-11\nGestionar garantías y reingresos" as GestionarGarantias
+}
+
+Cliente -- GestionarGarantias : presenta reclamo y comunica continuidad
+Recepcionista -- GestionarGarantias : consulta y registra reingreso
+Tecnico -- GestionarGarantias : analiza y actúa según permisos
+Encargado -- GestionarGarantias : supervisa y registra decisiones
+
+note bottom of GestionarGarantias
+Comprende consulta, nueva visita y evaluación.
+
+La cobertura ya existe.
+El reingreso es una nueva orden.
+La decisión no modifica la orden original.
+end note
+
+@enduml

@@ -1,0 +1,67 @@
+@startuml
+title N01.4 - Proceso de Gestión de órdenes
+
+|Recepcionista, encargado o técnico|
+start
+:Acceder a Órdenes de servicio;
+
+|Sistema|
+:Verificar permiso de consulta;
+
+if (¿Acceso permitido?) then (sí)
+    :Presentar listado y acciones;
+else (no)
+    :Informar acceso denegado;
+    stop
+endif
+
+|Recepcionista, encargado o técnico|
+:Seleccionar operación;
+
+|Sistema|
+:Validar permiso y selección;
+
+if (¿Consulta?) then (sí)
+    :Aplicar criterios;
+    :Presentar listado y detalle solicitado;
+
+elseif (¿Nueva recepción?) then (sí)
+    :Presentar formulario nuevo;
+    |Recepcionista, encargado o técnico|
+    :Seleccionar cliente y equipo;
+    :Registrar problema y datos de ingreso;
+    :Solicitar creación;
+    |Sistema|
+    :Validar activos y pertenencia;
+    :Crear orden Recibido e historial inicial;
+    :Registrar actividad;
+    :Mantener abierto el detalle creado;
+
+elseif (¿Modificar recepción?) then (sí)
+    :Validar que la orden permita modificaciones;
+    |Recepcionista, encargado o técnico|
+    :Modificar los datos de ingreso permitidos;
+    |Sistema|
+    :Guardar y registrar actividad;
+
+elseif (¿Asignar técnico?) then (sí)
+    |Recepcionista, encargado o técnico|
+    :Seleccionar técnico;
+    |Sistema|
+    :Validar elegibilidad y restricciones;
+    :Guardar asignación y registrar actividad;
+
+else (Cancelar orden)
+    :Validar estado y ausencia de bloqueo;
+    :Solicitar confirmación y motivo;
+    |Recepcionista, encargado o técnico|
+    :Confirmar e informar motivo;
+    |Sistema|
+    :Dejar Listo para retiro / Cancelado;
+    :Registrar transición y actividad;
+endif
+
+:Presentar resultado;
+stop
+
+@enduml

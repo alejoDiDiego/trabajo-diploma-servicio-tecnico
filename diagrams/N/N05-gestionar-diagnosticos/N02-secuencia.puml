@@ -1,0 +1,71 @@
+@startuml
+title N02-05 - Secuencia de Gestión de diagnósticos
+
+actor "Técnico, encargado o recepcionista" as Operador
+participant "detalle : FrmOrdenServicioDetalle" as Detalle
+participant "servicio : OrdenServicioService" as Servicio
+participant "ordenes : OrdenServicioRepository" as Ordenes
+participant "diagnosticos : DiagnosticoRepository" as Diagnosticos
+participant "garantias : GarantiaRepository" as Garantias
+participant "evaluaciones : EvaluacionGarantiaRepository" as Evaluaciones
+participant "auditoria : BitacoraService" as Auditoria
+
+Operador -> Detalle : Acceder a Diagnóstico
+Detalle -> Servicio : Consultar diagnóstico de la orden
+Servicio -> Diagnosticos : ObtenerPorOrden
+Diagnosticos --> Servicio : Diagnóstico o ausencia
+Servicio --> Detalle : Información
+Detalle --> Operador : Presentar datos y acciones
+
+alt Inicio
+    Operador -> Detalle : Iniciar diagnóstico
+    Detalle -> Servicio : IniciarDiagnostico
+    Servicio -> Ordenes : Consultar orden y bloqueo por reingresos
+    Ordenes --> Servicio : Orden y condición
+    Servicio -> Servicio : Validar Recibido y técnico asignado
+    Servicio -> Ordenes : CambiarEstadoConHistorial
+    Ordenes --> Servicio : Resultado
+    Servicio -> Auditoria : Registrar inicio
+    Auditoria --> Servicio : Resultado
+    Servicio --> Detalle : Operación completada
+    Detalle -> Detalle : Recargar orden
+    Detalle --> Operador : Mostrar En diagnóstico
+
+else Registro de conclusión
+    Operador -> Detalle : Completar datos y finalizar
+    Detalle -> Detalle : Validar descripción e interpretar días opcionales
+    Detalle -> Servicio : FinalizarDiagnostico
+    Servicio -> Ordenes : Consultar orden y bloqueo
+    Ordenes --> Servicio : Orden y condición
+    Servicio -> Diagnosticos : Comprobar diagnóstico existente
+    Diagnosticos --> Servicio : Resultado
+    Servicio -> Servicio : Validar estado, asignación y datos
+    Servicio -> Diagnosticos : CrearConTransicion
+    Diagnosticos -> Diagnosticos : Guardar diagnóstico, estado e historial
+    Diagnosticos --> Servicio : Diagnóstico persistido
+
+    opt Orden Garantía reparable
+        Servicio -> Ordenes : Consultar orden original
+        Ordenes --> Servicio : Original
+        Servicio -> Garantias : ObtenerVigente
+        Garantias --> Servicio : Cobertura admitida
+        Servicio -> Evaluaciones : Consultar evaluación existente
+        Evaluaciones --> Servicio : Resultado
+        Servicio -> Evaluaciones : Crear evaluación Pendiente si corresponde
+        Evaluaciones --> Servicio : Evaluación
+    end
+
+    Servicio -> Auditoria : Registrar finalización
+    Auditoria --> Servicio : Resultado
+    Servicio --> Detalle : Diagnóstico y resultado
+    Detalle -> Detalle : Recargar orden
+    Detalle --> Operador : Mostrar conclusión no editable
+end
+
+note over Diagnosticos, Evaluaciones
+Diagnóstico, estado e historial se guardan primero.
+La evaluación pendiente es una operación posterior
+y no integra una transacción global con ellos.
+end note
+
+@enduml

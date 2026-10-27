@@ -1,0 +1,54 @@
+@startuml
+title N01.4.2 - Proceso de Gestión de presupuestos
+
+|Recepcionista, encargado o técnico|
+start
+:Acceder a Presupuesto de una orden;
+:Seleccionar documento u operación;
+
+|Sistema|
+:Verificar permisos y condiciones;
+
+if (¿Consulta?) then (sí)
+    :Presentar documento, conceptos y respuesta;
+
+elseif (¿Confección o emisión?) then (sí)
+    |Recepcionista, encargado o técnico|
+    :Preparar conceptos e importes;
+    |Sistema|
+    :Validar propuesta;
+
+    if (¿Guardar borrador?) then (sí)
+        :Registrar Borrador sin cambiar estado de orden;
+    else (emitir)
+        :Emitir directamente o publicar borrador;
+        :Presupuesto Pendiente;
+        :Orden Esperando respuesta;
+    endif
+
+elseif (¿Respuesta del cliente?) then (sí)
+    |Cliente|
+    :Comunicar decisión;
+    |Recepcionista, encargado o técnico|
+    :Registrar respuesta;
+    |Sistema|
+
+    if (¿Aprueba?) then (sí)
+        :Conservar aprobación e importes;
+        :Autorizar o reanudar reparación;
+    else (no)
+        :Conservar rechazo y motivo;
+        :Listo para retiro / Presupuesto rechazado;
+    endif
+
+else (Otra operación)
+    :Aplicar eliminación, anulación
+    o gestión de solicitud adicional
+    según sus condiciones;
+endif
+
+:Registrar trazabilidad correspondiente;
+:Actualizar detalle;
+stop
+
+@enduml

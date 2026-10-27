@@ -1,0 +1,40 @@
+@startuml
+title N01.6 - Modelo conceptual de Gestión de proveedores
+
+left to right direction
+hide methods
+skinparam classAttributeIconSize 0
+
+class Proveedor {
+    identificador
+    razonSocial
+    cuit
+    telefono
+    email
+    direccion
+    contacto
+    activo
+}
+
+class EntradaBitacora {
+    identificador
+    fecha
+    usuario
+    actividad
+    detalle
+    tipoActividad
+}
+
+Proveedor .. EntradaBitacora : actuación identificada mediante texto
+
+note bottom of Proveedor
+La condición inactiva no elimina
+las referencias de compras anteriores.
+end note
+
+note bottom of EntradaBitacora
+La relación es conceptual.
+No existe una FK hacia Proveedor.
+end note
+
+@enduml

@@ -1,0 +1,23 @@
+@startuml
+title N02-13 - Caso de uso Gestionar proveedores
+
+left to right direction
+
+actor "Responsable de compras" as ResponsableCompras
+actor Encargado
+
+rectangle "Sistema Integral de Gestión para Servicios Técnicos" {
+    usecase "CU-13\nGestionar proveedores" as GestionarProveedores
+}
+
+ResponsableCompras -- GestionarProveedores
+Encargado -- GestionarProveedores
+
+note bottom of GestionarProveedores
+Consulta, alta, modificación,
+desactivación y reactivación.
+
+El proveedor no utiliza directamente la aplicación.
+end note
+
+@enduml

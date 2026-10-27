@@ -1,0 +1,54 @@
+@startuml
+title N02-06 - Flujo de Gestión de presupuestos
+
+start
+:Seleccionar documento y operación;
+:Validar permisos, orden y tipo;
+
+if (¿Consulta?) then (sí)
+    :Presentar documento y monto autorizado;
+
+elseif (¿Guardar borrador?) then (sí)
+    :Validar conceptos e importes;
+    :Guardar Borrador sin transición de orden;
+
+elseif (¿Emitir?) then (sí)
+    :Validar propuesta o borrador almacenado;
+    :Guardar Pendiente y Esperando respuesta;
+
+elseif (¿Registrar respuesta?) then (sí)
+    if (¿Aprueba?) then (sí)
+        :Registrar Aprobado;
+        :Autorizar o reanudar reparación;
+    else (no)
+        :Validar motivo;
+        :Registrar Rechazado;
+        :Listo para retiro / Presupuesto rechazado;
+        :Cerrar intervenciones abiertas si es Adicional;
+    endif
+
+elseif (¿Eliminar borrador?) then (sí)
+    :Confirmar y validar estado;
+    :Eliminar cabecera y detalle;
+
+elseif (¿Anular?) then (sí)
+    :Solicitar motivo y confirmación;
+    :Validar ventana;
+    :Conservar Anulado y aplicar reversión;
+
+elseif (¿Solicitar adicional?) then (sí)
+    :Solicitar motivo y validar condiciones;
+    :Guardar pausa a Pendiente de presupuesto;
+
+else (Cancelar solicitud adicional)
+    :Confirmar y recuperar origen;
+    :Verificar ausencia de Adicional Pendiente;
+    :Eliminar borradores adicionales;
+    :Restaurar origen;
+endif
+
+:Registrar trazabilidad aplicable;
+:Actualizar detalle y presentar resultado;
+stop
+
+@enduml

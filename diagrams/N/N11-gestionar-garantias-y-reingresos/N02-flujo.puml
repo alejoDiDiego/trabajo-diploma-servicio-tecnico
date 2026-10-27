@@ -1,0 +1,54 @@
+@startuml
+title N02-11 - Flujo de Gestión de garantías y reingresos
+
+start
+:Verificar acceso y seleccionar operación;
+
+if (¿Consulta?) then (sí)
+    :Obtener cobertura, visitas y evaluación disponible;
+    :Aplicar filtros de consulta cuando corresponda;
+
+elseif (¿Crear reingreso?) then (sí)
+    :Validar original y ausencia de visita abierta;
+    :Solicitar nuevo problema;
+    :Validar problema y solicitar confirmación;
+
+    if (¿Confirma?) then (sí)
+        :Revalidar referencias, cobertura y original;
+        :Crear nueva orden Garantía / Recibido;
+        :Registrar historial inicial y actividad;
+        :Mostrar número y actualizar original;
+    endif
+
+elseif (¿Aceptar?) then (sí)
+    :Validar motivo y solicitar confirmación;
+
+    if (¿Confirma?) then (sí)
+        :Validar evaluación pendiente y coherencia;
+        :Guardar evaluación Aceptada;
+        :Guardar Autorizado para reparación;
+        :Registrar historial y actividad;
+    endif
+
+else (Rechazar)
+    :Validar motivo;
+    :Solicitar destino explícito;
+
+    if (¿Destino elegido?) then (sí)
+        :Validar evaluación pendiente y coherencia;
+        :Guardar evaluación Rechazada;
+
+        if (¿Continuidad presupuestada?) then (sí)
+            :Pendiente de presupuesto;
+        else (no)
+            :Listo para retiro / Garantía no cubierta;
+        endif
+
+        :Registrar historial y actividad;
+    endif
+endif
+
+:Presentar resultado;
+stop
+
+@enduml

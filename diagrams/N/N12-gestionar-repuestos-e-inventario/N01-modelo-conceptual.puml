@@ -1,0 +1,54 @@
+@startuml
+title N01.5 - Modelo conceptual de repuestos e inventario
+
+left to right direction
+hide methods
+skinparam classAttributeIconSize 0
+
+class Repuesto {
+    identificador
+    codigo
+    descripcion
+    stockActual
+    stockMinimo
+    costoActual
+    precioReferencia
+    activo
+}
+
+class MovimientoStock {
+    identificador
+    repuesto
+    fecha
+    tipo
+    cantidad
+    stockAnterior
+    stockPosterior
+    usuarioResponsable
+    compraOpcional
+    reparacionOpcional
+    observacion
+}
+
+class Usuario {
+    identificador
+    nombreUsuario
+    activo
+}
+
+Repuesto "1" -- "0..*" MovimientoStock
+Usuario "1" -- "0..*" MovimientoStock : registra
+
+note bottom of MovimientoStock
+Las cantidades de movimiento son positivas.
+Tipo y saldos expresan entrada o salida.
+
+El ajuste se ingresa como una variación con signo.
+end note
+
+note bottom of Repuesto
+La condición inactiva no elimina el historial
+ni obliga a que el stock sea cero.
+end note
+
+@enduml

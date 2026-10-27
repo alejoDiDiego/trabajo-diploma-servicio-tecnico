@@ -1,0 +1,26 @@
+@startuml
+title N01.4.3 - Gestionar reparaciones
+
+left to right direction
+
+actor Tecnico
+actor Encargado
+actor Recepcionista
+
+rectangle "Servicio técnico - Gestión de reparaciones" {
+    usecase "CU-07\nGestionar reparaciones" as GestionarReparaciones
+}
+
+Tecnico -- GestionarReparaciones : ejecuta y registra trabajos
+Encargado -- GestionarReparaciones : supervisa y actúa según permisos
+Recepcionista -- GestionarReparaciones : consulta avance
+
+note bottom of GestionarReparaciones
+Comprende consulta, inicio y finalización
+de intervenciones numeradas.
+
+Los consumos, pruebas y adicionales
+pertenecen a sus gestiones correspondientes.
+end note
+
+@enduml

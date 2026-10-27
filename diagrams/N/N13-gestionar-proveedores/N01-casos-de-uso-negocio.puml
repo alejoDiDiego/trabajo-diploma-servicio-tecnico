@@ -1,0 +1,26 @@
+@startuml
+title N01.6 - Gestionar proveedores
+
+left to right direction
+
+actor "Responsable de compras" as ResponsableCompras
+actor Encargado
+actor Proveedor
+
+rectangle "Servicio técnico - Gestión de proveedores" {
+    usecase "CU-13\nGestionar proveedores" as GestionarProveedores
+}
+
+ResponsableCompras -- GestionarProveedores : consulta y mantiene datos
+Encargado -- GestionarProveedores : supervisa y actúa según permisos
+Proveedor -- GestionarProveedores : proporciona información
+
+note bottom of GestionarProveedores
+Comprende consulta, alta, modificación,
+desactivación y reactivación.
+
+Las compras se administran
+en su gestión correspondiente.
+end note
+
+@enduml

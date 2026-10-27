@@ -1,0 +1,58 @@
+@startuml
+title N02-09 - Flujo de Gestión de pruebas
+
+start
+:Verificar acceso y seleccionar operación;
+
+if (¿Consulta?) then (sí)
+    :Seleccionar intervención;
+    :Cargar y mostrar pruebas;
+
+elseif (¿Registro?) then (sí)
+    :Validar intervención actual finalizada;
+    :Verificar ausencia de intervención abierta;
+    :Validar descripción y resultado;
+    :Guardar prueba sin cambiar estado;
+    :Registrar actividad;
+
+elseif (¿Anulación?) then (sí)
+    :Validar prueba actual no anulada;
+    :Solicitar confirmación;
+    if (¿Confirma?) then (sí)
+        :Solicitar y validar motivo;
+        :Conservar Anulada con fecha y usuario;
+        :Registrar actividad;
+    endif
+
+elseif (¿Finalización?) then (sí)
+    :Verificar vista actual;
+    :Solicitar confirmación;
+    if (¿Confirma?) then (sí)
+        :Validar condiciones y obtener pruebas válidas;
+        if (¿Hay alguna válida?) then (sí)
+            if (¿Todas aprobadas?) then (sí)
+                :Listo para retiro / Reparado;
+            else (no)
+                :En reparación / sin resultado final;
+            endif
+            :Registrar historial y actividad;
+        else (no)
+            :Rechazar finalización;
+        endif
+    endif
+
+else (Reapertura)
+    :Validar Listo para retiro / Reparado;
+    :Solicitar confirmación;
+    if (¿Confirma?) then (sí)
+        :Solicitar y validar motivo;
+        :En pruebas / sin resultado final;
+        :Conservar pruebas;
+        :Registrar historial y actividad;
+    endif
+endif
+
+:Presentar resultado;
+stop
+
+@enduml

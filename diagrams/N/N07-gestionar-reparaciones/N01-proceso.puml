@@ -1,0 +1,49 @@
+@startuml
+title N01.4.3 - Proceso de Gestión de reparaciones
+
+|Técnico, encargado o recepcionista|
+start
+:Seleccionar orden y abrir Reparaciones;
+
+|Sistema|
+:Verificar acceso y cargar intervenciones;
+
+|Técnico, encargado o recepcionista|
+:Seleccionar operación;
+
+|Sistema|
+if (¿Consulta?) then (sí)
+    :Presentar número, técnico, fechas y condición;
+
+elseif (¿Iniciar intervención?) then (sí)
+    :Verificar orden modificable;
+    :Validar técnico asignado y elegible;
+    :Validar estado de inicio;
+    :Comprobar ausencia de intervención abierta
+    si la orden ya está En reparación;
+    :Crear intervención numerada;
+
+    if (¿Orden Autorizado para reparación?) then (sí)
+        :Pasar a En reparación;
+        :Registrar transición;
+    endif
+
+    :Registrar actividad;
+
+else (Finalizar intervención)
+    |Técnico, encargado o recepcionista|
+    :Seleccionar intervención abierta;
+    :Informar trabajo y observaciones;
+    :Solicitar finalización;
+
+    |Sistema|
+    :Validar selección, apertura, estado y trabajo;
+    :Guardar cierre de intervención;
+    :Pasar a En pruebas;
+    :Registrar historial y actividad;
+endif
+
+:Actualizar detalle y presentar resultado;
+stop
+
+@enduml
