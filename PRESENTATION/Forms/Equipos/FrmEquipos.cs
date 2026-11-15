@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.IO;
 using System.Windows.Forms;
 using ABSTRACTIONS.Features.Idiomas;
 using APPLICATION.Features.Clientes;
@@ -80,6 +81,8 @@ namespace UI.Forms.Equipos
             BTN_Editar.Text = idiomaObservado.BuscarTraduccion(BTN_Editar.Tag.ToString());
             BTN_Desactivar.Text = idiomaObservado.BuscarTraduccion(BTN_Desactivar.Tag.ToString());
             BTN_Reactivar.Text = idiomaObservado.BuscarTraduccion(BTN_Reactivar.Tag.ToString());
+            BTN_ExportarJson.Text = idiomaObservado.BuscarTraduccion(BTN_ExportarJson.Tag.ToString());
+            BTN_ExportarPdf.Text = idiomaObservado.BuscarTraduccion(BTN_ExportarPdf.Tag.ToString());
 
             CargarComboClientes();
             ConfigurarColumnas();
@@ -119,6 +122,8 @@ namespace UI.Forms.Equipos
             BTN_Editar.Text = _sesionIdioma.idioma.BuscarTraduccion(BTN_Editar.Tag.ToString());
             BTN_Desactivar.Text = _sesionIdioma.idioma.BuscarTraduccion(BTN_Desactivar.Tag.ToString());
             BTN_Reactivar.Text = _sesionIdioma.idioma.BuscarTraduccion(BTN_Reactivar.Tag.ToString());
+            BTN_ExportarJson.Text = _sesionIdioma.idioma.BuscarTraduccion(BTN_ExportarJson.Tag.ToString());
+            BTN_ExportarPdf.Text = _sesionIdioma.idioma.BuscarTraduccion(BTN_ExportarPdf.Tag.ToString());
         }
 
         private void CargarCatalogos()
@@ -491,6 +496,77 @@ namespace UI.Forms.Equipos
             }
         }
 
+        private void BTN_ExportarJson_Click(object sender, EventArgs e)
+        {
+            Exportar(false);
+        }
+
+        private void BTN_ExportarPdf_Click(object sender, EventArgs e)
+        {
+            Exportar(true);
+        }
+
+        private void Exportar(bool pdf)
+        {
+            if (!TienePermiso(CodigosPermiso.EquiposVer))
+            {
+                MostrarAccesoDenegado();
+                return;
+            }
+            try
+            {
+                EquipoExportacion datos = EquipoExportador.Capturar(DGV_Equipos);
+                if (datos.Filas.Count == 0)
+                {
+                    MostrarAdvertencia("Equipos.ExportarVacio");
+                    return;
+                }
+                string extension = pdf ? "pdf" : "json";
+                using (var dialogo = new SaveFileDialog())
+                {
+                    dialogo.Title = TraducirExportacion("Equipos.ExportarGuardar");
+                    dialogo.Filter = pdf ? "PDF (*.pdf)|*.pdf" : "JSON (*.json)|*.json";
+                    dialogo.DefaultExt = extension;
+                    dialogo.AddExtension = true;
+                    dialogo.OverwritePrompt = true;
+                    dialogo.CheckPathExists = true;
+                    dialogo.RestoreDirectory = true;
+                    dialogo.FileName = "Equipos_" + datos.Fecha.ToString("yyyyMMdd_HHmmss") + "." + extension;
+                    if (dialogo.ShowDialog(this) != DialogResult.OK)
+                        return;
+                    bool reemplazar = File.Exists(dialogo.FileName);
+                    // Recheck after modal interaction, before publishing local data.
+                    if (!TienePermiso(CodigosPermiso.EquiposVer))
+                    {
+                        MostrarAccesoDenegado();
+                        return;
+                    }
+                    EquipoExportador.Guardar(dialogo.FileName, reemplazar, stream =>
+                    {
+                        if (pdf)
+                            EquipoExportador.EscribirPdf(stream, datos,
+                                TraducirExportacion("Equipos.ExportarTitulo"),
+                                TraducirExportacion("Equipos.ExportarResumen"),
+                                TraducirExportacion("Equipos.ExportarPagina"),
+                                TraducirExportacion("Equipos.ExportarSi"),
+                                TraducirExportacion("Equipos.ExportarNo"));
+                        else
+                            EquipoExportador.EscribirJson(stream, datos);
+                    });
+                }
+                MostrarExito("Equipos.ExportarExito");
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+        }
+
+        private string TraducirExportacion(string clave)
+        {
+            return _sesionIdioma.idioma.BuscarTraduccion(clave);
+        }
+
         private void AplicarPermisos()
         {
             bool puedeCrear = TienePermiso(CodigosPermiso.EquiposCrear);
@@ -498,6 +574,12 @@ namespace UI.Forms.Equipos
             bool puedeDesactivar = TienePermiso(CodigosPermiso.EquiposDesactivar);
             FilaEquipo seleccionado = EquipoSeleccionado();
             bool haySeleccion = seleccionado != null;
+
+            bool puedeExportar = TienePermiso(CodigosPermiso.EquiposVer);
+            BTN_ExportarJson.Visible = puedeExportar;
+            BTN_ExportarPdf.Visible = puedeExportar;
+            BTN_ExportarJson.Enabled = puedeExportar;
+            BTN_ExportarPdf.Enabled = puedeExportar;
 
             BTN_Crear.Visible = puedeCrear;
             BTN_Editar.Visible = puedeEditar;

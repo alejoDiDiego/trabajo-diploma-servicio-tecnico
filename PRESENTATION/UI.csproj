@@ -12,6 +12,9 @@
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <NuGetAudit>true</NuGetAudit>
+    <NuGetAuditMode>all</NuGetAuditMode>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -35,6 +38,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -106,6 +110,7 @@
     <Compile Include="Forms\Clientes\FrmClienteEditar.Designer.cs">
       <DependentUpon>FrmClienteEditar.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\Equipos\EquipoExportador.cs" />
     <Compile Include="Forms\Equipos\FrmEquipos.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -262,6 +267,15 @@
       <Name>SERVICES</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <PackageReference Include="PDFsharp-MigraDoc-GDI" Version="[6.2.4]" />
+    <PackageReference Include="PDFsharp-GDI" Version="[6.2.4]" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="[8.0.2]" />
+    <None Include="packages.lock.json" />
+    <Content Include="..\THIRD-PARTY-NOTICES.txt">
+      <Link>THIRD-PARTY-NOTICES.txt</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

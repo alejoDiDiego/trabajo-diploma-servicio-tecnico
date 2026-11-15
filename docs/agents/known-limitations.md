@@ -4,6 +4,34 @@ This is a risk register, not authorization to implement fixes. **Confirmed** mea
 path was inspected; none of these risks was re-executed against a database in this docs task.
 Keep recommendations separate from implementation claims.
 
+## feat-017 equipment export (Builder source/build evidence; acceptance pending)
+
+[FrmEquipos](../../PRESENTATION/Forms/Equipos/FrmEquipos.cs), `Exportar`, captures the current
+visible grid on the UI thread. [EquipoExportador](../../PRESENTATION/Forms/Equipos/EquipoExportador.cs)
+shares this snapshot between UTF-8 JSON and paginated landscape PDF. It does not requery or add
+filter captions: failed equipment reloads can leave the previous grid binding in place.
+Permission is the existing effective `EQUIPOS_VER` (UI and handler), not a new role grant.
+
+PDF uses Windows Segoe UI and embeds used glyphs through the GDI build; arbitrary scripts/fonts
+are not guaranteed. Long cells continue in bounded table rows; table headings repeat on pages.
+JSON retains full strings with stable property names and numeric/Boolean values for Id/Activo.
+Exports synchronously generate to an owned sibling temporary file before move/atomic replacement.
+If the filesystem does not support atomic replacement, overwrite fails safely; there is no
+pre-delete fallback. A locked or inaccessible destination must be released/changed before retry.
+Very large exports can occupy the UI while generating; no background job/cancel-progress UI was added.
+
+[UI project](../../PRESENTATION/UI.csproj) pins MIT PDFsharp-MigraDoc-GDI and PDFsharp-GDI 6.2.4;
+[package lock](../../PRESENTATION/packages.lock.json) fixes the complete resolved graph. Pkcs is
+explicitly pinned to patched 8.0.2 rather than vulnerable minimum 8.0.1 (NuGet audit findings
+GHSA-2fmv-rv2c-59x7 and GHSA-846f-f764-76mx). Distributed upstream notices are included in
+[THIRD-PARTY-NOTICES.txt](../../THIRD-PARTY-NOTICES.txt), copied beside the UI build output.
+Do not automatically upgrade PDFsharp to a differently licensed release.
+
+No application startup or database access was authorized for the Builder. Save dialog physical
+interaction, ES/EN, effective viewer/denied/no-session access and small/large DPI layout remain
+owner/manual and independent Checker gates; supporting synthetic exports are not visual acceptance.
+Backup/restore and indexed HTML help (conditional PDF alternative only) remain backlog-only,
+subject to detailed planning and explicit owner continuation after each preceding owner gate.
 ## Highest-priority confirmed risks
 
 | Risk | Evidence anchor | Consequence / intended future policy |
@@ -196,7 +224,8 @@ Do not claim concurrent correctness based on source locks or a sequential harnes
   cross-platform browser application. Database contents/schema were not queried in this task.
 - Weak demo passwords and source-defined encryption material require production review;
   this guide deliberately contains no credentials or derivation values.
-- No implemented invoicing/payment/cash/AFIP/mobile/AI-diagnosis/export scope should be inferred.
+- No implemented invoicing/payment/cash/AFIP/mobile/AI-diagnosis or general report-export scope
+  should be inferred; feat-017 is equipment-list export only, pending independent acceptance.
 
 Future notes are planning inputs only. Do not implement them during onboarding/documentation
 work, declare a checkpoint complete because these guides exist, or treat them as permission to

@@ -27,6 +27,8 @@ namespace UI.Forms.Equipos
             this.BTN_Editar = new System.Windows.Forms.Button();
             this.BTN_Desactivar = new System.Windows.Forms.Button();
             this.BTN_Reactivar = new System.Windows.Forms.Button();
+            this.BTN_ExportarJson = new System.Windows.Forms.Button();
+            this.BTN_ExportarPdf = new System.Windows.Forms.Button();
             this.PNL_Header.SuspendLayout();
             this.PNL_Filtros.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.DGV_Equipos)).BeginInit();
@@ -150,6 +152,9 @@ namespace UI.Forms.Equipos
             this.PNL_Botones.Controls.Add(this.BTN_Editar);
             this.PNL_Botones.Controls.Add(this.BTN_Desactivar);
             this.PNL_Botones.Controls.Add(this.BTN_Reactivar);
+            this.PNL_Botones.Controls.Add(this.BTN_ExportarJson);
+            this.PNL_Botones.Controls.Add(this.BTN_ExportarPdf);
+            this.PNL_Botones.AutoScroll = true;
             this.PNL_Botones.Location = new System.Drawing.Point(15, 480);
             this.PNL_Botones.Name = "PNL_Botones";
             this.PNL_Botones.Size = new System.Drawing.Size(1020, 50);
@@ -219,6 +224,38 @@ namespace UI.Forms.Equipos
             this.BTN_Reactivar.UseVisualStyleBackColor = false;
             this.BTN_Reactivar.Click += new System.EventHandler(this.BTN_Reactivar_Click);
             //
+            // BTN_ExportarJson
+            //
+            this.BTN_ExportarJson.BackColor = System.Drawing.Color.FromArgb(41, 128, 185);
+            this.BTN_ExportarJson.FlatAppearance.BorderSize = 0;
+            this.BTN_ExportarJson.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.BTN_ExportarJson.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.BTN_ExportarJson.ForeColor = System.Drawing.Color.White;
+            this.BTN_ExportarJson.Location = new System.Drawing.Point(525, 10);
+            this.BTN_ExportarJson.Name = "BTN_ExportarJson";
+            this.BTN_ExportarJson.Size = new System.Drawing.Size(145, 30);
+            this.BTN_ExportarJson.TabIndex = 4;
+            this.BTN_ExportarJson.Tag = "Equipos.ExportarJSON";
+            this.BTN_ExportarJson.Text = "Exportar JSON";
+            this.BTN_ExportarJson.UseVisualStyleBackColor = false;
+            this.BTN_ExportarJson.Click += new System.EventHandler(this.BTN_ExportarJson_Click);
+            //
+            // BTN_ExportarPdf
+            //
+            this.BTN_ExportarPdf.BackColor = System.Drawing.Color.FromArgb(41, 128, 185);
+            this.BTN_ExportarPdf.FlatAppearance.BorderSize = 0;
+            this.BTN_ExportarPdf.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.BTN_ExportarPdf.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.BTN_ExportarPdf.ForeColor = System.Drawing.Color.White;
+            this.BTN_ExportarPdf.Location = new System.Drawing.Point(680, 10);
+            this.BTN_ExportarPdf.Name = "BTN_ExportarPdf";
+            this.BTN_ExportarPdf.Size = new System.Drawing.Size(145, 30);
+            this.BTN_ExportarPdf.TabIndex = 5;
+            this.BTN_ExportarPdf.Tag = "Equipos.ExportarPDF";
+            this.BTN_ExportarPdf.Text = "Exportar PDF";
+            this.BTN_ExportarPdf.UseVisualStyleBackColor = false;
+            this.BTN_ExportarPdf.Click += new System.EventHandler(this.BTN_ExportarPdf_Click);
+            //
             // FrmEquipos
             //
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -257,5 +294,7 @@ namespace UI.Forms.Equipos
         private System.Windows.Forms.Button BTN_Editar;
         private System.Windows.Forms.Button BTN_Desactivar;
         private System.Windows.Forms.Button BTN_Reactivar;
+        private System.Windows.Forms.Button BTN_ExportarJson;
+        private System.Windows.Forms.Button BTN_ExportarPdf;
     }
 }

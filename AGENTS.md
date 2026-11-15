@@ -58,7 +58,8 @@ historical branch, remote, or dirty-state descriptions are not the current check
 - Implemented scope covers masters, orders/diagnosis/budgets, stock/repairs/tests,
   suppliers/purchases/warranties, and dashboard/reports across five checkpoints.
 - The product is not an invoicing, payment, cash-management, or AFIP system.
-- There is no implemented mobile client, AI diagnosis, or report export feature.
+- There is no implemented mobile client or AI diagnosis. Equipment-list JSON/PDF export is
+  limited to the current visible grid; it does not imply general report exports.
 - Approved budget amounts are commitments, not collected revenue.
 - Do not call checkpoint 5 final product completion or imply all limitations are resolved.
 

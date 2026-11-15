@@ -55,7 +55,9 @@ Relative source links point to files; the named method is the stable search anch
 | 5 | Six dashboard KPIs and eleven report choices, read-only report backend |
 
 This is electronics repair management, not invoicing, payments, cash, AFIP, mobile,
-AI-assisted diagnosis, or exports. A budget commitment is not revenue.
+or AI-assisted diagnosis. Equipment-list JSON/PDF export is a narrowly scoped addition
+(feat-017; independent/manual acceptance pending), not general report exports.
+A budget commitment is not revenue.
 Implemented scope does not establish final completion or production hardening.
 
 ## How to update

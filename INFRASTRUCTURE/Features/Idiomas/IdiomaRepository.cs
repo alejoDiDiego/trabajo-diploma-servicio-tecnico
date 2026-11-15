@@ -1501,6 +1501,27 @@ namespace REPOSITORY.Features.Idiomas
             AgregarSeed("Ingles", "Columna.Codigo", "Code");
             AgregarSeed("Espanol", "Columna.Monto", "Monto");
             AgregarSeed("Ingles", "Columna.Monto", "Amount");
+
+            AgregarSeed("Espanol", "Equipos.ExportarJSON", "Exportar &JSON");
+            AgregarSeed("Ingles", "Equipos.ExportarJSON", "Export &JSON");
+            AgregarSeed("Espanol", "Equipos.ExportarPDF", "Exportar &PDF");
+            AgregarSeed("Ingles", "Equipos.ExportarPDF", "Export &PDF");
+            AgregarSeed("Espanol", "Equipos.ExportarVacio", "No hay equipos en la lista actual para exportar.");
+            AgregarSeed("Ingles", "Equipos.ExportarVacio", "There is no equipment in the current list to export.");
+            AgregarSeed("Espanol", "Equipos.ExportarGuardar", "Guardar equipos exportados");
+            AgregarSeed("Ingles", "Equipos.ExportarGuardar", "Save exported equipment");
+            AgregarSeed("Espanol", "Equipos.ExportarTitulo", "Listado de equipos");
+            AgregarSeed("Ingles", "Equipos.ExportarTitulo", "Equipment list");
+            AgregarSeed("Espanol", "Equipos.ExportarResumen", "Generado: {0}   |   Registros: {1}");
+            AgregarSeed("Ingles", "Equipos.ExportarResumen", "Generated: {0}   |   Records: {1}");
+            AgregarSeed("Espanol", "Equipos.ExportarPagina", "Pagina");
+            AgregarSeed("Ingles", "Equipos.ExportarPagina", "Page");
+            AgregarSeed("Espanol", "Equipos.ExportarSi", "Si");
+            AgregarSeed("Ingles", "Equipos.ExportarSi", "Yes");
+            AgregarSeed("Espanol", "Equipos.ExportarNo", "No");
+            AgregarSeed("Ingles", "Equipos.ExportarNo", "No");
+            AgregarSeed("Espanol", "Equipos.ExportarExito", "Exportacion guardada correctamente.");
+            AgregarSeed("Ingles", "Equipos.ExportarExito", "Export saved successfully.");
         }
 
         private void AgregarSeed(string idioma, string clave, string texto)

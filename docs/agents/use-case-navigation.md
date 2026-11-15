@@ -22,6 +22,7 @@ The form names below are source names; displayed labels depend on the current la
 | User objective | Start at the UI | Application owner / next guide |
 | --- | --- | --- |
 | Maintain customer contact data and equipment ownership | [FrmClientes](../../PRESENTATION/Forms/Clientes/FrmClientes.cs), [FrmEquipos](../../PRESENTATION/Forms/Equipos/FrmEquipos.cs) | ClienteService / EquipoService; business flows, masters and reception |
+| Export the currently displayed equipment list | [FrmEquipos](../../PRESENTATION/Forms/Equipos/FrmEquipos.cs), `Exportar`; [EquipoExportador](../../PRESENTATION/Forms/Equipos/EquipoExportador.cs), `Capturar` / `Guardar` | UI-only snapshot of visible columns and nonhidden rows, in grid order, after customer/model/serial/inactive filters; no query or entity-wide serialization; effective `EQUIPOS_VER` |
 | Maintain equipment types and brands | [FrmTiposEquipo](../../PRESENTATION/Forms/Catalogos/FrmTiposEquipo.cs), [FrmMarcas](../../PRESENTATION/Forms/Catalogos/FrmMarcas.cs) | TipoEquipoService / MarcaService; architecture feature ownership |
 | Receive a job and inspect its history | [FrmOrdenesServicio](../../PRESENTATION/Forms/Ordenes/FrmOrdenesServicio.cs), [FrmOrdenServicioDetalle](../../PRESENTATION/Forms/Ordenes/FrmOrdenServicioDetalle.cs) | OrdenServicioService; business flows, reception and diagnosis |
 | Assign a technician, diagnose, and obtain budget approval | FrmOrdenServicioDetalle | OrdenServicioService; business flows, normal path and Original/Adicional documents |
@@ -53,7 +54,12 @@ Do not replace the guarded actions with a generic state dropdown.
 ## Boundaries and verification
 
 The [index](README.md) maps the five implemented checkpoints. No invoicing, collections,
-cash/AFIP, mobile client, AI diagnosis, or export feature should be inferred from this journey.
+cash/AFIP, mobile client, AI diagnosis, or general report export should be inferred from this journey.
+Equipment export alone supports JSON and landscape PDF with a local Save dialog; cancel and empty
+results create no file. Both formats share the visible-grid snapshot (not selected rows). Headers
+are translated in PDF; JSON uses stable field names, numeric Id, boolean Activo and string identifiers.
+Export includes offscreen rows and excludes hidden foreign keys/observations. No filter captions
+are inferred from possibly stale controls after a failed reload. This does not change equipment data.
 Six dashboard KPIs and eleven report choices do not imply eleven independent business modules.
 Read the actual query definitions, especially date boundaries and warranty-rate denominators.
 
