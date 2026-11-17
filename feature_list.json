@@ -2773,6 +2773,127 @@
                              }
                          ],
     "evidence":  "2026-11-16 independent Checker (fresh, read-only implementation): exact delta against the external dirty baseline is five paths (FrmPrincipal.Designer.cs, the two authorized guides, the two state files); 475/475 other protected hashes identical, all 20 other feature objects deep-identical, FrmPrincipal.cs and viewer/helper/manual.html byte-identical, 157 git status entries and 0 staged, HEAD ab31685 and branch unchanged. Designer normalization: removing exactly the two added Click lines and trimming terminal spaces/tabs leaves 393/393 lines identical; 64 whitespace-only lines; the baseline had exactly 28 git-diff-check trailing-whitespace errors in this same file versus HEAD and current diff --check is 0. Current compiled UI.exe 67C7A135 exposes exactly one FrmPrincipal Click subscriber on each control; retained baseline UI-baseline.exe DA8CADAD, constructed with its real constructor, exposes zero on both, which is the causal prefix evidence. Fresh external STA host used the actual Unicode and space deployed UI assembly, real constructor and InitializeComponent and only OnLoad overridden without base; native mouse input in x64 and x86: 14 open and close cycles each (ES and EN, normal and maximized, menu and footer; ES repeated, EN single), top menu reached indice heading 0 and footer inicio heading -2, one owner-modal viewer, owner HWND disabled and re-enabled, no second modal, MDI text/number/selection/DialogResult preserved, exactly one product Click per opening; 15s waits on both controls and on index/equipos/index/button/15s and unchanged contextual reparaciones/15s without false error. Locked six-project Debug/Any CPU build PASS with identical UI hash; init PASS 21 tasks/365 links/git diff --check 0. Limits: native DPI 96 only, owner 150 percent DPI not exercised; business Load/login/DB not run; x86 supplementary; owner should repeat both controls at real DPI."
+},
+{
+    "id":  "feat-022",
+    "name":  "Wire the Administrar Backups menu to its existing handler",
+    "description":  "Repair owner-reported inert Usuario \u003e Administrar Backups menu by connecting exactly one Click to the existing permission-checked handler. Preserve the current main layout, help wiring, backup form/service/repository, configuration and all existing behavior. Verify only menu/form opening, closure/repeat and effective permissions without executing backup/restore or database startup.",
+    "type":  "behavior",
+    "authorized_files":  [
+                             "PRESENTATION/Forms/FrmPrincipal.Designer.cs",
+                             "docs/agents/development-and-testing.md",
+                             "docs/agents/known-limitations.md",
+                             "feature_list.json",
+                             "progress.md"
+                         ],
+    "dependencies":  [
+                         "feat-018",
+                         "feat-021"
+                     ],
+    "status":  "done",
+    "acceptance_criteria":  [
+                                {
+                                    "description":  "InitializeComponent subscribes TSMI_AdministrarBackups.Click exactly once to the existing handler; no other source token, main layout/event or backup/help logic changes.",
+                                    "verified":  true
+                                },
+                                {
+                                    "description":  "Native Usuario \u003e Administrar Backups click on real compiled Principal opens one actual owner-modal backup form with permitted in-memory sessions; normal close/reopen restores parent and preserves MDI input, with appropriate create/restore button states.",
+                                    "verified":  true
+                                },
+                                {
+                                    "description":  "Create-only, restore-only, denied/no-session access and direct permission guard remain intact; help entry points and prior manual navigation remain working; scoped build/init/diff/preservation evidence passes with no SQL or backup/restore execution.",
+                                    "verified":  true
+                                }
+                            ],
+    "visual_scenarios":  [
+                             {
+                                 "evidence":  "2026-11-17 independent Checker: retained baseline UI 67C7A135 actual constructor has zero product delegates and native Usuario \u003e Backups opens no form; deployed UI 2E139F97 has one actual handler and 24 native open/X-close cycles per architecture x64/x86 (create/restore/both x2 x ES/EN x normal/maximized), one real owner-modal FrmAdministrarBackups, disabled/re-enabled parent, no duplicate and preserved MDI text/number/selection/DialogResult.",
+                                 "status":  "passed",
+                                 "description":  "Actual compiled menu click opens the real backup form once for a permitted session; native close and repeat, modal owner and MDI input preserved.",
+                                 "id":  "vis-backups-menu-open"
+                             },
+                             {
+                                 "evidence":  "2026-11-17 independent Checker: outer-\u003einner inherited create-only/restore-only/both shows create/restore button states T/F, F/T, T/T; EQUIPOS_VER-only and no-session fresh principals hide/disable the item; clearing inner children in memory revokes both grants and a native click on the still-visible item shows access denied without opening the backup form. No SQL or backup/restore action.",
+                                 "status":  "passed",
+                                 "description":  "Inherited create-only, restore-only and both grants show appropriate access/button states; denied/no-session cannot open; no backup/restore action or DB operation executed.",
+                                 "id":  "vis-backups-menu-access"
+                             },
+                             {
+                                 "evidence":  "2026-11-17 independent Checker: actual backup help backups, top help indice with native equipos/indice/button links and footer inicio all reached with 15s waits and no viewer error; removing the single Designer line recovers baseline bytes; 477/477 protected hashes identical, other 21 objects unchanged, backup/viewer/helper/manual/config byte-identical; locked six-project build and init/diff gates PASS.",
+                                 "status":  "passed",
+                                 "description":  "Top/footer help and unchanged backup-form help still open correct manual topics; exact one-line Designer delta, other files/prior features preserved, locked build and init/diff pass.",
+                                 "id":  "vis-backups-menu-regression"
+                             }
+                         ],
+    "evidence":  "2026-11-17 independent Checker (fresh, read-only implementation): exact delta versus the external dirty baseline is five authorized paths; 477/477 other protected hashes identical, all 21 other feature objects deep-identical, and FrmPrincipal.cs, backup form/service/repository, viewer/helper/manual.html and App.config byte-identical; branch/HEAD unchanged and 0 staged. Removing exactly the single added Designer line reproduces the 21091-byte baseline file. Retained baseline UI.exe 67C7A135, under the real constructor and InitializeComponent with OnLoad suppressed externally, exposes zero product delegates and a native Usuario \u003e Backups click opens no form. Deployed UI.exe 2E139F97 exposes exactly one FrmPrincipal handler; 24 native open/X-close cycles per architecture (x64 and x86 full, create-only/restore-only/both x2 repeats x ES/EN memory language x normal/maximized) open one real owner-modal FrmAdministrarBackups with create/restore T/F F/T T/T, disabled parent, observer cleanup, no duplicate, one Click per opening and preserved MDI text/number/selection/DialogResult. Native stale-menu revocation through inner.Hijos.Clear shows the access-denied message and no backup form; EQUIPOS_VER-only and no-session fresh principals hide and disable the item. Actual help from backup shows backups, top menu indice with native equipos/indice/button links, and footer inicio, with 15s waits and no viewer error. Locked six-project build PASS 0 warnings/0 errors and init PASS 22 tasks/371 links/diff-check 0. Limits: native DPI 96, memory-injected ES/EN and Actualizar(null) only, no SQL/Main/login/backup/restore/file dialog/config write; owner 150% DPI, business startup and seed-backed language menu are not certified; no Git writes."
+},
+{
+    "id":  "feat-023",
+    "name":  "Final post-publication verification of backups, JSON, PDF and online help",
+    "description":  "Owner explicitly requests pushing the pending backup-menu repair first, then a final scoped verification of full backup/restore, current-grid JSON serialization, PDF export and offline contextual HTML help. Verify the published application source using actual native WinForms flows on isolated synthetic test databases; no application implementation edits, original database restore/mutation, broad product sweep, credential publication or automatic cleanup DROP.",
+    "type":  "behavior",
+    "authorized_files":  [
+                             "feature_list.json",
+                             "progress.md"
+                         ],
+    "dependencies":  [
+                         "feat-017",
+                         "feat-018",
+                         "feat-019",
+                         "feat-020",
+                         "feat-021",
+                         "feat-022"
+                     ],
+    "status":  "in-progress",
+    "acceptance_criteria":  [
+                                {
+                                    "description":  "Pending application repair is committed/pushed to checkpoint-7-tercer-entrega and remote source hash is verified before behavioral tests; tested source/binary/runtime provenance and configuration exclusions are recorded.",
+                                    "verified":  false
+                                },
+                                {
+                                    "description":  "Actual UI backup creates a verified local backup, controlled scratch data changes, declined confirmation leaves data unchanged, confirmed restore recovers pre-backup data and retains original; scoped cancellation/error/permissions checks are recorded on available authorized Docker/local fallback engines without altering the current database.",
+                                    "verified":  false
+                                },
+                                {
+                                    "description":  "Actual FrmEquipos JSON export matches filtered visible-grid rows/order/fields for customer, model/serial and inactive filters; types/escaped text/leading zeros, cancel/empty/overwrite or locked-file handling verified from generated files.",
+                                    "verified":  false
+                                },
+                                {
+                                    "description":  "Actual FrmEquipos PDF export matches the same grid/JSON snapshot, with readable professional table, complete rows and relevant multipage/Unicode/header/footer checks, plus scoped save/cancel/error behavior.",
+                                    "verified":  false
+                                },
+                                {
+                                    "description":  "Actual application help menu/footer, form buttons and order-tab context navigate the shipped HTML correctly on the real Unicode deployment path; repeated index links, close/reopen and waits beyond timeout preserve caller state. Independent scoped checks, source preservation, final state and publication evidence are recorded without claiming untested DPI/failure coverage.",
+                                    "verified":  false
+                                }
+                            ],
+    "visual_scenarios":  [
+                             {
+                                 "evidence":  "Final run not executed; historical passes are not substituted for this request.",
+                                 "status":  "planned",
+                                 "description":  "Native scratch UI: open backup menu, save full backup locally, mutate only synthetic fixture, decline then confirm restore and verify persisted readback/original retention; targeted cancellation/invalid-media/denied paths, no original DB writes.",
+                                 "id":  "vis-final-backup"
+                             },
+                             {
+                                 "evidence":  "Final run not executed.",
+                                 "status":  "planned",
+                                 "description":  "Native equipment filtering and JSON SaveFileDialog export with data parity, offscreen/unselected rows, inactive/customer/text combinations and direct cancel/empty/error paths.",
+                                 "id":  "vis-final-json"
+                             },
+                             {
+                                 "evidence":  "Final run not executed.",
+                                 "status":  "planned",
+                                 "description":  "Native PDF export from identical filtered result; parse/render the real generated PDF and compare row set/order/values, pagination, labels and Unicode with JSON/grid.",
+                                 "id":  "vis-final-pdf"
+                             },
+                             {
+                                 "evidence":  "Final run not executed.",
+                                 "status":  "planned",
+                                 "description":  "Native actual main/form/modal/order-tab help entry and manual links/repeat/index/close, ES/EN controls and at least15-second waits on Unicode deployment; preserve pending input.",
+                                 "id":  "vis-final-help"
+                             }
+                         ],
+    "evidence":  "2026-11-17 owner explicitly requests commit/push pending changes first and a final verification of the four implemented capabilities after remote publication. Root registers this single verification task before publication; scope is state files only. Fresh Planner/Builder-executor/Checker will run after source push is verified. Prior 22 done feature objects remain unchanged; no application fix is authorized by this verification record."
 }
 ]
 }

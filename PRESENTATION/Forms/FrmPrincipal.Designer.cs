@@ -102,6 +102,7 @@ namespace UI.Forms
             this.TSMI_AdministrarBackups.Size = new System.Drawing.Size(337, 34);
             this.TSMI_AdministrarBackups.Tag = "Menu.AdministrarBackups";
             this.TSMI_AdministrarBackups.Text = "Administrar Backups";
+            this.TSMI_AdministrarBackups.Click += new System.EventHandler(this.TSMI_AdministrarBackups_Click);
             //
             // TSMI_IniciarSesion
             //
