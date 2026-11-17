@@ -41,6 +41,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Features\Backups\BackupService.cs" />
     <Compile Include="Features\ControlCambios\ControlCambioService.cs" />
     <Compile Include="Features\Idiomas\IdiomaService.cs" />
     <Compile Include="Features\Permisos\PermisoService.cs" />

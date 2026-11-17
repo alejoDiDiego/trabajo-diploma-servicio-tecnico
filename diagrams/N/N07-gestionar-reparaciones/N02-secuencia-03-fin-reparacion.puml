@@ -1,0 +1,41 @@
+@startuml
+title N02-07 - Finalización de reparación
+autonumber
+hide footbox
+actor "Técnico, encargado o recepcionista" as Operador
+boundary FrmOrdenServicioDetalle as Detalle
+control OrdenServicioService
+control BitacoraService
+participant OrdenServicioRepository
+participant ReparacionRepository
+participant BitacoraRepository
+group Finalización
+    Operador -> Detalle : Seleccionar intervención abierta
+    Operador -> Detalle : Informar trabajo y finalizar
+    Detalle -> Detalle : Verificar permiso y captura
+    Detalle -> OrdenServicioService : FinalizarReparacion(idReparacion, trabajoRealizado, observaciones)
+    OrdenServicioService -> ReparacionRepository : ObtenerPorId(idReparacion)
+    ReparacionRepository --> OrdenServicioService : Reparacion o null
+    OrdenServicioService -> OrdenServicioRepository : ObtenerPorId(idOrden)
+    OrdenServicioRepository --> OrdenServicioService : OrdenServicio o null
+    OrdenServicioService -> OrdenServicioRepository : TieneReingresosGarantia(idOrden)
+    OrdenServicioRepository --> OrdenServicioService : bool
+    alt Intervención abierta y orden EnReparacion
+        OrdenServicioService -> OrdenServicioService : reparacionDb.Finalizar(trabajoRealizado, observaciones)
+        OrdenServicioService -> OrdenServicioService : ordenDb.FinalizarReparacion()
+        OrdenServicioService -> ReparacionRepository : FinalizarReparacion(idReparacion, trabajoRealizado, observaciones, idUsuario)
+        ReparacionRepository -> ReparacionRepository : Cerrar intervención, pasar la orden a EnPruebas e insertar historial
+        ReparacionRepository --> OrdenServicioService : Finalización sin excepción (void)
+        OrdenServicioService -> BitacoraService : Registrar("Reparacion finalizada", detalle, "ORDENES")
+        BitacoraService -> BitacoraRepository : Insertar(entrada)
+        BitacoraRepository --> BitacoraService : Finalización sin excepción (void)
+        BitacoraService --> OrdenServicioService : Finalización sin excepción (void)
+        OrdenServicioService --> Detalle : Finalización sin excepción (void)
+        Detalle -> Detalle : Limpiar captura y CargarOrden()
+        Detalle --> Operador : Mostrar En pruebas
+    else Intervención cerrada, estado o bloqueo no admitidos
+        OrdenServicioService --> Detalle : ReglaNegocioException u OrdenOriginalSoloConsultaException
+        Detalle --> Operador : Informar impedimento
+    end
+end
+@enduml

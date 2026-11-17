@@ -56,6 +56,12 @@
     <Compile Include="Forms\Auth\FrmAsignarPermisosUsuario.Designer.cs">
       <DependentUpon>FrmAsignarPermisosUsuario.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\Backups\FrmAdministrarBackups.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\Backups\FrmAdministrarBackups.Designer.cs">
+      <DependentUpon>FrmAdministrarBackups.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\FrmPrincipal.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -227,6 +233,9 @@
     <EmbeddedResource Include="Forms\Auth\FrmLogin.resx">
       <DependentUpon>FrmLogin.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Forms\FrmPrincipal.resx">
+      <DependentUpon>FrmPrincipal.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -274,6 +283,18 @@
     <None Include="packages.lock.json" />
     <Content Include="..\THIRD-PARTY-NOTICES.txt">
       <Link>THIRD-PARTY-NOTICES.txt</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Forms\Ayuda\AyudaManual.cs" />
+    <Compile Include="Forms\Ayuda\FrmAyuda.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\Ayuda\FrmAyuda.Designer.cs">
+      <DependentUpon>FrmAyuda.cs</DependentUpon>
+    </Compile>
+    <Content Include="Ayuda\manual.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

@@ -1,0 +1,2438 @@
+{
+    "schemaVersion":  2,
+    "feature":  "feat-015",
+    "originFeature":  "feat-015",
+    "layoutFeature":  "feat-016",
+    "revisionDate":  "2026-11-09",
+    "layoutDate":  "2026-11-10",
+    "timezone":  "America/Buenos_Aires",
+    "sourceCommit":  "fd9ac1ad83c6fc3799e3487a9d25988e557c7f12",
+    "currentLayout":  "standalone",
+    "currentFileCount":  55,
+    "evidenceLevel":  "source-inspection",
+    "rendering":  "not-executed",
+    "syntax":  "not-executed",
+    "notes":  "Source bodies, titles, participant declarations, messages and source anchors are inherited from the feat-015 source-inspection revision. feat-016 only mechanically split each N02-secuencia.puml page into one standalone file with the participant declarations used by that page; no new source inspection, renderer, syntax or runtime certification was performed.",
+    "revisions":  [
+                      {
+                          "case":  "N01",
+                          "originalPath":  "diagrams/N/N01-gestionar-clientes/N02-secuencia.puml",
+                          "baselineSha256":  "01d657ba930d48fabc30420c59cf0da7633a62203fb9d01a9c0aa36d1177872e",
+                          "preSplit":  {
+                                           "sha256":  "d36dae4769bc4bfbce33dbb04fb8e2bc6e4356006bcd9080d5397d486da92ea8",
+                                           "bytes":  7009,
+                                           "pages":  [
+                                                         {
+                                                             "number":  1,
+                                                             "title":  "N02-01 - Secuencia de Gestión de clientes"
+                                                         },
+                                                         {
+                                                             "number":  2,
+                                                             "title":  "N02-01 - Alta y modificación de clientes"
+                                                         },
+                                                         {
+                                                             "number":  3,
+                                                             "title":  "N02-01 - Desactivación, reactivación y recarga"
+                                                         }
+                                                     ]
+                                       },
+                          "files":  [
+                                        {
+                                            "part":  1,
+                                            "path":  "diagrams/N/N01-gestionar-clientes/N02-secuencia.puml",
+                                            "title":  "N02-01 - Secuencia de Gestión de clientes",
+                                            "currentSha256":  "25c57dc85c65f725379abab1263d532de821ffd745658bbcbfccbdde01286172",
+                                            "currentBytes":  1328,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "Pantalla",
+                                                                 "Servicio",
+                                                                 "Repositorio"
+                                                             ]
+                                        },
+                                        {
+                                            "part":  2,
+                                            "path":  "diagrams/N/N01-gestionar-clientes/N02-secuencia-02-alta-modificacion.puml",
+                                            "title":  "N02-01 - Alta y modificación de clientes",
+                                            "currentSha256":  "b6c6b8d6c2339e311e6ebadd61062324b32eddc9430f0f31272c57c780a3ceb8",
+                                            "currentBytes":  3662,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "Pantalla",
+                                                                 "Dialogo",
+                                                                 "Servicio",
+                                                                 "Repositorio",
+                                                                 "Auditoria",
+                                                                 "Bitacora"
+                                                             ]
+                                        },
+                                        {
+                                            "part":  3,
+                                            "path":  "diagrams/N/N01-gestionar-clientes/N02-secuencia-03-estado-recarga.puml",
+                                            "title":  "N02-01 - Desactivación, reactivación y recarga",
+                                            "currentSha256":  "b761d0999e3a6e94f1b0259cf249f4b1e0772470f941e35e0407cb04a5e16059",
+                                            "currentBytes":  2477,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "Pantalla",
+                                                                 "Servicio",
+                                                                 "Repositorio",
+                                                                 "Auditoria",
+                                                                 "Bitacora"
+                                                             ]
+                                        }
+                                    ],
+                          "sourceAnchors":  [
+                                                {
+                                                    "path":  "PRESENTATION/Forms/Clientes/FrmClientes.cs",
+                                                    "methods":  [
+                                                                    "FrmClientes_Load",
+                                                                    "CargarClientes",
+                                                                    "AplicarFiltro",
+                                                                    "BTN_Crear_Click",
+                                                                    "BTN_Editar_Click",
+                                                                    "BTN_Desactivar_Click",
+                                                                    "BTN_Reactivar_Click",
+                                                                    "MostrarDocumentoDuplicado"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "PRESENTATION/Forms/Clientes/FrmClienteEditar.cs",
+                                                    "methods":  [
+                                                                    "OnFormClosing"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "APPLICATION/Features/Clientes/ClienteService.cs",
+                                                    "methods":  [
+                                                                    "Listar",
+                                                                    "Crear",
+                                                                    "Modificar",
+                                                                    "Desactivar",
+                                                                    "Reactivar"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "INFRASTRUCTURE/Features/Clientes/ClienteRepository.cs",
+                                                    "methods":  [
+                                                                    "Listar",
+                                                                    "ObtenerConflictoDocumento",
+                                                                    "Agregar",
+                                                                    "Modificar",
+                                                                    "ObtenerPorId",
+                                                                    "Desactivar",
+                                                                    "Reactivar"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "INFRASTRUCTURE/Features/Bitacora/BitacoraRepository.cs",
+                                                    "methods":  [
+                                                                    "Insertar"
+                                                                ]
+                                                }
+                                            ],
+                          "evidenceLevel":  "source-inspection",
+                          "rendering":  "not-executed"
+                      },
+                      {
+                          "case":  "N02",
+                          "originalPath":  "diagrams/N/N02-gestionar-equipos/N02-secuencia.puml",
+                          "baselineSha256":  "b87d9877b0fee2f5652840f2f47358f573acc02190be36e2f852defb37f26fae",
+                          "preSplit":  {
+                                           "sha256":  "8ee6602604deac807e00640b7f04d15f3806ccde45a68ab7b61bec8538ffb132",
+                                           "bytes":  10528,
+                                           "pages":  [
+                                                         {
+                                                             "number":  1,
+                                                             "title":  "N02-02 - Secuencia de Gestión de equipos"
+                                                         },
+                                                         {
+                                                             "number":  2,
+                                                             "title":  "N02-02 - Alta y modificación de equipos"
+                                                         },
+                                                         {
+                                                             "number":  3,
+                                                             "title":  "N02-02 - Desactivación, reactivación y recarga"
+                                                         }
+                                                     ]
+                                       },
+                          "files":  [
+                                        {
+                                            "part":  1,
+                                            "path":  "diagrams/N/N02-gestionar-equipos/N02-secuencia.puml",
+                                            "title":  "N02-02 - Secuencia de Gestión de equipos",
+                                            "currentSha256":  "3b0f9c3bd1e5368b21bf2962ee283155806974f0a3b011e192c182665ccf3596",
+                                            "currentBytes":  3012,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "Pantalla",
+                                                                 "ClientesSvc",
+                                                                 "TiposSvc",
+                                                                 "MarcasSvc",
+                                                                 "Servicio",
+                                                                 "Clientes",
+                                                                 "Tipos",
+                                                                 "Marcas",
+                                                                 "Equipos"
+                                                             ]
+                                        },
+                                        {
+                                            "part":  2,
+                                            "path":  "diagrams/N/N02-gestionar-equipos/N02-secuencia-02-alta-modificacion.puml",
+                                            "title":  "N02-02 - Alta y modificación de equipos",
+                                            "currentSha256":  "d817c0a1381cebb881282451070874c571f3ea56306e578b9940e03e13ec2ffb",
+                                            "currentBytes":  5365,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "Pantalla",
+                                                                 "Dialogo",
+                                                                 "ClientesSvc",
+                                                                 "TiposSvc",
+                                                                 "MarcasSvc",
+                                                                 "Servicio",
+                                                                 "Auditoria",
+                                                                 "Clientes",
+                                                                 "Tipos",
+                                                                 "Marcas",
+                                                                 "Equipos",
+                                                                 "Bitacora"
+                                                             ]
+                                        },
+                                        {
+                                            "part":  3,
+                                            "path":  "diagrams/N/N02-gestionar-equipos/N02-secuencia-03-estado-recarga.puml",
+                                            "title":  "N02-02 - Desactivación, reactivación y recarga",
+                                            "currentSha256":  "cf606870761bcccd133fe2b878ab71dccd6b7336b65f469b35bbcf69d8858ac1",
+                                            "currentBytes":  2827,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "Pantalla",
+                                                                 "Servicio",
+                                                                 "Auditoria",
+                                                                 "Equipos",
+                                                                 "Bitacora"
+                                                             ]
+                                        }
+                                    ],
+                          "sourceAnchors":  [
+                                                {
+                                                    "path":  "PRESENTATION/Forms/Equipos/FrmEquipos.cs",
+                                                    "methods":  [
+                                                                    "FrmEquipos_Load",
+                                                                    "CargarCatalogos",
+                                                                    "CargarEquipos",
+                                                                    "AplicarFiltro",
+                                                                    "ResolverCliente",
+                                                                    "BTN_Crear_Click",
+                                                                    "BTN_Editar_Click",
+                                                                    "BTN_Desactivar_Click",
+                                                                    "BTN_Reactivar_Click"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "PRESENTATION/Forms/Equipos/FrmEquipoEditar.cs",
+                                                    "methods":  [
+                                                                    "FrmEquipoEditar_Load",
+                                                                    "CargarCombos",
+                                                                    "OnFormClosing"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "APPLICATION/Features/Equipos/EquipoService.cs",
+                                                    "methods":  [
+                                                                    "Crear",
+                                                                    "Modificar",
+                                                                    "Desactivar",
+                                                                    "Reactivar",
+                                                                    "Listar",
+                                                                    "ListarPorCliente",
+                                                                    "ObtenerPorId",
+                                                                    "ValidarReferenciasExistentesYActivas"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "INFRASTRUCTURE/Features/Equipos/EquipoRepository.cs",
+                                                    "methods":  [
+                                                                    "Agregar",
+                                                                    "Modificar",
+                                                                    "Desactivar",
+                                                                    "Reactivar",
+                                                                    "Listar",
+                                                                    "ListarPorCliente",
+                                                                    "ObtenerPorId"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "APPLICATION/Features/Clientes/ClienteService.cs",
+                                                    "methods":  [
+                                                                    "Listar",
+                                                                    "ObtenerPorId"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "APPLICATION/Features/TiposEquipo/TipoEquipoService.cs",
+                                                    "methods":  [
+                                                                    "Listar"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "APPLICATION/Features/Marcas/MarcaService.cs",
+                                                    "methods":  [
+                                                                    "Listar"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "INFRASTRUCTURE/Features/Clientes/ClienteRepository.cs",
+                                                    "methods":  [
+                                                                    "Listar",
+                                                                    "ObtenerPorId"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "INFRASTRUCTURE/Features/TiposEquipo/TipoEquipoRepository.cs",
+                                                    "methods":  [
+                                                                    "Listar",
+                                                                    "ObtenerPorId"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "INFRASTRUCTURE/Features/Marcas/MarcaRepository.cs",
+                                                    "methods":  [
+                                                                    "Listar",
+                                                                    "ObtenerPorId"
+                                                                ]
+                                                }
+                                            ],
+                          "evidenceLevel":  "source-inspection",
+                          "rendering":  "not-executed"
+                      },
+                      {
+                          "case":  "N03",
+                          "originalPath":  "diagrams/N/N03-gestionar-tipos-de-equipo-y-marcas/N02-secuencia.puml",
+                          "baselineSha256":  "756442e7adb2650556ef8aaeba939c1a393bca20eea93d14919cbaeb26281eac",
+                          "preSplit":  {
+                                           "sha256":  "246fc1cb151cefdc0522d50d335646dac58563837c2067c90086aa76ba1b444e",
+                                           "bytes":  10909,
+                                           "pages":  [
+                                                         {
+                                                             "number":  1,
+                                                             "title":  "N02-03 - Secuencia de Gestión de tipos de equipo y marcas"
+                                                         },
+                                                         {
+                                                             "number":  2,
+                                                             "title":  "N02-03 - Catálogo de marcas y mantenimiento"
+                                                         }
+                                                     ]
+                                       },
+                          "files":  [
+                                        {
+                                            "part":  1,
+                                            "path":  "diagrams/N/N03-gestionar-tipos-de-equipo-y-marcas/N02-secuencia.puml",
+                                            "title":  "N02-03 - Secuencia de Gestión de tipos de equipo y marcas",
+                                            "currentSha256":  "0f8a61c02418dfa167552539cf45d0d829cd0791bbf5a74b288f840e3574772e",
+                                            "currentBytes":  5525,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "TiposPantalla",
+                                                                 "Dialogo",
+                                                                 "TiposServicio",
+                                                                 "TiposRepo",
+                                                                 "Auditoria",
+                                                                 "Bitacora"
+                                                             ]
+                                        },
+                                        {
+                                            "part":  2,
+                                            "path":  "diagrams/N/N03-gestionar-tipos-de-equipo-y-marcas/N02-secuencia-02-catalogo-marcas.puml",
+                                            "title":  "N02-03 - Catálogo de marcas y mantenimiento",
+                                            "currentSha256":  "17c647347b45771c8a2d5bdcd3975c61560a681dfe767e4a39d1e819cecac716",
+                                            "currentBytes":  5577,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "MarcasPantalla",
+                                                                 "Dialogo",
+                                                                 "MarcasServicio",
+                                                                 "MarcasRepo",
+                                                                 "Auditoria",
+                                                                 "Bitacora"
+                                                             ]
+                                        }
+                                    ],
+                          "sourceAnchors":  [
+                                                {
+                                                    "path":  "PRESENTATION/Forms/Catalogos/FrmTiposEquipo.cs",
+                                                    "methods":  [
+                                                                    "FrmTiposEquipo_Load",
+                                                                    "CargarTipos",
+                                                                    "AplicarFiltro",
+                                                                    "BTN_Crear_Click",
+                                                                    "BTN_Editar_Click",
+                                                                    "BTN_Desactivar_Click",
+                                                                    "BTN_Reactivar_Click"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "PRESENTATION/Forms/Catalogos/FrmMarcas.cs",
+                                                    "methods":  [
+                                                                    "FrmMarcas_Load",
+                                                                    "CargarMarcas",
+                                                                    "AplicarFiltro",
+                                                                    "BTN_Crear_Click",
+                                                                    "BTN_Editar_Click",
+                                                                    "BTN_Desactivar_Click",
+                                                                    "BTN_Reactivar_Click"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "PRESENTATION/Forms/Catalogos/FrmCatalogoEditar.cs",
+                                                    "methods":  [
+                                                                    "OnFormClosing"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "APPLICATION/Features/TiposEquipo/TipoEquipoService.cs",
+                                                    "methods":  [
+                                                                    "Listar",
+                                                                    "Crear",
+                                                                    "Modificar",
+                                                                    "Desactivar",
+                                                                    "Reactivar"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "APPLICATION/Features/Marcas/MarcaService.cs",
+                                                    "methods":  [
+                                                                    "Listar",
+                                                                    "Crear",
+                                                                    "Modificar",
+                                                                    "Desactivar",
+                                                                    "Reactivar"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "INFRASTRUCTURE/Features/TiposEquipo/TipoEquipoRepository.cs",
+                                                    "methods":  [
+                                                                    "Listar",
+                                                                    "Agregar",
+                                                                    "Modificar",
+                                                                    "ObtenerPorId",
+                                                                    "Desactivar",
+                                                                    "Reactivar"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "INFRASTRUCTURE/Features/Marcas/MarcaRepository.cs",
+                                                    "methods":  [
+                                                                    "Listar",
+                                                                    "Agregar",
+                                                                    "Modificar",
+                                                                    "ObtenerPorId",
+                                                                    "Desactivar",
+                                                                    "Reactivar"
+                                                                ]
+                                                }
+                                            ],
+                          "evidenceLevel":  "source-inspection",
+                          "rendering":  "not-executed"
+                      },
+                      {
+                          "case":  "N04",
+                          "originalPath":  "diagrams/N/N04-gestionar-ordenes-de-servicio/N02-secuencia.puml",
+                          "baselineSha256":  "1c30a4c0b455992ab30e1b11a5deb03a00d8c1892a0c247f116146ab857572d0",
+                          "preSplit":  {
+                                           "sha256":  "c63cea5a1974b5c21cf253547fe351f0fa1fb9c15925f9110782ea36a886453d",
+                                           "bytes":  30070,
+                                           "pages":  [
+                                                         {
+                                                             "number":  1,
+                                                             "title":  "N02-04 - Secuencia de Gestión de órdenes"
+                                                         },
+                                                         {
+                                                             "number":  2,
+                                                             "title":  "N02-04 - Recepción nueva y registro de orden"
+                                                         },
+                                                         {
+                                                             "number":  3,
+                                                             "title":  "N02-04 - CargarOrden con servicios y repositorios"
+                                                         },
+                                                         {
+                                                             "number":  4,
+                                                             "title":  "N02-04 - Operaciones sobre la orden y retorno al listado"
+                                                         }
+                                                     ]
+                                       },
+                          "files":  [
+                                        {
+                                            "part":  1,
+                                            "path":  "diagrams/N/N04-gestionar-ordenes-de-servicio/N02-secuencia.puml",
+                                            "title":  "N02-04 - Secuencia de Gestión de órdenes",
+                                            "currentSha256":  "09c3d075702d8cbc93b3d19df6f1b0ae47aa1acea06068a158268c225ec4bd82",
+                                            "currentBytes":  4659,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "Listado",
+                                                                 "ClienteService",
+                                                                 "EquipoService",
+                                                                 "OrdenServicioService",
+                                                                 "UsuarioPermisoService",
+                                                                 "ClienteRepository",
+                                                                 "EquipoRepository",
+                                                                 "OrdenServicioRepository",
+                                                                 "UsuarioRepository",
+                                                                 "UsuarioPermisoRepository",
+                                                                 "PermisoRepository"
+                                                             ]
+                                        },
+                                        {
+                                            "part":  2,
+                                            "path":  "diagrams/N/N04-gestionar-ordenes-de-servicio/N02-secuencia-02-recepcion-registro.puml",
+                                            "title":  "N02-04 - Recepción nueva y registro de orden",
+                                            "currentSha256":  "2c78287b40bc2248ddb21b5db54c81e16a4adaffc871fdd75f2ee6b5fd7bec9c",
+                                            "currentBytes":  4725,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "Listado",
+                                                                 "Detalle",
+                                                                 "ClienteService",
+                                                                 "EquipoService",
+                                                                 "RepuestoService",
+                                                                 "OrdenServicioService",
+                                                                 "UsuarioPermisoService",
+                                                                 "BitacoraService",
+                                                                 "ClienteRepository",
+                                                                 "EquipoRepository",
+                                                                 "RepuestoRepository",
+                                                                 "OrdenServicioRepository",
+                                                                 "UsuarioRepository",
+                                                                 "UsuarioPermisoRepository",
+                                                                 "PermisoRepository",
+                                                                 "BitacoraRepository"
+                                                             ]
+                                        },
+                                        {
+                                            "part":  3,
+                                            "path":  "diagrams/N/N04-gestionar-ordenes-de-servicio/N02-secuencia-03-carga-orden.puml",
+                                            "title":  "N02-04 - CargarOrden con servicios y repositorios",
+                                            "currentSha256":  "118d5308e5405ed92543cf94a0db2327f8ac75452e0aad159f792433c251004a",
+                                            "currentBytes":  11336,
+                                            "participants":  [
+                                                                 "Detalle",
+                                                                 "ClienteService",
+                                                                 "EquipoService",
+                                                                 "RepuestoService",
+                                                                 "OrdenServicioService",
+                                                                 "GarantiaService",
+                                                                 "ClienteRepository",
+                                                                 "EquipoRepository",
+                                                                 "RepuestoRepository",
+                                                                 "OrdenServicioRepository",
+                                                                 "DiagnosticoRepository",
+                                                                 "PresupuestoRepository",
+                                                                 "EntregaRepository",
+                                                                 "ReparacionRepository",
+                                                                 "HistorialEstadoOrdenRepository",
+                                                                 "GarantiaRepository",
+                                                                 "EvaluacionGarantiaRepository"
+                                                             ]
+                                        },
+                                        {
+                                            "part":  4,
+                                            "path":  "diagrams/N/N04-gestionar-ordenes-de-servicio/N02-secuencia-04-operacion-retorno.puml",
+                                            "title":  "N02-04 - Operaciones sobre la orden y retorno al listado",
+                                            "currentSha256":  "f1778fb06e419054b02bcf08b294e77d5c938085c0e03633ff3ba51e0ebbd0ba",
+                                            "currentBytes":  10537,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "Listado",
+                                                                 "Detalle",
+                                                                 "ClienteService",
+                                                                 "EquipoService",
+                                                                 "OrdenServicioService",
+                                                                 "UsuarioPermisoService",
+                                                                 "BitacoraService",
+                                                                 "ClienteRepository",
+                                                                 "EquipoRepository",
+                                                                 "OrdenServicioRepository",
+                                                                 "UsuarioRepository",
+                                                                 "UsuarioPermisoRepository",
+                                                                 "PermisoRepository",
+                                                                 "BitacoraRepository"
+                                                             ]
+                                        }
+                                    ],
+                          "sourceAnchors":  [
+                                                {
+                                                    "path":  "PRESENTATION/Forms/Ordenes/FrmOrdenesServicio.cs",
+                                                    "methods":  [
+                                                                    "FrmOrdenesServicio_Load",
+                                                                    "CargarCatalogos",
+                                                                    "CargarOrdenes",
+                                                                    "AplicarFiltro",
+                                                                    "ResolverCliente",
+                                                                    "ResolverEquipo",
+                                                                    "BTN_Crear_Click",
+                                                                    "BTN_Cancelar_Click"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "PRESENTATION/Forms/Ordenes/FrmOrdenServicioDetalle.cs",
+                                                    "methods":  [
+                                                                    "FrmOrdenServicioDetalle_Load",
+                                                                    "CargarCatalogos",
+                                                                    "CargarCombosRecepcion",
+                                                                    "CargarComboEquipos",
+                                                                    "CargarOrden",
+                                                                    "CargarModoNuevo",
+                                                                    "CargarTabPresupuesto",
+                                                                    "CargarSelectorPresupuesto",
+                                                                    "MostrarPresupuestoSeleccionado",
+                                                                    "CargarTabReparaciones",
+                                                                    "CargarConsumidosDeSeleccion",
+                                                                    "CargarTabPruebas",
+                                                                    "CargarPruebasDeCombo",
+                                                                    "CargarTabHistorial",
+                                                                    "CargarTabGarantia",
+                                                                    "CargarReingresosGarantia",
+                                                                    "BTN_CrearOrden_Click",
+                                                                    "BTN_GuardarRecepcion_Click",
+                                                                    "BTN_AsignarTecnico_Click"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "APPLICATION/Features/Ordenes/OrdenServicioService.cs",
+                                                    "methods":  [
+                                                                    "Listar",
+                                                                    "ListarPorCliente",
+                                                                    "ListarTecnicosElegibles",
+                                                                    "CrearOrden",
+                                                                    "ModificarRecepcion",
+                                                                    "AsignarTecnico",
+                                                                    "CancelarOrden",
+                                                                    "ObtenerPorId",
+                                                                    "EsSoloConsultaPorReingresos",
+                                                                    "ObtenerDiagnostico",
+                                                                    "ObtenerPresupuesto",
+                                                                    "ObtenerPresupuestoOriginal",
+                                                                    "ListarAdicionales",
+                                                                    "ListarTodosPresupuestos",
+                                                                    "ExisteAdicionalPendiente",
+                                                                    "PuedeCancelarSolicitud",
+                                                                    "ObtenerPresupuestoPorId",
+                                                                    "ListarDetalle",
+                                                                    "CalcularMontoAutorizado",
+                                                                    "ListarReparaciones",
+                                                                    "ListarConsumidos",
+                                                                    "ListarPruebas",
+                                                                    "ListarHistorial",
+                                                                    "ObtenerEntrega",
+                                                                    "ListarReingresosGarantia",
+                                                                    "ObtenerReingresoGarantiaAbierto",
+                                                                    "ObtenerOrdenParaModificar",
+                                                                    "ObtenerOrdenExistente"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "INFRASTRUCTURE/Features/Ordenes/OrdenServicioRepository.cs",
+                                                    "methods":  [
+                                                                    "CrearConHistorial",
+                                                                    "CambiarEstadoConHistorial",
+                                                                    "AsignarTecnico",
+                                                                    "ActualizarRecepcion",
+                                                                    "ObtenerPorId",
+                                                                    "Listar",
+                                                                    "ListarPorCliente",
+                                                                    "ObtenerReingresoGarantiaAbierto",
+                                                                    "ListarReingresosGarantia",
+                                                                    "TieneReingresosGarantia"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "INFRASTRUCTURE/Features/Ordenes/DiagnosticoRepository.cs",
+                                                    "methods":  [
+                                                                    "ObtenerPorOrden"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "INFRASTRUCTURE/Features/Ordenes/PresupuestoRepository.cs",
+                                                    "methods":  [
+                                                                    "ObtenerOriginal",
+                                                                    "ListarAdicionales",
+                                                                    "ListarPorOrden",
+                                                                    "ExisteAdicionalPendiente",
+                                                                    "CalcularMontoAutorizado",
+                                                                    "ObtenerPorId",
+                                                                    "ListarDetalle"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "INFRASTRUCTURE/Features/Ordenes/EntregaRepository.cs",
+                                                    "methods":  [
+                                                                    "ObtenerPorOrden"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "INFRASTRUCTURE/Features/Reparaciones/ReparacionRepository.cs",
+                                                    "methods":  [
+                                                                    "ListarPorOrden",
+                                                                    "ObtenerPorId",
+                                                                    "ListarConsumidos",
+                                                                    "ListarPruebas"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "INFRASTRUCTURE/Features/Ordenes/HistorialEstadoOrdenRepository.cs",
+                                                    "methods":  [
+                                                                    "ListarPorOrden"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "INFRASTRUCTURE/Features/Garantias/GarantiaRepository.cs",
+                                                    "methods":  [
+                                                                    "ObtenerPorOrden"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "INFRASTRUCTURE/Features/Garantias/EvaluacionGarantiaRepository.cs",
+                                                    "methods":  [
+                                                                    "ObtenerPorReingreso"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "INFRASTRUCTURE/Features/Usuarios/UsuarioRepository.cs",
+                                                    "methods":  [
+                                                                    "Listar",
+                                                                    "ObtenerPorId"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "APPLICATION/Features/Usuarios/UsuarioPermisoService.cs",
+                                                    "methods":  [
+                                                                    "ListarPermisosEfectivos"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "INFRASTRUCTURE/Features/Usuarios/UsuarioPermisoRepository.cs",
+                                                    "methods":  [
+                                                                    "ListarPermisosAsignados"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "INFRASTRUCTURE/Features/Permisos/PermisoRepository.cs",
+                                                    "methods":  [
+                                                                    "ListarSubArbol"
+                                                                ]
+                                                }
+                                            ],
+                          "evidenceLevel":  "source-inspection",
+                          "rendering":  "not-executed"
+                      },
+                      {
+                          "case":  "N05",
+                          "originalPath":  "diagrams/N/N05-gestionar-diagnosticos/N02-secuencia.puml",
+                          "baselineSha256":  "2144e78c276e39f6db39d926096c87a12358b2b0d73ad85c47af7c8b04126d9f",
+                          "preSplit":  {
+                                           "sha256":  "47de1770359097a195880aa1967090b098a1b0934763f0d8a4551dc9d0a34e65",
+                                           "bytes":  7404,
+                                           "pages":  [
+                                                         {
+                                                             "number":  1,
+                                                             "title":  "N02-05 - Secuencia de Gestión de diagnósticos"
+                                                         },
+                                                         {
+                                                             "number":  2,
+                                                             "title":  "N02-05 - Inicio del diagnóstico"
+                                                         },
+                                                         {
+                                                             "number":  3,
+                                                             "title":  "N02-05 - Finalización y evaluación pendiente de garantía"
+                                                         }
+                                                     ]
+                                       },
+                          "files":  [
+                                        {
+                                            "part":  1,
+                                            "path":  "diagrams/N/N05-gestionar-diagnosticos/N02-secuencia.puml",
+                                            "title":  "N02-05 - Secuencia de Gestión de diagnósticos",
+                                            "currentSha256":  "9862c0470cb40d68580cb0df96abcc54d80c2190c9f8b952f8e498982e2bb514",
+                                            "currentBytes":  1109,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "Detalle",
+                                                                 "OrdenServicioService",
+                                                                 "OrdenServicioRepository",
+                                                                 "DiagnosticoRepository"
+                                                             ]
+                                        },
+                                        {
+                                            "part":  2,
+                                            "path":  "diagrams/N/N05-gestionar-diagnosticos/N02-secuencia-02-inicio-diagnostico.puml",
+                                            "title":  "N02-05 - Inicio del diagnóstico",
+                                            "currentSha256":  "301518df2fa3721f266235cae362e851d503b052db4c559f29c077c5a73695b8",
+                                            "currentBytes":  2078,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "Detalle",
+                                                                 "OrdenServicioService",
+                                                                 "BitacoraService",
+                                                                 "OrdenServicioRepository",
+                                                                 "BitacoraRepository"
+                                                             ]
+                                        },
+                                        {
+                                            "part":  3,
+                                            "path":  "diagrams/N/N05-gestionar-diagnosticos/N02-secuencia-03-fin-eval-garantia.puml",
+                                            "title":  "N02-05 - Finalización y evaluación pendiente de garantía",
+                                            "currentSha256":  "7f73fc3c6203d21ce91c41f96efcd2f95392d0c141c10e9f735a7ccc638195ce",
+                                            "currentBytes":  4697,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "Detalle",
+                                                                 "OrdenServicioService",
+                                                                 "BitacoraService",
+                                                                 "OrdenServicioRepository",
+                                                                 "DiagnosticoRepository",
+                                                                 "GarantiaRepository",
+                                                                 "EvaluacionGarantiaRepository",
+                                                                 "BitacoraRepository"
+                                                             ]
+                                        }
+                                    ],
+                          "sourceAnchors":  [
+                                                {
+                                                    "path":  "PRESENTATION/Forms/Ordenes/FrmOrdenServicioDetalle.cs",
+                                                    "methods":  [
+                                                                    "CargarTabDiagnostico",
+                                                                    "BTN_Iniciar_Click",
+                                                                    "BTN_Finalizar_Click"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "APPLICATION/Features/Ordenes/OrdenServicioService.cs",
+                                                    "methods":  [
+                                                                    "ObtenerDiagnostico",
+                                                                    "IniciarDiagnostico",
+                                                                    "FinalizarDiagnostico",
+                                                                    "RegistrarEvaluacionPendienteReingreso"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "INFRASTRUCTURE/Features/Ordenes/DiagnosticoRepository.cs",
+                                                    "methods":  [
+                                                                    "ObtenerPorOrden",
+                                                                    "CrearConTransicion"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "INFRASTRUCTURE/Features/Ordenes/OrdenServicioRepository.cs",
+                                                    "methods":  [
+                                                                    "ObtenerPorId",
+                                                                    "TieneReingresosGarantia",
+                                                                    "CambiarEstadoConHistorial"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "INFRASTRUCTURE/Features/Garantias/GarantiaRepository.cs",
+                                                    "methods":  [
+                                                                    "ObtenerVigente"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "INFRASTRUCTURE/Features/Garantias/EvaluacionGarantiaRepository.cs",
+                                                    "methods":  [
+                                                                    "ObtenerPorReingreso",
+                                                                    "Crear"
+                                                                ]
+                                                }
+                                            ],
+                          "evidenceLevel":  "source-inspection",
+                          "rendering":  "not-executed"
+                      },
+                      {
+                          "case":  "N06",
+                          "originalPath":  "diagrams/N/N06-gestionar-presupuestos/N02-secuencia.puml",
+                          "baselineSha256":  "a21dcac86398f4dc6fb605b814defb792b9186a13660397ab0c275ca7c771480",
+                          "preSplit":  {
+                                           "sha256":  "ee05d3eacfff0ad196ea49796b56b1e50c91e7f86414153f3d3637a48443fc9b",
+                                           "bytes":  32824,
+                                           "pages":  [
+                                                         {
+                                                             "number":  1,
+                                                             "title":  "N02-06 - Secuencia de Gestión de presupuestos"
+                                                         },
+                                                         {
+                                                             "number":  2,
+                                                             "title":  "N02-06 - Borradores: publicación y eliminación"
+                                                         },
+                                                         {
+                                                             "number":  3,
+                                                             "title":  "N02-06 - Emisión directa de original y adicional"
+                                                         },
+                                                         {
+                                                             "number":  4,
+                                                             "title":  "N02-06 - Aprobación y rechazo"
+                                                         },
+                                                         {
+                                                             "number":  5,
+                                                             "title":  "N02-06 - Solicitud y cancelación de adicional"
+                                                         },
+                                                         {
+                                                             "number":  6,
+                                                             "title":  "N02-06 - Ventanas de anulación"
+                                                         }
+                                                     ]
+                                       },
+                          "files":  [
+                                        {
+                                            "part":  1,
+                                            "path":  "diagrams/N/N06-gestionar-presupuestos/N02-secuencia.puml",
+                                            "title":  "N02-06 - Secuencia de Gestión de presupuestos",
+                                            "currentSha256":  "d5357c6a8fd10784d363100111b07d347e74fc86a74d1bd5c8dc3aa33aaf9a75",
+                                            "currentBytes":  3964,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "Detalle",
+                                                                 "OrdenServicioService",
+                                                                 "OrdenServicioRepository",
+                                                                 "PresupuestoRepository",
+                                                                 "HistorialEstadoOrdenRepository"
+                                                             ]
+                                        },
+                                        {
+                                            "part":  2,
+                                            "path":  "diagrams/N/N06-gestionar-presupuestos/N02-secuencia-02-publicar-eliminar.puml",
+                                            "title":  "N02-06 - Borradores: publicación y eliminación",
+                                            "currentSha256":  "8d59b69abe47fb522b5e82996de6ad3b46539f8ff3a7d033bae19a944856c213",
+                                            "currentBytes":  4828,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "Detalle",
+                                                                 "OrdenServicioService",
+                                                                 "BitacoraService",
+                                                                 "OrdenServicioRepository",
+                                                                 "PresupuestoRepository",
+                                                                 "DiagnosticoRepository",
+                                                                 "RepuestoRepository",
+                                                                 "BitacoraRepository"
+                                                             ]
+                                        },
+                                        {
+                                            "part":  3,
+                                            "path":  "diagrams/N/N06-gestionar-presupuestos/N02-secuencia-03-emision-directa.puml",
+                                            "title":  "N02-06 - Emisión directa de original y adicional",
+                                            "currentSha256":  "db04a56931d988e647ed70402fbe0c41591f9b90d6ab327e0d501f2ef5dca19b",
+                                            "currentBytes":  6701,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "Detalle",
+                                                                 "OrdenServicioService",
+                                                                 "BitacoraService",
+                                                                 "OrdenServicioRepository",
+                                                                 "PresupuestoRepository",
+                                                                 "DiagnosticoRepository",
+                                                                 "RepuestoRepository",
+                                                                 "BitacoraRepository"
+                                                             ]
+                                        },
+                                        {
+                                            "part":  4,
+                                            "path":  "diagrams/N/N06-gestionar-presupuestos/N02-secuencia-04-aprobacion-rechazo.puml",
+                                            "title":  "N02-06 - Aprobación y rechazo",
+                                            "currentSha256":  "5d354e73e0b167bad627d3ee7d72d99a57d1e6a20845b26b80b166e8e7c5f948",
+                                            "currentBytes":  7861,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "Detalle",
+                                                                 "OrdenServicioService",
+                                                                 "BitacoraService",
+                                                                 "OrdenServicioRepository",
+                                                                 "PresupuestoRepository",
+                                                                 "HistorialEstadoOrdenRepository",
+                                                                 "BitacoraRepository"
+                                                             ]
+                                        },
+                                        {
+                                            "part":  5,
+                                            "path":  "diagrams/N/N06-gestionar-presupuestos/N02-secuencia-05-solicitud-cancelar.puml",
+                                            "title":  "N02-06 - Solicitud y cancelación de adicional",
+                                            "currentSha256":  "1b4032897a63a8e78cf3fad1333a06ad7a8d4343fd04f4501f5c32bdfd8068f7",
+                                            "currentBytes":  4622,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "Detalle",
+                                                                 "OrdenServicioService",
+                                                                 "BitacoraService",
+                                                                 "OrdenServicioRepository",
+                                                                 "PresupuestoRepository",
+                                                                 "HistorialEstadoOrdenRepository",
+                                                                 "BitacoraRepository"
+                                                             ]
+                                        },
+                                        {
+                                            "part":  6,
+                                            "path":  "diagrams/N/N06-gestionar-presupuestos/N02-secuencia-06-anulacion.puml",
+                                            "title":  "N02-06 - Ventanas de anulación",
+                                            "currentSha256":  "884ef305226e4a0621b9bd04fb4bb6b24efbe51f5f9041f97b9d0ac71cef00e4",
+                                            "currentBytes":  6359,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "Detalle",
+                                                                 "OrdenServicioService",
+                                                                 "BitacoraService",
+                                                                 "OrdenServicioRepository",
+                                                                 "PresupuestoRepository",
+                                                                 "ReparacionRepository",
+                                                                 "EntregaRepository",
+                                                                 "BitacoraRepository"
+                                                             ]
+                                        }
+                                    ],
+                          "sourceAnchors":  [
+                                                {
+                                                    "path":  "PRESENTATION/Forms/Ordenes/FrmOrdenServicioDetalle.cs",
+                                                    "methods":  [
+                                                                    "CargarTabPresupuesto",
+                                                                    "BTN_Emitir_Click",
+                                                                    "BTN_GuardarBorrador_Click",
+                                                                    "BTN_EliminarBorrador_Click",
+                                                                    "BTN_Anular_Click",
+                                                                    "BTN_CancelarSolicitud_Click",
+                                                                    "BTN_Aprobar_Click",
+                                                                    "BTN_Rechazar_Click",
+                                                                    "BTN_SolicitarAdicional_Click"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "APPLICATION/Features/Ordenes/OrdenServicioService.cs",
+                                                    "methods":  [
+                                                                    "EmitirPresupuesto",
+                                                                    "EmitirAdicional",
+                                                                    "CrearBorrador",
+                                                                    "PublicarBorrador",
+                                                                    "EliminarBorrador",
+                                                                    "AnularPresupuesto",
+                                                                    "SolicitarAdicional",
+                                                                    "CancelarSolicitudAdicional",
+                                                                    "RegistrarAprobacionPresupuesto",
+                                                                    "RegistrarRechazoPresupuesto",
+                                                                    "RegistrarAprobacionAdicional",
+                                                                    "RegistrarRechazoAdicional",
+                                                                    "PuedeCancelarSolicitud",
+                                                                    "ValidarItemsYCalcularSubtotal",
+                                                                    "TryObtenerOrigenSolicitud",
+                                                                    "ValidarAnulacionRechazadoOriginal",
+                                                                    "ValidarAnulacionRechazadoAdicional"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "DOMAIN/Features/Ordenes/Presupuesto.cs",
+                                                    "methods":  [
+                                                                    "Anular"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "INFRASTRUCTURE/Features/Ordenes/PresupuestoRepository.cs",
+                                                    "methods":  [
+                                                                    "EmitirConDetalle",
+                                                                    "EmitirAdicional",
+                                                                    "CrearBorrador",
+                                                                    "PublicarBorrador",
+                                                                    "EliminarBorrador",
+                                                                    "AnularConTransicion",
+                                                                    "AnularRechazadoConTransicion",
+                                                                    "CancelarSolicitudAdicional",
+                                                                    "ExisteOriginalActivo",
+                                                                    "ObtenerOriginal",
+                                                                    "ObtenerPorOrden",
+                                                                    "ObtenerPorId",
+                                                                    "ListarAdicionales",
+                                                                    "ListarPorOrden",
+                                                                    "ListarDetalle",
+                                                                    "ExisteAdicionalPendiente",
+                                                                    "HasActividadPosterior",
+                                                                    "CalcularMontoAutorizado",
+                                                                    "AprobarConTransicion",
+                                                                    "RechazarConTransicion",
+                                                                    "AprobarAdicionalConTransicion",
+                                                                    "RechazarAdicionalConTransicion"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "INFRASTRUCTURE/Features/Ordenes/DiagnosticoRepository.cs",
+                                                    "methods":  [
+                                                                    "ObtenerPorOrden"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "INFRASTRUCTURE/Features/Reparaciones/ReparacionRepository.cs",
+                                                    "methods":  [
+                                                                    "ListarPorOrden"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "INFRASTRUCTURE/Features/Ordenes/EntregaRepository.cs",
+                                                    "methods":  [
+                                                                    "ObtenerPorOrden"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "INFRASTRUCTURE/Features/Ordenes/HistorialEstadoOrdenRepository.cs",
+                                                    "methods":  [
+                                                                    "ListarPorOrden"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "INFRASTRUCTURE/Features/Ordenes/OrdenServicioRepository.cs",
+                                                    "methods":  [
+                                                                    "ObtenerPorId",
+                                                                    "TieneReingresosGarantia",
+                                                                    "CambiarEstadoConHistorial"
+                                                                ]
+                                                }
+                                            ],
+                          "evidenceLevel":  "source-inspection",
+                          "rendering":  "not-executed"
+                      },
+                      {
+                          "case":  "N07",
+                          "originalPath":  "diagrams/N/N07-gestionar-reparaciones/N02-secuencia.puml",
+                          "baselineSha256":  "76ff94f8dd19d1404d6d912da4732e3472143dd7d81dba2955db63ca9ea0014f",
+                          "preSplit":  {
+                                           "sha256":  "6c2ca8b9b102b8daec7317f03fd3d13e3f580509026d8f178669f410948d7efa",
+                                           "bytes":  7799,
+                                           "pages":  [
+                                                         {
+                                                             "number":  1,
+                                                             "title":  "N02-07 - Secuencia de Gestión de reparaciones"
+                                                         },
+                                                         {
+                                                             "number":  2,
+                                                             "title":  "N02-07 - Inicio de reparación e intervención adicional"
+                                                         },
+                                                         {
+                                                             "number":  3,
+                                                             "title":  "N02-07 - Finalización de reparación"
+                                                         }
+                                                     ]
+                                       },
+                          "files":  [
+                                        {
+                                            "part":  1,
+                                            "path":  "diagrams/N/N07-gestionar-reparaciones/N02-secuencia.puml",
+                                            "title":  "N02-07 - Secuencia de Gestión de reparaciones",
+                                            "currentSha256":  "bfb245e34acf7bf9113f7f6ae35efe475c21f765e091d83743e2840241d5698a",
+                                            "currentBytes":  1526,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "Detalle",
+                                                                 "OrdenServicioService",
+                                                                 "OrdenServicioRepository",
+                                                                 "ReparacionRepository"
+                                                             ]
+                                        },
+                                        {
+                                            "part":  2,
+                                            "path":  "diagrams/N/N07-gestionar-reparaciones/N02-secuencia-02-inicio-adicional.puml",
+                                            "title":  "N02-07 - Inicio de reparación e intervención adicional",
+                                            "currentSha256":  "6b1db63a4aebf115919df05afb8ab0f9b24f091a1ae43f3f135a1e9103aaaa47",
+                                            "currentBytes":  4349,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "Detalle",
+                                                                 "OrdenServicioService",
+                                                                 "BitacoraService",
+                                                                 "OrdenServicioRepository",
+                                                                 "ReparacionRepository",
+                                                                 "UsuarioRepository",
+                                                                 "UsuarioPermisoService",
+                                                                 "UsuarioPermisoRepository",
+                                                                 "PermisoRepository",
+                                                                 "BitacoraRepository"
+                                                             ]
+                                        },
+                                        {
+                                            "part":  3,
+                                            "path":  "diagrams/N/N07-gestionar-reparaciones/N02-secuencia-03-fin-reparacion.puml",
+                                            "title":  "N02-07 - Finalización de reparación",
+                                            "currentSha256":  "8b2c73c3f26f57acd5cf4aeb2f5c8320ef891da9cedb9793c53ff79cd5a4a15a",
+                                            "currentBytes":  2437,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "Detalle",
+                                                                 "OrdenServicioService",
+                                                                 "BitacoraService",
+                                                                 "OrdenServicioRepository",
+                                                                 "ReparacionRepository",
+                                                                 "BitacoraRepository"
+                                                             ]
+                                        }
+                                    ],
+                          "sourceAnchors":  [
+                                                {
+                                                    "path":  "PRESENTATION/Forms/Ordenes/FrmOrdenServicioDetalle.cs",
+                                                    "methods":  [
+                                                                    "CargarTabReparaciones",
+                                                                    "BTN_IniciarReparacion_Click",
+                                                                    "BTN_FinalizarReparacion_Click",
+                                                                    "SeleccionarReparacionPorDefecto"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "APPLICATION/Features/Ordenes/OrdenServicioService.cs",
+                                                    "methods":  [
+                                                                    "ListarReparaciones",
+                                                                    "ObtenerReparacion",
+                                                                    "IniciarReparacion",
+                                                                    "FinalizarReparacion",
+                                                                    "ValidarTecnicoElegible"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "INFRASTRUCTURE/Features/Reparaciones/ReparacionRepository.cs",
+                                                    "methods":  [
+                                                                    "ListarPorOrden",
+                                                                    "ObtenerPorId",
+                                                                    "ObtenerAbierta",
+                                                                    "IniciarReparacion",
+                                                                    "IniciarIntervencionAdicional",
+                                                                    "FinalizarReparacion"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "INFRASTRUCTURE/Features/Ordenes/OrdenServicioRepository.cs",
+                                                    "methods":  [
+                                                                    "ObtenerPorId",
+                                                                    "TieneReingresosGarantia"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "INFRASTRUCTURE/Features/Usuarios/UsuarioRepository.cs",
+                                                    "methods":  [
+                                                                    "ObtenerPorId"
+                                                                ]
+                                                }
+                                            ],
+                          "evidenceLevel":  "source-inspection",
+                          "rendering":  "not-executed"
+                      },
+                      {
+                          "case":  "N08",
+                          "originalPath":  "diagrams/N/N08-gestionar-repuestos-utilizados/N02-secuencia.puml",
+                          "baselineSha256":  "8ca17265ad8606ddb1f8f40d19b65dfbebc5e4387f52b83ae26eb8e67018ef9f",
+                          "preSplit":  {
+                                           "sha256":  "5b288e545fa6e0a78fd29d6a69e9604fb3983f58c92f20ea6212d52313c3548e",
+                                           "bytes":  6005,
+                                           "pages":  [
+                                                         {
+                                                             "number":  1,
+                                                             "title":  "N02-08 - Secuencia de Gestión de repuestos utilizados"
+                                                         },
+                                                         {
+                                                             "number":  2,
+                                                             "title":  "N02-08 - Consumo de repuesto"
+                                                         },
+                                                         {
+                                                             "number":  3,
+                                                             "title":  "N02-08 - Devolución de consumo"
+                                                         }
+                                                     ]
+                                       },
+                          "files":  [
+                                        {
+                                            "part":  1,
+                                            "path":  "diagrams/N/N08-gestionar-repuestos-utilizados/N02-secuencia.puml",
+                                            "title":  "N02-08 - Secuencia de Gestión de repuestos utilizados",
+                                            "currentSha256":  "73ad14c68be420948e072df98178a58fa81f64b6237a11ad156a8b5d957ed9c1",
+                                            "currentBytes":  1309,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "Detalle",
+                                                                 "OrdenServicioService",
+                                                                 "RepuestoService",
+                                                                 "ReparacionRepository",
+                                                                 "RepuestoRepository"
+                                                             ]
+                                        },
+                                        {
+                                            "part":  2,
+                                            "path":  "diagrams/N/N08-gestionar-repuestos-utilizados/N02-secuencia-02-consumo-repuesto.puml",
+                                            "title":  "N02-08 - Consumo de repuesto",
+                                            "currentSha256":  "19fe20a498b5fa68ec020779607867f8fcc2290e578b868aea4a7a2cda71b1c8",
+                                            "currentBytes":  2302,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "Detalle",
+                                                                 "OrdenServicioService",
+                                                                 "BitacoraService",
+                                                                 "ReparacionRepository",
+                                                                 "OrdenServicioRepository",
+                                                                 "RepuestoRepository",
+                                                                 "BitacoraRepository"
+                                                             ]
+                                        },
+                                        {
+                                            "part":  3,
+                                            "path":  "diagrams/N/N08-gestionar-repuestos-utilizados/N02-secuencia-03-devolucion-consumo.puml",
+                                            "title":  "N02-08 - Devolución de consumo",
+                                            "currentSha256":  "0d37ffe4a6c4a7284bd14578f895050a04c8edf2926b4a1434be53ed0250c785",
+                                            "currentBytes":  2902,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "Detalle",
+                                                                 "OrdenServicioService",
+                                                                 "BitacoraService",
+                                                                 "ReparacionRepository",
+                                                                 "OrdenServicioRepository",
+                                                                 "BitacoraRepository"
+                                                             ]
+                                        }
+                                    ],
+                          "sourceAnchors":  [
+                                                {
+                                                    "path":  "PRESENTATION/Forms/Ordenes/FrmOrdenServicioDetalle.cs",
+                                                    "methods":  [
+                                                                    "CargarComboConsumo",
+                                                                    "CargarConsumidosDeSeleccion",
+                                                                    "BTN_Consumir_Click",
+                                                                    "BTN_QuitarConsumo_Click"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "APPLICATION/Features/Ordenes/OrdenServicioService.cs",
+                                                    "methods":  [
+                                                                    "ListarConsumidos",
+                                                                    "ConsumirRepuesto",
+                                                                    "QuitarConsumo"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "INFRASTRUCTURE/Features/Reparaciones/ReparacionRepository.cs",
+                                                    "methods":  [
+                                                                    "ObtenerPorId",
+                                                                    "ListarConsumidos",
+                                                                    "ConsumirRepuesto",
+                                                                    "DevolverConsumo"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "INFRASTRUCTURE/Features/Repuestos/RepuestoRepository.cs",
+                                                    "methods":  [
+                                                                    "ObtenerPorId",
+                                                                    "Listar"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "INFRASTRUCTURE/Features/Ordenes/OrdenServicioRepository.cs",
+                                                    "methods":  [
+                                                                    "ObtenerPorId",
+                                                                    "TieneReingresosGarantia"
+                                                                ]
+                                                }
+                                            ],
+                          "evidenceLevel":  "source-inspection",
+                          "rendering":  "not-executed"
+                      },
+                      {
+                          "case":  "N09",
+                          "originalPath":  "diagrams/N/N09-gestionar-pruebas/N02-secuencia.puml",
+                          "baselineSha256":  "c9644c8b58794dcde6a8b53fa2acc96f1f5278383aabf7d7446ca7b4618c1679",
+                          "preSplit":  {
+                                           "sha256":  "634e0771243632821515eaf1100f40f50c18dc7e021fd8b6762a9a5afb0ab2d6",
+                                           "bytes":  10143,
+                                           "pages":  [
+                                                         {
+                                                             "number":  1,
+                                                             "title":  "N02-09 - Secuencia de Gestión de pruebas"
+                                                         },
+                                                         {
+                                                             "number":  2,
+                                                             "title":  "N02-09 - Registro y anulación de pruebas"
+                                                         },
+                                                         {
+                                                             "number":  3,
+                                                             "title":  "N02-09 - Finalización de pruebas"
+                                                         },
+                                                         {
+                                                             "number":  4,
+                                                             "title":  "N02-09 - Reapertura de pruebas"
+                                                         }
+                                                     ]
+                                       },
+                          "files":  [
+                                        {
+                                            "part":  1,
+                                            "path":  "diagrams/N/N09-gestionar-pruebas/N02-secuencia.puml",
+                                            "title":  "N02-09 - Secuencia de Gestión de pruebas",
+                                            "currentSha256":  "4d0050135e2d7f3d5320a493da5dfe776243403b3560b662572ca6ee6b1dd870",
+                                            "currentBytes":  1405,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "Detalle",
+                                                                 "OrdenServicioService",
+                                                                 "OrdenServicioRepository",
+                                                                 "ReparacionRepository"
+                                                             ]
+                                        },
+                                        {
+                                            "part":  2,
+                                            "path":  "diagrams/N/N09-gestionar-pruebas/N02-secuencia-02-registro-anulacion.puml",
+                                            "title":  "N02-09 - Registro y anulación de pruebas",
+                                            "currentSha256":  "db6a2ac4913103d00ca6ea156377c29d6f76b8fc4587ffd179e2b7b9c6b29c51",
+                                            "currentBytes":  4540,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "Detalle",
+                                                                 "OrdenServicioService",
+                                                                 "BitacoraService",
+                                                                 "OrdenServicioRepository",
+                                                                 "ReparacionRepository",
+                                                                 "BitacoraRepository"
+                                                             ]
+                                        },
+                                        {
+                                            "part":  3,
+                                            "path":  "diagrams/N/N09-gestionar-pruebas/N02-secuencia-03-fin-pruebas.puml",
+                                            "title":  "N02-09 - Finalización de pruebas",
+                                            "currentSha256":  "e8b2a0feca9342cb18a810d83391a3e0db4735cdf596466d8c20c7f6cba6999f",
+                                            "currentBytes":  2732,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "Detalle",
+                                                                 "OrdenServicioService",
+                                                                 "BitacoraService",
+                                                                 "OrdenServicioRepository",
+                                                                 "ReparacionRepository",
+                                                                 "BitacoraRepository"
+                                                             ]
+                                        },
+                                        {
+                                            "part":  4,
+                                            "path":  "diagrams/N/N09-gestionar-pruebas/N02-secuencia-04-reapertura-pruebas.puml",
+                                            "title":  "N02-09 - Reapertura de pruebas",
+                                            "currentSha256":  "3a2bac5addd1350bf2c52ffa46726ef7b02fe4dd93f11909221b707545302e5a",
+                                            "currentBytes":  2232,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "Detalle",
+                                                                 "OrdenServicioService",
+                                                                 "BitacoraService",
+                                                                 "OrdenServicioRepository",
+                                                                 "BitacoraRepository"
+                                                             ]
+                                        }
+                                    ],
+                          "sourceAnchors":  [
+                                                {
+                                                    "path":  "PRESENTATION/Forms/Ordenes/FrmOrdenServicioDetalle.cs",
+                                                    "methods":  [
+                                                                    "CargarTabPruebas",
+                                                                    "CargarPruebasDeCombo",
+                                                                    "BTN_RegistrarPrueba_Click",
+                                                                    "BTN_AnularPrueba_Click",
+                                                                    "BTN_FinalizarPruebas_Click",
+                                                                    "BTN_ReabrirPruebas_Click",
+                                                                    "EsIntervencionActual"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "APPLICATION/Features/Ordenes/OrdenServicioService.cs",
+                                                    "methods":  [
+                                                                    "ListarPruebas",
+                                                                    "RegistrarPrueba",
+                                                                    "AnularPrueba",
+                                                                    "FinalizarPruebas",
+                                                                    "ReabrirPruebas",
+                                                                    "ObtenerUltimaIntervencion"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "INFRASTRUCTURE/Features/Reparaciones/ReparacionRepository.cs",
+                                                    "methods":  [
+                                                                    "ObtenerPorId",
+                                                                    "ObtenerAbierta",
+                                                                    "ListarPorOrden",
+                                                                    "ListarPruebas",
+                                                                    "RegistrarPrueba",
+                                                                    "ObtenerPruebaPorId",
+                                                                    "AnularPrueba",
+                                                                    "FinalizarPruebas"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "INFRASTRUCTURE/Features/Ordenes/OrdenServicioRepository.cs",
+                                                    "methods":  [
+                                                                    "ObtenerPorId",
+                                                                    "TieneReingresosGarantia",
+                                                                    "ReabrirPruebasConTransicion"
+                                                                ]
+                                                }
+                                            ],
+                          "evidenceLevel":  "source-inspection",
+                          "rendering":  "not-executed"
+                      },
+                      {
+                          "case":  "N10",
+                          "originalPath":  "diagrams/N/N10-gestionar-entrega/N02-secuencia.puml",
+                          "baselineSha256":  "c68df0cb6e040807eaf8d9ae376d0b53249d2dffe3d309eeb8b8ac337b3ec335",
+                          "preSplit":  {
+                                           "sha256":  "81299445d7aa5dca653069ab791125c18b92a9b82eb380c139d8dea27a279a07",
+                                           "bytes":  6329,
+                                           "pages":  [
+                                                         {
+                                                             "number":  1,
+                                                             "title":  "N02-10 - Secuencia de Gestión de entrega"
+                                                         },
+                                                         {
+                                                             "number":  2,
+                                                             "title":  "N02-10 - Registro de entrega"
+                                                         },
+                                                         {
+                                                             "number":  3,
+                                                             "title":  "N02-10 - Cancelación de entrega"
+                                                         }
+                                                     ]
+                                       },
+                          "files":  [
+                                        {
+                                            "part":  1,
+                                            "path":  "diagrams/N/N10-gestionar-entrega/N02-secuencia.puml",
+                                            "title":  "N02-10 - Secuencia de Gestión de entrega",
+                                            "currentSha256":  "04acb9c9a04fc12eb37876dc97270b25582f1b1fe138606999ebecdac4f00c7f",
+                                            "currentBytes":  811,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "Detalle",
+                                                                 "OrdenServicioService",
+                                                                 "OrdenServicioRepository",
+                                                                 "EntregaRepository"
+                                                             ]
+                                        },
+                                        {
+                                            "part":  2,
+                                            "path":  "diagrams/N/N10-gestionar-entrega/N02-secuencia-02-registro-entrega.puml",
+                                            "title":  "N02-10 - Registro de entrega",
+                                            "currentSha256":  "d28d678f33b427c29abb1b89e1b48307f927b96d12365a3e855ab143eaca686a",
+                                            "currentBytes":  2257,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "Receptor",
+                                                                 "Detalle",
+                                                                 "OrdenServicioService",
+                                                                 "BitacoraService",
+                                                                 "OrdenServicioRepository",
+                                                                 "EntregaRepository",
+                                                                 "BitacoraRepository"
+                                                             ]
+                                        },
+                                        {
+                                            "part":  3,
+                                            "path":  "diagrams/N/N10-gestionar-entrega/N02-secuencia-03-cancelar-entrega.puml",
+                                            "title":  "N02-10 - Cancelación de entrega",
+                                            "currentSha256":  "a238d3349c5dbb4a3e74feb863a607b387aca4f857b484662fe50421cff77740",
+                                            "currentBytes":  3749,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "Detalle",
+                                                                 "OrdenServicioService",
+                                                                 "BitacoraService",
+                                                                 "OrdenServicioRepository",
+                                                                 "EntregaRepository",
+                                                                 "BitacoraRepository"
+                                                             ]
+                                        }
+                                    ],
+                          "sourceAnchors":  [
+                                                {
+                                                    "path":  "PRESENTATION/Forms/Ordenes/FrmOrdenServicioDetalle.cs",
+                                                    "methods":  [
+                                                                    "CargarTabEntrega",
+                                                                    "BTN_Entregar_Click",
+                                                                    "BTN_CancelarEntrega_Click"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "APPLICATION/Features/Ordenes/OrdenServicioService.cs",
+                                                    "methods":  [
+                                                                    "ObtenerEntrega",
+                                                                    "EntregarOrden",
+                                                                    "CancelarEntrega",
+                                                                    "EsSoloConsultaPorReingresos"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "INFRASTRUCTURE/Features/Ordenes/EntregaRepository.cs",
+                                                    "methods":  [
+                                                                    "ObtenerPorOrden",
+                                                                    "CrearConTransicion",
+                                                                    "CancelarEntregaConTransicion"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "INFRASTRUCTURE/Features/Ordenes/OrdenServicioRepository.cs",
+                                                    "methods":  [
+                                                                    "ObtenerPorId",
+                                                                    "TieneReingresosGarantia",
+                                                                    "ObtenerReingresoGarantiaAbierto"
+                                                                ]
+                                                }
+                                            ],
+                          "evidenceLevel":  "source-inspection",
+                          "rendering":  "not-executed"
+                      },
+                      {
+                          "case":  "N11",
+                          "originalPath":  "diagrams/N/N11-gestionar-garantias-y-reingresos/N02-secuencia.puml",
+                          "baselineSha256":  "74c560dd41f60e662898989271857c9ce8942ab6f36304cf5caf605d8b0e75d0",
+                          "preSplit":  {
+                                           "sha256":  "150a6d49813888b27a1ed0f76b536a0888a93ff840ff0e5b4c72a4e04b3ad44f",
+                                           "bytes":  14550,
+                                           "pages":  [
+                                                         {
+                                                             "number":  1,
+                                                             "title":  "N02-11 - Secuencia de Gestión de garantías y reingresos"
+                                                         },
+                                                         {
+                                                             "number":  2,
+                                                             "title":  "N02-11 - Creación de reingreso"
+                                                         },
+                                                         {
+                                                             "number":  3,
+                                                             "title":  "N02-11 - Evaluación pendiente del reingreso"
+                                                         },
+                                                         {
+                                                             "number":  4,
+                                                             "title":  "N02-11 - Decisión de garantía"
+                                                         }
+                                                     ]
+                                       },
+                          "files":  [
+                                        {
+                                            "part":  1,
+                                            "path":  "diagrams/N/N11-gestionar-garantias-y-reingresos/N02-secuencia.puml",
+                                            "title":  "N02-11 - Secuencia de Gestión de garantías y reingresos",
+                                            "currentSha256":  "31185c59cd021a416dbc8081cfad91e49f7ad48a57cd8e106c71077d51d21ff3",
+                                            "currentBytes":  2223,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "Lista",
+                                                                 "OrdenServicioService",
+                                                                 "ClienteService",
+                                                                 "EquipoService",
+                                                                 "GarantiaService",
+                                                                 "OrdenServicioRepository",
+                                                                 "ClienteRepository",
+                                                                 "EquipoRepository",
+                                                                 "GarantiaRepository"
+                                                             ]
+                                        },
+                                        {
+                                            "part":  2,
+                                            "path":  "diagrams/N/N11-gestionar-garantias-y-reingresos/N02-secuencia-02-crear-reingreso.puml",
+                                            "title":  "N02-11 - Creación de reingreso",
+                                            "currentSha256":  "a390d4338c2c2cbcafbc16d9b1b10a668122d80bbafcd7817bec2c772a82af58",
+                                            "currentBytes":  3883,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "Detalle",
+                                                                 "OrdenServicioService",
+                                                                 "GarantiaService",
+                                                                 "BitacoraService",
+                                                                 "OrdenServicioRepository",
+                                                                 "ClienteRepository",
+                                                                 "EquipoRepository",
+                                                                 "GarantiaRepository",
+                                                                 "BitacoraRepository"
+                                                             ]
+                                        },
+                                        {
+                                            "part":  3,
+                                            "path":  "diagrams/N/N11-gestionar-garantias-y-reingresos/N02-secuencia-03-eval-pendiente.puml",
+                                            "title":  "N02-11 - Evaluación pendiente del reingreso",
+                                            "currentSha256":  "01097c03e9f1d2a1d051837c6a80d7658522f4f55d22079dbb62348cb4121faf",
+                                            "currentBytes":  3881,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "Detalle",
+                                                                 "OrdenServicioService",
+                                                                 "BitacoraService",
+                                                                 "OrdenServicioRepository",
+                                                                 "GarantiaRepository",
+                                                                 "EvaluacionGarantiaRepository",
+                                                                 "DiagnosticoRepository",
+                                                                 "BitacoraRepository"
+                                                             ]
+                                        },
+                                        {
+                                            "part":  4,
+                                            "path":  "diagrams/N/N11-gestionar-garantias-y-reingresos/N02-secuencia-04-decision-garantia.puml",
+                                            "title":  "N02-11 - Decisión de garantía",
+                                            "currentSha256":  "c3cf0c7dfe9836200696b41d6c1a662d3d7730b5fe2fad21b4c2fe13914f1eb8",
+                                            "currentBytes":  5434,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "Detalle",
+                                                                 "OrdenServicioService",
+                                                                 "BitacoraService",
+                                                                 "OrdenServicioRepository",
+                                                                 "GarantiaRepository",
+                                                                 "EvaluacionGarantiaRepository",
+                                                                 "BitacoraRepository"
+                                                             ]
+                                        }
+                                    ],
+                          "sourceAnchors":  [
+                                                {
+                                                    "path":  "PRESENTATION/Forms/Garantias/FrmGarantias.cs",
+                                                    "methods":  [
+                                                                    "FrmGarantias_Load",
+                                                                    "CargarCatalogos",
+                                                                    "CargarGarantias",
+                                                                    "ResolverCliente",
+                                                                    "ResolverEquipo"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "PRESENTATION/Forms/Ordenes/FrmOrdenServicioDetalle.cs",
+                                                    "methods":  [
+                                                                    "CargarTabGarantia",
+                                                                    "CargarReingresosGarantia",
+                                                                    "BTN_CrearReingreso_Click",
+                                                                    "BTN_AceptarGarantia_Click",
+                                                                    "BTN_RechazarGarantia_Click",
+                                                                    "PedirDestinoRechazo",
+                                                                    "BTN_Finalizar_Click"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "APPLICATION/Features/Ordenes/OrdenServicioService.cs",
+                                                    "methods":  [
+                                                                    "Listar",
+                                                                    "ListarReingresosGarantia",
+                                                                    "ObtenerReingresoGarantiaAbierto",
+                                                                    "CrearReingresoGarantia",
+                                                                    "EvaluarReingreso",
+                                                                    "FinalizarDiagnostico",
+                                                                    "RegistrarEvaluacionPendienteReingreso"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "APPLICATION/Features/Garantias/GarantiaService.cs",
+                                                    "methods":  [
+                                                                    "ObtenerPorOrden",
+                                                                    "ObtenerVigente",
+                                                                    "ObtenerEvaluacionPorReingreso"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "INFRASTRUCTURE/Features/Garantias/GarantiaRepository.cs",
+                                                    "methods":  [
+                                                                    "ObtenerPorOrden",
+                                                                    "ObtenerVigente"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "INFRASTRUCTURE/Features/Garantias/EvaluacionGarantiaRepository.cs",
+                                                    "methods":  [
+                                                                    "ObtenerPorReingreso",
+                                                                    "Crear",
+                                                                    "Evaluar"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "INFRASTRUCTURE/Features/Ordenes/OrdenServicioRepository.cs",
+                                                    "methods":  [
+                                                                    "ObtenerPorId",
+                                                                    "Listar",
+                                                                    "ListarReingresosGarantia",
+                                                                    "ObtenerReingresoGarantiaAbierto",
+                                                                    "CrearConHistorial",
+                                                                    "CambiarEstadoConHistorial",
+                                                                    "TieneReingresosGarantia"
+                                                                ]
+                                                }
+                                            ],
+                          "evidenceLevel":  "source-inspection",
+                          "rendering":  "not-executed"
+                      },
+                      {
+                          "case":  "N12",
+                          "originalPath":  "diagrams/N/N12-gestionar-repuestos-e-inventario/N02-secuencia.puml",
+                          "baselineSha256":  "382a6801875112f11a4942a5d06d8ee32741f8e5e5e8320657a16675942a94e1",
+                          "preSplit":  {
+                                           "sha256":  "79a17796cc8444aa45309ebca185b01fb0a9a40edb40f6933d8ab6bfe065bd8a",
+                                           "bytes":  8704,
+                                           "pages":  [
+                                                         {
+                                                             "number":  1,
+                                                             "title":  "N02-12 - Secuencia de Gestión de repuestos e inventario"
+                                                         },
+                                                         {
+                                                             "number":  2,
+                                                             "title":  "N02-12 - Escrituras del maestro"
+                                                         },
+                                                         {
+                                                             "number":  3,
+                                                             "title":  "N02-12 - Desactivación, reactivación y ajuste"
+                                                         },
+                                                         {
+                                                             "number":  4,
+                                                             "title":  "N02-12 - Consulta de movimientos"
+                                                         }
+                                                     ]
+                                       },
+                          "files":  [
+                                        {
+                                            "part":  1,
+                                            "path":  "diagrams/N/N12-gestionar-repuestos-e-inventario/N02-secuencia.puml",
+                                            "title":  "N02-12 - Secuencia de Gestión de repuestos e inventario",
+                                            "currentSha256":  "aa7cb20a48b99efeb495963ba675f516ffb2c8dc566e0370b050ae42210ea3d0",
+                                            "currentBytes":  1051,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "Maestro",
+                                                                 "Editor",
+                                                                 "RepuestoService",
+                                                                 "RepuestoRepository"
+                                                             ]
+                                        },
+                                        {
+                                            "part":  2,
+                                            "path":  "diagrams/N/N12-gestionar-repuestos-e-inventario/N02-secuencia-02-escrituras-maestro.puml",
+                                            "title":  "N02-12 - Escrituras del maestro",
+                                            "currentSha256":  "6384ab87d43b99e4e81b57d9352d0a0eae6d091898922e3d3da745cd72718fe7",
+                                            "currentBytes":  2341,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "Maestro",
+                                                                 "RepuestoService",
+                                                                 "BitacoraService",
+                                                                 "RepuestoRepository",
+                                                                 "BitacoraRepository"
+                                                             ]
+                                        },
+                                        {
+                                            "part":  3,
+                                            "path":  "diagrams/N/N12-gestionar-repuestos-e-inventario/N02-secuencia-03-estado-ajuste.puml",
+                                            "title":  "N02-12 - Desactivación, reactivación y ajuste",
+                                            "currentSha256":  "3c3377ef6c8fd94e1c053656e5aee04177d34d30cd1b0b9280f1234b0b532a13",
+                                            "currentBytes":  4224,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "Maestro",
+                                                                 "Ajuste",
+                                                                 "RepuestoService",
+                                                                 "BitacoraService",
+                                                                 "RepuestoRepository",
+                                                                 "BitacoraRepository"
+                                                             ]
+                                        },
+                                        {
+                                            "part":  4,
+                                            "path":  "diagrams/N/N12-gestionar-repuestos-e-inventario/N02-secuencia-04-movimientos.puml",
+                                            "title":  "N02-12 - Consulta de movimientos",
+                                            "currentSha256":  "24386e209375f97783f6f2433eab3e8de8c7c2474632ffff379125dd71ad8d68",
+                                            "currentBytes":  1641,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "Consulta",
+                                                                 "RepuestoService",
+                                                                 "UsuarioService",
+                                                                 "RepuestoRepository",
+                                                                 "MovimientoStockRepository",
+                                                                 "UsuarioRepository"
+                                                             ]
+                                        }
+                                    ],
+                          "sourceAnchors":  [
+                                                {
+                                                    "path":  "PRESENTATION/Forms/Repuestos/FrmRepuestos.cs",
+                                                    "methods":  [
+                                                                    "FrmRepuestos_Load",
+                                                                    "CargarRepuestos",
+                                                                    "AplicarFiltro",
+                                                                    "BTN_Crear_Click",
+                                                                    "BTN_Editar_Click",
+                                                                    "BTN_Desactivar_Click",
+                                                                    "BTN_Reactivar_Click",
+                                                                    "BTN_Ajustar_Click",
+                                                                    "BTN_Movimientos_Click"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "PRESENTATION/Forms/Repuestos/FrmRepuestoEditar.cs",
+                                                    "methods":  [
+                                                                    "FrmRepuestoEditar_Load",
+                                                                    "OnFormClosing"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "PRESENTATION/Forms/Repuestos/FrmAjusteStock.cs",
+                                                    "methods":  [
+                                                                    "OnFormClosing"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "PRESENTATION/Forms/Repuestos/FrmMovimientosStock.cs",
+                                                    "methods":  [
+                                                                    "FrmMovimientosStock_Load",
+                                                                    "CargarNombresUsuarios",
+                                                                    "CargarCombos",
+                                                                    "CargarMovimientos",
+                                                                    "BTN_Buscar_Click"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "APPLICATION/Features/Repuestos/RepuestoService.cs",
+                                                    "methods":  [
+                                                                    "Crear",
+                                                                    "Modificar",
+                                                                    "AjustarStock",
+                                                                    "Desactivar",
+                                                                    "Reactivar",
+                                                                    "Listar",
+                                                                    "ListarMovimientosFiltros"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "INFRASTRUCTURE/Features/Repuestos/RepuestoRepository.cs",
+                                                    "methods":  [
+                                                                    "Crear",
+                                                                    "Modificar",
+                                                                    "AjustarStock",
+                                                                    "Desactivar",
+                                                                    "Reactivar",
+                                                                    "Listar",
+                                                                    "ObtenerPorId"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "INFRASTRUCTURE/Features/Repuestos/MovimientoStockRepository.cs",
+                                                    "methods":  [
+                                                                    "ListarFiltros"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "APPLICATION/Features/Usuarios/UsuarioService.cs",
+                                                    "methods":  [
+                                                                    "Listar"
+                                                                ]
+                                                }
+                                            ],
+                          "evidenceLevel":  "source-inspection",
+                          "rendering":  "not-executed"
+                      },
+                      {
+                          "case":  "N13",
+                          "originalPath":  "diagrams/N/N13-gestionar-proveedores/N02-secuencia.puml",
+                          "baselineSha256":  "e0160be26db8e3222d112fae2f1469ae6f5f1a309dce45851e0f1c2960c82b3f",
+                          "preSplit":  {
+                                           "sha256":  "9e7d2e82024b4263a4248d2c132d2e6788f7dd2916e0e8b79421a471ac6779ad",
+                                           "bytes":  5644,
+                                           "pages":  [
+                                                         {
+                                                             "number":  1,
+                                                             "title":  "N02-13 - Secuencia de Gestión de proveedores"
+                                                         },
+                                                         {
+                                                             "number":  2,
+                                                             "title":  "N02-13 - Escrituras, cambios de estado y recarga"
+                                                         }
+                                                     ]
+                                       },
+                          "files":  [
+                                        {
+                                            "part":  1,
+                                            "path":  "diagrams/N/N13-gestionar-proveedores/N02-secuencia.puml",
+                                            "title":  "N02-13 - Secuencia de Gestión de proveedores",
+                                            "currentSha256":  "5451e9d05cabca937396406999869c1f1ce3c6212e4b5f0ef00a0dffcbfc906a",
+                                            "currentBytes":  1157,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "Lista",
+                                                                 "Editor",
+                                                                 "ProveedorService",
+                                                                 "ProveedorRepository"
+                                                             ]
+                                        },
+                                        {
+                                            "part":  2,
+                                            "path":  "diagrams/N/N13-gestionar-proveedores/N02-secuencia-02-escrituras-recarga.puml",
+                                            "title":  "N02-13 - Escrituras, cambios de estado y recarga",
+                                            "currentSha256":  "9c44f4db5840d51e743f1454ab86a00f2c0b5034d221dc7889a4124ac512d842",
+                                            "currentBytes":  4658,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "Lista",
+                                                                 "ProveedorService",
+                                                                 "BitacoraService",
+                                                                 "ProveedorRepository",
+                                                                 "BitacoraRepository"
+                                                             ]
+                                        }
+                                    ],
+                          "sourceAnchors":  [
+                                                {
+                                                    "path":  "PRESENTATION/Forms/Proveedores/FrmProveedores.cs",
+                                                    "methods":  [
+                                                                    "FrmProveedores_Load",
+                                                                    "CargarProveedores",
+                                                                    "AplicarFiltro",
+                                                                    "BTN_Crear_Click",
+                                                                    "BTN_Editar_Click",
+                                                                    "BTN_Desactivar_Click",
+                                                                    "BTN_Reactivar_Click"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "PRESENTATION/Forms/Proveedores/FrmProveedorEditar.cs",
+                                                    "methods":  [
+                                                                    "OnFormClosing"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "APPLICATION/Features/Proveedores/ProveedorService.cs",
+                                                    "methods":  [
+                                                                    "Listar",
+                                                                    "Crear",
+                                                                    "Modificar",
+                                                                    "Desactivar",
+                                                                    "Reactivar",
+                                                                    "ObtenerPorId"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "INFRASTRUCTURE/Features/Proveedores/ProveedorRepository.cs",
+                                                    "methods":  [
+                                                                    "Listar",
+                                                                    "Agregar",
+                                                                    "Modificar",
+                                                                    "ObtenerPorId",
+                                                                    "Desactivar",
+                                                                    "Reactivar"
+                                                                ]
+                                                }
+                                            ],
+                          "evidenceLevel":  "source-inspection",
+                          "rendering":  "not-executed"
+                      },
+                      {
+                          "case":  "N14",
+                          "originalPath":  "diagrams/N/N14-gestionar-compras/N02-secuencia.puml",
+                          "baselineSha256":  "9eebc7f41ce842061fb45fbdada04e55f868750af52fc55213e5b11f58a151a0",
+                          "preSplit":  {
+                                           "sha256":  "173def65713d3e78ca5794545db89a236a48bd02f113c9b41dacd726793d3bac",
+                                           "bytes":  11554,
+                                           "pages":  [
+                                                         {
+                                                             "number":  1,
+                                                             "title":  "N02-14 - Secuencia de Gestión de compras"
+                                                         },
+                                                         {
+                                                             "number":  2,
+                                                             "title":  "N02-14 - Borrador y renglones"
+                                                         },
+                                                         {
+                                                             "number":  3,
+                                                             "title":  "N02-14 - Confirmación con stock"
+                                                         },
+                                                         {
+                                                             "number":  4,
+                                                             "title":  "N02-14 - Cancelación de borrador"
+                                                         },
+                                                         {
+                                                             "number":  5,
+                                                             "title":  "N02-14 - Anulación de compra confirmada"
+                                                         }
+                                                     ]
+                                       },
+                          "files":  [
+                                        {
+                                            "part":  1,
+                                            "path":  "diagrams/N/N14-gestionar-compras/N02-secuencia.puml",
+                                            "title":  "N02-14 - Secuencia de Gestión de compras",
+                                            "currentSha256":  "01325ab9e9ba15ad1006b80e78f80109e6bcfca9c2f52812da01cdd953f37a27",
+                                            "currentBytes":  2343,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "Lista",
+                                                                 "Detalle",
+                                                                 "CompraService",
+                                                                 "ProveedorService",
+                                                                 "RepuestoService",
+                                                                 "CompraRepository",
+                                                                 "ProveedorRepository",
+                                                                 "RepuestoRepository"
+                                                             ]
+                                        },
+                                        {
+                                            "part":  2,
+                                            "path":  "diagrams/N/N14-gestionar-compras/N02-secuencia-02-borrador-renglones.puml",
+                                            "title":  "N02-14 - Borrador y renglones",
+                                            "currentSha256":  "3b7078b76a0b3a7b712973887170434448985d63177f78671a81addcae358d65",
+                                            "currentBytes":  4255,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "Detalle",
+                                                                 "CompraService",
+                                                                 "BitacoraService",
+                                                                 "CompraRepository",
+                                                                 "ProveedorRepository",
+                                                                 "RepuestoRepository",
+                                                                 "BitacoraRepository"
+                                                             ]
+                                        },
+                                        {
+                                            "part":  3,
+                                            "path":  "diagrams/N/N14-gestionar-compras/N02-secuencia-03-confirmacion-stock.puml",
+                                            "title":  "N02-14 - Confirmación con stock",
+                                            "currentSha256":  "65946c8f6bb407f62c5d94f66e963d7b967f611e8e575c33f02c55e0be912215",
+                                            "currentBytes":  2510,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "Detalle",
+                                                                 "CompraService",
+                                                                 "BitacoraService",
+                                                                 "CompraRepository",
+                                                                 "ProveedorRepository",
+                                                                 "RepuestoRepository",
+                                                                 "BitacoraRepository"
+                                                             ]
+                                        },
+                                        {
+                                            "part":  4,
+                                            "path":  "diagrams/N/N14-gestionar-compras/N02-secuencia-04-cancelar-borrador.puml",
+                                            "title":  "N02-14 - Cancelación de borrador",
+                                            "currentSha256":  "3091d458c9d811ac7b95d1867dfe5c1cc6cfb365bbeb3e71a55a123d6e991994",
+                                            "currentBytes":  1500,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "Detalle",
+                                                                 "CompraService",
+                                                                 "BitacoraService",
+                                                                 "CompraRepository",
+                                                                 "BitacoraRepository"
+                                                             ]
+                                        },
+                                        {
+                                            "part":  5,
+                                            "path":  "diagrams/N/N14-gestionar-compras/N02-secuencia-05-anular-confirmada.puml",
+                                            "title":  "N02-14 - Anulación de compra confirmada",
+                                            "currentSha256":  "9cbb6b999fbb7222f30f36f11e42ee9d0c352c7ee19cdd430ecb93c80d0a5569",
+                                            "currentBytes":  1936,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "Detalle",
+                                                                 "CompraService",
+                                                                 "BitacoraService",
+                                                                 "CompraRepository",
+                                                                 "BitacoraRepository"
+                                                             ]
+                                        }
+                                    ],
+                          "sourceAnchors":  [
+                                                {
+                                                    "path":  "PRESENTATION/Forms/Compras/FrmCompras.cs",
+                                                    "methods":  [
+                                                                    "FrmCompras_Load",
+                                                                    "CargarProveedores",
+                                                                    "CargarCompras",
+                                                                    "AplicarFiltro",
+                                                                    "BTN_Crear_Click",
+                                                                    "BTN_Detalle_Click",
+                                                                    "BTN_Confirmar_Click",
+                                                                    "BTN_Cancelar_Click",
+                                                                    "BTN_Anular_Click"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "PRESENTATION/Forms/Compras/FrmCompraDetalle.cs",
+                                                    "methods":  [
+                                                                    "FrmCompraDetalle_Load",
+                                                                    "CargarCatalogos",
+                                                                    "CargarCompra",
+                                                                    "CargarModoNuevo",
+                                                                    "BTN_AgregarItem_Click",
+                                                                    "BTN_QuitarItem_Click",
+                                                                    "BTN_GuardarBorrador_Click",
+                                                                    "BTN_Confirmar_Click",
+                                                                    "BTN_CancelarCompra_Click",
+                                                                    "BTN_AnularCompra_Click"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "APPLICATION/Features/Compras/CompraService.cs",
+                                                    "methods":  [
+                                                                    "Listar",
+                                                                    "ObtenerPorId",
+                                                                    "ListarDetalle",
+                                                                    "CrearBorrador",
+                                                                    "AgregarItem",
+                                                                    "QuitarItem",
+                                                                    "Confirmar",
+                                                                    "Cancelar",
+                                                                    "Anular",
+                                                                    "ValidarItems"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "INFRASTRUCTURE/Features/Compras/CompraRepository.cs",
+                                                    "methods":  [
+                                                                    "Listar",
+                                                                    "ObtenerPorId",
+                                                                    "ListarDetalle",
+                                                                    "CrearBorradorConDetalle",
+                                                                    "AgregarItem",
+                                                                    "QuitarItem",
+                                                                    "ConfirmarConStock",
+                                                                    "CancelarBorrador",
+                                                                    "AnularConfirmadaConStock"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "INFRASTRUCTURE/Features/Proveedores/ProveedorRepository.cs",
+                                                    "methods":  [
+                                                                    "ObtenerPorId",
+                                                                    "Listar"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "INFRASTRUCTURE/Features/Repuestos/RepuestoRepository.cs",
+                                                    "methods":  [
+                                                                    "ObtenerPorId",
+                                                                    "Listar"
+                                                                ]
+                                                }
+                                            ],
+                          "evidenceLevel":  "source-inspection",
+                          "rendering":  "not-executed"
+                      },
+                      {
+                          "case":  "N15",
+                          "originalPath":  "diagrams/N/N15-gestionar-bitacora-e-historial/N02-secuencia.puml",
+                          "baselineSha256":  "ca320a61c12b188595a320696c38829945de7feeb118ba11ae30a61c23b8920a",
+                          "preSplit":  {
+                                           "sha256":  "9d81b5df1e0094e098e5a8ef8cf5b428d238fe8722d73c8db54847c50e5eed96",
+                                           "bytes":  2324,
+                                           "pages":  [
+                                                         {
+                                                             "number":  1,
+                                                             "title":  "N02-15 - Secuencia de Gestión de bitácora e historial"
+                                                         },
+                                                         {
+                                                             "number":  2,
+                                                             "title":  "N02-15 - Historial de la orden"
+                                                         }
+                                                     ]
+                                       },
+                          "files":  [
+                                        {
+                                            "part":  1,
+                                            "path":  "diagrams/N/N15-gestionar-bitacora-e-historial/N02-secuencia.puml",
+                                            "title":  "N02-15 - Secuencia de Gestión de bitácora e historial",
+                                            "currentSha256":  "1f0529f1f1358c5bdd40270cb9465e8e3a4a5ab861b02183e313be8155c7b16f",
+                                            "currentBytes":  1543,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "PantallaBitacora",
+                                                                 "BitacoraService",
+                                                                 "BitacoraRepository"
+                                                             ]
+                                        },
+                                        {
+                                            "part":  2,
+                                            "path":  "diagrams/N/N15-gestionar-bitacora-e-historial/N02-secuencia-02-historial-orden.puml",
+                                            "title":  "N02-15 - Historial de la orden",
+                                            "currentSha256":  "34d6b2dd311b9ceb0650f1ee122c66f5a59928cbd8f8c074ad6b8ee8f189a239",
+                                            "currentBytes":  851,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "DetalleOrden",
+                                                                 "OrdenServicioService",
+                                                                 "HistorialEstadoOrdenRepository"
+                                                             ]
+                                        }
+                                    ],
+                          "sourceAnchors":  [
+                                                {
+                                                    "path":  "PRESENTATION/Forms/Bitacora/FrmBitacora.cs",
+                                                    "methods":  [
+                                                                    "FrmBitacora_Load",
+                                                                    "CargarTiposActividad",
+                                                                    "CargarBitacora",
+                                                                    "BTN_Buscar_Click"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "PRESENTATION/Forms/Ordenes/FrmOrdenServicioDetalle.cs",
+                                                    "methods":  [
+                                                                    "CargarTabHistorial",
+                                                                    "CargarOrden"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "APPLICATION/Features/Bitacora/BitacoraService.cs",
+                                                    "methods":  [
+                                                                    "ObtenerTiposActividad",
+                                                                    "Buscar"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "INFRASTRUCTURE/Features/Bitacora/BitacoraRepository.cs",
+                                                    "methods":  [
+                                                                    "Buscar"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "APPLICATION/Features/Ordenes/OrdenServicioService.cs",
+                                                    "methods":  [
+                                                                    "ListarHistorial"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "INFRASTRUCTURE/Features/Ordenes/HistorialEstadoOrdenRepository.cs",
+                                                    "methods":  [
+                                                                    "ListarPorOrden"
+                                                                ]
+                                                }
+                                            ],
+                          "evidenceLevel":  "source-inspection",
+                          "rendering":  "not-executed"
+                      },
+                      {
+                          "case":  "N16",
+                          "originalPath":  "diagrams/N/N16-consultar-dashboard-y-reportes/N02-secuencia.puml",
+                          "baselineSha256":  "0a667c538eb6fa9e1e976750c0830c06caf21b13cb7a7380e9d1f9091d02ae9f",
+                          "preSplit":  {
+                                           "sha256":  "472d8770ddf3d4284231f47ab79e548d7fedb154980c972453e37bb0881c1e04",
+                                           "bytes":  7564,
+                                           "pages":  [
+                                                         {
+                                                             "number":  1,
+                                                             "title":  "N02-16 - Secuencia de Consulta de dashboard y reportes"
+                                                         },
+                                                         {
+                                                             "number":  2,
+                                                             "title":  "N02-16 - Reportes tabulares"
+                                                         },
+                                                         {
+                                                             "number":  3,
+                                                             "title":  "N02-16 - Tasas de aprobación y aceptación"
+                                                         },
+                                                         {
+                                                             "number":  4,
+                                                             "title":  "N02-16 - Escalares"
+                                                         }
+                                                     ]
+                                       },
+                          "files":  [
+                                        {
+                                            "part":  1,
+                                            "path":  "diagrams/N/N16-consultar-dashboard-y-reportes/N02-secuencia.puml",
+                                            "title":  "N02-16 - Secuencia de Consulta de dashboard y reportes",
+                                            "currentSha256":  "c9e3bc481be01f3f5cafff5f498dc319fafc0985c8416a2eb66f2ed0be9fd7e6",
+                                            "currentBytes":  1000,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "Dashboard",
+                                                                 "ReporteService",
+                                                                 "ReporteRepository"
+                                                             ]
+                                        },
+                                        {
+                                            "part":  2,
+                                            "path":  "diagrams/N/N16-consultar-dashboard-y-reportes/N02-secuencia-02-reportes-tabulares.puml",
+                                            "title":  "N02-16 - Reportes tabulares",
+                                            "currentSha256":  "b08b5d97a445b8cd8ff2a309d338df7af5758aebd6810661e6639684a562b148",
+                                            "currentBytes":  3218,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "Reportes",
+                                                                 "ReporteService",
+                                                                 "ReporteRepository"
+                                                             ]
+                                        },
+                                        {
+                                            "part":  3,
+                                            "path":  "diagrams/N/N16-consultar-dashboard-y-reportes/N02-secuencia-03-tasas-aprob-acept.puml",
+                                            "title":  "N02-16 - Tasas de aprobación y aceptación",
+                                            "currentSha256":  "df19ef793bdefbebfeb83b84f1dba800090b083978a47dbc6d39a46c48b8900c",
+                                            "currentBytes":  1997,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "Reportes",
+                                                                 "ReporteService",
+                                                                 "ReporteRepository"
+                                                             ]
+                                        },
+                                        {
+                                            "part":  4,
+                                            "path":  "diagrams/N/N16-consultar-dashboard-y-reportes/N02-secuencia-04-escalares.puml",
+                                            "title":  "N02-16 - Escalares",
+                                            "currentSha256":  "d31f6377bc330a252141fd21993cbe5f490fd6ea4a25ae1b5d33cd76427dc235",
+                                            "currentBytes":  1864,
+                                            "participants":  [
+                                                                 "Operador",
+                                                                 "Reportes",
+                                                                 "ReporteService",
+                                                                 "ReporteRepository"
+                                                             ]
+                                        }
+                                    ],
+                          "sourceAnchors":  [
+                                                {
+                                                    "path":  "PRESENTATION/Forms/Dashboard/FrmDashboard.cs",
+                                                    "methods":  [
+                                                                    "FrmDashboard_Load",
+                                                                    "CargarResumen",
+                                                                    "BTN_Actualizar_Click"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "PRESENTATION/Forms/Reportes/FrmReportes.cs",
+                                                    "methods":  [
+                                                                    "FrmReportes_Load",
+                                                                    "CargarComboTipos",
+                                                                    "EjecutarReporte",
+                                                                    "BTN_Buscar_Click"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "APPLICATION/Features/Reportes/ReporteService.cs",
+                                                    "methods":  [
+                                                                    "DashboardResumen",
+                                                                    "ContarOrdenesPorEstado",
+                                                                    "ContarOrdenesPorResultado",
+                                                                    "ReparacionesPorTecnico",
+                                                                    "TiempoPromedioIngresoEntrega",
+                                                                    "ContarPresupuestosPorEstado",
+                                                                    "TasaAprobacionPresupuestos",
+                                                                    "RepuestosMasUtilizados",
+                                                                    "ComprasPorProveedor",
+                                                                    "ContarReingresosGarantia",
+                                                                    "EvaluacionesPorEstado",
+                                                                    "TasaAceptacionGarantia",
+                                                                    "MontoPresupuestosAprobados",
+                                                                    "ValidarRango"
+                                                                ]
+                                                },
+                                                {
+                                                    "path":  "INFRASTRUCTURE/Features/Reportes/ReporteRepository.cs",
+                                                    "methods":  [
+                                                                    "DashboardResumen",
+                                                                    "ContarOrdenesPorEstado",
+                                                                    "ContarOrdenesPorResultado",
+                                                                    "ReparacionesPorTecnico",
+                                                                    "TiempoPromedioIngresoEntrega",
+                                                                    "ContarPresupuestosPorEstado",
+                                                                    "RepuestosMasUtilizados",
+                                                                    "ComprasPorProveedor",
+                                                                    "ContarReingresosGarantia",
+                                                                    "EvaluacionesPorEstado",
+                                                                    "MontoPresupuestosAprobados"
+                                                                ]
+                                                }
+                                            ],
+                          "evidenceLevel":  "source-inspection",
+                          "rendering":  "not-executed"
+                      }
+                  ]
+}

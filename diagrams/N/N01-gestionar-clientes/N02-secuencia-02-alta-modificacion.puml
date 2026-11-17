@@ -1,0 +1,77 @@
+@startuml
+title N02-01 - Alta y modificación de clientes
+autonumber
+hide footbox
+actor "Recepcionista o encargado" as Operador
+boundary FrmClientes as Pantalla
+boundary FrmClienteEditar as Dialogo
+control ClienteService as Servicio
+participant ClienteRepository as Repositorio
+control BitacoraService as Auditoria
+participant BitacoraRepository as Bitacora
+group Alta
+    Operador -> Pantalla : Crear
+    Pantalla -> Pantalla : Verificar permiso ClientesCrear
+    Pantalla -> Dialogo : Abrir formulario nuevo
+    Operador -> Dialogo : Completar y aceptar
+    Dialogo -> Dialogo : Validar campos obligatorios
+    Dialogo --> Pantalla : Datos aceptados
+    Pantalla -> Servicio : Crear(nombre, apellido, documento, telefono, email, direccion, observaciones)
+    Servicio -> Servicio : Cliente.CrearNuevo(...)
+    Servicio -> Repositorio : ObtenerConflictoDocumento(documento)
+    Repositorio --> Servicio : Cliente o null
+    alt Documento libre
+        Servicio -> Repositorio : Agregar(cliente)
+        Repositorio --> Servicio : Cliente
+        Servicio -> Auditoria : Registrar("Creacion de cliente", detalle, "CLIENTES")
+        Auditoria -> Bitacora : Insertar(entrada)
+        Bitacora --> Auditoria : Finalización sin excepción (void)
+        Auditoria --> Servicio : Finalización sin excepción (void)
+        Servicio --> Pantalla : Cliente
+        Pantalla -> Servicio : Listar(incluirInactivos)
+        Servicio -> Repositorio : Listar(incluirInactivos)
+        Repositorio --> Servicio : List<Cliente>
+        Servicio --> Pantalla : List<Cliente>
+        Pantalla --> Operador : Confirmar alta
+    else Documento ocupado
+        Servicio --> Pantalla : ClienteDocumentoDuplicadoException
+        Pantalla --> Operador : Informar propietario del documento
+    end
+end
+group Modificación
+    Operador -> Pantalla : Editar
+    Pantalla -> Pantalla : Verificar permiso ClientesEditar
+    Pantalla -> Dialogo : Abrir con cliente seleccionado
+    Operador -> Dialogo : Modificar y aceptar
+    Dialogo -> Dialogo : Validar campos obligatorios
+    Dialogo --> Pantalla : Datos aceptados
+    Pantalla -> Servicio : Modificar(id, nombre, apellido, documento, telefono, email, direccion, observaciones)
+    Servicio -> Repositorio : ObtenerPorId(id)
+    Repositorio --> Servicio : Cliente o null
+    alt Cliente existente
+        Servicio -> Repositorio : ObtenerConflictoDocumento(documento, id)
+        Repositorio --> Servicio : Cliente o null
+        alt Documento propio o libre
+            Servicio -> Servicio : Cliente.CargarDesdeDB(...)
+            Servicio -> Repositorio : Modificar(clienteActualizado)
+            Repositorio --> Servicio : Finalización sin excepción (void)
+            Servicio -> Auditoria : Registrar("Modificacion de cliente", detalle, "CLIENTES")
+            Auditoria -> Bitacora : Insertar(entrada)
+            Bitacora --> Auditoria : Finalización sin excepción (void)
+            Auditoria --> Servicio : Finalización sin excepción (void)
+            Servicio --> Pantalla : Cliente
+            Pantalla -> Servicio : Listar(incluirInactivos)
+            Servicio -> Repositorio : Listar(incluirInactivos)
+            Repositorio --> Servicio : List<Cliente>
+            Servicio --> Pantalla : List<Cliente>
+            Pantalla --> Operador : Confirmar modificación
+        else Documento de otro cliente
+            Servicio --> Pantalla : ClienteDocumentoDuplicadoException
+            Pantalla --> Operador : Informar propietario del documento
+        end
+    else Cliente inexistente
+        Servicio --> Pantalla : ReglaNegocioException
+        Pantalla --> Operador : Informar error
+    end
+end
+@enduml

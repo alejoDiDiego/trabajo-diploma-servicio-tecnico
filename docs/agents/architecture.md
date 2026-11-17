@@ -92,3 +92,11 @@ targeted fix. Adding EF, a container, repository interfaces, new architecture la
 or a new .NET target is a separate design decision requiring approval.
 Current project references contain no installed Krypton dependency; do not claim one exists.
 Continue with [business flows](business-flows.md) before touching transition code.
+
+## Full database backup / restore (feat-018; independent acceptance pending)
+
+[FrmAdministrarBackups](../../PRESENTATION/Forms/Backups/FrmAdministrarBackups.cs) is an owner-modal two-button dialog from Usuario. It calls [BackupService](../../APPLICATION/Features/Backups/BackupService.cs), which constructs concrete [BackupRepository](../../INFRASTRUCTURE/Features/Backups/BackupRepository.cs) and [BackupArchivoTransferencia](../../INFRASTRUCTURE/Features/Backups/BackupArchivoTransferencia.cs). The form has no SQL/repository calls. Services recheck dedicated effective permissions after file dialogs and before publication/cutover; a process-wide semaphore prevents overlapping backup operations. ADO.NET async master connections disable pooling/enlistment; RESTORE does not use SqlHelper's transaction wrapper. File/process work is asynchronous, with no shell or SQL credentials passed to Docker. Existing .NET Framework 4.7.2/layers/packages are unchanged.
+
+## Local contextual help (feat-019)
+
+[AyudaManual](../../PRESENTATION/Forms/Ayuda/AyudaManual.cs), `Mostrar`, owns a disposed owner-modal [FrmAyuda](../../PRESENTATION/Forms/Ayuda/FrmAyuda.cs). The viewer needs no login, services, repositories or configuration. It reads one canonical [manual.html](../../PRESENTATION/Ayuda/manual.html) under AppDomain base directory, packaged as Content/PreserveNewest in the classic UI project. Explicit Designer buttons call this helper; order detail selects an explicit topic by active tab and PedirTexto receives its topic as a separate parameter. The existing six anonymous factories add their own help buttons without changing Accept/Cancel results. Translation keys use existing insert-only seeds and the existing language observer hooks; opening help never invokes a business refresh.

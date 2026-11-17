@@ -65,3 +65,7 @@ Implemented scope does not establish final completion or production hardening.
 Follow the form handler through the application service, domain method, and repository SQL.
 Update facts and limitations together; do not copy old counts or diagrams without checking them.
 Use [the verification checklist](development-and-testing.md) and preserve the authorization boundary.
+
+## Local operator help (feat-019; verification pending)
+
+The packaged [Spanish operator manual](../../PRESENTATION/Ayuda/manual.html) is available from Ayuda in the main menu and contextual ? Ayuda on the 29 forms and six custom dialog factories. It is one static offline document, not a browser application or a new business module. Current execution evidence and limitations belong in [progress.md](../../progress.md); this entry does not accept the feature.

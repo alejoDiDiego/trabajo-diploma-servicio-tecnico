@@ -1,0 +1,95 @@
+@startuml
+title N02-04 - Recepción nueva y registro de orden
+autonumber
+hide footbox
+actor "Recepcionista, encargado o técnico" as Operador
+boundary FrmOrdenesServicio as Listado
+boundary FrmOrdenServicioDetalle as Detalle
+control ClienteService
+control EquipoService
+control RepuestoService
+control OrdenServicioService
+control UsuarioPermisoService
+control BitacoraService
+participant ClienteRepository
+participant EquipoRepository
+participant RepuestoRepository
+participant OrdenServicioRepository
+participant UsuarioRepository
+participant UsuarioPermisoRepository
+participant PermisoRepository
+participant BitacoraRepository
+group Apertura de recepción nueva
+    Operador -> Listado : Crear orden
+    Listado -> Listado : Verificar permiso OrdenesCrear
+    Listado -> Detalle : Abrir recepción nueva
+    Detalle -> Detalle : Verificar permiso OrdenesCrear
+    Detalle -> ClienteService : Listar(false)
+    ClienteService -> ClienteRepository : Listar(false)
+    ClienteRepository --> ClienteService : List<Cliente>
+    ClienteService --> Detalle : List<Cliente>
+    Detalle -> OrdenServicioService : ListarTecnicosElegibles()
+    OrdenServicioService -> UsuarioRepository : Listar()
+    UsuarioRepository --> OrdenServicioService : List<Usuario>
+    loop Por cada usuario activo
+        OrdenServicioService -> UsuarioPermisoService : ListarPermisosEfectivos(idUsuario)
+        UsuarioPermisoService -> UsuarioRepository : ObtenerPorId(idUsuario)
+        UsuarioRepository --> UsuarioPermisoService : Usuario
+        UsuarioPermisoService -> UsuarioPermisoRepository : ListarPermisosAsignados(idUsuario)
+        UsuarioPermisoRepository --> UsuarioPermisoService : List<PermisoComponent>
+        loop Por cada familia asignada entre permisosAsignados
+            UsuarioPermisoService -> PermisoRepository : ListarSubArbol(permisoAsignado.Id)
+            PermisoRepository --> UsuarioPermisoService : List<PermisoComponent>
+        end
+        UsuarioPermisoService --> OrdenServicioService : List<PermisoComponent>
+    end
+    OrdenServicioService --> Detalle : List<Usuario>
+    Detalle -> RepuestoService : Listar(true)
+    RepuestoService -> RepuestoRepository : Listar(true)
+    RepuestoRepository --> RepuestoService : List<Repuesto>
+    RepuestoService --> Detalle : List<Repuesto>
+    Detalle -> Detalle : Preparar selectores y modo nuevo
+    Detalle --> Operador : Mostrar recepción nueva
+end
+loop Cambio de cliente
+    Operador -> Detalle : Seleccionar cliente(idCliente)
+    alt Cliente válido
+        Detalle -> EquipoService : ListarPorCliente(idCliente, false)
+        EquipoService -> EquipoRepository : ListarPorCliente(idCliente, false)
+        EquipoRepository --> EquipoService : List<Equipo>
+        EquipoService --> Detalle : List<Equipo>
+        Detalle --> Operador : Mostrar equipos del cliente
+    else Sin cliente válido
+        Detalle -> Detalle : Vaciar selector de equipos
+    end
+end
+group Registro de la orden
+    Operador -> Detalle : Seleccionar equipo y completar recepción
+    Operador -> Detalle : Crear orden
+    Detalle -> Detalle : Validar permiso y captura
+    alt Captura inválida
+        Detalle --> Operador : Informar validación
+    else Captura válida
+        Detalle -> OrdenServicioService : CrearOrden(idCliente, idEquipo, problema, estadoFisico, accesorios, observacionesIngreso)
+        OrdenServicioService -> ClienteRepository : ObtenerPorId(idCliente)
+        ClienteRepository --> OrdenServicioService : Cliente o null
+        OrdenServicioService -> EquipoRepository : ObtenerPorId(idEquipo)
+        EquipoRepository --> OrdenServicioService : Equipo o null
+        OrdenServicioService -> OrdenServicioService : OrdenServicio.CrearNuevo(...)
+        alt Referencias activas y equipo del cliente
+            OrdenServicioService -> OrdenServicioRepository : CrearConHistorial(ordenNueva, idUsuarioAlta, "Orden creada", out codigoAlta)
+            OrdenServicioRepository --> OrdenServicioService : OrdenServicio o null
+            OrdenServicioService -> BitacoraService : Registrar("Orden creada", detalle, "ORDENES")
+            BitacoraService -> BitacoraRepository : Insertar(entrada)
+            BitacoraRepository --> BitacoraService : Finalización sin excepción (void)
+            BitacoraService --> OrdenServicioService : Finalización sin excepción (void)
+            OrdenServicioService --> Detalle : OrdenServicio
+            Detalle -> Detalle : Preparar orden existente y CargarOrden()
+            Detalle --> Operador : Mostrar orden creada
+        else Referencia no admitida
+            OrdenServicioService --> Detalle : ReglaNegocioException
+            Detalle --> Operador : Informar impedimento
+        end
+    end
+end
+@enduml

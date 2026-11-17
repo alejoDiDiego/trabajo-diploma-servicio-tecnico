@@ -1,0 +1,70 @@
+@startuml
+title N02-11 - Evaluación pendiente del reingreso
+autonumber
+hide footbox
+actor "Recepcionista, técnico o encargado" as Operador
+boundary FrmOrdenServicioDetalle as Detalle
+control OrdenServicioService
+control BitacoraService
+participant OrdenServicioRepository
+participant GarantiaRepository
+participant EvaluacionGarantiaRepository
+participant DiagnosticoRepository
+participant BitacoraRepository
+group Diagnóstico del reingreso
+    Operador -> Detalle : Finalizar diagnóstico reparable
+    Detalle -> OrdenServicioService : FinalizarDiagnostico(idOrden, descripcion, true, dias, observaciones)
+    OrdenServicioService -> OrdenServicioRepository : ObtenerPorId(idOrden)
+    OrdenServicioRepository --> OrdenServicioService : OrdenServicio o null
+    OrdenServicioService -> OrdenServicioRepository : TieneReingresosGarantia(idOrden)
+    OrdenServicioRepository --> OrdenServicioService : bool
+    OrdenServicioService -> DiagnosticoRepository : ObtenerPorOrden(idOrden)
+    DiagnosticoRepository --> OrdenServicioService : Diagnostico o null
+    OrdenServicioService -> OrdenServicioService : ordenDb.MarcarPendienteEvaluacionGarantia()
+    OrdenServicioService -> DiagnosticoRepository : CrearConTransicion(diagnostico, estadoAnterior, estadoNuevo, idUsuario, observacion, resultado, observacionResultado)
+    DiagnosticoRepository --> OrdenServicioService : Diagnostico
+end
+opt Diagnóstico persistido, reparable y TipoOrden Garantia
+    group Evaluación pendiente separada
+        alt Orden origen informado
+            OrdenServicioService -> OrdenServicioRepository : ObtenerPorId(idOrdenOrigen)
+            OrdenServicioRepository --> OrdenServicioService : OrdenServicio o null
+            alt Original existente y mismo equipo
+                OrdenServicioService -> GarantiaRepository : ObtenerVigente(original.Id)
+                GarantiaRepository --> OrdenServicioService : Garantia o null
+                alt Cobertura vigente
+                    OrdenServicioService -> EvaluacionGarantiaRepository : ObtenerPorReingreso(idReingreso)
+                    EvaluacionGarantiaRepository --> OrdenServicioService : EvaluacionGarantia o null
+                    alt Sin evaluación previa
+                        OrdenServicioService -> EvaluacionGarantiaRepository : Crear(evaluacionPendiente)
+                        EvaluacionGarantiaRepository --> OrdenServicioService : EvaluacionGarantia
+                    else Evaluación duplicada
+                        OrdenServicioService --> Detalle : ReglaNegocioException
+                        Detalle --> Operador : Informar impedimento
+                    end
+                else Cobertura ausente
+                    OrdenServicioService --> Detalle : ReglaNegocioException
+                    Detalle --> Operador : Informar impedimento
+                end
+            else Original ausente o equipo distinto
+                OrdenServicioService --> Detalle : ReglaNegocioException
+                Detalle --> Operador : Informar impedimento
+            end
+        else Orden origen no informado
+            OrdenServicioService --> Detalle : ReglaNegocioException
+            Detalle --> Operador : Informar impedimento
+        end
+    end
+end
+opt FinalizarDiagnostico completó sin excepción (diagnóstico persistido y evaluación creada si corresponde)
+    group Cierre
+        OrdenServicioService -> BitacoraService : Registrar("Diagnostico finalizado", detalle, "ORDENES")
+        BitacoraService -> BitacoraRepository : Insertar(entrada)
+        BitacoraRepository --> BitacoraService : Finalización sin excepción (void)
+        BitacoraService --> OrdenServicioService : Finalización sin excepción (void)
+        OrdenServicioService --> Detalle : Diagnostico
+        Detalle -> Detalle : CargarOrden()
+        Detalle --> Operador : Mostrar evaluación pendiente
+    end
+end
+@enduml

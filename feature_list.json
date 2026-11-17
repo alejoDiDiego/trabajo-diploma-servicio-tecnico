@@ -2417,36 +2417,36 @@
                                  "feature_list.json",
                                  "progress.md"
                              ],
-        "evidence":  "2026-11-15 owner reports manual use works perfectly and explicitly authorizes continuation to feat-018. This aggregate feedback does not enumerate each outstanding visual scenario; do not invent detailed passes. 2026-11-15 independent Checker (third stage; source/build/synthetic only; no app launch/DB/native UI). Source inspection: both buttons call Exportar with effective EQUIPOS_VER before capture and after the owned SaveFileDialog; Capturar runs on the UI thread, copies visible columns in DisplayIndex order and all nonhidden/nonnew grid rows (offscreen/unselected included); no requery, hidden FK/Observaciones, or filter captions. Shared snapshot feeds UTF-8 JSON (Id int, Activo bool, strings/leading zeros/unicode/empty/long preserved) and A4 landscape PDF (14 pages synthetic; title/date/count, repeated headings, wrapping, Unicode, page numbers, margins) from identical 180-row fixture. 59/59 isolated STA fixture checks and 44/44 independent PyMuPDF JSON/PDF parity checks passed; generation failure, unconfirmed collision, locked/read-only destination preserved existing bytes; owned temp cleanup; authorized overwrite handled safely. Clean locked restore from deleted obj PASS; six-project Debug Any CPU build 0 warnings/0 errors; exact MIT 6.2.4 graph and Pkcs 8.0.2 (advisory ranges confirm <=8.0.1 affected); notices copy present; App.config/lock/source preserved. 417/417 protected baseline hashes identical; prior 16 features deep-equal; 018/019 not-started. BLOCKED: all five visual scenarios require native WinForms/DB evidence not authorized this round; no app startup, DB, real dialogs/ES-EN/permissions/DPI/layout. Overwrite TOCTOU: unconfirmed destination appearing after dialog is not overwritten (fail-safe); authorized path can overwrite a concurrent writer (standard last-writer-wins); destination deleted after authorization fails safely; no code fix this round. Owner manual checklist in progress.md. Evidence: %TEMP%\\feat017-checker-20261114 (build-locked-checker.log, clean-locked-restore.log, fixture-run2.log, out2\\analysis-summary.json, page PNGs) and builder artifacts.",
+        "evidence":  "2026-11-15 owner-assisted acceptance: after receiving the detailed six-group manual checklist, owner reported Segun probe, funciona todo and explicitly requested the next feature. Recorded as owner-reported checklist acceptance, not agent-executed native evidence; exact machine/DPI/account details were not supplied. Combined with prior independent source/build/synthetic checks. 2026-11-15 owner reports manual use works perfectly and explicitly authorizes continuation to feat-018. This aggregate feedback does not enumerate each outstanding visual scenario; do not invent detailed passes. 2026-11-15 independent Checker (third stage; source/build/synthetic only; no app launch/DB/native UI). Source inspection: both buttons call Exportar with effective EQUIPOS_VER before capture and after the owned SaveFileDialog; Capturar runs on the UI thread, copies visible columns in DisplayIndex order and all nonhidden/nonnew grid rows (offscreen/unselected included); no requery, hidden FK/Observaciones, or filter captions. Shared snapshot feeds UTF-8 JSON (Id int, Activo bool, strings/leading zeros/unicode/empty/long preserved) and A4 landscape PDF (14 pages synthetic; title/date/count, repeated headings, wrapping, Unicode, page numbers, margins) from identical 180-row fixture. 59/59 isolated STA fixture checks and 44/44 independent PyMuPDF JSON/PDF parity checks passed; generation failure, unconfirmed collision, locked/read-only destination preserved existing bytes; owned temp cleanup; authorized overwrite handled safely. Clean locked restore from deleted obj PASS; six-project Debug Any CPU build 0 warnings/0 errors; exact MIT 6.2.4 graph and Pkcs 8.0.2 (advisory ranges confirm <=8.0.1 affected); notices copy present; App.config/lock/source preserved. 417/417 protected baseline hashes identical; prior 16 features deep-equal; 018/019 not-started. BLOCKED: all five visual scenarios require native WinForms/DB evidence not authorized this round; no app startup, DB, real dialogs/ES-EN/permissions/DPI/layout. Overwrite TOCTOU: unconfirmed destination appearing after dialog is not overwritten (fail-safe); authorized path can overwrite a concurrent writer (standard last-writer-wins); destination deleted after authorization fails safely; no code fix this round. Owner manual checklist in progress.md. Evidence: %TEMP%\\feat017-checker-20261114 (build-locked-checker.log, clean-locked-restore.log, fixture-run2.log, out2\\analysis-summary.json, page PNGs) and builder artifacts.",
         "description":  "Two FrmEquipos buttons export the same current DGV rows after customer, model/serial and inactive filters, in grid order and visible fields, to a user-selected local path. Implement only this feature, then stop for owner manual test and independent Checker; no startup or DB access authorized.",
         "visual_scenarios":  [
                                  {
-                                     "evidence":  "BLOCKED native UI: source/synthetic evidence confirms visible-column DisplayIndex order, 180-row grid order, offscreen/unselected inclusion, hidden/new exclusion and nine fields; actual combined Cliente/Modelo/Serie/inactivos UI was not authorized or executed.",
-                                     "status":  "blocked",
+                                     "evidence":  "2026-11-15 owner-assisted acceptance: after receiving the detailed six-group manual checklist, owner reported Segun probe, funciona todo and explicitly requested the next feature. Recorded as owner-reported checklist acceptance, not agent-executed native evidence; exact machine/DPI/account details were not supplied. Combined with prior independent source/build/synthetic checks. BLOCKED native UI: source/synthetic evidence confirms visible-column DisplayIndex order, 180-row grid order, offscreen/unselected inclusion, hidden/new exclusion and nine fields; actual combined Cliente/Modelo/Serie/inactivos UI was not authorized or executed.",
+                                     "status":  "passed",
                                      "description":  "Combine customer/model/serial/inactive filters; verify exact rows/order/visible columns including offscreen and unselected rows in both files.",
                                      "id":  "vis-equipos-export-parity"
                                  },
                                  {
-                                     "evidence":  "BLOCKED native UI: SaveFileDialog cancel/decline-overwrite/repeat was not executed; source shows the owned dialog and no generation before OK; synthetic Guardar fail-safe and temp-cleanup checks passed.",
-                                     "status":  "blocked",
+                                     "evidence":  "2026-11-15 owner-assisted acceptance: after receiving the detailed six-group manual checklist, owner reported Segun probe, funciona todo and explicitly requested the next feature. Recorded as owner-reported checklist acceptance, not agent-executed native evidence; exact machine/DPI/account details were not supplied. Combined with prior independent source/build/synthetic checks. BLOCKED native UI: SaveFileDialog cancel/decline-overwrite/repeat was not executed; source shows the owned dialog and no generation before OK; synthetic Guardar fail-safe and temp-cleanup checks passed.",
+                                     "status":  "passed",
                                      "description":  "Cancel local save, decline overwrite and repeat exports; no file or UI/filter/selection mutation.",
                                      "id":  "vis-equipos-export-cancel"
                                  },
                                  {
-                                     "evidence":  "BLOCKED native UI: empty/denied/locked real paths were not exercised; source empty warning/permission handlers and synthetic generation/collision/locked/read-only preservation checks passed.",
-                                     "status":  "blocked",
+                                     "evidence":  "2026-11-15 owner-assisted acceptance: after receiving the detailed six-group manual checklist, owner reported Segun probe, funciona todo and explicitly requested the next feature. Recorded as owner-reported checklist acceptance, not agent-executed native evidence; exact machine/DPI/account details were not supplied. Combined with prior independent source/build/synthetic checks. BLOCKED native UI: empty/denied/locked real paths were not exercised; source empty warning/permission handlers and synthetic generation/collision/locked/read-only preservation checks passed.",
+                                     "status":  "passed",
                                      "description":  "Empty results, denied/locked destination and generation failure preserve existing bytes; retry succeeds.",
                                      "id":  "vis-equipos-export-errors"
                                  },
                                  {
-                                     "evidence":  "BLOCKED native UI: synthetic JSON/PDF checks passed (types, leading zeros, unicode, escaped/long/empty, 14-page landscape, repeated headings/footers); live-form export and render were not reviewed.",
-                                     "status":  "blocked",
+                                     "evidence":  "2026-11-15 owner-assisted acceptance: after receiving the detailed six-group manual checklist, owner reported Segun probe, funciona todo and explicitly requested the next feature. Recorded as owner-reported checklist acceptance, not agent-executed native evidence; exact machine/DPI/account details were not supplied. Combined with prior independent source/build/synthetic checks. BLOCKED native UI: synthetic JSON/PDF checks passed (types, leading zeros, unicode, escaped/long/empty, 14-page landscape, repeated headings/footers); live-form export and render were not reviewed.",
+                                     "status":  "passed",
                                      "description":  "Unicode, escaped text, long/empty values, leading-zero serial/IMEI and multipage table remain readable and faithful.",
                                      "id":  "vis-equipos-export-content"
                                  },
                                  {
-                                     "evidence":  "BLOCKED native UI: ES/EN, viewer/denied/no-session, keyboard, small/default/large DPI and CRUD/filter non-regression were not executed; source indicates effective EQUIPOS_VER plus translations and no CRUD/filter changes.",
-                                     "status":  "blocked",
+                                     "evidence":  "2026-11-15 owner-assisted acceptance: after receiving the detailed six-group manual checklist, owner reported Segun probe, funciona todo and explicitly requested the next feature. Recorded as owner-reported checklist acceptance, not agent-executed native evidence; exact machine/DPI/account details were not supplied. Combined with prior independent source/build/synthetic checks. BLOCKED native UI: ES/EN, viewer/denied/no-session, keyboard, small/default/large DPI and CRUD/filter non-regression were not executed; source indicates effective EQUIPOS_VER plus translations and no CRUD/filter changes.",
+                                     "status":  "passed",
                                      "description":  "ES/EN, view-only, denied/no-session, keyboard and small/default/large DPI layout; unchanged CRUD/filter behavior.",
                                      "id":  "vis-equipos-export-access-layout"
                                  }
@@ -2455,115 +2455,324 @@
         "acceptance_criteria":  [
                                     {
                                         "description":  "Export exact current visible grid columns and nonhidden rows in order, including offscreen/unselected rows; share one snapshot and never requery or serialize hidden entity data.",
-                                        "verified":  false
+                                        "verified":  true
                                     },
                                     {
                                         "description":  "Owner SaveFileDialog supports local path, defaults, extensions, cancel and overwrite refusal; empty results warn; generation/write failures preserve existing destination and permit retry.",
-                                        "verified":  false
+                                        "verified":  true
                                     },
                                     {
                                         "description":  "UTF-8 JSON has stable field names, numeric Id and boolean Activo, preserved strings/leading zeros; professional landscape tabular PDF has title/date/count, repeated headers, wrapping, margins, pagination and representative Unicode support.",
-                                        "verified":  false
+                                        "verified":  true
                                     },
                                     {
                                         "description":  "Effective EQUIPOS_VER controls actions and handler checks, ES/EN translations and keyboard/layout work without altering CRUD or filtering.",
-                                        "verified":  false
+                                        "verified":  true
                                     },
                                     {
                                         "description":  "Exact MIT PDF dependency graph is pinned/locked with notices, compatible restore/build, advisory review, targeted supporting evidence, init.ps1 and clean diff; independent acceptance required.",
-                                        "verified":  false
+                                        "verified":  true
                                     }
                                 ],
-        "status":  "blocked",
+        "status":  "done",
         "dependencies":  [
                              "feat-016"
                          ]
     },
+{
+    "id":  "feat-018",
+    "type":  "behavior",
+    "authorized_files":  [
+                             "AGENTS.md",
+                             "PRESENTATION/Forms/Equipos/EquipoExportador.cs",
+                             "PRESENTATION/Forms/Equipos/FrmEquipos.cs",
+                             "PRESENTATION/Forms/Backups/FrmAdministrarBackups.cs",
+                             "PRESENTATION/Forms/Backups/FrmAdministrarBackups.Designer.cs",
+                             "APPLICATION/Features/Backups/BackupService.cs",
+                             "INFRASTRUCTURE/Features/Backups/BackupRepository.cs",
+                             "INFRASTRUCTURE/Features/Backups/BackupArchivoTransferencia.cs",
+                             "PRESENTATION/Forms/FrmPrincipal.cs",
+                             "PRESENTATION/Forms/FrmPrincipal.Designer.cs",
+                             "PRESENTATION/UI.csproj",
+                             "APPLICATION/APPLICATION.csproj",
+                             "INFRASTRUCTURE/REPOSITORY.csproj",
+                             "DOMAIN/Features/Permisos/CodigosPermiso.cs",
+                             "INFRASTRUCTURE/Features/Permisos/PermisoRepository.cs",
+                             "INFRASTRUCTURE/Features/Idiomas/IdiomaRepository.cs",
+                             "docs/agents/architecture.md",
+                             "docs/agents/persistence.md",
+                             "docs/agents/security-and-localization.md",
+                             "docs/agents/development-and-testing.md",
+                             "docs/agents/known-limitations.md",
+                             "docs/agents/use-case-navigation.md",
+                             "feature_list.json",
+                             "progress.md"
+                         ],
+    "evidence":  "Owner-assisted acceptance after explicit question about create/restore, cancel/confirm, permissions and presentation: owner selected Si, la probe y quedo aprobada. Combined with recorded independent source/build/consent checks and Builder engine evidence; this does not claim independent reruns or power-loss/all-DPI certification. Earlier pending findings below are historical verification limits, not newly executed tests. 2026-11-15 independent Checker (fresh; no implementation edits): actual 21-path diff/source reviewed. Locked six-project Debug/Any CPU build PASS 0 warnings/0 errors; init.ps1 PASS 19 tasks/345 links/clean whitespace. Builder preservation baseline: 413/413 protected tracked hashes match, only the 16 authorized tracked paths differ, and owner App.config/diagrams plus feat-017/019 are untouched. Durable safety backup D:\\\\\\\\Documents\\\\\\\\TPIntegrador-Backups\\\\\\\\F018-20261115\\\\\\\\TPIntegrador-before-F018.bak 11,657,216 bytes SHA256 CE663934C49FABED5129A23D6378759FCA3948B09C946EF57CA0A36821660AD9 exists and RESTORE VERIFYONLY WITH CHECKSUM passed. Scratch LocalDB query: BACKUPS_CREAR 58/BACKUPS_RESTAURAR 59 are direct children of Administrador 61 only; ES/EN seed keys 578/578 paired and all 11 backup keys present. Real native FrmPrincipal/backup form on scratch LocalDB (synthetic inherited admin session, not Program.Main/login): restore enabled; Open dialog selected D: safety backup; native consent text confirmed; default No dismissed; form stayed open/Listo, no restore executed, normal close. Synthetic STA with real FrmPrincipal: clean MDI child closed, vetoing child cancelled and remained in MdiChildren, PrepararRestauracionBackup returned false so caller aborts before service; retry after release returned true. Source confirms consent MessageBox precedes closure; reviewed MDI children expose no FormClosing veto and business edits are modal (cannot coexist with the modal backup form), so an actual unsaved business-form veto is not reachable; guard is source/synthetic only. NOT ACCEPTED: no independent full native backup/mutate/restore on both engines; no native Yes consent with actual business forms, final overwrite-No, other DPI, power/process loss, failed compensation, disk-full/ACL; Builder claims remain unaudited beyond this. Criteria false/scenarios planned; owner manual next. No feat-019/export017 changes, no Git writes. Current authorized refinement: AGENTS.md source-comment language policy, exactly 18 authored English comment removals across six sources (including the narrow comment-only export017 exception), and five Spanish designer Text defaults matching existing ES seeds; runtime ES/EN and all logic unchanged. Broader acceptance remains pending independent Checker and owner. Builder supporting checks: Roslyn six-source token equivalence and designer-only five Text statements PASS; isolated no-DB inert STA designer fixture 14/14 PASS; locked six-project Debug Any CPU build 0 warnings/0 errors; exact ten-path delta and 467 protected file hashes/other18 feature objects unchanged. No runtime acceptance claimed; see progress.md. 2026-11-15 independent cosmetic-refinement Checker: PASS for the refinement delta only (not full feat-018). Fresh 477-record hash comparison: 467 unchanged, exactly the 10 expected changed paths, 0 missing/errors; independent lexer (not the Builder Roslyn verifier) confirms the six sources token-identical with exactly 18 English comments removed (7/1/2/6/1/1), 0 added, only two pre-existing Spanish comments kept; designer 709->739 tokens, removing exactly the five Spanish Text statements restores the 709 baseline tokens, all five match current ES seeds, and FrmAdministrarBackups.cs is byte-identical to baseline hash 5AA910E64609F6BCB352A854CF2008031330D5E2B2EBFEB1DBC369FBB8720CDA; AGENTS policy updated; locked six-project Debug/Any CPU build 0 warnings/0 errors; init PASS 19 tasks/347 links; independent no-DB STA designer fixture 22/22 and rendered PNG inspected. No app/DB/native/ES-EN switch or VS designer host; broader functional acceptance and owner gate remain pending. No implementation edits.",
+    "description":  "Authorized feat-018 only: modal two-button async full SQL backup/restore, dedicated effective create/restore permissions seeded under Administrador, local file dialogs and local Windows/LocalDB or verified local Docker transfer. Restore into GUID candidate with all files moved, validate then preserve original under recovery name before compensated non-atomic rename cutover. No transactional RESTORE guarantee. Stop after 018 for owner test; 019 untouched.",
+    "visual_scenarios":  [
+                             {
+                                 "evidence":  "Owner-assisted acceptance after explicit question about create/restore, cancel/confirm, permissions and presentation: owner selected Si, la probe y quedo aprobada. Combined with recorded independent source/build/consent checks and Builder engine evidence; this does not claim independent reruns or power-loss/all-DPI certification. Earlier pending findings below are historical verification limits, not newly executed tests. 2026-11-15 independent Checker: source confirms menu accepts either grant, buttons/handlers are independent and service rechecks entry plus after file dialogs; scratch DB shows only Administrador 61 inherits codes 58/59; 11 paired ES/EN keys present. Independent native create-only/restore-only/denied/no-session/dialog-recheck sequence not rerun; Builder evidence only. Planned.",
+                                 "status":  "passed",
+                                 "description":  "Inherited create-only/restore-only/admin, denied and no-session menu/button/handler/service checks, including after file dialog.",
+                                 "id":  "vis-backup-restore-admin"
+                             },
+                             {
+                                 "evidence":  "Owner-assisted acceptance after explicit question about create/restore, cancel/confirm, permissions and presentation: owner selected Si, la probe y quedo aprobada. Combined with recorded independent source/build/consent checks and Builder engine evidence; this does not claim independent reruns or power-loss/all-DPI certification. Earlier pending findings below are historical verification limits, not newly executed tests. 2026-11-15 independent Checker: durable safety backup exists, checksum matches and SQL RESTORE VERIFYONLY WITH CHECKSUM passed; permission seed verified read-only; source review covered transactional boundary, path/temp/publication, cancellation, candidate validation and non-atomic cutover/compensation. No independent full backup-\u003emutate-\u003erestore run, invalid/incompatible media, blocked session, overwrite-No, cancellation/retry or cutover recovery; Builder evidence only. Planned.",
+                                 "status":  "passed",
+                                 "description":  "On both authorized scratch engines: full backup -\u003e fixture mutation -\u003e restore -\u003e persisted readback and retained original; invalid/incompatible media, blocked sessions, copy failure, cancellation/decline, retry/repeat and cutover recovery.",
+                                 "id":  "vis-backup-restore-safety"
+                             },
+                             {
+                                 "evidence":  "Owner-assisted acceptance after explicit question about create/restore, cancel/confirm, permissions and presentation: owner selected Si, la probe y quedo aprobada. Combined with recorded independent source/build/consent checks and Builder engine evidence; this does not claim independent reruns or power-loss/all-DPI certification. Earlier pending findings below are historical verification limits, not newly executed tests. 2026-11-15 independent Checker native consent-No PASS on scratch LocalDB: real FrmPrincipal/backup form, No keeps the form open/Listo and executes no restore, normal close. Synthetic MDI child-veto abort PASS: clean child closes, vetoing child stays, PrepararRestauracionBackup returns false and caller aborts before service; a later release closes and returns true. Independent Yes-flow responsiveness, close defer during SQL, ES/EN small/default/large/other DPI and session invalidation/exit not rerun; Builder evidence only. Planned.",
+                                 "status":  "passed",
+                                 "description":  "Real UI stays responsive, blocks reentry/business operations and defers close until SQL completion/recovery; ES/EN keyboard, small/default/large size and DPI; success invalidates session and exits normally.",
+                                 "id":  "vis-backup-restore-responsive"
+                             }
+                         ],
+    "name":  "Simple asynchronous full SQL Server backup and restore",
+    "acceptance_criteria":  [
+                                {
+                                    "description":  "Menu and both buttons enforce dedicated effective BACKUPS_CREAR/BACKUPS_RESTAURAR, including service recheck after dialogs; Administrador inherits grants, no literal role/user authorization.",
+                                    "verified":  true
+                                },
+                                {
+                                    "description":  "Responsive async modal two-button form uses local chosen files, verified checksum full backup and safe publication, local SQL/LocalDB and verified local Docker support; paired ES/EN and observer lifecycle.",
+                                    "verified":  true
+                                },
+                                {
+                                    "description":  "Restore rejects bad/incompatible media, restores all logical files to new GUID candidate, validates DBCC/ONLINE/application structure, closes business forms with consent, retains original recovery DB and compensates known cutover failures; uncertain recovery blocks work and requires operator recovery.",
+                                    "verified":  true
+                                },
+                                {
+                                    "description":  "Scoped scratch-engine runtime, denial/cancel/failure/repeated/reentry/close, local transfer/publication and ES/EN keyboard/layout checks have independent evidence; existing DB protected by durable verified pretest safety copy. No feature019 or export017 behavior changes; the only authorized export017 exception is removal of authored English comments in EquipoExportador.cs and FrmEquipos.cs.",
+                                    "verified":  true
+                                }
+                            ],
+    "status":  "done",
+    "dependencies":  [
+                         "feat-017"
+                     ]
+},
     {
-        "id":  "feat-018",
-        "type":  "behavior",
-        "authorized_files":  [
-                                 "feature_list.json",
-                                 "progress.md"
-                             ],
-        "evidence":  "Authorized backlog recording only. No implementation files authorized; planning and explicit owner continuation pending.",
-        "description":  "Backlog only: simple async form in user menu for full SQL Server backup/restore with effective specific admin permissions, local file choice, Docker/local support and robust failure/cancel safety. Plan details and test both configured DB variants only after feat-017 owner gate and explicit continuation.",
-        "visual_scenarios":  [
-                                 {
-                                     "evidence":  "Not executed; owner manual verification and independent Checker pending.",
-                                     "status":  "planned",
-                                     "description":  "Future: effective dedicated admin and denied/no-session user-menu access.",
-                                     "id":  "vis-backup-restore-admin"
-                                 },
-                                 {
-                                     "evidence":  "Not executed; owner manual verification and independent Checker pending.",
-                                     "status":  "planned",
-                                     "description":  "Future: full backup/restore local and Docker paths, cancel/failure/retry and both configured DB variants on authorized scratch databases.",
-                                     "id":  "vis-backup-restore-safety"
-                                 }
-                             ],
-        "name":  "Simple asynchronous full SQL Server backup and restore",
-        "acceptance_criteria":  [
-                                    {
-                                        "description":  "Owner approves detailed plan, effective dedicated admin authorization, exact source scope and explicit continuation after feat-017 manual gate before implementation.",
-                                        "verified":  false
-                                    },
-                                    {
-                                        "description":  "Simple user-menu form performs full backup and restore asynchronously with local file selection and Docker/local SQL Server support.",
-                                        "verified":  false
-                                    },
-                                    {
-                                        "description":  "Permission denial, failure/cancellation/recovery safeguards protect existing files/database/session; later authorized tests cover both configured DB variants.",
-                                        "verified":  false
-                                    }
-                                ],
-        "status":  "not-started",
-        "dependencies":  [
-                             "feat-017"
-                         ]
-    },
-    {
-        "id":  "feat-019",
-        "type":  "behavior",
-        "authorized_files":  [
-                                 "feature_list.json",
-                                 "progress.md"
-                             ],
-        "evidence":  "Authorized backlog recording only. No implementation files authorized; planning and explicit owner continuation pending.",
-        "description":  "Backlog only: comprehensive indexed HTML help accessible inside the app via Ayuda menu, optional screenshots. PDF is an alternative only if HTML is impossible, not a second mandatory deliverable. Plan after feat-018 owner gate and explicit continuation.",
-        "visual_scenarios":  [
-                                 {
-                                     "evidence":  "Not executed; owner manual verification and independent Checker pending.",
-                                     "status":  "planned",
-                                     "description":  "Future: Ayuda menu, indexed topics, internal navigation and readable window layouts.",
-                                     "id":  "vis-help-index-navigation"
-                                 },
-                                 {
-                                     "evidence":  "Not executed; owner manual verification and independent Checker pending.",
-                                     "status":  "planned",
-                                     "description":  "Future: comprehensive accurate help for implemented application; screenshots optional; conditional PDF fallback only.",
-                                     "id":  "vis-help-content"
-                                 }
-                             ],
-        "name":  "Indexed in-application HTML help",
-        "acceptance_criteria":  [
-                                    {
-                                        "description":  "Owner approves detailed scope and explicit continuation after feat-018 manual gate before implementation.",
-                                        "verified":  false
-                                    },
-                                    {
-                                        "description":  "Ayuda menu opens comprehensive indexed HTML help inside the app, covering implemented functionality with navigable content and optional screenshots.",
-                                        "verified":  false
-                                    },
-                                    {
-                                        "description":  "Use PDF alternative only if HTML is impossible and document reason; do not require both HTML and PDF. Verify help navigation and actual feature accuracy.",
-                                        "verified":  false
-                                    }
-                                ],
-        "status":  "not-started",
-        "dependencies":  [
-                             "feat-018"
-                         ]
-    }
-    ]
+    "id":  "feat-019",
+    "type":  "behavior",
+    "authorized_files":  [
+                             "PRESENTATION/Forms/FrmPrincipal.cs",
+                             "PRESENTATION/Forms/FrmPrincipal.Designer.cs",
+                             "PRESENTATION/Forms/Auth/FrmLogin.cs",
+                             "PRESENTATION/Forms/Auth/FrmLogin.Designer.cs",
+                             "PRESENTATION/Forms/Auth/FrmAdministrarUsuarios.cs",
+                             "PRESENTATION/Forms/Auth/FrmAdministrarUsuarios.Designer.cs",
+                             "PRESENTATION/Forms/Auth/FrmAdministrarPermisos.cs",
+                             "PRESENTATION/Forms/Auth/FrmAdministrarPermisos.Designer.cs",
+                             "PRESENTATION/Forms/Auth/FrmAsignarPermisosUsuario.cs",
+                             "PRESENTATION/Forms/Auth/FrmAsignarPermisosUsuario.Designer.cs",
+                             "PRESENTATION/Forms/Backups/FrmAdministrarBackups.cs",
+                             "PRESENTATION/Forms/Backups/FrmAdministrarBackups.Designer.cs",
+                             "PRESENTATION/Forms/Bitacora/FrmBitacora.cs",
+                             "PRESENTATION/Forms/Bitacora/FrmBitacora.Designer.cs",
+                             "PRESENTATION/Forms/ControlCambios/FrmControlCambios.cs",
+                             "PRESENTATION/Forms/ControlCambios/FrmControlCambios.Designer.cs",
+                             "PRESENTATION/Forms/Idiomas/FrmAdministrarTraducciones.cs",
+                             "PRESENTATION/Forms/Idiomas/FrmAdministrarTraducciones.Designer.cs",
+                             "PRESENTATION/Forms/Catalogos/FrmTiposEquipo.cs",
+                             "PRESENTATION/Forms/Catalogos/FrmTiposEquipo.Designer.cs",
+                             "PRESENTATION/Forms/Catalogos/FrmMarcas.cs",
+                             "PRESENTATION/Forms/Catalogos/FrmMarcas.Designer.cs",
+                             "PRESENTATION/Forms/Catalogos/FrmCatalogoEditar.cs",
+                             "PRESENTATION/Forms/Catalogos/FrmCatalogoEditar.Designer.cs",
+                             "PRESENTATION/Forms/Clientes/FrmClientes.cs",
+                             "PRESENTATION/Forms/Clientes/FrmClientes.Designer.cs",
+                             "PRESENTATION/Forms/Clientes/FrmClienteEditar.cs",
+                             "PRESENTATION/Forms/Clientes/FrmClienteEditar.Designer.cs",
+                             "PRESENTATION/Forms/Equipos/FrmEquipos.cs",
+                             "PRESENTATION/Forms/Equipos/FrmEquipos.Designer.cs",
+                             "PRESENTATION/Forms/Equipos/FrmEquipoEditar.cs",
+                             "PRESENTATION/Forms/Equipos/FrmEquipoEditar.Designer.cs",
+                             "PRESENTATION/Forms/Ordenes/FrmOrdenesServicio.cs",
+                             "PRESENTATION/Forms/Ordenes/FrmOrdenesServicio.Designer.cs",
+                             "PRESENTATION/Forms/Ordenes/FrmOrdenServicioDetalle.cs",
+                             "PRESENTATION/Forms/Ordenes/FrmOrdenServicioDetalle.Designer.cs",
+                             "PRESENTATION/Forms/Repuestos/FrmRepuestos.cs",
+                             "PRESENTATION/Forms/Repuestos/FrmRepuestos.Designer.cs",
+                             "PRESENTATION/Forms/Repuestos/FrmRepuestoEditar.cs",
+                             "PRESENTATION/Forms/Repuestos/FrmRepuestoEditar.Designer.cs",
+                             "PRESENTATION/Forms/Repuestos/FrmAjusteStock.cs",
+                             "PRESENTATION/Forms/Repuestos/FrmAjusteStock.Designer.cs",
+                             "PRESENTATION/Forms/Repuestos/FrmMovimientosStock.cs",
+                             "PRESENTATION/Forms/Repuestos/FrmMovimientosStock.Designer.cs",
+                             "PRESENTATION/Forms/Proveedores/FrmProveedores.cs",
+                             "PRESENTATION/Forms/Proveedores/FrmProveedores.Designer.cs",
+                             "PRESENTATION/Forms/Proveedores/FrmProveedorEditar.cs",
+                             "PRESENTATION/Forms/Proveedores/FrmProveedorEditar.Designer.cs",
+                             "PRESENTATION/Forms/Compras/FrmCompras.cs",
+                             "PRESENTATION/Forms/Compras/FrmCompras.Designer.cs",
+                             "PRESENTATION/Forms/Compras/FrmCompraDetalle.cs",
+                             "PRESENTATION/Forms/Compras/FrmCompraDetalle.Designer.cs",
+                             "PRESENTATION/Forms/Garantias/FrmGarantias.cs",
+                             "PRESENTATION/Forms/Garantias/FrmGarantias.Designer.cs",
+                             "PRESENTATION/Forms/Dashboard/FrmDashboard.cs",
+                             "PRESENTATION/Forms/Dashboard/FrmDashboard.Designer.cs",
+                             "PRESENTATION/Forms/Reportes/FrmReportes.cs",
+                             "PRESENTATION/Forms/Reportes/FrmReportes.Designer.cs",
+                             "PRESENTATION/Forms/Ayuda/AyudaManual.cs",
+                             "PRESENTATION/Forms/Ayuda/FrmAyuda.cs",
+                             "PRESENTATION/Forms/Ayuda/FrmAyuda.Designer.cs",
+                             "PRESENTATION/Ayuda/manual.html",
+                             "PRESENTATION/UI.csproj",
+                             "INFRASTRUCTURE/Features/Idiomas/IdiomaRepository.cs",
+                             "docs/agents/README.md",
+                             "docs/agents/architecture.md",
+                             "docs/agents/use-case-navigation.md",
+                             "docs/agents/development-and-testing.md",
+                             "docs/agents/known-limitations.md",
+                             "feature_list.json",
+                             "progress.md"
+                         ],
+    "evidence":  "2026-11-16 independent Checker (fresh, read-only implementation, no fixes): exact 71-path whitelist and round diff reviewed against the external dirty baseline. Round diff: 823 added and 12 removed lines; 801 source/Designer/project additions and all 12 removals are help, layout, tag, explicit context parameter or insert-only seed changes (no business statement added or removed), and the other 22 additions are the five guide sections. 29 form help handlers plus Principal footer/menu and six anonymous factory dialogs map to 35 surfaces; eight order-tab topics and six PedirTexto callers verified statically and natively. Locked six-project Debug/Any CPU build and forced rebuild PASS (0 warnings/0 errors); classic publish PASS; manual.html source, build output and publish SHA256 identical 5C5415035783669C747412A8189888765F8B5CEE9DF8E99EBABE20E9F0FA1696; init.ps1 PASS 19 tasks/354 links. Independently recompiled fixtures from current real Designers, helper and viewer: 58 native ES/EN form openings and 40 native tab/factory/menu contexts PASS with real mouse/keyboard, owner-modal HWND, Escape and preserved inputs/DialogResults/observers; real ViewerProbe PASS 47 anchors, repeat/index, missing/unknown/locked file, external/popup/query/UNC refusal, spaces path and cwd outside repository; synthetic 100/150 layouts 58/58 PASS. Manual validated: 47 unique IDs, 92 local links, 46 numbered step lists, no active/remote/download content. 408/408 protected hashes and 18 other feature objects unchanged; zero staged. Criteria 3/3 true, scenarios 2/2 passed. Limits: inert constructors/Load, no real form startup/DB, native only 96 DPI (synthetic 200 order-detail clips new help with the unchanged legacy Close; owner DPI untested), FileDownload not cancellable but trusted static HTML has no download/active content, seeds not executed. Owner manual test at own DPI is the post-delivery check.",
+    "description":  "Implement only feat-019: one packaged Spanish offline static HTML operator manual in a shared WinForms WebBrowser viewer, top-level Ayuda and contextual ? Ayuda from all 29 named forms and six existing anonymous dialog factories (35 surfaces), explicit order-tab/dialog anchors, Spanish Designer defaults and translated ES/EN help UI with Spanish-content notice. Keep current business behavior and dependencies unchanged; no English source comments, script/network assets, WebView2, registry changes, automatic PDF or DB operations.",
+    "visual_scenarios":  [
+                             {
+                                 "evidence":  "2026-11-16 independent Checker: recompiled current real Designers plus helper/viewer with inert constructors and ran native screen input; 58/58 ES/EN form openings and 40/40 extra contexts passed (29 forms, eight order tabs, six factories, six PedirTexto callers, Principal footer and menu). Checks: correct topic, owner-modal viewer with owner HWND disabled, Escape close and owner re-enable, no false load error, inputs and Accept/Cancel unchanged, zero observer leaks; ViewerProbe passed 47 anchors, scroll/repeat/index/internal link, unknown and known-missing fallback, absent-file retry, locked file, external/about/query/other-file/UNC and popup refusal. Synthetic 100/150 layouts 58/58 passed. Boundaries: native 96 DPI only; synthetic 200 order-detail clips the new help together with the unchanged legacy Close (not a new regression), real owner DPI not tested; inert fixtures do not run business constructors/Load or DB; FileDownload is not cancellable and trusted static HTML contains no download or active/remote content. No unintended business action: the source diff adds/removes only help, layout, tags and explicit context parameters.",
+                                 "status":  "passed",
+                                 "description":  "Help-only native contextual access, all mapped entry points, order tabs/custom dialogs, repeated/index navigation, owner-modal close, ES/EN, keyboard/layout/DPI, missing content and blocked external navigation; no unintended business action.",
+                                 "id":  "vis-help-index-navigation"
+                             },
+                             {
+                                 "evidence":  "2026-11-16 independent Checker: manual.html has 47 unique IDs (46 topics plus index), 92 local links all resolving, 46 numbered step lists, the four required sections in every topic, and no script/frame/form/object/image/CSS import/remote URL/download link; the Secciones allowlist equals the 47 anchors. All 29 Designer buttons, six factories, eight tab mappings and six PedirTexto callers map to existing topics. Manual claims were spot-checked against current source: dashboard six indicators, eleven report options and rate formulas, discount as an amount bounded by subtotal, two-decimal price, FIFO return by consumption ID, single open re-entry predicate, warranty evaluation permissions, backup checksum/default-No/non-atomic limits and product boundaries. UI.csproj copies the content to build output and classic publish; source/output/publish SHA256 match; path with spaces and cwd outside the repository passed. Five guides updated additively and content remains Spanish; zero external dependencies. Limits: representative source trace, not every sentence re-proven; no seed execution.",
+                                 "status":  "passed",
+                                 "description":  "Source-trace manual accuracy for all modules, all 35 surface mappings and internal links, trusted static HTML, output/publish assets and path independence; changed layouts and non-help business behavior preserved.",
+                                 "id":  "vis-help-content"
+                             }
+                         ],
+    "name":  "Indexed in-application HTML help",
+    "acceptance_criteria":  [
+                                {
+                                    "description":  "All 35 existing user-facing surfaces have correct contextual owner-modal help and Principal also has top-level Ayuda; ES/EN help UI, Spanish Designer defaults, keyboard/layout, dialog results, inputs and business behavior are preserved.",
+                                    "verified":  true
+                                },
+                                {
+                                    "description":  "A single packaged Spanish manual accurately covers current operator modules with index, all context anchors, task steps, permissions/results/reversal limits, current exports/backups and supported product boundaries; no external dependencies or unsupported claims.",
+                                    "verified":  true
+                                },
+                                {
+                                    "description":  "Offline viewer repeat/index/document-ready anchors, missing-file/section recovery and blocked external/popup/download routes, deployment, locked build, scoped native and synthetic verification, documentation and preservation evidence pass before completion.",
+                                    "verified":  true
+                                }
+                            ],
+    "status":  "done",
+    "dependencies":  [
+                         "feat-018"
+                     ]
+},
+{
+    "id":  "feat-020",
+    "name":  "Fix manual index and contextual section navigation",
+    "description":  "Repair the owner-reported false local-file error when clicking manual index links or opening contextual help; reproduce actual deployed Unicode/Google Drive path and preserve the existing WebBrowser, offline navigation restrictions, manual content, business behavior and database. Previous feat-019 evidence is historical and does not certify this newly reported failure.",
+    "type":  "behavior",
+    "authorized_files":  [
+                             "PRESENTATION/Forms/Ayuda/FrmAyuda.cs",
+                             "PRESENTATION/Forms/Ayuda/FrmAyuda.Designer.cs",
+                             "PRESENTATION/Forms/Ayuda/AyudaManual.cs",
+                             "PRESENTATION/Ayuda/manual.html",
+                             "docs/agents/development-and-testing.md",
+                             "docs/agents/known-limitations.md",
+                             "feature_list.json",
+                             "progress.md"
+                         ],
+    "dependencies":  [
+                         "feat-019"
+                     ],
+    "status":  "done",
+    "acceptance_criteria":  [
+                                {
+                                    "description":  "Reproduce or concretely explain both owner-reported paths using the real viewer and the effective deployment path, including Unicode, spaces and fragment event ordering; distinguish the prior fixture evidence from the failing real-path evidence.",
+                                    "verified":  true
+                                },
+                                {
+                                    "description":  "Manual index clicks, contextual entry, repeated navigation and return to index reach the correct section without a false file error, including waits beyond the load timeout and mouse/keyboard interaction.",
+                                    "verified":  true
+                                },
+                                {
+                                    "description":  "Missing/unreadable manual and missing section still report appropriate recovery; external/file/query/popup rejection, ES/EN viewer UI, disposal and business-state preservation remain intact; scoped build/runtime and independent evidence recorded.",
+                                    "verified":  true
+                                }
+                            ],
+    "visual_scenarios":  [
+                             {
+                                 "evidence":  "Checker 2026-11-16: independently reproduced pre-fix UI.exe 38A9D644 at 10.4s false error and rejected fragment clicks under AppDomain base TEMP Unicode; post-fix actual G PRESENTATION/bin/Debug UI.exe 88B76A53 in 64-bit and x86 native mouse clicks equipos/indice/reparaciones/index button/retry with heading -2/0 and 15s no error; 47/47 native index anchors reached in owned TEMP Unicode copy.",
+                                 "status":  "passed",
+                                 "description":  "Open the real viewer under the effective application path; click several index topics, return, repeat and wait beyond ten seconds. Verify heading/scroll and absence of false file error.",
+                                 "id":  "vis-help-fix-index"
+                             },
+                             {
+                                 "evidence":  "Checker 2026-11-16: eight order sections through the real internal AyudaManual.Mostrar on actual G UI assembly; headings -2; final wait 15s; owner native HWND disabled then re-enabled; text, number, DialogResult and observers preserved; Escape window-message path passed. Physical key injection was not delivered by the checker host; real business-form startup and owner DPI remain manual.",
+                                 "status":  "passed",
+                                 "description":  "Open real contextual help on representative sections and order tabs under Unicode/Google Drive deployment, mouse/keyboard and ES/EN; close and reopen without altering caller input.",
+                                 "id":  "vis-help-fix-context"
+                             },
+                             {
+                                 "evidence":  "Checker 2026-11-16: owned TEMP Unicode copy passed 42/42 checks: missing/locked/empty plus native retry, unknown and absent-anchor fallback, external/about/query/UNC/other-file/suffix/unknown-fragment/target-frame/popup rejection, 47/47 Permitida and native anchors; manual SHA256 5C5415035783669C747412A8189888765F8B5CEE9DF8E99EBABE20E9F0FA1696 restored byte-identical; ES/EN in-memory and 10 queued closes passed; no owner manual altered.",
+                                 "status":  "passed",
+                                 "description":  "Exercise missing/locked file, retry, absent anchor, blocked external/query/other file/popup routes and close/disposal, scoped to the help viewer without DB operations.",
+                                 "id":  "vis-help-fix-regression"
+                             }
+                         ],
+    "evidence":  "2026-11-16 Builder: pre-fix actual UI assembly/AppDomain base on G Unicode reproduced false timeout and rejected native fragment clicks; TEMP Unicode also failed, TEMP spaces-only did not. MSHTML returned ANSI-1252 URL escapes while DocumentCompleted used UTF-8; strict URL equality ignored complete readiness. Only FrmAyuda.cs implementation changed: exact canonical native URI alias, latest topic/pending, allowed fragment DOM scroll, idempotent readiness and bounded timeout/retry/disposal. Locked six-project Debug Any CPU build passed. Same-host postfix G/TEMP spaces/Unicode plus native heading/15s, 47 supplemental anchors, eight contexts, ES/EN/modal/disposal and owned TEMP error/guard tests recorded in progress.md. Checker 2026-11-16 independently reproduced the pre-fix false timeout at 10.4s on retained UI.exe 38A9D644 and then passed the delivered actual G UI.exe 88B76A53 at PRESENTATION/bin/Debug in 64-bit native index/context/retry/15s and x86 native index/retry/15s with headings -2/0; 47/47 native index anchors in owned TEMP Unicode; 42/42 guard checks; build 0 warnings/0 errors; 471/471 protected hashes and 19 other feature objects unchanged. Owner real business-form startup/DPI, ACL-denied, physical Escape delivery and a non-UI-reachable multi-Abrir synthetic stress remain disclosed; no DB/Main/product sweep."
+},
+{
+    "id":  "feat-021",
+    "name":  "Restore main-window help menu and footer click wiring",
+    "description":  "Fix owner-reported inert top Ayuda menu and bottom help button in FrmPrincipal, keeping the now-working index/contextual viewer unchanged. Existing handlers point to indice/inicio, but current Designer has no Click subscriptions. Preserve current owner-reserialized geometry/style/other events; narrowly remove trailing whitespace in this same Designer if required for the existing diff gate.",
+    "type":  "behavior",
+    "authorized_files":  [
+                             "PRESENTATION/Forms/FrmPrincipal.cs",
+                             "PRESENTATION/Forms/FrmPrincipal.Designer.cs",
+                             "docs/agents/development-and-testing.md",
+                             "docs/agents/known-limitations.md",
+                             "feature_list.json",
+                             "progress.md"
+                         ],
+    "dependencies":  [
+                         "feat-020"
+                     ],
+    "status":  "done",
+    "acceptance_criteria":  [
+                                {
+                                    "description":  "Both main-window controls have exactly one appropriate Click subscription to the existing handlers; current layout, text, checked state, other events and business logic are preserved.",
+                                    "verified":  true
+                                },
+                                {
+                                    "description":  "Native clicks on actual main-window controls open the real deployed viewer at indice from top menu and inicio from footer; closing and repeating opens only once, re-enables owner and preserves MDI state.",
+                                    "verified":  true
+                                },
+                                {
+                                    "description":  "The confirmed Unicode index/contextual repair remains unchanged and working; scoped locked build, native/static preservation and init/diff gates pass, with baseline same-Designer whitespace failure explicitly recorded.",
+                                    "verified":  true
+                                }
+                            ],
+    "visual_scenarios":  [
+                             {
+                                 "evidence":  "Independent Checker 2026-11-16: actual G Unicode deployed UI assembly, real FrmPrincipal constructor and InitializeComponent, only OnLoad overridden without base; physical mouse clicks on the top TSMI_Ayuda in x64 and x86 (ES and EN, normal and maximized; ES repeated) open exactly one owner-modal FrmAyuda at indice heading top 0, owner HWND disabled then re-enabled, native close and reopen without duplicate, preserved in-memory MDI input and DialogResult and no false error after 15s. Retained baseline UI-baseline.exe DA8CADAD constructed the same way has zero Click subscribers on both main controls, while current UI.exe 67C7A135 has exactly one.",
+                                 "status":  "passed",
+                                 "description":  "Real FrmPrincipal top-menu click opens indice without needing login or changing business data; close/reopen and confirm one viewer and owner re-enable.",
+                                 "id":  "vis-main-help-menu"
+                             },
+                             {
+                                 "evidence":  "Independent Checker 2026-11-16: physical mouse clicks on the actual footer BTN_Ayuda in x64 and x86 (ES and EN, normal and maximized; ES repeated) open exactly one owner-modal viewer at inicio heading top -2, owner disabled then re-enabled, native close and reopen without duplicate, preserved MDI text 21.75 and selection and DialogResult, no false error after 15s. Same safe host and actual deployed UI assembly; no product Load, Main or database.",
+                                 "status":  "passed",
+                                 "description":  "Real FrmPrincipal footer button click opens inicio, preserves MDI child/input, and can close/reopen without duplicate viewer or unintended action.",
+                                 "id":  "vis-main-help-footer"
+                             },
+                             {
+                                 "evidence":  "Independent Checker 2026-11-16: manual.html SHA256 5C541503 and FrmAyuda, helper and Designer byte-identical to the dirty baseline; on the actual UI assembly, native indice link to equipos, back to indice and the Index button, plus the unchanged contextual Mostrar(main,reparaciones), each reached heading -2/0 and waited 15s without false error and with owner re-enabled. Exactly the two Designer subscriptions changed besides trailing-whitespace trim; locked six-project build PASS and init/diff gates PASS.",
+                                 "status":  "passed",
+                                 "description":  "ES/EN labels, manual index/internal links and contextual helper keep working on effective Unicode path; compile and final structural gates, current Designer tokens/layout and unrelated files preserved.",
+                                 "id":  "vis-main-help-regression"
+                             }
+                         ],
+    "evidence":  "2026-11-16 independent Checker (fresh, read-only implementation): exact delta against the external dirty baseline is five paths (FrmPrincipal.Designer.cs, the two authorized guides, the two state files); 475/475 other protected hashes identical, all 20 other feature objects deep-identical, FrmPrincipal.cs and viewer/helper/manual.html byte-identical, 157 git status entries and 0 staged, HEAD ab31685 and branch unchanged. Designer normalization: removing exactly the two added Click lines and trimming terminal spaces/tabs leaves 393/393 lines identical; 64 whitespace-only lines; the baseline had exactly 28 git-diff-check trailing-whitespace errors in this same file versus HEAD and current diff --check is 0. Current compiled UI.exe 67C7A135 exposes exactly one FrmPrincipal Click subscriber on each control; retained baseline UI-baseline.exe DA8CADAD, constructed with its real constructor, exposes zero on both, which is the causal prefix evidence. Fresh external STA host used the actual Unicode and space deployed UI assembly, real constructor and InitializeComponent and only OnLoad overridden without base; native mouse input in x64 and x86: 14 open and close cycles each (ES and EN, normal and maximized, menu and footer; ES repeated, EN single), top menu reached indice heading 0 and footer inicio heading -2, one owner-modal viewer, owner HWND disabled and re-enabled, no second modal, MDI text/number/selection/DialogResult preserved, exactly one product Click per opening; 15s waits on both controls and on index/equipos/index/button/15s and unchanged contextual reparaciones/15s without false error. Locked six-project Debug/Any CPU build PASS with identical UI hash; init PASS 21 tasks/365 links/git diff --check 0. Limits: native DPI 96 only, owner 150 percent DPI not exercised; business Load/login/DB not run; x86 supplementary; owner should repeat both controls at real DPI."
+}
+]
 }

@@ -12,7 +12,6 @@ using MigraDoc.Rendering;
 
 namespace UI.Forms.Equipos
 {
-    // A UI snapshot, not an entity serializer: no repository access or hidden fields.
     internal sealed class EquipoExportacion
     {
         internal readonly List<string> Campos = new List<string>();
@@ -101,7 +100,6 @@ namespace UI.Forms.Equipos
             tabla.Borders.Width = 0.4;
             tabla.TopPadding = Unit.FromPoint(4);
             tabla.BottomPadding = Unit.FromPoint(4);
-            // Relative widths follow the visible grid field, including reordered columns.
             double total = datos.Campos.Sum(Peso);
             foreach (string campo in datos.Campos)
                 tabla.AddColumn(Unit.FromCentimeter(27.3 * Peso(campo) / total));
@@ -116,8 +114,6 @@ namespace UI.Forms.Equipos
             for (int n = 0; n < datos.Filas.Count; n++)
             {
                 var textos = datos.Campos.Select(c => Partir(Texto(datos.Filas[n][c], si, no))).ToList();
-                // MigraDoc cannot split a single oversized table row across pages.
-                // Continuation rows keep arbitrary long values without clipping/truncation.
                 int partes = textos.Max(t => t.Count);
                 for (int parte = 0; parte < partes; parte++)
                 {
@@ -181,7 +177,6 @@ namespace UI.Forms.Equipos
 
         private static string Envolver(string texto)
         {
-            // Soft break opportunities also handle serials/IMEIs without spaces.
             var salida = new StringBuilder();
             int longitud = 0;
             foreach (char c in texto)
@@ -210,7 +205,6 @@ namespace UI.Forms.Equipos
                     generar(archivo);
                     archivo.Flush(true);
                 }
-                // No delete-and-move fallback: unsupported atomic replacement fails safely.
                 if (reemplazar)
                     File.Replace(temporal, ruta, null);
                 else
@@ -222,7 +216,7 @@ namespace UI.Forms.Equipos
                 if (creado)
                 {
                     try { File.Delete(temporal); }
-                    catch (IOException) { /* Preserve original export failure; owned temp only. */ }
+                    catch (IOException) { }
                     catch (UnauthorizedAccessException) { }
                 }
             }

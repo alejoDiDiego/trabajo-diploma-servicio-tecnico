@@ -1,0 +1,81 @@
+@startuml
+title N02-12 - Desactivación, reactivación y ajuste
+autonumber
+hide footbox
+actor "Responsable de inventario o encargado" as Operador
+boundary FrmRepuestos as Maestro
+boundary FrmAjusteStock as Ajuste
+control RepuestoService
+control BitacoraService
+participant RepuestoRepository
+participant BitacoraRepository
+alt Desactivación
+    Operador -> Maestro : Desactivar
+    Maestro -> Maestro : Verificar permiso RepuestosDesactivar
+    Maestro --> Operador : Solicitar confirmación
+    Operador -> Maestro : Confirmar
+    Maestro -> RepuestoService : Desactivar(id)
+    RepuestoService -> RepuestoRepository : ObtenerPorId(id)
+    RepuestoRepository --> RepuestoService : Repuesto o null
+    alt Repuesto existente
+        RepuestoService -> RepuestoRepository : Desactivar(id)
+        RepuestoRepository --> RepuestoService : Finalización sin excepción (void)
+        RepuestoService -> BitacoraService : Registrar("Desactivacion de repuesto", detalle, "REPUESTOS")
+        BitacoraService -> BitacoraRepository : Insertar(entrada)
+        BitacoraRepository --> BitacoraService : Finalización sin excepción (void)
+        BitacoraService --> RepuestoService : Finalización sin excepción (void)
+        RepuestoService --> Maestro : Finalización sin excepción (void)
+        Maestro -> Maestro : Recargar catálogo
+    else Repuesto inexistente
+        RepuestoService --> Maestro : ReglaNegocioException
+    end
+else Reactivación
+    Operador -> Maestro : Reactivar
+    Maestro -> Maestro : Verificar permiso RepuestosDesactivar
+    Maestro --> Operador : Solicitar confirmación
+    Operador -> Maestro : Confirmar
+    Maestro -> RepuestoService : Reactivar(id)
+    RepuestoService -> RepuestoRepository : ObtenerPorId(id)
+    RepuestoRepository --> RepuestoService : Repuesto o null
+    alt Repuesto existente
+        RepuestoService -> RepuestoRepository : Reactivar(id)
+        RepuestoRepository --> RepuestoService : Finalización sin excepción (void)
+        RepuestoService -> BitacoraService : Registrar("Reactivacion de repuesto", detalle, "REPUESTOS")
+        BitacoraService -> BitacoraRepository : Insertar(entrada)
+        BitacoraRepository --> BitacoraService : Finalización sin excepción (void)
+        BitacoraService --> RepuestoService : Finalización sin excepción (void)
+        RepuestoService --> Maestro : Finalización sin excepción (void)
+        Maestro -> Maestro : Recargar catálogo
+    else Repuesto inexistente
+        RepuestoService --> Maestro : ReglaNegocioException
+    end
+end
+group Ajuste de stock
+    Operador -> Maestro : Ajustar stock
+    Maestro -> Maestro : Verificar permiso RepuestosEditar
+    Maestro -> Ajuste : Abrir con stock de referencia
+    Operador -> Ajuste : Informar delta y motivo
+    Operador -> Ajuste : Aceptar
+    Ajuste -> Ajuste : Validar cantidad distinta de cero y motivo
+    Ajuste --> Maestro : Datos aceptados y formulario cerrado
+    Maestro -> RepuestoService : AjustarStock(id, cantidad, motivo)
+    RepuestoService -> RepuestoRepository : ObtenerPorId(id)
+    RepuestoRepository --> RepuestoService : Repuesto o null
+    alt Repuesto existente y saldo resultante no negativo
+        RepuestoService -> RepuestoService : Resolver actor de sesión
+        RepuestoService -> RepuestoRepository : AjustarStock(id, cantidadFirmada, motivo, idUsuario)
+        RepuestoRepository -> RepuestoRepository : Bloquear y releer stock, actualizar e insertar movimiento
+        RepuestoRepository --> RepuestoService : Finalización sin excepción (void)
+        RepuestoService -> BitacoraService : Registrar("Ajuste de stock", detalle, "REPUESTOS")
+        BitacoraService -> BitacoraRepository : Insertar(entrada)
+        BitacoraRepository --> BitacoraService : Finalización sin excepción (void)
+        BitacoraService --> RepuestoService : Finalización sin excepción (void)
+        RepuestoService --> Maestro : Finalización sin excepción (void)
+        Maestro -> Maestro : Recargar catálogo
+        Maestro --> Operador : Confirmar ajuste
+    else Repuesto inexistente o stock insuficiente
+        RepuestoService --> Maestro : ReglaNegocioException
+        Maestro --> Operador : Informar impedimento
+    end
+end
+@enduml

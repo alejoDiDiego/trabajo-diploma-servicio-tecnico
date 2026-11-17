@@ -1,0 +1,113 @@
+@startuml
+title N02-06 - Emisión directa de original y adicional
+autonumber
+hide footbox
+actor "Recepcionista, encargado o técnico" as Operador
+boundary FrmOrdenServicioDetalle as Detalle
+control OrdenServicioService
+control BitacoraService
+participant OrdenServicioRepository
+participant PresupuestoRepository
+participant DiagnosticoRepository
+participant RepuestoRepository
+participant BitacoraRepository
+group Emisión de original
+    Operador -> Detalle : Emitir original con ítems en memoria
+    Detalle -> Detalle : Validar permiso y captura
+    Detalle -> OrdenServicioService : EmitirPresupuesto(idOrden, items, descuento, diasGarantia, observaciones)
+    OrdenServicioService -> OrdenServicioRepository : ObtenerPorId(idOrden)
+    OrdenServicioRepository --> OrdenServicioService : OrdenServicio o null
+    OrdenServicioService -> OrdenServicioRepository : TieneReingresosGarantia(idOrden)
+    OrdenServicioRepository --> OrdenServicioService : bool
+    OrdenServicioService -> DiagnosticoRepository : ObtenerPorOrden(idOrden)
+    DiagnosticoRepository --> OrdenServicioService : Diagnostico o null
+    OrdenServicioService -> PresupuestoRepository : ObtenerOriginal(idOrden)
+    PresupuestoRepository --> OrdenServicioService : Presupuesto o null
+    alt Orden PendientePresupuesto con diagnóstico reparable y sin original
+        loop Por cada ítem
+            OrdenServicioService -> RepuestoRepository : ObtenerPorId(idRepuesto)
+            RepuestoRepository --> OrdenServicioService : Repuesto o null
+        end
+        OrdenServicioService -> OrdenServicioService : ValidarItemsYCalcularSubtotal(items)
+        OrdenServicioService -> PresupuestoRepository : EmitirConDetalle(presupuesto, items, estadoAnterior, estadoNuevo, idUsuario, observacion)
+        PresupuestoRepository --> OrdenServicioService : Presupuesto
+        OrdenServicioService -> BitacoraService : Registrar("Presupuesto emitido", detalle, "ORDENES")
+        BitacoraService -> BitacoraRepository : Insertar(entrada)
+        BitacoraRepository --> BitacoraService : Finalización sin excepción (void)
+        BitacoraService --> OrdenServicioService : Finalización sin excepción (void)
+        OrdenServicioService --> Detalle : Presupuesto
+        Detalle -> Detalle : CargarOrden()
+        Detalle --> Operador : Confirmar emisión
+    else Estado o ítems no admitidos
+        OrdenServicioService --> Detalle : ReglaNegocioException o DetallePresupuestoInvalidoException
+        Detalle --> Operador : Informar impedimento
+    end
+end
+group Emisión de adicional
+    Operador -> Detalle : Emitir adicional con ítems en memoria
+    Detalle -> OrdenServicioService : EmitirAdicional(idOrden, items, descuento, diasGarantia, observaciones)
+    OrdenServicioService -> OrdenServicioRepository : ObtenerPorId(idOrden)
+    OrdenServicioRepository --> OrdenServicioService : OrdenServicio o null
+    OrdenServicioService -> OrdenServicioRepository : TieneReingresosGarantia(idOrden)
+    OrdenServicioRepository --> OrdenServicioService : bool
+    OrdenServicioService -> PresupuestoRepository : ObtenerOriginal(idOrden)
+    PresupuestoRepository --> OrdenServicioService : Presupuesto o null
+    OrdenServicioService -> PresupuestoRepository : ExisteAdicionalPendiente(idOrden)
+    PresupuestoRepository --> OrdenServicioService : bool
+    alt Original aprobado sin adicional pendiente
+        loop Por cada ítem
+            OrdenServicioService -> RepuestoRepository : ObtenerPorId(idRepuesto)
+            RepuestoRepository --> OrdenServicioService : Repuesto o null
+        end
+        OrdenServicioService -> OrdenServicioService : ValidarItemsYCalcularSubtotal(items)
+        OrdenServicioService -> PresupuestoRepository : EmitirAdicional(presupuesto, items, idUsuario)
+        PresupuestoRepository --> OrdenServicioService : Presupuesto
+        OrdenServicioService -> BitacoraService : Registrar("ADICIONAL_EMITIDO", detalle, "ORDENES")
+        BitacoraService -> BitacoraRepository : Insertar(entrada)
+        BitacoraRepository --> BitacoraService : Finalización sin excepción (void)
+        BitacoraService --> OrdenServicioService : Finalización sin excepción (void)
+        OrdenServicioService --> Detalle : Presupuesto
+        Detalle -> Detalle : CargarOrden()
+        Detalle --> Operador : Confirmar emisión
+    else Original no aprobado o adicional pendiente
+        OrdenServicioService --> Detalle : ReglaNegocioException o DetallePresupuestoInvalidoException
+        Detalle --> Operador : Informar impedimento
+    end
+end
+group Creación de borrador
+    Operador -> Detalle : Guardar borrador con ítems en memoria
+    Detalle -> OrdenServicioService : CrearBorrador(idOrden, tipo, items, descuento, diasGarantia, observaciones)
+    OrdenServicioService -> OrdenServicioRepository : ObtenerPorId(idOrden)
+    OrdenServicioRepository --> OrdenServicioService : OrdenServicio o null
+    OrdenServicioService -> OrdenServicioRepository : TieneReingresosGarantia(idOrden)
+    OrdenServicioRepository --> OrdenServicioService : bool
+    alt Tipo original
+        OrdenServicioService -> PresupuestoRepository : ExisteOriginalActivo(idOrden)
+        PresupuestoRepository --> OrdenServicioService : bool
+    else Tipo adicional
+        OrdenServicioService -> PresupuestoRepository : ObtenerOriginal(idOrden)
+        PresupuestoRepository --> OrdenServicioService : Presupuesto o null
+        OrdenServicioService -> PresupuestoRepository : ExisteAdicionalPendiente(idOrden)
+        PresupuestoRepository --> OrdenServicioService : bool
+    end
+    alt Documento admitido
+        loop Por cada ítem
+            OrdenServicioService -> RepuestoRepository : ObtenerPorId(idRepuesto)
+            RepuestoRepository --> OrdenServicioService : Repuesto o null
+        end
+        OrdenServicioService -> OrdenServicioService : ValidarItemsYCalcularSubtotal(items)
+        OrdenServicioService -> PresupuestoRepository : CrearBorrador(presupuesto, items)
+        PresupuestoRepository --> OrdenServicioService : Presupuesto
+        OrdenServicioService -> BitacoraService : Registrar("PRESUPUESTO_BORRADOR_CREADO", detalle, "ORDENES")
+        BitacoraService -> BitacoraRepository : Insertar(entrada)
+        BitacoraRepository --> BitacoraService : Finalización sin excepción (void)
+        BitacoraService --> OrdenServicioService : Finalización sin excepción (void)
+        OrdenServicioService --> Detalle : Presupuesto
+        Detalle -> Detalle : CargarOrden()
+        Detalle --> Operador : Confirmar borrador
+    else Documento no admitido
+        OrdenServicioService --> Detalle : ReglaNegocioException
+        Detalle --> Operador : Informar impedimento
+    end
+end
+@enduml

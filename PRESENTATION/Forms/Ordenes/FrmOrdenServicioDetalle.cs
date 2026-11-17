@@ -193,6 +193,7 @@ namespace UI.Forms.Ordenes
 
         public void Actualizar(IIdioma idiomaObservado)
         {
+            BTN_Ayuda.Text = UI.Forms.Ayuda.AyudaManual.Texto("Ayuda.Boton", "? Ayuda");
             if (idiomaObservado == null)
                 return;
 
@@ -232,6 +233,7 @@ namespace UI.Forms.Ordenes
 
         private void ActualizarTextos()
         {
+            BTN_Ayuda.Text = UI.Forms.Ayuda.AyudaManual.Texto("Ayuda.Boton", "? Ayuda");
             if (_sesionIdioma.idioma == null)
                 return;
 
@@ -1018,7 +1020,7 @@ namespace UI.Forms.Ordenes
 
             string problema = PedirTexto(
                 T("OrdenDetalle.CrearReingreso"),
-                T("OrdenDetalle.ReingresoProblema"));
+                T("OrdenDetalle.ReingresoProblema"), "garantia-reingreso");
 
             if (problema == null)
                 return;
@@ -1163,7 +1165,7 @@ namespace UI.Forms.Ordenes
                 dialogo.MaximizeBox = false;
                 dialogo.MinimizeBox = false;
                 dialogo.ShowInTaskbar = false;
-                dialogo.ClientSize = new Size(440, 140);
+                dialogo.ClientSize = new Size(440, 164);
 
                 Label lbl = new Label();
                 lbl.Text = T("OrdenDetalle.EvaluarRechazoPregunta");
@@ -1194,6 +1196,16 @@ namespace UI.Forms.Ordenes
                 btnRetiro.Click += (s, ev) => { resultado = 1; dialogo.DialogResult = DialogResult.OK; dialogo.Close(); };
                 dialogo.Controls.Add(btnRetiro);
 
+                Button btnAyuda = new Button();
+                btnAyuda.Name = "BTN_Ayuda";
+                btnAyuda.Tag = "Ayuda.Boton";
+                btnAyuda.Text = UI.Forms.Ayuda.AyudaManual.Texto("Ayuda.Boton", "? Ayuda");
+                btnAyuda.CausesValidation = false;
+                btnAyuda.DialogResult = DialogResult.None;
+                btnAyuda.Location = new System.Drawing.Point(12, 124);
+                btnAyuda.Size = new System.Drawing.Size(110, 28);
+                btnAyuda.Click += (s, ev) => UI.Forms.Ayuda.AyudaManual.Mostrar(dialogo, "garantia-evaluar");
+                dialogo.Controls.Add(btnAyuda);
                 if (dialogo.ShowDialog(this) != DialogResult.OK)
                     return -1;
 
@@ -2317,7 +2329,7 @@ namespace UI.Forms.Ordenes
 
             string motivo = PedirTexto(
                 T("OrdenDetalle.AnularPrueba"),
-                T("OrdenDetalle.MotivoAnulacion"));
+                T("OrdenDetalle.MotivoAnulacion"), "prueba-anular");
 
             if (motivo == null)
                 return;
@@ -3146,7 +3158,7 @@ namespace UI.Forms.Ordenes
 
             string motivo = PedirTexto(
                 T("OrdenDetalle.Anular"),
-                T("OrdenDetalle.MotivoAnulacion"));
+                T("OrdenDetalle.MotivoAnulacion"), "presupuesto-anular");
 
             if (motivo == null)
                 return;
@@ -3287,7 +3299,7 @@ namespace UI.Forms.Ordenes
 
             string motivo = PedirTexto(
                 T("OrdenDetalle.SolicitarAdicional"),
-                T("OrdenDetalle.Motivo"));
+                T("OrdenDetalle.Motivo"), "adicionales");
 
             if (motivo == null)
                 return;
@@ -3310,7 +3322,7 @@ namespace UI.Forms.Ordenes
             }
         }
 
-        private string PedirTexto(string titulo, string etiqueta)
+        private string PedirTexto(string titulo, string etiqueta, string seccion)
         {
             using (Form dialogo = new Form())
             {
@@ -3351,6 +3363,16 @@ namespace UI.Forms.Ordenes
                 dialogo.AcceptButton = btnAceptar;
                 dialogo.CancelButton = btnCancelar;
 
+                Button btnAyuda = new Button();
+                btnAyuda.Name = "BTN_Ayuda";
+                btnAyuda.Tag = "Ayuda.Boton";
+                btnAyuda.Text = UI.Forms.Ayuda.AyudaManual.Texto("Ayuda.Boton", "? Ayuda");
+                btnAyuda.CausesValidation = false;
+                btnAyuda.DialogResult = DialogResult.None;
+                btnAyuda.Location = new System.Drawing.Point(12, 108);
+                btnAyuda.Size = new System.Drawing.Size(110, 28);
+                btnAyuda.Click += (s, ev) => UI.Forms.Ayuda.AyudaManual.Mostrar(dialogo, seccion);
+                dialogo.Controls.Add(btnAyuda);
                 if (dialogo.ShowDialog(this) != DialogResult.OK)
                     return null;
 
@@ -3368,7 +3390,7 @@ namespace UI.Forms.Ordenes
                 dialogo.MaximizeBox = false;
                 dialogo.MinimizeBox = false;
                 dialogo.ShowInTaskbar = false;
-                dialogo.ClientSize = new System.Drawing.Size(300, 110);
+                dialogo.ClientSize = new System.Drawing.Size(300, 150);
 
                 Label lbl = new Label();
                 lbl.Text = etiqueta;
@@ -3401,6 +3423,16 @@ namespace UI.Forms.Ordenes
                 dialogo.AcceptButton = btnAceptar;
                 dialogo.CancelButton = btnCancelar;
 
+                Button btnAyuda = new Button();
+                btnAyuda.Name = "BTN_Ayuda";
+                btnAyuda.Tag = "Ayuda.Boton";
+                btnAyuda.Text = UI.Forms.Ayuda.AyudaManual.Texto("Ayuda.Boton", "? Ayuda");
+                btnAyuda.CausesValidation = false;
+                btnAyuda.DialogResult = DialogResult.None;
+                btnAyuda.Location = new System.Drawing.Point(12, 108);
+                btnAyuda.Size = new System.Drawing.Size(110, 28);
+                btnAyuda.Click += (s, ev) => UI.Forms.Ayuda.AyudaManual.Mostrar(dialogo, "consumo-devolver");
+                dialogo.Controls.Add(btnAyuda);
                 if (dialogo.ShowDialog(this) != DialogResult.OK)
                     return -1;
 
@@ -3486,7 +3518,7 @@ namespace UI.Forms.Ordenes
 
             string motivo = PedirTexto(
                 T("OrdenDetalle.CancelarEntrega"),
-                T("OrdenDetalle.Motivo"));
+                T("OrdenDetalle.Motivo"), "entrega-cancelar");
 
             if (motivo == null)
                 return;
@@ -3532,7 +3564,7 @@ namespace UI.Forms.Ordenes
 
             string motivo = PedirTexto(
                 T("OrdenDetalle.ReabrirPruebas"),
-                T("OrdenDetalle.Motivo"));
+                T("OrdenDetalle.Motivo"), "pruebas-reabrir");
 
             if (motivo == null)
                 return;
@@ -4109,6 +4141,20 @@ namespace UI.Forms.Ordenes
         {
             _sesionIdioma.DesregistrarObservador(this);
             base.OnFormClosed(e);
+        }
+
+        private void BTN_Ayuda_Click(object sender, EventArgs e)
+        {
+            string seccion;
+            if (TAB_Detalle.SelectedTab == TAB_Diagnostico) seccion = "diagnostico";
+            else if (TAB_Detalle.SelectedTab == TAB_Presupuesto) seccion = "presupuestos";
+            else if (TAB_Detalle.SelectedTab == TAB_Reparaciones) seccion = "reparaciones";
+            else if (TAB_Detalle.SelectedTab == TAB_Pruebas) seccion = "pruebas";
+            else if (TAB_Detalle.SelectedTab == TAB_Historial) seccion = "orden-historial";
+            else if (TAB_Detalle.SelectedTab == TAB_Entrega) seccion = "entrega";
+            else if (TAB_Detalle.SelectedTab == TAB_Garantia) seccion = "garantia-orden";
+            else seccion = "orden-recepcion";
+            UI.Forms.Ayuda.AyudaManual.Mostrar(this, seccion);
         }
     }
 }

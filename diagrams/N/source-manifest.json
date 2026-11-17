@@ -1,5 +1,9 @@
 {
   "schemaVersion": 1,
+  "archivalScope": "historical-public-chat-baseline",
+  "archivalBaseCommit": "fd9ac1ad83c6fc3799e3487a9d25988e557c7f12",
+  "currentSequenceRevisions": "diagrams/N/sequence-revisions.json",
+  "historicalHashesExplanation": "The 129 diagrams records describe the historical public-chat bodies archived by feat-014: path, bytes, sha256, title, seq, UTC time and block are origin metadata and were not rewritten. feat-015 revised the 16 N02-secuencia.puml files on 2026-11-09 from current source; for those 16 files the historical sha256/bytes no longer describe the current file, and sequence-revisions.json records the baseline and current hashes plus pages and source anchors. The other 113 .puml files remain historical and still match their manifest records. This manifest is not a current-source or runtime certification.",
   "sessionIdentifier": "session-63584204-d972-4062-9db5-b322ea00fcaf",
   "pathBase": "repository root",
   "normalization": "Canonical body = extracted fenced body with CRLF/CR replaced by LF only; no trim, reindent, Unicode normalization, added comments, labels, corrections or other content changes.",

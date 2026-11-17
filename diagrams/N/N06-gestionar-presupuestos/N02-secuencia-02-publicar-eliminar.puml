@@ -1,0 +1,83 @@
+@startuml
+title N02-06 - Borradores: publicación y eliminación
+autonumber
+hide footbox
+actor "Recepcionista, encargado o técnico" as Operador
+boundary FrmOrdenServicioDetalle as Detalle
+control OrdenServicioService
+control BitacoraService
+participant OrdenServicioRepository
+participant PresupuestoRepository
+participant DiagnosticoRepository
+participant RepuestoRepository
+participant BitacoraRepository
+group Publicación de borrador
+    Operador -> Detalle : Emitir borrador seleccionado
+    Detalle -> Detalle : Verificar permiso OrdenesEditar
+    Detalle -> OrdenServicioService : PublicarBorrador(idPresupuesto)
+    OrdenServicioService -> PresupuestoRepository : ObtenerPorId(idPresupuesto)
+    PresupuestoRepository --> OrdenServicioService : Presupuesto o null
+    OrdenServicioService -> OrdenServicioRepository : ObtenerPorId(idOrden)
+    OrdenServicioRepository --> OrdenServicioService : OrdenServicio o null
+    OrdenServicioService -> OrdenServicioRepository : TieneReingresosGarantia(idOrden)
+    OrdenServicioRepository --> OrdenServicioService : bool
+    alt Borrador en orden PendientePresupuesto
+        alt Original
+            OrdenServicioService -> DiagnosticoRepository : ObtenerPorOrden(idOrden)
+            DiagnosticoRepository --> OrdenServicioService : Diagnostico o null
+            OrdenServicioService -> PresupuestoRepository : ListarPorOrden(idOrden)
+            PresupuestoRepository --> OrdenServicioService : List<Presupuesto>
+        else Adicional
+            OrdenServicioService -> PresupuestoRepository : ObtenerOriginal(idOrden)
+            PresupuestoRepository --> OrdenServicioService : Presupuesto o null
+            OrdenServicioService -> PresupuestoRepository : ListarAdicionales(idOrden)
+            PresupuestoRepository --> OrdenServicioService : List<Presupuesto>
+        end
+        OrdenServicioService -> PresupuestoRepository : ListarDetalle(idPresupuesto)
+        PresupuestoRepository --> OrdenServicioService : List<DetallePresupuesto>
+        loop Por cada ítem del detalle
+            OrdenServicioService -> RepuestoRepository : ObtenerPorId(idRepuesto)
+            RepuestoRepository --> OrdenServicioService : Repuesto o null
+        end
+        OrdenServicioService -> OrdenServicioService : ValidarItemsYCalcularSubtotal(detalleDb)
+        OrdenServicioService -> PresupuestoRepository : PublicarBorrador(idPresupuesto, idUsuario)
+        PresupuestoRepository --> OrdenServicioService : Finalización sin excepción (void)
+        OrdenServicioService -> BitacoraService : Registrar("PRESUPUESTO_BORRADOR_PUBLICADO", detalle, "ORDENES")
+        BitacoraService -> BitacoraRepository : Insertar(entrada)
+        BitacoraRepository --> BitacoraService : Finalización sin excepción (void)
+        BitacoraService --> OrdenServicioService : Finalización sin excepción (void)
+        OrdenServicioService --> Detalle : Finalización sin excepción (void)
+        Detalle -> Detalle : CargarOrden()
+        Detalle --> Operador : Confirmar publicación
+    else Borrador inválido o documento duplicado
+        OrdenServicioService --> Detalle : ReglaNegocioException o DetallePresupuestoInvalidoException
+        Detalle --> Operador : Informar impedimento
+    end
+end
+group Eliminación de borrador
+    Operador -> Detalle : Eliminar borrador
+    Detalle --> Operador : Solicitar confirmación
+    Operador -> Detalle : Confirmar
+    Detalle -> OrdenServicioService : EliminarBorrador(idPresupuesto)
+    OrdenServicioService -> PresupuestoRepository : ObtenerPorId(idPresupuesto)
+    PresupuestoRepository --> OrdenServicioService : Presupuesto o null
+    OrdenServicioService -> OrdenServicioRepository : ObtenerPorId(idOrden)
+    OrdenServicioRepository --> OrdenServicioService : OrdenServicio o null
+    OrdenServicioService -> OrdenServicioRepository : TieneReingresosGarantia(idOrden)
+    OrdenServicioRepository --> OrdenServicioService : bool
+    alt Borrador eliminable
+        OrdenServicioService -> PresupuestoRepository : EliminarBorrador(idPresupuesto)
+        PresupuestoRepository --> OrdenServicioService : Finalización sin excepción (void)
+        OrdenServicioService -> BitacoraService : Registrar("PRESUPUESTO_ELIMINADO", detalle, "ORDENES")
+        BitacoraService -> BitacoraRepository : Insertar(entrada)
+        BitacoraRepository --> BitacoraService : Finalización sin excepción (void)
+        BitacoraService --> OrdenServicioService : Finalización sin excepción (void)
+        OrdenServicioService --> Detalle : Finalización sin excepción (void)
+        Detalle -> Detalle : CargarOrden()
+        Detalle --> Operador : Confirmar eliminación
+    else No es borrador o no admitido
+        OrdenServicioService --> Detalle : ReglaNegocioException
+        Detalle --> Operador : Informar impedimento
+    end
+end
+@enduml

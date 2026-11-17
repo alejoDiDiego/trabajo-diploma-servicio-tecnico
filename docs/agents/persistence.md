@@ -275,3 +275,13 @@ coverage-versus-visit section above), and since feat-011 the delivery-cancellati
 state-transition batches hold that same lock for the read-only original guard (see the
 read-only-original section above); that is inspected SQL, not proof of parallel correctness.
 No universal optimistic-concurrency guard or proven parallel safety should be inferred.
+
+## Conservative full backup and restore (feat-018)
+
+[BackupRepository](../../INFRASTRUCTURE/Features/Backups/BackupRepository.cs), `CrearAsync`, uses COPY_ONLY, CHECKSUM and a unique server file, then RESTORE VERIFYONLY WITH CHECKSUM. [BackupArchivoTransferencia](../../INFRASTRUCTURE/Features/Backups/BackupArchivoTransferencia.cs) copies it to a unique sibling local temp; `Publicar` moves/replaces only after completion. No pre-delete overwrite fallback exists.
+
+`PrepararRestauracionAsync` requires one checksum full backup set, rejects damaged/encrypted media and unsupported file types, verifies it and uses MOVE for **every** data/log logical file into GUID paths in the current server's default directories. The new candidate must be ONLINE, pass DBCC CHECKDB and expose the 30 expected dbo tables plus core user columns. This is a minimum structural signature, not a complete schema-version or malicious-backup certification. It never starts the app, repairs DV or seeds the candidate.
+
+`ActivarAsync` requires exclusive external maintenance (other sessions/locks cause refusal), clears own pools, takes a master session application lock and retains the original database under a GUID recovery name. Two database renames are **not atomic** and SQL RESTORE is **not transactional rollback**. Known-ID compensation attempts to restore the original name after an activation failure; every such failure exits the application and requires operator inspection. A local recovery record is written before the first ALTER under `%LOCALAPPDATA%\TPIntegrador\Backups`, with server, target, original/candidate IDs and names but no credentials. Power/process loss needs manual inspection of `sys.databases` by those IDs; never blindly retry, restart startup migrations or delete retained databases.
+
+Successful restore exits normally after invalidating session, so no cached forms/language continue on the restored DB. All candidates (including declined/failed ones), original recovery DBs and their physical files remain retained; there is deliberately no DROP or database-file cleanup. Operators need sufficient space/create/alter/backup rights and must separately authorize retention cleanup. Only strictly owned GUID transfer files are best-effort removed; cleanup failure may leave them behind without invalidating a successful backup.

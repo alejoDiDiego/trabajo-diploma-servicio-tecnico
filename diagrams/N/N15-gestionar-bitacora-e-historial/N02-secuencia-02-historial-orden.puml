@@ -1,0 +1,19 @@
+@startuml
+title N02-15 - Historial de la orden
+autonumber
+hide footbox
+actor "Personal autorizado" as Operador
+boundary FrmOrdenServicioDetalle as DetalleOrden
+control OrdenServicioService
+participant HistorialEstadoOrdenRepository
+group Consulta de historial
+    Operador -> DetalleOrden : Abrir orden autorizada
+    DetalleOrden -> OrdenServicioService : ListarHistorial(idOrden)
+    OrdenServicioService -> HistorialEstadoOrdenRepository : ListarPorOrden(idOrden)
+    HistorialEstadoOrdenRepository --> OrdenServicioService : List<HistorialEstadoOrden>
+    OrdenServicioService --> DetalleOrden : List<HistorialEstadoOrden>
+    DetalleOrden -> DetalleOrden : Resolver usuarios desde la caché de técnicos elegibles
+    Operador -> DetalleOrden : Seleccionar pestaña Historial
+    DetalleOrden --> Operador : Mostrar datos ya cargados
+end
+@enduml

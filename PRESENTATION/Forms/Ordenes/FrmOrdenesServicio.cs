@@ -85,6 +85,7 @@ namespace UI.Forms.Ordenes
 
         public void Actualizar(IIdioma idiomaObservado)
         {
+            BTN_Ayuda.Text = UI.Forms.Ayuda.AyudaManual.Texto("Ayuda.Boton", "? Ayuda");
             if (idiomaObservado == null)
                 return;
 
@@ -131,6 +132,7 @@ namespace UI.Forms.Ordenes
 
         private void ActualizarTextos()
         {
+            BTN_Ayuda.Text = UI.Forms.Ayuda.AyudaManual.Texto("Ayuda.Boton", "? Ayuda");
             if (_sesionIdioma.idioma == null)
                 return;
 
@@ -775,6 +777,16 @@ namespace UI.Forms.Ordenes
                 dlg.AcceptButton = btnOk;
                 dlg.CancelButton = btnCancel;
 
+                Button btnAyuda = new Button();
+                btnAyuda.Name = "BTN_Ayuda";
+                btnAyuda.Tag = "Ayuda.Boton";
+                btnAyuda.Text = UI.Forms.Ayuda.AyudaManual.Texto("Ayuda.Boton", "? Ayuda");
+                btnAyuda.CausesValidation = false;
+                btnAyuda.DialogResult = DialogResult.None;
+                btnAyuda.Location = new System.Drawing.Point(12, 105);
+                btnAyuda.Size = new System.Drawing.Size(110, 28);
+                btnAyuda.Click += (s, ev) => UI.Forms.Ayuda.AyudaManual.Mostrar(dlg, "orden-cancelar");
+                dlg.Controls.Add(btnAyuda);
                 if (dlg.ShowDialog(this) != DialogResult.OK)
                     return null;
 
@@ -889,6 +901,11 @@ namespace UI.Forms.Ordenes
         {
             _sesionIdioma.DesregistrarObservador(this);
             base.OnFormClosed(e);
+        }
+
+        private void BTN_Ayuda_Click(object sender, EventArgs e)
+        {
+            UI.Forms.Ayuda.AyudaManual.Mostrar(this, "ordenes");
         }
     }
 }

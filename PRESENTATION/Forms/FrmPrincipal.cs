@@ -9,6 +9,7 @@ using DOMAIN.Features.Idiomas;
 using SERVICES.Auth;
 using SERVICES.Idiomas;
 using UI.Forms.Auth;
+using UI.Forms.Backups;
 using UI.Forms.Bitacora;
 using UI.Forms.Catalogos;
 using UI.Forms.Clientes;
@@ -40,10 +41,13 @@ namespace UI.Forms
 
         public void Actualizar(IIdioma idiomaObservado)
         {
+            BTN_Ayuda.Text = UI.Forms.Ayuda.AyudaManual.Texto("Ayuda.Boton", "? Ayuda");
+            TSMI_Ayuda.Text = UI.Forms.Ayuda.AyudaManual.Texto("Ayuda.Menu", "Ayuda");
             if (idiomaObservado == null)
                 return;
 
             Text = idiomaObservado.BuscarTraduccion(Tag.ToString());
+            TSMI_AdministrarBackups.Text = idiomaObservado.BuscarTraduccion("Menu.AdministrarBackups");
             TSMI_IniciarSesion.Text = idiomaObservado.BuscarTraduccion(TSMI_IniciarSesion.Tag.ToString());
             TSMI_CerrarSesion.Text = idiomaObservado.BuscarTraduccion(TSMI_CerrarSesion.Tag.ToString());
             TSMI_AdministrarUsuarios.Text = idiomaObservado.BuscarTraduccion(TSMI_AdministrarUsuarios.Tag.ToString());
@@ -147,6 +151,9 @@ namespace UI.Forms
         private void ActualizarMenuUsuario()
         {
             bool haySesionActiva = SessionManager.HaySesionActiva();
+            bool puedeAdministrarBackups = haySesionActiva && TieneAlgunPermiso(CodigosPermiso.BackupsCrear, CodigosPermiso.BackupsRestaurar);
+            TSMI_AdministrarBackups.Visible = puedeAdministrarBackups;
+            TSMI_AdministrarBackups.Enabled = puedeAdministrarBackups;
             bool puedeVerUsuarios = TienePermiso(CodigosPermiso.UsuariosVer);
             bool puedeVerPermisos = TienePermiso(CodigosPermiso.PermisosVer);
             bool puedeAsignarPermisos = TienePermiso(CodigosPermiso.PermisosAsignarUsuarios);
@@ -756,6 +763,23 @@ namespace UI.Forms
                 MessageBoxIcon.Warning);
         }
 
+        private void TSMI_AdministrarBackups_Click(object sender, EventArgs e)
+        {
+            if (!TieneAlgunPermiso(CodigosPermiso.BackupsCrear, CodigosPermiso.BackupsRestaurar))
+            { MostrarAccesoDenegado(); return; }
+            using (var formulario = new FrmAdministrarBackups())
+            {
+                formulario.ShowDialog(this);
+                if (formulario.RequiereSalida) { Close(); return; }
+            }
+            ActualizarMenuUsuario();
+        }
+
+        internal bool PrepararRestauracionBackup()
+        {
+            foreach (Form formulario in MdiChildren) formulario.Close();
+            return MdiChildren.Length == 0;
+        }
         private void CerrarFormulariosHijos()
         {
             foreach (Form formulario in MdiChildren)
@@ -766,6 +790,16 @@ namespace UI.Forms
         {
             _sesionIdioma.DesregistrarObservador(this);
             base.OnFormClosed(e);
+        }
+
+        private void BTN_Ayuda_Click(object sender, EventArgs e)
+        {
+            UI.Forms.Ayuda.AyudaManual.Mostrar(this, "inicio");
+        }
+
+        private void TSMI_Ayuda_Click(object sender, EventArgs e)
+        {
+            UI.Forms.Ayuda.AyudaManual.Mostrar(this, "indice");
         }
     }
 }

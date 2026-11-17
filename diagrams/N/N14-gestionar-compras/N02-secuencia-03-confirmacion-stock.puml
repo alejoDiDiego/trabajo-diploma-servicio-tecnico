@@ -1,0 +1,52 @@
+@startuml
+title N02-14 - Confirmación con stock
+autonumber
+hide footbox
+actor "Responsable de compras o encargado" as Operador
+boundary FrmCompraDetalle as Detalle
+control CompraService
+control BitacoraService
+participant CompraRepository
+participant ProveedorRepository
+participant RepuestoRepository
+participant BitacoraRepository
+group Confirmación
+    Operador -> Detalle : Confirmar compra
+    Detalle --> Operador : Solicitar confirmación
+    Operador -> Detalle : Confirmar
+    opt Compra todavía nueva
+        Detalle -> CompraService : CrearBorrador(idProveedor, items, observaciones)
+        CompraService -> ProveedorRepository : ObtenerPorId(idProveedor)
+        ProveedorRepository --> CompraService : Proveedor o null
+        loop Por cada renglón
+            CompraService -> RepuestoRepository : ObtenerPorId(idRepuesto)
+            RepuestoRepository --> CompraService : Repuesto o null
+        end
+        CompraService -> CompraRepository : CrearBorradorConDetalle(compra, items)
+        CompraRepository --> CompraService : Compra
+        CompraService -> BitacoraService : Registrar("Compra creada", detalle, "COMPRAS")
+        BitacoraService -> BitacoraRepository : Insertar(entrada)
+        BitacoraRepository --> BitacoraService : Finalización sin excepción (void)
+        BitacoraService --> CompraService : Finalización sin excepción (void)
+        CompraService --> Detalle : Compra
+    end
+    Detalle -> CompraService : Confirmar(idCompra)
+    CompraService -> CompraRepository : ObtenerPorId(idCompra)
+    CompraRepository --> CompraService : Compra o null
+    alt Compra en borrador
+        CompraService -> CompraRepository : ConfirmarConStock(idCompra, idUsuario)
+        CompraRepository -> CompraRepository : Recorrer detalle, incrementar stock y costo, insertar movimientos
+        CompraRepository --> CompraService : Compra
+        CompraService -> BitacoraService : Registrar("Compra confirmada", detalle, "COMPRAS")
+        BitacoraService -> BitacoraRepository : Insertar(entrada)
+        BitacoraRepository --> BitacoraService : Finalización sin excepción (void)
+        BitacoraService --> CompraService : Finalización sin excepción (void)
+        CompraService --> Detalle : Compra
+        Detalle -> Detalle : CargarCompra()
+        Detalle --> Operador : Confirmar compra
+    else Compra no borrador o detalle inválido
+        CompraService --> Detalle : ReglaNegocioException
+        Detalle --> Operador : Informar impedimento
+    end
+end
+@enduml

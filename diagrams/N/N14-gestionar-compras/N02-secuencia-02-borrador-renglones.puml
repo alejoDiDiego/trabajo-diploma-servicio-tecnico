@@ -1,0 +1,81 @@
+@startuml
+title N02-14 - Borrador y renglones
+autonumber
+hide footbox
+actor "Responsable de compras o encargado" as Operador
+boundary FrmCompraDetalle as Detalle
+control CompraService
+control BitacoraService
+participant CompraRepository
+participant ProveedorRepository
+participant RepuestoRepository
+participant BitacoraRepository
+group Creación de borrador
+    Operador -> Detalle : Guardar borrador
+    Detalle -> Detalle : Validar proveedor y al menos un renglón
+    Detalle -> CompraService : CrearBorrador(idProveedor, items, observaciones)
+    CompraService -> ProveedorRepository : ObtenerPorId(idProveedor)
+    ProveedorRepository --> CompraService : Proveedor o null
+    loop Por cada renglón
+        CompraService -> RepuestoRepository : ObtenerPorId(idRepuesto)
+        RepuestoRepository --> CompraService : Repuesto o null
+    end
+    alt Proveedor y repuestos activos
+        CompraService -> CompraService : Compra.CrearBorrador(idProveedor, idUsuario, observaciones)
+        CompraService -> CompraRepository : CrearBorradorConDetalle(compra, items)
+        CompraRepository -> CompraRepository : Insertar cabecera, detalle y total
+        CompraRepository --> CompraService : Compra
+        CompraService -> BitacoraService : Registrar("Compra creada", detalle, "COMPRAS")
+        BitacoraService -> BitacoraRepository : Insertar(entrada)
+        BitacoraRepository --> BitacoraService : Finalización sin excepción (void)
+        BitacoraService --> CompraService : Finalización sin excepción (void)
+        CompraService --> Detalle : Compra
+        Detalle -> Detalle : CargarCompra()
+        Detalle --> Operador : Confirmar borrador
+    else Referencias no admitidas
+        CompraService --> Detalle : ReglaNegocioException
+        Detalle --> Operador : Informar impedimento
+    end
+end
+group Renglones de borrador existente
+    alt Agregar
+        Operador -> Detalle : Agregar renglón
+        Detalle -> CompraService : AgregarItem(idCompra, idRepuesto, cantidad, costoUnitario)
+        CompraService -> CompraRepository : ObtenerPorId(idCompra)
+        CompraRepository --> CompraService : Compra o null
+        CompraService -> RepuestoRepository : ObtenerPorId(idRepuesto)
+        RepuestoRepository --> CompraService : Repuesto o null
+        alt Compra en borrador y repuesto activo
+            CompraService -> CompraRepository : AgregarItem(idCompra, item)
+            CompraRepository --> CompraService : Finalización sin excepción (void)
+            CompraService -> BitacoraService : Registrar("Compra item agregado", detalle, "COMPRAS")
+            BitacoraService -> BitacoraRepository : Insertar(entrada)
+            BitacoraRepository --> BitacoraService : Finalización sin excepción (void)
+            BitacoraService --> CompraService : Finalización sin excepción (void)
+            CompraService --> Detalle : Finalización sin excepción (void)
+            Detalle -> Detalle : CargarCompra()
+        else No admitido
+            CompraService --> Detalle : ReglaNegocioException
+        end
+    else Quitar
+        Operador -> Detalle : Quitar renglón
+        Detalle -> CompraService : QuitarItem(idCompra, idDetalle)
+        CompraService -> CompraRepository : ObtenerPorId(idCompra)
+        CompraRepository --> CompraService : Compra o null
+        CompraService -> CompraRepository : ListarDetalle(idCompra)
+        CompraRepository --> CompraService : List<DetalleCompra>
+        alt Detalle pertenece a la compra en borrador
+            CompraService -> CompraRepository : QuitarItem(idDetalle)
+            CompraRepository --> CompraService : Finalización sin excepción (void)
+            CompraService -> BitacoraService : Registrar("Compra item quitado", detalle, "COMPRAS")
+            BitacoraService -> BitacoraRepository : Insertar(entrada)
+            BitacoraRepository --> BitacoraService : Finalización sin excepción (void)
+            BitacoraService --> CompraService : Finalización sin excepción (void)
+            CompraService --> Detalle : Finalización sin excepción (void)
+            Detalle -> Detalle : CargarCompra()
+        else Detalle ajeno o compra no borrador
+            CompraService --> Detalle : ReglaNegocioException
+        end
+    end
+end
+@enduml

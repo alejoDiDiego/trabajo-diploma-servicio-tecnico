@@ -1,0 +1,34 @@
+@startuml
+title N02-14 - Cancelación de borrador
+autonumber
+hide footbox
+actor "Responsable de compras o encargado" as Operador
+boundary FrmCompraDetalle as Detalle
+control CompraService
+control BitacoraService
+participant CompraRepository
+participant BitacoraRepository
+group Cancelación
+    Operador -> Detalle : Cancelar compra
+    Detalle --> Operador : Solicitar confirmación
+    Operador -> Detalle : Confirmar
+    Detalle -> CompraService : Cancelar(idCompra)
+    CompraService -> CompraRepository : ObtenerPorId(idCompra)
+    CompraRepository --> CompraService : Compra o null
+    alt Compra existente
+        CompraService -> CompraService : compraDb.CancelarBorrador()
+        CompraService -> CompraRepository : CancelarBorrador(idCompra)
+        CompraRepository --> CompraService : Finalización sin excepción (void)
+        CompraService -> BitacoraService : Registrar("Compra cancelada", detalle, "COMPRAS")
+        BitacoraService -> BitacoraRepository : Insertar(entrada)
+        BitacoraRepository --> BitacoraService : Finalización sin excepción (void)
+        BitacoraService --> CompraService : Finalización sin excepción (void)
+        CompraService --> Detalle : Finalización sin excepción (void)
+        Detalle -> Detalle : CargarCompra()
+        Detalle --> Operador : Confirmar cancelación
+    else Compra inexistente o no borrador
+        CompraService --> Detalle : ReglaNegocioException
+        Detalle --> Operador : Informar impedimento
+    end
+end
+@enduml

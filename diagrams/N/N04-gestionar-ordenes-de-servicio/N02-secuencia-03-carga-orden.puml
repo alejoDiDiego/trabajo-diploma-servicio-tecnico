@@ -1,0 +1,205 @@
+@startuml
+title N02-04 - CargarOrden con servicios y repositorios
+autonumber
+hide footbox
+boundary FrmOrdenServicioDetalle as Detalle
+control ClienteService
+control EquipoService
+control RepuestoService
+control OrdenServicioService
+control GarantiaService
+participant ClienteRepository
+participant EquipoRepository
+participant RepuestoRepository
+participant OrdenServicioRepository
+participant DiagnosticoRepository
+participant PresupuestoRepository
+participant EntregaRepository
+participant ReparacionRepository
+participant HistorialEstadoOrdenRepository
+participant GarantiaRepository
+participant EvaluacionGarantiaRepository
+group Orden y restricciones
+    Detalle -> OrdenServicioService : ObtenerPorId(idOrden)
+    OrdenServicioService -> OrdenServicioRepository : ObtenerPorId(idOrden)
+    OrdenServicioRepository --> OrdenServicioService : OrdenServicio o null
+    OrdenServicioService --> Detalle : OrdenServicio
+    Detalle -> OrdenServicioService : EsSoloConsultaPorReingresos(idOrden)
+    OrdenServicioService -> OrdenServicioRepository : TieneReingresosGarantia(idOrden)
+    OrdenServicioRepository --> OrdenServicioService : bool
+    OrdenServicioService --> Detalle : bool
+end
+group Información general
+    Detalle -> OrdenServicioService : ObtenerDiagnostico(idOrden)
+    OrdenServicioService -> OrdenServicioRepository : ObtenerPorId(idOrden)
+    OrdenServicioRepository --> OrdenServicioService : OrdenServicio o null
+    OrdenServicioService -> DiagnosticoRepository : ObtenerPorOrden(idOrden)
+    DiagnosticoRepository --> OrdenServicioService : Diagnostico o null
+    OrdenServicioService --> Detalle : Diagnostico o null
+    Detalle -> OrdenServicioService : ObtenerPresupuesto(idOrden)
+    OrdenServicioService -> OrdenServicioRepository : ObtenerPorId(idOrden)
+    OrdenServicioRepository --> OrdenServicioService : OrdenServicio o null
+    OrdenServicioService -> PresupuestoRepository : ObtenerOriginal(idOrden)
+    PresupuestoRepository --> OrdenServicioService : Presupuesto o null
+    OrdenServicioService --> Detalle : Presupuesto o null
+    Detalle -> OrdenServicioService : ObtenerEntrega(idOrden)
+    OrdenServicioService -> OrdenServicioRepository : ObtenerPorId(idOrden)
+    OrdenServicioRepository --> OrdenServicioService : OrdenServicio o null
+    OrdenServicioService -> EntregaRepository : ObtenerPorOrden(idOrden)
+    EntregaRepository --> OrdenServicioService : Entrega o null
+    OrdenServicioService --> Detalle : Entrega o null
+end
+group Referencias de recepción
+    opt Cliente histórico ausente del catálogo
+        Detalle -> ClienteService : ObtenerPorId(idCliente)
+        ClienteService -> ClienteRepository : ObtenerPorId(idCliente)
+        ClienteRepository --> ClienteService : Cliente o null
+        ClienteService --> Detalle : Cliente o null
+    end
+    Detalle -> EquipoService : ListarPorCliente(idCliente, true)
+    EquipoService -> EquipoRepository : ListarPorCliente(idCliente, true)
+    EquipoRepository --> EquipoService : List<Equipo>
+    EquipoService --> Detalle : List<Equipo>
+    opt Equipo histórico ausente de la lista
+        Detalle -> EquipoService : ObtenerPorId(idEquipo)
+        EquipoService -> EquipoRepository : ObtenerPorId(idEquipo)
+        EquipoRepository --> EquipoService : Equipo o null
+        EquipoService --> Detalle : Equipo o null
+    end
+end
+group Presupuestos
+    Detalle -> OrdenServicioService : ObtenerPresupuestoOriginal(idOrden)
+    OrdenServicioService -> OrdenServicioRepository : ObtenerPorId(idOrden)
+    OrdenServicioRepository --> OrdenServicioService : OrdenServicio o null
+    OrdenServicioService -> PresupuestoRepository : ObtenerOriginal(idOrden)
+    PresupuestoRepository --> OrdenServicioService : Presupuesto o null
+    OrdenServicioService --> Detalle : Presupuesto o null
+    Detalle -> OrdenServicioService : ListarAdicionales(idOrden)
+    OrdenServicioService -> OrdenServicioRepository : ObtenerPorId(idOrden)
+    OrdenServicioRepository --> OrdenServicioService : OrdenServicio o null
+    OrdenServicioService -> PresupuestoRepository : ListarAdicionales(idOrden)
+    PresupuestoRepository --> OrdenServicioService : List<Presupuesto>
+    OrdenServicioService --> Detalle : List<Presupuesto>
+    Detalle -> OrdenServicioService : ListarTodosPresupuestos(idOrden)
+    OrdenServicioService -> OrdenServicioRepository : ObtenerPorId(idOrden)
+    OrdenServicioRepository --> OrdenServicioService : OrdenServicio o null
+    OrdenServicioService -> PresupuestoRepository : ListarPorOrden(idOrden)
+    PresupuestoRepository --> OrdenServicioService : List<Presupuesto>
+    OrdenServicioService --> Detalle : List<Presupuesto>
+    Detalle -> OrdenServicioService : ExisteAdicionalPendiente(idOrden)
+    OrdenServicioService -> OrdenServicioRepository : ObtenerPorId(idOrden)
+    OrdenServicioRepository --> OrdenServicioService : OrdenServicio o null
+    OrdenServicioService -> PresupuestoRepository : ExisteAdicionalPendiente(idOrden)
+    PresupuestoRepository --> OrdenServicioService : bool
+    OrdenServicioService --> Detalle : bool
+    Detalle -> OrdenServicioService : PuedeCancelarSolicitud(idOrden)
+    OrdenServicioService -> OrdenServicioRepository : ObtenerPorId(idOrden)
+    OrdenServicioRepository --> OrdenServicioService : OrdenServicio o null
+    opt Orden en PendientePresupuesto
+        OrdenServicioService -> HistorialEstadoOrdenRepository : ListarPorOrden(idOrden)
+        HistorialEstadoOrdenRepository --> OrdenServicioService : List<HistorialEstadoOrden>
+        opt Origen de solicitud encontrado
+            OrdenServicioService -> PresupuestoRepository : ListarAdicionales(idOrden)
+            PresupuestoRepository --> OrdenServicioService : List<Presupuesto>
+        end
+    end
+    OrdenServicioService --> Detalle : bool
+    opt Presupuesto persistido seleccionado
+        Detalle -> OrdenServicioService : ObtenerPresupuestoPorId(idPresupuesto)
+        OrdenServicioService -> PresupuestoRepository : ObtenerPorId(idPresupuesto)
+        PresupuestoRepository --> OrdenServicioService : Presupuesto o null
+        OrdenServicioService --> Detalle : Presupuesto
+        Detalle -> OrdenServicioService : ListarDetalle(idPresupuesto)
+        OrdenServicioService -> PresupuestoRepository : ListarDetalle(idPresupuesto)
+        PresupuestoRepository --> OrdenServicioService : List<DetallePresupuesto>
+        OrdenServicioService --> Detalle : List<DetallePresupuesto>
+    end
+    Detalle -> OrdenServicioService : CalcularMontoAutorizado(idOrden)
+    OrdenServicioService -> OrdenServicioRepository : ObtenerPorId(idOrden)
+    OrdenServicioRepository --> OrdenServicioService : OrdenServicio o null
+    OrdenServicioService -> PresupuestoRepository : CalcularMontoAutorizado(idOrden)
+    PresupuestoRepository --> OrdenServicioService : decimal
+    OrdenServicioService --> Detalle : decimal
+end
+group Reparaciones y consumos
+    Detalle -> RepuestoService : Listar(true)
+    RepuestoService -> RepuestoRepository : Listar(true)
+    RepuestoRepository --> RepuestoService : List<Repuesto>
+    RepuestoService --> Detalle : List<Repuesto>
+    Detalle -> OrdenServicioService : ListarReparaciones(idOrden)
+    OrdenServicioService -> OrdenServicioRepository : ObtenerPorId(idOrden)
+    OrdenServicioRepository --> OrdenServicioService : OrdenServicio o null
+    OrdenServicioService -> ReparacionRepository : ListarPorOrden(idOrden)
+    ReparacionRepository --> OrdenServicioService : List<Reparacion>
+    OrdenServicioService --> Detalle : List<Reparacion>
+    Detalle -> RepuestoService : Listar(false)
+    RepuestoService -> RepuestoRepository : Listar(false)
+    RepuestoRepository --> RepuestoService : List<Repuesto>
+    RepuestoService --> Detalle : List<Repuesto>
+    opt Intervención seleccionada
+        Detalle -> OrdenServicioService : ListarConsumidos(idReparacion)
+        OrdenServicioService -> ReparacionRepository : ObtenerPorId(idReparacion)
+        ReparacionRepository --> OrdenServicioService : Reparacion o null
+        OrdenServicioService -> ReparacionRepository : ListarConsumidos(idReparacion)
+        ReparacionRepository --> OrdenServicioService : List<ReparacionRepuesto>
+        OrdenServicioService --> Detalle : List<ReparacionRepuesto>
+    end
+end
+group Pruebas
+    loop Por cada intervención
+        Detalle -> OrdenServicioService : ListarPruebas(idReparacion)
+        OrdenServicioService -> ReparacionRepository : ObtenerPorId(idReparacion)
+        ReparacionRepository --> OrdenServicioService : Reparacion o null
+        OrdenServicioService -> ReparacionRepository : ListarPruebas(idReparacion)
+        ReparacionRepository --> OrdenServicioService : List<Prueba>
+        OrdenServicioService --> Detalle : List<Prueba>
+    end
+    opt Lectura fallida de la intervención seleccionada
+        Detalle -> OrdenServicioService : ListarPruebas(idReparacionSeleccionada)
+        OrdenServicioService -> ReparacionRepository : ObtenerPorId(idReparacionSeleccionada)
+        ReparacionRepository --> OrdenServicioService : Reparacion o null
+        OrdenServicioService -> ReparacionRepository : ListarPruebas(idReparacionSeleccionada)
+        ReparacionRepository --> OrdenServicioService : List<Prueba>
+        OrdenServicioService --> Detalle : List<Prueba>
+    end
+end
+group Historial
+    Detalle -> OrdenServicioService : ListarHistorial(idOrden)
+    OrdenServicioService -> HistorialEstadoOrdenRepository : ListarPorOrden(idOrden)
+    HistorialEstadoOrdenRepository --> OrdenServicioService : List<HistorialEstadoOrden>
+    OrdenServicioService --> Detalle : List<HistorialEstadoOrden>
+end
+group Garantía y reingresos
+    Detalle -> OrdenServicioService : ListarReingresosGarantia(idOrden)
+    OrdenServicioService -> OrdenServicioRepository : ListarReingresosGarantia(idOrden)
+    OrdenServicioRepository --> OrdenServicioService : List<OrdenServicio>
+    OrdenServicioService --> Detalle : List<OrdenServicio>
+    opt Orden existente
+        Detalle -> GarantiaService : ObtenerPorOrden(idOrdenDeCobertura)
+        GarantiaService -> GarantiaRepository : ObtenerPorOrden(idOrdenDeCobertura)
+        GarantiaRepository --> GarantiaService : Garantia o null
+        alt Cobertura encontrada
+            GarantiaService --> Detalle : Garantia
+        else Cobertura ausente
+            GarantiaService --> Detalle : ReglaNegocioException
+            Detalle -> Detalle : Continuar sin cobertura
+        end
+    end
+    opt Reingreso con orden de origen
+        Detalle -> OrdenServicioService : ObtenerPorId(idOrdenOrigen)
+        OrdenServicioService -> OrdenServicioRepository : ObtenerPorId(idOrdenOrigen)
+        OrdenServicioRepository --> OrdenServicioService : OrdenServicio o null
+        OrdenServicioService --> Detalle : OrdenServicio
+        Detalle -> GarantiaService : ObtenerEvaluacionPorReingreso(idOrden)
+        GarantiaService -> EvaluacionGarantiaRepository : ObtenerPorReingreso(idOrden)
+        EvaluacionGarantiaRepository --> GarantiaService : EvaluacionGarantia o null
+        alt Evaluación encontrada
+            GarantiaService --> Detalle : EvaluacionGarantia
+        else Evaluación ausente
+            GarantiaService --> Detalle : ReglaNegocioException
+            Detalle -> Detalle : Continuar sin evaluación
+        end
+    end
+end
+Detalle -> Detalle : Actualizar presentación y acciones disponibles
+@enduml

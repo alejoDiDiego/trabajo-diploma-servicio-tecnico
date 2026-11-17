@@ -1,0 +1,119 @@
+@startuml
+title N02-02 - Alta y modificación de equipos
+autonumber
+hide footbox
+actor "Recepcionista o encargado" as Operador
+boundary FrmEquipos as Pantalla
+boundary FrmEquipoEditar as Dialogo
+control ClienteService as ClientesSvc
+control TipoEquipoService as TiposSvc
+control MarcaService as MarcasSvc
+control EquipoService as Servicio
+control BitacoraService as Auditoria
+participant ClienteRepository as Clientes
+participant TipoEquipoRepository as Tipos
+participant MarcaRepository as Marcas
+participant EquipoRepository as Equipos
+participant BitacoraRepository as Bitacora
+group Alta
+    Operador -> Pantalla : Crear
+    Pantalla -> Pantalla : Verificar permiso EquiposCrear
+    Pantalla -> Dialogo : Abrir formulario nuevo con cliente preseleccionado
+    Dialogo -> ClientesSvc : Listar(false)
+    ClientesSvc -> Clientes : Listar(false)
+    Clientes --> ClientesSvc : List<Cliente>
+    ClientesSvc --> Dialogo : List<Cliente>
+    Dialogo -> TiposSvc : Listar(false)
+    TiposSvc -> Tipos : Listar(false)
+    Tipos --> TiposSvc : List<TipoEquipo>
+    TiposSvc --> Dialogo : List<TipoEquipo>
+    Dialogo -> MarcasSvc : Listar(false)
+    MarcasSvc -> Marcas : Listar(false)
+    Marcas --> MarcasSvc : List<Marca>
+    MarcasSvc --> Dialogo : List<Marca>
+    Operador -> Dialogo : Completar y aceptar
+    Dialogo -> Dialogo : Validar referencias obligatorias
+    Dialogo --> Pantalla : Datos aceptados
+    Pantalla -> Servicio : Crear(idCliente, idTipoEquipo, idMarca, modelo, numeroSerie, imei, color, observaciones)
+    Servicio -> Servicio : Equipo.CrearNuevo(...)
+    Servicio -> Clientes : ObtenerPorId(idCliente)
+    Clientes --> Servicio : Cliente o null
+    Servicio -> Tipos : ObtenerPorId(idTipoEquipo)
+    Tipos --> Servicio : TipoEquipo o null
+    Servicio -> Marcas : ObtenerPorId(idMarca)
+    Marcas --> Servicio : Marca o null
+    alt Referencias activas y existentes
+        Servicio -> Equipos : Agregar(equipo)
+        Equipos --> Servicio : Equipo
+        Servicio -> Auditoria : Registrar("Creacion de equipo", detalle, "EQUIPOS")
+        Auditoria -> Bitacora : Insertar(entrada)
+        Bitacora --> Auditoria : Finalización sin excepción (void)
+        Auditoria --> Servicio : Finalización sin excepción (void)
+        Servicio --> Pantalla : Equipo
+        Pantalla -> Pantalla : Recargar catálogos y listado
+        Pantalla --> Operador : Confirmar alta
+    else Referencia inexistente o inactiva
+        Servicio --> Pantalla : ReglaNegocioException
+        Pantalla --> Operador : Informar impedimento
+    end
+end
+group Modificación
+    Operador -> Pantalla : Editar
+    Pantalla -> Pantalla : Verificar permiso EquiposEditar
+    Pantalla -> Servicio : ObtenerPorId(id)
+    Servicio -> Equipos : ObtenerPorId(id)
+    Equipos --> Servicio : Equipo o null
+    Servicio --> Pantalla : Equipo
+    Pantalla -> Dialogo : Abrir con equipo seleccionado
+    Dialogo -> ClientesSvc : Listar(false)
+    ClientesSvc -> Clientes : Listar(false)
+    Clientes --> ClientesSvc : List<Cliente>
+    ClientesSvc --> Dialogo : List<Cliente>
+    opt Cliente histórico ausente de la lista
+        Dialogo -> ClientesSvc : ObtenerPorId(idCliente)
+        ClientesSvc -> Clientes : ObtenerPorId(idCliente)
+        Clientes --> ClientesSvc : Cliente o null
+        ClientesSvc --> Dialogo : Cliente o null
+    end
+    Dialogo -> TiposSvc : Listar(true)
+    TiposSvc -> Tipos : Listar(true)
+    Tipos --> TiposSvc : List<TipoEquipo>
+    TiposSvc --> Dialogo : List<TipoEquipo>
+    Dialogo -> MarcasSvc : Listar(true)
+    MarcasSvc -> Marcas : Listar(true)
+    Marcas --> MarcasSvc : List<Marca>
+    MarcasSvc --> Dialogo : List<Marca>
+    Operador -> Dialogo : Modificar y aceptar
+    Dialogo -> Dialogo : Validar referencias obligatorias
+    Dialogo --> Pantalla : Datos aceptados
+    Pantalla -> Servicio : Modificar(id, idCliente, idTipoEquipo, idMarca, modelo, numeroSerie, imei, color, observaciones)
+    Servicio -> Equipos : ObtenerPorId(id)
+    Equipos --> Servicio : Equipo o null
+    alt Equipo existente
+        Servicio -> Clientes : ObtenerPorId(idCliente)
+        Clientes --> Servicio : Cliente o null
+        Servicio -> Tipos : ObtenerPorId(idTipoEquipo)
+        Tipos --> Servicio : TipoEquipo o null
+        Servicio -> Marcas : ObtenerPorId(idMarca)
+        Marcas --> Servicio : Marca o null
+        alt Referencias activas y existentes
+            Servicio -> Servicio : Equipo.CargarDesdeDB(..., activo)
+            Servicio -> Equipos : Modificar(equipoActualizado)
+            Equipos --> Servicio : Finalización sin excepción (void)
+            Servicio -> Auditoria : Registrar("Modificacion de equipo", detalle, "EQUIPOS")
+            Auditoria -> Bitacora : Insertar(entrada)
+            Bitacora --> Auditoria : Finalización sin excepción (void)
+            Auditoria --> Servicio : Finalización sin excepción (void)
+            Servicio --> Pantalla : Equipo
+            Pantalla -> Pantalla : Recargar catálogos y listado
+            Pantalla --> Operador : Confirmar modificación
+        else Referencia inexistente o inactiva
+            Servicio --> Pantalla : ReglaNegocioException
+            Pantalla --> Operador : Informar impedimento
+        end
+    else Equipo inexistente
+        Servicio --> Pantalla : ReglaNegocioException
+        Pantalla --> Operador : Informar impedimento
+    end
+end
+@enduml

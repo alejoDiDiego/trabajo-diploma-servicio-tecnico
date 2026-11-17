@@ -1,0 +1,177 @@
+@startuml
+title N02-04 - Operaciones sobre la orden y retorno al listado
+autonumber
+hide footbox
+actor "Recepcionista, encargado o técnico" as Operador
+boundary FrmOrdenesServicio as Listado
+boundary FrmOrdenServicioDetalle as Detalle
+control ClienteService
+control EquipoService
+control OrdenServicioService
+control UsuarioPermisoService
+control BitacoraService
+participant ClienteRepository
+participant EquipoRepository
+participant OrdenServicioRepository
+participant UsuarioRepository
+participant UsuarioPermisoRepository
+participant PermisoRepository
+participant BitacoraRepository
+alt Modificar recepción
+    Operador -> Detalle : Modificar datos y guardar
+    Detalle -> Detalle : Validar permiso y captura
+    Detalle -> OrdenServicioService : ModificarRecepcion(idOrden, problema, estadoFisico, accesorios, observacionesIngreso)
+    OrdenServicioService -> OrdenServicioRepository : ObtenerPorId(idOrden)
+    OrdenServicioRepository --> OrdenServicioService : OrdenServicio o null
+    OrdenServicioService -> OrdenServicioRepository : TieneReingresosGarantia(idOrden)
+    OrdenServicioRepository --> OrdenServicioService : bool
+    alt Orden modificable
+        OrdenServicioService -> OrdenServicioRepository : ActualizarRecepcion(idOrden, problema, estadoFisico, accesorios, observacionesIngreso)
+        OrdenServicioRepository --> OrdenServicioService : Finalización sin excepción (void)
+        OrdenServicioService -> BitacoraService : Registrar("Modificacion de recepcion", detalle, "ORDENES")
+        BitacoraService -> BitacoraRepository : Insertar(entrada)
+        BitacoraRepository --> BitacoraService : Finalización sin excepción (void)
+        BitacoraService --> OrdenServicioService : Finalización sin excepción (void)
+        OrdenServicioService --> Detalle : OrdenServicio
+        Detalle -> Detalle : CargarOrden()
+        Detalle --> Operador : Mostrar resultado
+    else Orden bloqueada o no admitida
+        OrdenServicioService --> Detalle : OrdenOriginalSoloConsultaException o ReglaNegocioException
+        Detalle --> Operador : Informar impedimento
+    end
+else Asignar técnico
+    Operador -> Detalle : Seleccionar técnico y asignar
+    Detalle -> Detalle : Validar permiso y selección
+    Detalle -> OrdenServicioService : AsignarTecnico(idOrden, idTecnico)
+    OrdenServicioService -> OrdenServicioRepository : ObtenerPorId(idOrden)
+    OrdenServicioRepository --> OrdenServicioService : OrdenServicio o null
+    OrdenServicioService -> OrdenServicioRepository : TieneReingresosGarantia(idOrden)
+    OrdenServicioRepository --> OrdenServicioService : bool
+    alt Orden modificable
+        OrdenServicioService -> UsuarioRepository : ObtenerPorId(idTecnico)
+        UsuarioRepository --> OrdenServicioService : Usuario o null
+        OrdenServicioService -> UsuarioPermisoService : ListarPermisosEfectivos(idTecnico)
+        UsuarioPermisoService -> UsuarioRepository : ObtenerPorId(idTecnico)
+        UsuarioRepository --> UsuarioPermisoService : Usuario
+        UsuarioPermisoService -> UsuarioPermisoRepository : ListarPermisosAsignados(idTecnico)
+        UsuarioPermisoRepository --> UsuarioPermisoService : List<PermisoComponent>
+        loop Por cada familia asignada entre permisosAsignados
+            UsuarioPermisoService -> PermisoRepository : ListarSubArbol(permisoAsignado.Id)
+            PermisoRepository --> UsuarioPermisoService : List<PermisoComponent>
+        end
+        UsuarioPermisoService --> OrdenServicioService : List<PermisoComponent>
+        alt Técnico elegible
+            OrdenServicioService -> OrdenServicioRepository : AsignarTecnico(idOrden, idTecnico)
+            OrdenServicioRepository --> OrdenServicioService : Finalización sin excepción (void)
+            OrdenServicioService -> BitacoraService : Registrar("Tecnico asignado", detalle, "ORDENES")
+            BitacoraService -> BitacoraRepository : Insertar(entrada)
+            BitacoraRepository --> BitacoraService : Finalización sin excepción (void)
+            BitacoraService --> OrdenServicioService : Finalización sin excepción (void)
+            OrdenServicioService --> Detalle : Finalización sin excepción (void)
+            Detalle -> Detalle : CargarOrden()
+            Detalle --> Operador : Mostrar asignación
+        else Técnico no elegible
+            OrdenServicioService --> Detalle : ReglaNegocioException
+            Detalle --> Operador : Informar impedimento
+        end
+    else Orden bloqueada
+        OrdenServicioService --> Detalle : OrdenOriginalSoloConsultaException
+        Detalle --> Operador : Informar bloqueo
+    end
+else Cancelar desde el listado
+    Operador -> Listado : Seleccionar orden y cancelar
+    Listado -> Listado : Validar permiso y selección
+    Listado -> OrdenServicioService : EsSoloConsultaPorReingresos(idOrden)
+    OrdenServicioService -> OrdenServicioRepository : TieneReingresosGarantia(idOrden)
+    OrdenServicioRepository --> OrdenServicioService : bool
+    OrdenServicioService --> Listado : bool
+    alt Orden bloqueada o estado visual no cancelable
+        Listado --> Operador : Informar impedimento
+    else Intento permitido
+        Listado --> Operador : Solicitar confirmación
+        Operador -> Listado : Responder
+        opt Confirmación afirmativa
+            Listado --> Operador : Solicitar motivo
+            Operador -> Listado : Informar motivo o abandonar
+            opt Motivo no vacío
+                Listado -> OrdenServicioService : CancelarOrden(idOrden, motivo)
+                OrdenServicioService -> OrdenServicioRepository : ObtenerPorId(idOrden)
+                OrdenServicioRepository --> OrdenServicioService : OrdenServicio o null
+                OrdenServicioService -> OrdenServicioRepository : TieneReingresosGarantia(idOrden)
+                OrdenServicioRepository --> OrdenServicioService : bool
+                alt Orden modificable
+                    OrdenServicioService -> OrdenServicioRepository : CambiarEstadoConHistorial(idOrden, estadoAnterior, Cancelado, idUsuario, "Orden cancelada", resultado, observacionResultado, null)
+                    OrdenServicioRepository --> OrdenServicioService : int
+                    alt codigoResultado = 0
+                        OrdenServicioService -> BitacoraService : Registrar("Orden cancelada", detalle, "ORDENES")
+                        BitacoraService -> BitacoraRepository : Insertar(entrada)
+                        BitacoraRepository --> BitacoraService : Finalización sin excepción (void)
+                        BitacoraService --> OrdenServicioService : Finalización sin excepción (void)
+                        OrdenServicioService --> Listado : Finalización sin excepción (void)
+                        alt Cliente específico
+                            Listado -> OrdenServicioService : ListarPorCliente(idCliente, incluirEntregadas)
+                            OrdenServicioService -> OrdenServicioRepository : ListarPorCliente(idCliente, incluirEntregadas)
+                            OrdenServicioRepository --> OrdenServicioService : List<OrdenServicio>
+                            OrdenServicioService --> Listado : List<OrdenServicio>
+                        else Todos los clientes
+                            Listado -> OrdenServicioService : Listar(incluirEntregadas)
+                            OrdenServicioService -> OrdenServicioRepository : Listar(incluirEntregadas)
+                            OrdenServicioRepository --> OrdenServicioService : List<OrdenServicio>
+                            OrdenServicioService --> Listado : List<OrdenServicio>
+                        end
+                        Listado -> Listado : AplicarFiltro()
+                        Listado --> Operador : Mostrar cancelación
+                    else codigoResultado = -2
+                        OrdenServicioService --> Listado : OrdenOriginalSoloConsultaException
+                        Listado --> Operador : Informar bloqueo
+                    end
+                else Cancelación no admitida
+                    OrdenServicioService --> Listado : ReglaNegocioException
+                    Listado --> Operador : Informar impedimento
+                end
+            end
+        end
+    end
+end
+opt Cierre del detalle
+    Operador -> Detalle : Cerrar
+    Detalle --> Listado : Retorno de ShowDialog
+    Listado -> ClienteService : Listar(false)
+    ClienteService -> ClienteRepository : Listar(false)
+    ClienteRepository --> ClienteService : List<Cliente>
+    ClienteService --> Listado : List<Cliente>
+    Listado -> EquipoService : Listar(true)
+    EquipoService -> EquipoRepository : Listar(true)
+    EquipoRepository --> EquipoService : List<Equipo>
+    EquipoService --> Listado : List<Equipo>
+    Listado -> OrdenServicioService : ListarTecnicosElegibles()
+    OrdenServicioService -> UsuarioRepository : Listar()
+    UsuarioRepository --> OrdenServicioService : List<Usuario>
+    loop Por cada usuario activo
+        OrdenServicioService -> UsuarioPermisoService : ListarPermisosEfectivos(idUsuario)
+        UsuarioPermisoService -> UsuarioRepository : ObtenerPorId(idUsuario)
+        UsuarioRepository --> UsuarioPermisoService : Usuario
+        UsuarioPermisoService -> UsuarioPermisoRepository : ListarPermisosAsignados(idUsuario)
+        UsuarioPermisoRepository --> UsuarioPermisoService : List<PermisoComponent>
+        loop Por cada familia asignada entre permisosAsignados
+            UsuarioPermisoService -> PermisoRepository : ListarSubArbol(permisoAsignado.Id)
+            PermisoRepository --> UsuarioPermisoService : List<PermisoComponent>
+        end
+        UsuarioPermisoService --> OrdenServicioService : List<PermisoComponent>
+    end
+    OrdenServicioService --> Listado : List<Usuario>
+    alt Cliente específico
+        Listado -> OrdenServicioService : ListarPorCliente(idCliente, incluirEntregadas)
+        OrdenServicioService -> OrdenServicioRepository : ListarPorCliente(idCliente, incluirEntregadas)
+        OrdenServicioRepository --> OrdenServicioService : List<OrdenServicio>
+        OrdenServicioService --> Listado : List<OrdenServicio>
+    else Todos los clientes
+        Listado -> OrdenServicioService : Listar(incluirEntregadas)
+        OrdenServicioService -> OrdenServicioRepository : Listar(incluirEntregadas)
+        OrdenServicioRepository --> OrdenServicioService : List<OrdenServicio>
+        OrdenServicioService --> Listado : List<OrdenServicio>
+    end
+    Listado -> Listado : AplicarFiltro()
+    Listado --> Operador : Mostrar listado
+end
+@enduml

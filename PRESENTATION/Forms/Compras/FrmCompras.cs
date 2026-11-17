@@ -65,6 +65,7 @@ namespace UI.Forms.Compras
 
         public void Actualizar(IIdioma idiomaObservado)
         {
+            BTN_Ayuda.Text = UI.Forms.Ayuda.AyudaManual.Texto("Ayuda.Boton", "? Ayuda");
             if (idiomaObservado == null)
                 return;
 
@@ -105,6 +106,7 @@ namespace UI.Forms.Compras
 
         private void ActualizarTextos()
         {
+            BTN_Ayuda.Text = UI.Forms.Ayuda.AyudaManual.Texto("Ayuda.Boton", "? Ayuda");
             if (_sesionIdioma.idioma == null)
                 return;
 
@@ -571,6 +573,16 @@ namespace UI.Forms.Compras
                 dialogo.AcceptButton = btnAceptar;
                 dialogo.CancelButton = btnCancelar;
 
+                Button btnAyuda = new Button();
+                btnAyuda.Name = "BTN_Ayuda";
+                btnAyuda.Tag = "Ayuda.Boton";
+                btnAyuda.Text = UI.Forms.Ayuda.AyudaManual.Texto("Ayuda.Boton", "? Ayuda");
+                btnAyuda.CausesValidation = false;
+                btnAyuda.DialogResult = DialogResult.None;
+                btnAyuda.Location = new System.Drawing.Point(12, 108);
+                btnAyuda.Size = new System.Drawing.Size(110, 28);
+                btnAyuda.Click += (s, ev) => UI.Forms.Ayuda.AyudaManual.Mostrar(dialogo, "compra-anular");
+                dialogo.Controls.Add(btnAyuda);
                 if (dialogo.ShowDialog(this) != DialogResult.OK)
                     return null;
 
@@ -659,6 +671,11 @@ namespace UI.Forms.Compras
         {
             _sesionIdioma.DesregistrarObservador(this);
             base.OnFormClosed(e);
+        }
+
+        private void BTN_Ayuda_Click(object sender, EventArgs e)
+        {
+            UI.Forms.Ayuda.AyudaManual.Mostrar(this, "compras");
         }
     }
 }

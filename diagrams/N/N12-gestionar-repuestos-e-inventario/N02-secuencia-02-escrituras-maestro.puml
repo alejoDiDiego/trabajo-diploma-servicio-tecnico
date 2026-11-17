@@ -1,0 +1,45 @@
+@startuml
+title N02-12 - Escrituras del maestro
+autonumber
+hide footbox
+actor "Responsable de inventario o encargado" as Operador
+boundary FrmRepuestos as Maestro
+control RepuestoService
+control BitacoraService
+participant RepuestoRepository
+participant BitacoraRepository
+group Alta
+    Maestro -> RepuestoService : Crear(codigo, descripcion, stockInicial, stockMinimo, costoActual, precioReferencia)
+    RepuestoService -> RepuestoService : Repuesto.CrearNuevo(...)
+    RepuestoService -> RepuestoRepository : Crear(repuesto, idUsuario)
+    RepuestoRepository -> RepuestoRepository : Insertar repuesto y movimiento inicial si stock mayor a cero
+    RepuestoRepository --> RepuestoService : Repuesto
+    RepuestoService -> BitacoraService : Registrar("Creacion de repuesto", detalle, "REPUESTOS")
+    BitacoraService -> BitacoraRepository : Insertar(entrada)
+    BitacoraRepository --> BitacoraService : Finalización sin excepción (void)
+    BitacoraService --> RepuestoService : Finalización sin excepción (void)
+    RepuestoService --> Maestro : Repuesto
+    Maestro -> Maestro : Recargar catálogo
+    Maestro --> Operador : Confirmar alta
+end
+group Modificación
+    Maestro -> RepuestoService : Modificar(id, codigo, descripcion, stockMinimo, costoActual, precioReferencia)
+    RepuestoService -> RepuestoRepository : ObtenerPorId(id)
+    RepuestoRepository --> RepuestoService : Repuesto o null
+    alt Repuesto existente
+        RepuestoService -> RepuestoService : Repuesto.CargarDesdeDB(..., stockActual, activo)
+        RepuestoService -> RepuestoRepository : Modificar(repuestoActualizado)
+        RepuestoRepository --> RepuestoService : Finalización sin excepción (void)
+        RepuestoService -> BitacoraService : Registrar("Modificacion de repuesto", detalle, "REPUESTOS")
+        BitacoraService -> BitacoraRepository : Insertar(entrada)
+        BitacoraRepository --> BitacoraService : Finalización sin excepción (void)
+        BitacoraService --> RepuestoService : Finalización sin excepción (void)
+        RepuestoService --> Maestro : Repuesto
+        Maestro -> Maestro : Recargar catálogo
+        Maestro --> Operador : Confirmar modificación
+    else Repuesto inexistente
+        RepuestoService --> Maestro : ReglaNegocioException
+        Maestro --> Operador : Informar impedimento
+    end
+end
+@enduml

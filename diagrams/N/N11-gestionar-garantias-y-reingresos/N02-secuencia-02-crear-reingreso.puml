@@ -1,0 +1,70 @@
+@startuml
+title N02-11 - Creación de reingreso
+autonumber
+hide footbox
+actor "Recepcionista, técnico o encargado" as Operador
+boundary FrmOrdenServicioDetalle as Detalle
+control OrdenServicioService
+control GarantiaService
+control BitacoraService
+participant OrdenServicioRepository
+participant ClienteRepository
+participant EquipoRepository
+participant GarantiaRepository
+participant BitacoraRepository
+group Creación
+    Operador -> Detalle : Crear reingreso
+    Detalle -> Detalle : Verificar permiso OrdenesCrear
+    Detalle -> OrdenServicioService : ObtenerReingresoGarantiaAbierto(idOrden)
+    OrdenServicioService -> OrdenServicioRepository : ObtenerReingresoGarantiaAbierto(idOrden)
+    OrdenServicioRepository --> OrdenServicioService : OrdenServicio o null
+    OrdenServicioService --> Detalle : OrdenServicio o null
+    alt Sin reingreso abierto
+        Operador -> Detalle : Informar problema
+        Detalle --> Operador : Solicitar confirmación
+        Operador -> Detalle : Confirmar
+        Detalle -> OrdenServicioService : CrearReingresoGarantia(idOrden, idCliente, problema, "", "", "")
+        OrdenServicioService -> OrdenServicioRepository : ObtenerPorId(idOrden)
+        OrdenServicioRepository --> OrdenServicioService : OrdenServicio o null
+        OrdenServicioService -> ClienteRepository : ObtenerPorId(idCliente)
+        ClienteRepository --> OrdenServicioService : Cliente o null
+        OrdenServicioService -> EquipoRepository : ObtenerPorId(idEquipo)
+        EquipoRepository --> OrdenServicioService : Equipo o null
+        OrdenServicioService -> GarantiaService : ObtenerVigente(idOrden)
+        GarantiaService -> GarantiaRepository : ObtenerVigente(idOrden)
+        GarantiaRepository --> GarantiaService : Garantia o null
+        GarantiaService --> OrdenServicioService : Garantia
+        alt Cobertura vigente
+        OrdenServicioService -> OrdenServicioRepository : ObtenerReingresoGarantiaAbierto(idOrden)
+        OrdenServicioRepository --> OrdenServicioService : OrdenServicio o null
+        alt Origen elegible y sin hermano abierto
+            OrdenServicioService -> OrdenServicioService : OrdenServicio.CrearNuevoGarantia(...)
+            OrdenServicioService -> OrdenServicioRepository : CrearConHistorial(reingreso, idUsuarioAlta, "Reingreso por garantia", out codigoAlta)
+            OrdenServicioRepository -> OrdenServicioRepository : Revalidar origen Entregado, Reparado y entrega registrada
+            OrdenServicioRepository --> OrdenServicioService : OrdenServicio o null
+            alt codigoAlta = -3
+                OrdenServicioService --> Detalle : ReingresoGarantiaOrigenNoDisponibleException
+            else codigoAlta = -1
+                OrdenServicioService --> Detalle : ReingresoGarantiaAbiertoException
+            else Reingreso creado
+                OrdenServicioService -> BitacoraService : Registrar("Reingreso por garantia", detalle, "ORDENES")
+                BitacoraService -> BitacoraRepository : Insertar(entrada)
+                BitacoraRepository --> BitacoraService : Finalización sin excepción (void)
+                BitacoraService --> OrdenServicioService : Finalización sin excepción (void)
+                OrdenServicioService --> Detalle : OrdenServicio
+                Detalle -> Detalle : CargarOrden()
+                Detalle --> Operador : Informar número de reingreso
+            end
+        else Origen no elegible o ya tiene reingreso abierto
+            OrdenServicioService --> Detalle : ReglaNegocioException
+            Detalle --> Operador : Informar impedimento
+        end
+        else Cobertura ausente
+            OrdenServicioService --> Detalle : ReglaNegocioException
+            Detalle --> Operador : Informar cobertura no vigente
+        end
+    else Reingreso abierto existente
+        Detalle --> Operador : Informar reingreso abierto
+    end
+end
+@enduml

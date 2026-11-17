@@ -1,0 +1,65 @@
+@startuml
+title N02-16 - Reportes tabulares
+autonumber
+hide footbox
+actor "Encargado, administrador o usuario autorizado" as Operador
+boundary FrmReportes as Reportes
+control ReporteService
+participant ReporteRepository
+group Carga inicial
+    Operador -> Reportes : Abrir reportes
+    Reportes -> Reportes : Verificar permiso ReportesVer
+    alt Acceso permitido
+        Reportes -> ReporteService : ContarOrdenesPorEstado(desde, hasta)
+        ReporteService -> ReporteService : ValidarRango(desde, hasta)
+        ReporteService -> ReporteRepository : ContarOrdenesPorEstado(desde, hasta)
+        ReporteRepository --> ReporteService : DataTable
+        ReporteService --> Reportes : DataTable
+        Reportes --> Operador : Mostrar reporte inicial
+    else Acceso denegado
+        Reportes --> Operador : Informar acceso denegado
+    end
+end
+group Reportes tabulares
+    Operador -> Reportes : Seleccionar tipo y criterios
+    Operador -> Reportes : Buscar
+    alt Órdenes por estado
+        Reportes -> ReporteService : ContarOrdenesPorEstado(desde, hasta)
+        ReporteService -> ReporteService : ValidarRango(desde, hasta)
+        ReporteService -> ReporteRepository : ContarOrdenesPorEstado(desde, hasta)
+        ReporteRepository --> ReporteService : DataTable
+        ReporteService --> Reportes : DataTable
+    else Órdenes por resultado
+        Reportes -> ReporteService : ContarOrdenesPorResultado(desde, hasta)
+        ReporteService -> ReporteService : ValidarRango(desde, hasta)
+        ReporteService -> ReporteRepository : ContarOrdenesPorResultado(desde, hasta)
+        ReporteRepository --> ReporteService : DataTable
+        ReporteService --> Reportes : DataTable
+    else Reparaciones por técnico
+        Reportes -> ReporteService : ReparacionesPorTecnico(desde, hasta)
+        ReporteService -> ReporteService : ValidarRango(desde, hasta)
+        ReporteService -> ReporteRepository : ReparacionesPorTecnico(desde, hasta)
+        ReporteRepository --> ReporteService : DataTable
+        ReporteService --> Reportes : DataTable
+    else Repuestos más utilizados
+        Reportes -> ReporteService : RepuestosMasUtilizados(top, desde, hasta)
+        ReporteService -> ReporteService : ValidarRango(desde, hasta)
+        ReporteService -> ReporteRepository : RepuestosMasUtilizados(top, desde, hasta)
+        ReporteRepository --> ReporteService : DataTable
+        ReporteService --> Reportes : DataTable
+    else Compras por proveedor
+        Reportes -> ReporteService : ComprasPorProveedor(desde, hasta)
+        ReporteService -> ReporteService : ValidarRango(desde, hasta)
+        ReporteService -> ReporteRepository : ComprasPorProveedor(desde, hasta)
+        ReporteRepository --> ReporteService : DataTable
+        ReporteService --> Reportes : DataTable
+    else Evaluaciones por estado
+        Reportes -> ReporteService : EvaluacionesPorEstado(desde, hasta)
+        ReporteService -> ReporteService : ValidarRango(desde, hasta)
+        ReporteService -> ReporteRepository : EvaluacionesPorEstado(desde, hasta)
+        ReporteRepository --> ReporteService : DataTable
+        ReporteService --> Reportes : DataTable
+    end
+    Reportes --> Operador : Mostrar grilla
+end
+@enduml

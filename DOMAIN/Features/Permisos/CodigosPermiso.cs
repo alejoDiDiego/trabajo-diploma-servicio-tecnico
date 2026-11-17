@@ -3,6 +3,9 @@ namespace DOMAIN.Features.Permisos
     public static class CodigosPermiso
     {
         // Codigos estables usados por el sistema para validar accesos.
+        public const string BackupsCrear = "BACKUPS_CREAR";
+        public const string BackupsRestaurar = "BACKUPS_RESTAURAR";
+
         public const string UsuariosVer = "USUARIOS_VER";
         public const string UsuariosCrear = "USUARIOS_CREAR";
         public const string UsuariosEditar = "USUARIOS_EDITAR";

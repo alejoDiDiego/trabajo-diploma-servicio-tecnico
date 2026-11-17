@@ -468,7 +468,9 @@ namespace REPOSITORY.Features.Permisos
                 ('Ver compras', 'COMPRAS_VER', NULL, NULL),
                 ('Crear compras', 'COMPRAS_CREAR', NULL, NULL),
                 ('Cancelar compras', 'COMPRAS_CANCELAR', NULL, NULL),
-                ('Ver reportes', 'REPORTES_VER', NULL, NULL);
+                ('Ver reportes', 'REPORTES_VER', NULL, NULL),
+                ('Crear backup', 'BACKUPS_CREAR', NULL, NULL),
+                ('Restaurar backup', 'BACKUPS_RESTAURAR', NULL, NULL);
 
                 UPDATE p
                 SET p.nombre = s.nombre,
@@ -671,6 +673,8 @@ namespace REPOSITORY.Features.Permisos
                 ('Administrador', NULL, 'Gestion repuestos'),
                 ('Administrador', NULL, 'Gestion proveedores'),
                 ('Administrador', NULL, 'Gestion compras'),
+                ('Administrador', 'BACKUPS_CREAR', NULL),
+                ('Administrador', 'BACKUPS_RESTAURAR', NULL),
                 ('Administrador', 'REPORTES_VER', NULL),
                 ('Administrador', 'INTEGRIDAD_RECALCULAR', NULL),
                 ('Administrador', 'BITACORA_VER', NULL),

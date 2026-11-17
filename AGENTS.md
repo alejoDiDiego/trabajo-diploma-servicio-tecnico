@@ -98,7 +98,9 @@ historical branch, remote, or dirty-state descriptions are not the current check
 - Effective permission descendants may be shared by several families.
 - Composite permission membership is not exclusive UML composition/ownership.
 - Forms observe `SesionIdioma`; use translation keys in `Tag` and existing update conventions.
-- Keep generated technical documentation/comments professional and English by default.
+- Keep technical documentation professional and English by default unless requested otherwise.
+- Do not add English source-code comments. Avoid unnecessary comments; essential comments must be in Spanish.
+- Preserve third-party licenses/notices and generated boilerplate; do not broadly clean up historical comments.
 - Preserve existing ES/EN UI conventions when extending the application.
 - DVH/DVV verification currently covers `Usuarios`, not all business tables.
 - Do not silently recalculate integrity to erase evidence of a mismatch.

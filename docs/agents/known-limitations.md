@@ -30,7 +30,7 @@ Do not automatically upgrade PDFsharp to a differently licensed release.
 No application startup or database access was authorized for the Builder. Save dialog physical
 interaction, ES/EN, effective viewer/denied/no-session access and small/large DPI layout remain
 owner/manual and independent Checker gates; supporting synthetic exports are not visual acceptance.
-Backup/restore and indexed HTML help (conditional PDF alternative only) remain backlog-only,
+Historical at feat-017 Builder: backup/restore and indexed HTML help were backlog-only,
 subject to detailed planning and explicit owner continuation after each preceding owner gate.
 ## Highest-priority confirmed risks
 
@@ -230,3 +230,29 @@ Do not claim concurrent correctness based on source locks or a sequential harnes
 Future notes are planning inputs only. Do not implement them during onboarding/documentation
 work, declare a checkpoint complete because these guides exist, or treat them as permission to
 change frameworks, schema, data, Git history, or published branches.
+
+## feat-018 safety limits (implementation; independent acceptance pending)
+
+The [backup service](../../APPLICATION/Features/Backups/BackupService.cs) restores into a new validated candidate, never in-place over the original. Extra disk space and elevated SQL permissions are required. Remote SQL transfer, FILESTREAM/other non-D/L types, encrypted or multi-set media and backups without checksums are refused. Local Windows sharing/SQL account access and Docker CLI availability are deployment prerequisites, not automatically repaired.
+
+Cutover consists of non-atomic renames, with known-ID compensation and retained original/candidates. Power loss, severed connection, external DBA changes or failed compensation may require manual recovery; no universal rollback guarantee is offered. External users must stop work before activation; another app instance is not globally disabled by this modal dialog. Recovery journals under `%LOCALAPPDATA%\TPIntegrador\Backups` identify names/IDs before changes. An uncertain activation forces app exit; do not restart initialization until a DBA verifies/restores the configured name. DBCC plus minimum app structure checks do not guarantee every schema/semantic invariant or trust hostile backups.
+
+Candidates/recovery databases are never automatically dropped, even on final No/cancel/error; space accumulates until separately approved operator cleanup. Transfer cleanup is best-effort, may leave owned GUID staging files, and never deletes safety backups/recovery DBs. Closing waits for the actual SQL/copy stage, which may be long; there is no pretend Task cancellation rollback. Atomic local replacement requires filesystem support; concurrent authorized overwrite remains normal path-based last-writer-wins behavior.
+
+## Help viewer trust boundary (feat-019)
+
+[FrmAyuda](../../PRESENTATION/Forms/Ayuda/FrmAyuda.cs) uses the existing Windows WinForms WebBrowser engine, not WebView2. Its top-level navigation is restricted to the canonical local manual and known anchors, with queries/UNC/other files/external URLs and popups refused; drop, context menu and browser shortcuts are disabled and ObjectForScripting is not assigned. FileDownload is a non-cancelable EventHandler: stopping the browser is defensive, not a download sandbox. Distributed HTML must remain trusted static content, without scripts, frames, forms, objects, embedded/remote assets, CSS imports or download links. These guards do not sandbox arbitrary or replaced hostile HTML or promise power-loss/OS security. No registry/browser-emulation or framework/package change is made. The manual stays Spanish in EN UI. Missing files offer retry/close; a missing known topic falls back once to the index, without a navigation loop. Native behavior/layout coverage must be read from current progress evidence, not inferred from these source facts.
+
+Builder-only layout observation (2026-11-16): inert Designer layouts at synthetic 100/150% passed help bounds/text/overlap checks. Synthetic 200% scaling after Show constrained order-detail client height to 1071 px, while both new help and the unchanged existing Close control stayed at y=1280. This is a disclosed synthetic viewport limitation, not an actual OS-DPI certification or authorization to repair the legacy business layout. Native evidence used 96 DPI only; see current progress before accepting layout coverage.
+
+## Owner-reported help navigation repair (feat-020; not independently accepted)
+
+Measured pre-fix failure: the actual deployed UI assembly on the Google Drive Unicode path loaded the manual, but MSHTML returned ANSI-1252 URL escapes while DocumentCompleted used UTF-8. The old equality/readiness guard ignored completion; native links were rejected and the ten-second timer falsely reported a local-file failure. A TEMP Unicode deployment reproduced it; an ASCII deployment with spaces did not. Historical feat-019 fixture passes therefore do not certify this path.
+
+[FrmAyuda](../../PRESENTATION/Forms/Ayuda/FrmAyuda.cs) now recognizes only the canonical file and its exact round-trippable native-code-page URL representation, applies allowed fragments through DOM scrolling, retains the latest requested topic for retry, and checks canonical top-document readiness before timeout failure. Real read failures still show retry/close; missing sections fall back once to the index. This is not a generic file allowlist expansion, alternate browser, active-content sandbox or registry-emulation change. The manual, helper, Designer and existing form wiring are unchanged. Read the current Builder/Checker evidence in [progress.md](../../progress.md); DB-free owner fixtures do not certify startup of business forms, database behavior, other Windows code pages or untested real DPI settings.
+
+## Main-window help event wiring (feat-021; independent acceptance pending)
+
+The owner confirmed that the prior Unicode index/context repair works but that the main top Ayuda and footer help controls do nothing. The existing [FrmPrincipal](../../PRESENTATION/Forms/FrmPrincipal.cs) handlers already choose indice/inicio. A fresh baseline build of the actual UI assembly reproduced native MouseDown/Click on both displayed controls without any viewer; its Designer had neither subscription. The targeted change adds exactly those two Click subscriptions in [InitializeComponent](../../PRESENTATION/Forms/FrmPrincipal.Designer.cs), plus terminal-space/tab removal in that same file to resolve the existing whitespace gate. Current layout, Checked/CheckState, all other events and FrmPrincipal.cs are preserved; unrelated missing subscriptions are not repaired.
+
+Builder native evidence uses the real constructor, Designer, controls, handlers and viewer from the deployed UI assembly, not stubbed wiring. An external OnLoad override deliberately suppresses the database-querying Load path; a synthetic in-memory MDI child tests preservation, not business-form startup. ES/EN main help labels use only the safe Actualizar(null) return path. Native DPI was 96; retaining the 150%-serialized source dimensions does not certify the owner's actual 150% OS-DPI, all monitor configurations or business Load. No Main, login, database, configuration write, registry change or product sweep is part of this help-only check. Read current logs and independent acceptance state in [progress.md](../../progress.md); the owner should repeat both controls at their real DPI/window state without accepting any business operation merely for this test.

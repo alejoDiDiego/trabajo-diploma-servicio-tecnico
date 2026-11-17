@@ -1,0 +1,65 @@
+@startuml
+title N02-02 - Desactivación, reactivación y recarga
+autonumber
+hide footbox
+actor "Recepcionista o encargado" as Operador
+boundary FrmEquipos as Pantalla
+control EquipoService as Servicio
+control BitacoraService as Auditoria
+participant EquipoRepository as Equipos
+participant BitacoraRepository as Bitacora
+alt Desactivación confirmada
+    Operador -> Pantalla : Desactivar
+    Pantalla -> Pantalla : Verificar permiso EquiposDesactivar
+    Pantalla --> Operador : Solicitar confirmación
+    Operador -> Pantalla : Confirmar
+    Pantalla -> Servicio : Desactivar(id)
+    Servicio -> Equipos : ObtenerPorId(id)
+    Equipos --> Servicio : Equipo o null
+    alt Equipo existente
+        Servicio -> Equipos : Desactivar(id)
+        Equipos --> Servicio : Finalización sin excepción (void)
+        Servicio -> Auditoria : Registrar("Desactivacion de equipo", detalle, "EQUIPOS")
+        Auditoria -> Bitacora : Insertar(entrada)
+        Bitacora --> Auditoria : Finalización sin excepción (void)
+        Auditoria --> Servicio : Finalización sin excepción (void)
+        Servicio --> Pantalla : Finalización sin excepción (void)
+    else Equipo inexistente
+        Servicio --> Pantalla : ReglaNegocioException
+    end
+else Reactivación confirmada
+    Operador -> Pantalla : Reactivar
+    Pantalla -> Pantalla : Verificar permiso EquiposDesactivar
+    Pantalla --> Operador : Solicitar confirmación
+    Operador -> Pantalla : Confirmar
+    Pantalla -> Servicio : Reactivar(id)
+    Servicio -> Equipos : ObtenerPorId(id)
+    Equipos --> Servicio : Equipo o null
+    alt Equipo existente
+        Servicio -> Equipos : Reactivar(id)
+        Equipos --> Servicio : Finalización sin excepción (void)
+        Servicio -> Auditoria : Registrar("Reactivacion de equipo", detalle, "EQUIPOS")
+        Auditoria -> Bitacora : Insertar(entrada)
+        Bitacora --> Auditoria : Finalización sin excepción (void)
+        Auditoria --> Servicio : Finalización sin excepción (void)
+        Servicio --> Pantalla : Finalización sin excepción (void)
+    else Equipo inexistente
+        Servicio --> Pantalla : ReglaNegocioException
+    end
+end
+opt Desactivación o reactivación completada sin excepción
+    alt Cliente específico
+        Pantalla -> Servicio : ListarPorCliente(idCliente, incluirInactivos)
+        Servicio -> Equipos : ListarPorCliente(idCliente, incluirInactivos)
+        Equipos --> Servicio : List<Equipo>
+        Servicio --> Pantalla : List<Equipo>
+    else Todos los clientes
+        Pantalla -> Servicio : Listar(incluirInactivos)
+        Servicio -> Equipos : Listar(incluirInactivos)
+        Equipos --> Servicio : List<Equipo>
+        Servicio --> Pantalla : List<Equipo>
+    end
+    Pantalla -> Pantalla : AplicarFiltro()
+    Pantalla --> Operador : Presentar resultado
+end
+@enduml

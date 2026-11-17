@@ -1,0 +1,39 @@
+@startuml
+title N02-16 - Tasas de aprobación y aceptación
+autonumber
+hide footbox
+actor "Encargado, administrador o usuario autorizado" as Operador
+boundary FrmReportes as Reportes
+control ReporteService
+participant ReporteRepository
+group Tasa de aprobación de presupuestos
+    Operador -> Reportes : Seleccionar TasaAprobacion y Buscar
+    Reportes -> ReporteService : ContarPresupuestosPorEstado(desde, hasta)
+    ReporteService -> ReporteService : ValidarRango(desde, hasta)
+    ReporteService -> ReporteRepository : ContarPresupuestosPorEstado(desde, hasta)
+    ReporteRepository --> ReporteService : DataTable
+    ReporteService --> Reportes : DataTable
+    Reportes -> ReporteService : TasaAprobacionPresupuestos(desde, hasta)
+    ReporteService -> ReporteService : ValidarRango(desde, hasta)
+    ReporteService -> ReporteRepository : ContarPresupuestosPorEstado(desde, hasta)
+    ReporteRepository --> ReporteService : DataTable
+    ReporteService -> ReporteService : Calcular aprobados entre aprobados más rechazados
+    ReporteService --> Reportes : decimal
+    Reportes --> Operador : Mostrar grilla y tasa
+end
+group Tasa de aceptación de garantía
+    Operador -> Reportes : Seleccionar TasaGarantia y Buscar
+    Reportes -> ReporteService : EvaluacionesPorEstado(desde, hasta)
+    ReporteService -> ReporteService : ValidarRango(desde, hasta)
+    ReporteService -> ReporteRepository : EvaluacionesPorEstado(desde, hasta)
+    ReporteRepository --> ReporteService : DataTable
+    ReporteService --> Reportes : DataTable
+    Reportes -> ReporteService : TasaAceptacionGarantia(desde, hasta)
+    ReporteService -> ReporteService : ValidarRango(desde, hasta)
+    ReporteService -> ReporteRepository : EvaluacionesPorEstado(desde, hasta)
+    ReporteRepository --> ReporteService : DataTable
+    ReporteService -> ReporteService : Calcular aceptadas entre aceptadas más rechazadas
+    ReporteService --> Reportes : decimal
+    Reportes --> Operador : Mostrar grilla y tasa
+end
+@enduml

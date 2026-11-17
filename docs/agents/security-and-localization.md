@@ -114,3 +114,9 @@ Use stable keys, preserve user-edited translations according to existing seed se
 and inspect any `ActualizarTraduccion` overwrites before changing them.
 For UI changes test ES and EN at small/large sizes, long values, error dialogs, grid headers,
 and current-culture numeric editing. Translation does not automatically switch numeric culture.
+
+## Dedicated backup grants (feat-018)
+
+[CodigosPermiso](../../DOMAIN/Features/Permisos/CodigosPermiso.cs) adds `BACKUPS_CREAR` and `BACKUPS_RESTAURAR`. [PermisoRepository](../../INFRASTRUCTURE/Features/Permisos/PermisoRepository.cs) seeds both simple permissions and direct descendants of Administrador only; the existing admin assignment inherits them. Raiz is a grouping, not a role test. Other seeded families gain neither. Existing login snapshots need a new sign-in after initialization for new grants.
+
+[FrmPrincipal](../../PRESENTATION/Forms/FrmPrincipal.cs) exposes the menu with either effective grant; [FrmAdministrarBackups](../../PRESENTATION/Forms/Backups/FrmAdministrarBackups.cs) gates each button/handler independently. [BackupService](../../APPLICATION/Features/Backups/BackupService.cs) rechecks session and the action's grant at entry and after preparation/dialogs. SQL administrator/create/alter/backup rights are separate from application permissions. Paired ES/EN keys are seeded idempotently by [IdiomaRepository](../../INFRASTRUCTURE/Features/Idiomas/IdiomaRepository.cs); the form registers/unregisters with SesionIdioma. Errors use localized keys, never raw SQL/process output or connection strings.

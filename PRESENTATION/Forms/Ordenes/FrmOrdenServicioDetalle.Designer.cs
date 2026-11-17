@@ -11,8 +11,11 @@ namespace UI.Forms.Ordenes
             base.Dispose(disposing);
         }
 
+        private System.Windows.Forms.Button BTN_Ayuda;
+
         private void InitializeComponent()
         {
+            this.BTN_Ayuda = new System.Windows.Forms.Button();
             this.PNL_Header = new System.Windows.Forms.Panel();
             this.LBL_Numero = new System.Windows.Forms.Label();
             this.LBL_Estado = new System.Windows.Forms.Label();
@@ -2043,6 +2046,18 @@ namespace UI.Forms.Ordenes
             this.TAB_Garantia.ResumeLayout(false);
             this.TAB_Garantia.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.DGV_ReingresosGarantia)).EndInit();
+            this.BTN_Ayuda.Name = "BTN_Ayuda";
+            this.BTN_Ayuda.Tag = "Ayuda.Boton";
+            this.BTN_Ayuda.Text = "? Ayuda";
+            this.BTN_Ayuda.Size = new System.Drawing.Size(110, 30);
+            this.BTN_Ayuda.TabIndex = 99;
+            this.BTN_Ayuda.CausesValidation = false;
+            this.BTN_Ayuda.DialogResult = System.Windows.Forms.DialogResult.None;
+            this.BTN_Ayuda.UseVisualStyleBackColor = true;
+            this.BTN_Ayuda.Click += this.BTN_Ayuda_Click;
+            this.BTN_Ayuda.Location = new System.Drawing.Point(12, 640);
+            this.BTN_Ayuda.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
+            this.Controls.Add(this.BTN_Ayuda);
             this.ResumeLayout(false);
         }
 

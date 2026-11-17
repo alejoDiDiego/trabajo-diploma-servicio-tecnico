@@ -66,3 +66,11 @@ Read the actual query definitions, especially date boundaries and warranty-rate 
 For an authorized behavior change, continue with [development and testing](development-and-testing.md).
 Source coverage is not runtime certification: live schema, numeric cultures, layout/DPI,
 physical interaction, and parallel execution remain separate verification tasks.
+
+## Administrar Backups (feat-018; acceptance pending)
+
+Usuario -> Administrar Backups in [FrmPrincipal](../../PRESENTATION/Forms/FrmPrincipal.cs) opens [FrmAdministrarBackups](../../PRESENTATION/Forms/Backups/FrmAdministrarBackups.cs) modally. Crear backup uses a local Save dialog; Restaurar backup uses a local Open dialog, consent to close business forms and a final target/server/file confirmation after candidate validation. Each action requires its own effective permission. Status/indeterminate progress remain responsive while SQL/copy run; window closure is deferred until safe completion. Restore retains the original under a recovery name and exits the app after success; sign in afresh after reopening. See [persistence](persistence.md) for non-atomic cutover and manual recovery limits, and [testing/configuration](development-and-testing.md) for local Windows/LocalDB/Docker staging.
+
+## Operator help navigation (feat-019)
+
+Main Ayuda opens the index; each ? Ayuda opens its mapped topic in the same [Spanish manual](../../PRESENTATION/Ayuda/manual.html). Order-detail topics follow the eight tabs. Custom cancellation, annulment, warranty-destination and quantity dialogs retain their typed values and decision buttons while the help viewer is open. Closing help returns to its owner and commits no business action. Help UI follows ES/EN; its content remains Spanish, explicitly stated in the viewer. This is source implementation, not a claim that every native scenario passed.

@@ -1,0 +1,89 @@
+@startuml
+title N02-13 - Escrituras, cambios de estado y recarga
+autonumber
+hide footbox
+actor "Responsable de compras o encargado" as Operador
+boundary FrmProveedores as Lista
+control ProveedorService
+control BitacoraService
+participant ProveedorRepository
+participant BitacoraRepository
+group Alta
+    Lista -> ProveedorService : Crear(razonSocial, cuit, telefono, email, direccion, contacto)
+    ProveedorService -> ProveedorService : Proveedor.CrearNuevo(...)
+    ProveedorService -> ProveedorRepository : Agregar(proveedor)
+    ProveedorRepository --> ProveedorService : Proveedor
+    ProveedorService -> BitacoraService : Registrar("Creacion de proveedor", detalle, "PROVEEDORES")
+    BitacoraService -> BitacoraRepository : Insertar(entrada)
+    BitacoraRepository --> BitacoraService : Finalización sin excepción (void)
+    BitacoraService --> ProveedorService : Finalización sin excepción (void)
+    ProveedorService --> Lista : Proveedor
+    Lista -> Lista : Recargar proveedores
+    Lista --> Operador : Confirmar alta
+end
+group Modificación
+    Lista -> ProveedorService : Modificar(id, razonSocial, cuit, telefono, email, direccion, contacto)
+    ProveedorService -> ProveedorRepository : ObtenerPorId(id)
+    ProveedorRepository --> ProveedorService : Proveedor o null
+    alt Proveedor existente
+        ProveedorService -> ProveedorService : Proveedor.CargarDesdeDB(..., activo)
+        ProveedorService -> ProveedorRepository : Modificar(proveedorActualizado)
+        ProveedorRepository --> ProveedorService : Finalización sin excepción (void)
+        ProveedorService -> BitacoraService : Registrar("Modificacion de proveedor", detalle, "PROVEEDORES")
+        BitacoraService -> BitacoraRepository : Insertar(entrada)
+        BitacoraRepository --> BitacoraService : Finalización sin excepción (void)
+        BitacoraService --> ProveedorService : Finalización sin excepción (void)
+        ProveedorService --> Lista : Proveedor
+        Lista -> Lista : Recargar proveedores
+        Lista --> Operador : Confirmar modificación
+    else Proveedor inexistente
+        ProveedorService --> Lista : ReglaNegocioException
+        Lista --> Operador : Informar impedimento
+    end
+end
+alt Desactivación
+    Operador -> Lista : Desactivar
+    Lista -> Lista : Verificar permiso ProveedoresDesactivar
+    Lista --> Operador : Solicitar confirmación
+    Operador -> Lista : Confirmar
+    Lista -> ProveedorService : Desactivar(id)
+    ProveedorService -> ProveedorRepository : ObtenerPorId(id)
+    ProveedorRepository --> ProveedorService : Proveedor o null
+    alt Proveedor existente
+        ProveedorService -> ProveedorRepository : Desactivar(id)
+        ProveedorRepository --> ProveedorService : Finalización sin excepción (void)
+        ProveedorService -> BitacoraService : Registrar("Desactivacion de proveedor", detalle, "PROVEEDORES")
+        BitacoraService -> BitacoraRepository : Insertar(entrada)
+        BitacoraRepository --> BitacoraService : Finalización sin excepción (void)
+        BitacoraService --> ProveedorService : Finalización sin excepción (void)
+        ProveedorService --> Lista : Finalización sin excepción (void)
+    else Proveedor inexistente
+        ProveedorService --> Lista : ReglaNegocioException
+    end
+else Reactivación
+    Operador -> Lista : Reactivar
+    Lista -> Lista : Verificar permiso ProveedoresDesactivar
+    Lista --> Operador : Solicitar confirmación
+    Operador -> Lista : Confirmar
+    Lista -> ProveedorService : Reactivar(id)
+    ProveedorService -> ProveedorRepository : ObtenerPorId(id)
+    ProveedorRepository --> ProveedorService : Proveedor o null
+    alt Proveedor existente
+        ProveedorService -> ProveedorRepository : Reactivar(id)
+        ProveedorRepository --> ProveedorService : Finalización sin excepción (void)
+        ProveedorService -> BitacoraService : Registrar("Reactivacion de proveedor", detalle, "PROVEEDORES")
+        BitacoraService -> BitacoraRepository : Insertar(entrada)
+        BitacoraRepository --> BitacoraService : Finalización sin excepción (void)
+        BitacoraService --> ProveedorService : Finalización sin excepción (void)
+        ProveedorService --> Lista : Finalización sin excepción (void)
+    else Proveedor inexistente
+        ProveedorService --> Lista : ReglaNegocioException
+    end
+end
+Lista -> ProveedorService : Listar(incluirInactivos)
+ProveedorService -> ProveedorRepository : Listar(incluirInactivos)
+ProveedorRepository --> ProveedorService : List<Proveedor>
+ProveedorService --> Lista : List<Proveedor>
+Lista -> Lista : Aplicar filtros locales
+Lista --> Operador : Presentar resultado
+@enduml

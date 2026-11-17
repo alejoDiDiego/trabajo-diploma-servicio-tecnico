@@ -29,6 +29,7 @@ namespace UI.Forms.Clientes
 
         public void Actualizar(IIdioma idiomaObservado)
         {
+            BTN_Ayuda.Text = UI.Forms.Ayuda.AyudaManual.Texto("Ayuda.Boton", "? Ayuda");
             if (idiomaObservado == null)
                 return;
 
@@ -389,6 +390,11 @@ namespace UI.Forms.Clientes
         {
             _sesionIdioma.DesregistrarObservador(this);
             base.OnFormClosed(e);
+        }
+
+        private void BTN_Ayuda_Click(object sender, EventArgs e)
+        {
+            UI.Forms.Ayuda.AyudaManual.Mostrar(this, "clientes");
         }
     }
 }

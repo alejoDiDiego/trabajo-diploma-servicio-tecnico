@@ -1,0 +1,39 @@
+@startuml
+title N02-12 - Consulta de movimientos
+autonumber
+hide footbox
+actor "Responsable de inventario o encargado" as Operador
+boundary FrmMovimientosStock as Consulta
+control RepuestoService
+control UsuarioService
+participant RepuestoRepository
+participant MovimientoStockRepository
+participant UsuarioRepository
+group Consulta
+    Operador -> Consulta : Abrir movimientos de stock
+    Consulta -> Consulta : Verificar permiso RepuestosVer
+    Consulta -> UsuarioService : Listar()
+    UsuarioService -> UsuarioRepository : Listar()
+    UsuarioRepository --> UsuarioService : List<Usuario>
+    UsuarioService --> Consulta : List<Usuario>
+    opt Usuario no encontrado en la lista
+        Consulta -> Consulta : Mostrar "#" + idUsuario
+    end
+    Consulta -> RepuestoService : Listar(true)
+    RepuestoService -> RepuestoRepository : Listar(true)
+    RepuestoRepository --> RepuestoService : List<Repuesto>
+    RepuestoService --> Consulta : List<Repuesto>
+    Consulta -> Consulta : Preparar filtros y etiquetas
+    loop Consulta con filtros
+        Operador -> Consulta : Indicar repuesto, tipo, fechas y Buscar
+        Consulta -> RepuestoService : ListarMovimientosFiltros(idRepuesto, tipo, desde, hasta)
+        RepuestoService -> MovimientoStockRepository : ListarFiltros(idRepuesto, tipo, desde, hasta)
+        MovimientoStockRepository --> RepuestoService : List<MovimientoStock>
+        RepuestoService --> Consulta : List<MovimientoStock>
+        opt Texto de observación
+            Consulta -> Consulta : Filtrar observaciones localmente
+        end
+        Consulta --> Operador : Presentar resultados
+    end
+end
+@enduml

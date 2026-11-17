@@ -1,0 +1,43 @@
+@startuml
+title N02-09 - Reapertura de pruebas
+autonumber
+hide footbox
+actor "Técnico, encargado o recepcionista" as Operador
+boundary FrmOrdenServicioDetalle as Detalle
+control OrdenServicioService
+control BitacoraService
+participant OrdenServicioRepository
+participant BitacoraRepository
+group Reapertura
+    Operador -> Detalle : Volver a pruebas desde Entrega
+    Detalle --> Operador : Solicitar confirmación
+    Operador -> Detalle : Confirmar
+    Detalle --> Operador : Solicitar motivo
+    Operador -> Detalle : Informar motivo
+    Detalle -> OrdenServicioService : ReabrirPruebas(idOrden, motivo)
+    OrdenServicioService -> OrdenServicioRepository : ObtenerPorId(idOrden)
+    OrdenServicioRepository --> OrdenServicioService : OrdenServicio o null
+    OrdenServicioService -> OrdenServicioRepository : TieneReingresosGarantia(idOrden)
+    OrdenServicioRepository --> OrdenServicioService : bool
+    alt Orden ListoRetiro con resultado Reparado
+        OrdenServicioService -> OrdenServicioService : ordenDb.ReabrirPruebas()
+        OrdenServicioService -> OrdenServicioRepository : ReabrirPruebasConTransicion(idOrden, estadoAnterior, EnPruebas, idUsuario, "Pruebas reabiertas. Motivo: " + motivo)
+        OrdenServicioRepository --> OrdenServicioService : int
+        alt codigoResultado = 0
+            OrdenServicioService -> BitacoraService : Registrar("PRUEBAS_REABIERTAS", detalle, "ORDENES")
+            BitacoraService -> BitacoraRepository : Insertar(entrada)
+            BitacoraRepository --> BitacoraService : Finalización sin excepción (void)
+            BitacoraService --> OrdenServicioService : Finalización sin excepción (void)
+            OrdenServicioService --> Detalle : Finalización sin excepción (void)
+            Detalle -> Detalle : CargarOrden()
+            Detalle --> Operador : Mostrar En pruebas con resultado limpio
+        else codigoResultado = -2
+            OrdenServicioService --> Detalle : OrdenOriginalSoloConsultaException
+            Detalle --> Operador : Informar bloqueo
+        end
+    else Estado, resultado o motivo no admitidos
+        OrdenServicioService --> Detalle : ReglaNegocioException
+        Detalle --> Operador : Informar impedimento
+    end
+end
+@enduml

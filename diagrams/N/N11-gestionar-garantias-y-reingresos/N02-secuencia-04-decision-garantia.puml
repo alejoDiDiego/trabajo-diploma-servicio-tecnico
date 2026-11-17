@@ -1,0 +1,85 @@
+@startuml
+title N02-11 - Decisión de garantía
+autonumber
+hide footbox
+actor "Recepcionista, técnico o encargado" as Operador
+boundary FrmOrdenServicioDetalle as Detalle
+control OrdenServicioService
+control BitacoraService
+participant OrdenServicioRepository
+participant GarantiaRepository
+participant EvaluacionGarantiaRepository
+participant BitacoraRepository
+group Aceptación
+    Operador -> Detalle : Aceptar garantía con motivo
+    Detalle -> Detalle : Verificar permiso OrdenesEditar
+    Detalle --> Operador : Solicitar confirmación
+    Operador -> Detalle : Confirmar
+    Detalle -> OrdenServicioService : EvaluarReingreso(idOrden, true, motivo, observaciones, false)
+    OrdenServicioService -> OrdenServicioRepository : ObtenerPorId(idOrden)
+    OrdenServicioRepository --> OrdenServicioService : OrdenServicio o null
+    OrdenServicioService -> OrdenServicioRepository : TieneReingresosGarantia(idOrden)
+    OrdenServicioRepository --> OrdenServicioService : bool
+    OrdenServicioService -> EvaluacionGarantiaRepository : ObtenerPorReingreso(idOrden)
+    EvaluacionGarantiaRepository --> OrdenServicioService : EvaluacionGarantia o null
+    OrdenServicioService -> OrdenServicioRepository : ObtenerPorId(idOrdenOrigen)
+    OrdenServicioRepository --> OrdenServicioService : OrdenServicio o null
+    OrdenServicioService -> GarantiaRepository : ObtenerPorOrden(idOrdenOrigen)
+    GarantiaRepository --> OrdenServicioService : Garantia o null
+    alt Reingreso PendienteEvaluacion con coherencia
+        OrdenServicioService -> OrdenServicioService : reingreso.AutorizarReparacionGarantia()
+        OrdenServicioService -> EvaluacionGarantiaRepository : Evaluar(idEvaluacion, Aceptada, motivo, observaciones)
+        EvaluacionGarantiaRepository --> OrdenServicioService : Finalización sin excepción (void)
+        OrdenServicioService -> OrdenServicioRepository : CambiarEstadoConHistorial(idOrden, estadoAnterior, AutorizadoReparacion, idUsuario, "Garantia aceptada", null, null, null)
+        OrdenServicioRepository --> OrdenServicioService : int
+        OrdenServicioService -> BitacoraService : Registrar("Garantia aceptada", detalle, "ORDENES")
+        BitacoraService -> BitacoraRepository : Insertar(entrada)
+        BitacoraRepository --> BitacoraService : Finalización sin excepción (void)
+        BitacoraService --> OrdenServicioService : Finalización sin excepción (void)
+        OrdenServicioService --> Detalle : Finalización sin excepción (void)
+        Detalle -> Detalle : CargarOrden()
+        Detalle --> Operador : Confirmar aceptación
+    else Estado, evaluación o cobertura no admitidos
+        OrdenServicioService --> Detalle : ReglaNegocioException
+        Detalle --> Operador : Informar impedimento
+    end
+end
+group Rechazo
+    Operador -> Detalle : Rechazar garantía con motivo
+    Detalle -> Detalle : Verificar permiso PresupuestosDecidir
+    Detalle --> Operador : Elegir reparación paga o retiro sin confirmación adicional
+    Operador -> Detalle : Elegir destino
+    Detalle -> OrdenServicioService : EvaluarReingreso(idOrden, false, motivo, observaciones, continuarPago)
+    OrdenServicioService -> OrdenServicioRepository : ObtenerPorId(idOrden)
+    OrdenServicioRepository --> OrdenServicioService : OrdenServicio o null
+    OrdenServicioService -> OrdenServicioRepository : TieneReingresosGarantia(idOrden)
+    OrdenServicioRepository --> OrdenServicioService : bool
+    OrdenServicioService -> EvaluacionGarantiaRepository : ObtenerPorReingreso(idOrden)
+    EvaluacionGarantiaRepository --> OrdenServicioService : EvaluacionGarantia o null
+    OrdenServicioService -> OrdenServicioRepository : ObtenerPorId(idOrdenOrigen)
+    OrdenServicioRepository --> OrdenServicioService : OrdenServicio o null
+    OrdenServicioService -> GarantiaRepository : ObtenerPorOrden(idOrdenOrigen)
+    GarantiaRepository --> OrdenServicioService : Garantia o null
+    alt Reingreso PendienteEvaluacion con coherencia
+        alt continuarPago
+            OrdenServicioService -> OrdenServicioService : reingreso.MarcarPendientePresupuestoDesdeEvaluacion()
+        else Sin continuidad de pago
+            OrdenServicioService -> OrdenServicioService : reingreso.MarcarGarantiaNoCubierta(motivo)
+        end
+        OrdenServicioService -> EvaluacionGarantiaRepository : Evaluar(idEvaluacion, Rechazada, motivo, observaciones)
+        EvaluacionGarantiaRepository --> OrdenServicioService : Finalización sin excepción (void)
+        OrdenServicioService -> OrdenServicioRepository : CambiarEstadoConHistorial(idOrden, estadoAnterior, estadoNuevo, idUsuario, "Garantia rechazada", resultado, observacionResultado, null)
+        OrdenServicioRepository --> OrdenServicioService : int
+        OrdenServicioService -> BitacoraService : Registrar("Garantia rechazada", detalle, "ORDENES")
+        BitacoraService -> BitacoraRepository : Insertar(entrada)
+        BitacoraRepository --> BitacoraService : Finalización sin excepción (void)
+        BitacoraService --> OrdenServicioService : Finalización sin excepción (void)
+        OrdenServicioService --> Detalle : Finalización sin excepción (void)
+        Detalle -> Detalle : CargarOrden()
+        Detalle --> Operador : Confirmar rechazo
+    else Estado, evaluación o cobertura no admitidos
+        OrdenServicioService --> Detalle : ReglaNegocioException
+        Detalle --> Operador : Informar impedimento
+    end
+end
+@enduml

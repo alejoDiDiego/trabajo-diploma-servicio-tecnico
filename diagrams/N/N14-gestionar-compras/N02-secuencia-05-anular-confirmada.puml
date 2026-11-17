@@ -1,0 +1,39 @@
+@startuml
+title N02-14 - Anulación de compra confirmada
+autonumber
+hide footbox
+actor "Responsable de compras o encargado" as Operador
+boundary FrmCompraDetalle as Detalle
+control CompraService
+control BitacoraService
+participant CompraRepository
+participant BitacoraRepository
+group Anulación
+    Operador -> Detalle : Anular compra
+    Detalle --> Operador : Solicitar motivo
+    Operador -> Detalle : Informar motivo
+    Detalle --> Operador : Solicitar confirmación
+    Operador -> Detalle : Confirmar
+    Detalle -> CompraService : Anular(idCompra, motivo)
+    CompraService -> CompraRepository : ObtenerPorId(idCompra)
+    CompraRepository --> CompraService : Compra o null
+    alt Compra existente y motivo no vacío
+        CompraService -> CompraService : compraDb.AnularConfirmada(motivo)
+        CompraService -> CompraRepository : AnularConfirmadaConStock(idCompra, motivo, idUsuario)
+        CompraRepository -> CompraRepository : Validar cobertura agrupada por repuesto
+        CompraRepository -> CompraRepository : Revertir stock por renglón e insertar ajustes negativos
+        CompraRepository -> CompraRepository : Marcar compra Cancelada con motivo
+        CompraRepository --> CompraService : Finalización sin excepción (void)
+        CompraService -> BitacoraService : Registrar("Compra anulada", detalle, "COMPRAS")
+        BitacoraService -> BitacoraRepository : Insertar(entrada)
+        BitacoraRepository --> BitacoraService : Finalización sin excepción (void)
+        BitacoraService --> CompraService : Finalización sin excepción (void)
+        CompraService --> Detalle : Finalización sin excepción (void)
+        Detalle -> Detalle : CargarCompra()
+        Detalle --> Operador : Confirmar anulación
+    else Compra no confirmada, sin items o stock insuficiente
+        CompraService --> Detalle : ReglaNegocioException
+        Detalle --> Operador : Informar impedimento
+    end
+end
+@enduml

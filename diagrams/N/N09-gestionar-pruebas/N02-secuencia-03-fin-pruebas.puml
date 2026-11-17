@@ -1,0 +1,49 @@
+@startuml
+title N02-09 - Finalización de pruebas
+autonumber
+hide footbox
+actor "Técnico, encargado o recepcionista" as Operador
+boundary FrmOrdenServicioDetalle as Detalle
+control OrdenServicioService
+control BitacoraService
+participant OrdenServicioRepository
+participant ReparacionRepository
+participant BitacoraRepository
+group Finalización
+    Operador -> Detalle : Finalizar pruebas
+    Detalle -> Detalle : Verificar permiso y selección actual
+    Detalle --> Operador : Solicitar confirmación
+    Operador -> Detalle : Confirmar
+    Detalle -> OrdenServicioService : FinalizarPruebas(idOrden)
+    OrdenServicioService -> OrdenServicioRepository : ObtenerPorId(idOrden)
+    OrdenServicioRepository --> OrdenServicioService : OrdenServicio o null
+    OrdenServicioService -> OrdenServicioRepository : TieneReingresosGarantia(idOrden)
+    OrdenServicioRepository --> OrdenServicioService : bool
+    OrdenServicioService -> ReparacionRepository : ObtenerAbierta(idOrden)
+    ReparacionRepository --> OrdenServicioService : Reparacion o null
+    OrdenServicioService -> ReparacionRepository : ListarPorOrden(idOrden)
+    ReparacionRepository --> OrdenServicioService : List<Reparacion>
+    OrdenServicioService -> ReparacionRepository : ListarPruebas(idUltimaIntervencion)
+    ReparacionRepository --> OrdenServicioService : List<Prueba>
+    alt Orden EnPruebas con última intervención finalizada y pruebas válidas
+        OrdenServicioService -> OrdenServicioService : Evaluar pruebas no anuladas
+        alt Todas aprobadas
+            OrdenServicioService -> OrdenServicioService : ordenDb.FinalizarPruebasAprobadas()
+        else Alguna requiere revisión
+            OrdenServicioService -> OrdenServicioService : ordenDb.FinalizarPruebasRequiereRevision()
+        end
+        OrdenServicioService -> ReparacionRepository : FinalizarPruebas(idOrden, todasAprobadas, idUsuario)
+        ReparacionRepository --> OrdenServicioService : Finalización sin excepción (void)
+        OrdenServicioService -> BitacoraService : Registrar("PRUEBAS_FINALIZADAS", detalle, "ORDENES")
+        BitacoraService -> BitacoraRepository : Insertar(entrada)
+        BitacoraRepository --> BitacoraService : Finalización sin excepción (void)
+        BitacoraService --> OrdenServicioService : Finalización sin excepción (void)
+        OrdenServicioService --> Detalle : Finalización sin excepción (void)
+        Detalle -> Detalle : CargarOrden()
+        Detalle --> Operador : Mostrar destino ListoRetiro o EnReparacion
+    else Sin pruebas válidas, intervención abierta o estado no admitido
+        OrdenServicioService --> Detalle : ReglaNegocioException
+        Detalle --> Operador : Informar impedimento
+    end
+end
+@enduml

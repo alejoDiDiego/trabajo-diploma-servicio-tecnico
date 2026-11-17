@@ -1,0 +1,56 @@
+@startuml
+title N02-01 - Desactivación, reactivación y recarga
+autonumber
+hide footbox
+actor "Recepcionista o encargado" as Operador
+boundary FrmClientes as Pantalla
+control ClienteService as Servicio
+participant ClienteRepository as Repositorio
+control BitacoraService as Auditoria
+participant BitacoraRepository as Bitacora
+alt Desactivación confirmada
+    Operador -> Pantalla : Desactivar
+    Pantalla -> Pantalla : Verificar permiso ClientesDesactivar
+    Pantalla --> Operador : Solicitar confirmación
+    Operador -> Pantalla : Confirmar
+    Pantalla -> Servicio : Desactivar(id)
+    Servicio -> Repositorio : ObtenerPorId(id)
+    Repositorio --> Servicio : Cliente o null
+    alt Cliente existente
+        Servicio -> Repositorio : Desactivar(id)
+        Repositorio --> Servicio : Finalización sin excepción (void)
+        Servicio -> Auditoria : Registrar("Desactivacion de cliente", detalle, "CLIENTES")
+        Auditoria -> Bitacora : Insertar(entrada)
+        Bitacora --> Auditoria : Finalización sin excepción (void)
+        Auditoria --> Servicio : Finalización sin excepción (void)
+        Servicio --> Pantalla : Finalización sin excepción (void)
+    else Cliente inexistente
+        Servicio --> Pantalla : ReglaNegocioException
+    end
+else Reactivación confirmada
+    Operador -> Pantalla : Reactivar
+    Pantalla -> Pantalla : Verificar permiso ClientesDesactivar
+    Pantalla --> Operador : Solicitar confirmación
+    Operador -> Pantalla : Confirmar
+    Pantalla -> Servicio : Reactivar(id)
+    Servicio -> Repositorio : ObtenerPorId(id)
+    Repositorio --> Servicio : Cliente o null
+    alt Cliente existente
+        Servicio -> Repositorio : Reactivar(id)
+        Repositorio --> Servicio : Finalización sin excepción (void)
+        Servicio -> Auditoria : Registrar("Reactivacion de cliente", detalle, "CLIENTES")
+        Auditoria -> Bitacora : Insertar(entrada)
+        Bitacora --> Auditoria : Finalización sin excepción (void)
+        Auditoria --> Servicio : Finalización sin excepción (void)
+        Servicio --> Pantalla : Finalización sin excepción (void)
+    else Cliente inexistente
+        Servicio --> Pantalla : ReglaNegocioException
+    end
+end
+Pantalla -> Servicio : Listar(incluirInactivos)
+Servicio -> Repositorio : Listar(incluirInactivos)
+Repositorio --> Servicio : List<Cliente>
+Servicio --> Pantalla : List<Cliente>
+Pantalla -> Pantalla : AplicarFiltro()
+Pantalla --> Operador : Presentar resultado
+@enduml

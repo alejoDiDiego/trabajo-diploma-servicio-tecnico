@@ -1,0 +1,39 @@
+@startuml
+title N02-16 - Escalares
+autonumber
+hide footbox
+actor "Encargado, administrador o usuario autorizado" as Operador
+boundary FrmReportes as Reportes
+control ReporteService
+participant ReporteRepository
+group Tiempo promedio de ingreso a entrega
+    Operador -> Reportes : Seleccionar TiempoPromedio y Buscar
+    Reportes -> ReporteService : TiempoPromedioIngresoEntrega(desde, hasta)
+    ReporteService -> ReporteService : ValidarRango(desde, hasta)
+    ReporteService -> ReporteRepository : TiempoPromedioIngresoEntrega(desde, hasta)
+    ReporteRepository --> ReporteService : DataTable
+    ReporteService -> ReporteService : Convertir promedio a decimal o cero
+    ReporteService --> Reportes : decimal
+    Reportes --> Operador : Mostrar promedio en días
+end
+group Cantidad de reingresos de garantía
+    Operador -> Reportes : Seleccionar Reingresos y Buscar
+    Reportes -> ReporteService : ContarReingresosGarantia(desde, hasta)
+    ReporteService -> ReporteService : ValidarRango(desde, hasta)
+    ReporteService -> ReporteRepository : ContarReingresosGarantia(desde, hasta)
+    ReporteRepository --> ReporteService : DataTable
+    ReporteService -> ReporteService : Convertir cantidad a entero o cero
+    ReporteService --> Reportes : int
+    Reportes --> Operador : Mostrar cantidad
+end
+group Monto de presupuestos aprobados
+    Operador -> Reportes : Seleccionar MontoAprobados y Buscar
+    Reportes -> ReporteService : MontoPresupuestosAprobados(desde, hasta)
+    ReporteService -> ReporteService : ValidarRango(desde, hasta)
+    ReporteService -> ReporteRepository : MontoPresupuestosAprobados(desde, hasta)
+    ReporteRepository --> ReporteService : DataTable
+    ReporteService -> ReporteService : Convertir monto a decimal o cero
+    ReporteService --> Reportes : decimal
+    Reportes --> Operador : Mostrar monto comprometido
+end
+@enduml

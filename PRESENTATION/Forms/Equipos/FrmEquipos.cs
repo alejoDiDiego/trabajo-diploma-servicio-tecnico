@@ -69,6 +69,7 @@ namespace UI.Forms.Equipos
 
         public void Actualizar(IIdioma idiomaObservado)
         {
+            BTN_Ayuda.Text = UI.Forms.Ayuda.AyudaManual.Texto("Ayuda.Boton", "? Ayuda");
             if (idiomaObservado == null)
                 return;
 
@@ -110,6 +111,7 @@ namespace UI.Forms.Equipos
 
         private void ActualizarTextos()
         {
+            BTN_Ayuda.Text = UI.Forms.Ayuda.AyudaManual.Texto("Ayuda.Boton", "? Ayuda");
             if (_sesionIdioma.idioma == null)
                 return;
 
@@ -535,7 +537,6 @@ namespace UI.Forms.Equipos
                     if (dialogo.ShowDialog(this) != DialogResult.OK)
                         return;
                     bool reemplazar = File.Exists(dialogo.FileName);
-                    // Recheck after modal interaction, before publishing local data.
                     if (!TienePermiso(CodigosPermiso.EquiposVer))
                     {
                         MostrarAccesoDenegado();
@@ -638,6 +639,11 @@ namespace UI.Forms.Equipos
         {
             _sesionIdioma.DesregistrarObservador(this);
             base.OnFormClosed(e);
+        }
+
+        private void BTN_Ayuda_Click(object sender, EventArgs e)
+        {
+            UI.Forms.Ayuda.AyudaManual.Mostrar(this, "equipos");
         }
     }
 }

@@ -1,0 +1,76 @@
+@startuml
+title N02-06 - Solicitud y cancelación de adicional
+autonumber
+hide footbox
+actor "Recepcionista, encargado o técnico" as Operador
+boundary FrmOrdenServicioDetalle as Detalle
+control OrdenServicioService
+control BitacoraService
+participant OrdenServicioRepository
+participant PresupuestoRepository
+participant HistorialEstadoOrdenRepository
+participant BitacoraRepository
+group Solicitud de adicional
+    Operador -> Detalle : Solicitar adicional con motivo
+    Detalle -> Detalle : Verificar permiso OrdenesEditar
+    Detalle -> OrdenServicioService : SolicitarAdicional(idOrden, motivo)
+    OrdenServicioService -> OrdenServicioRepository : ObtenerPorId(idOrden)
+    OrdenServicioRepository --> OrdenServicioService : OrdenServicio o null
+    OrdenServicioService -> OrdenServicioRepository : TieneReingresosGarantia(idOrden)
+    OrdenServicioRepository --> OrdenServicioService : bool
+    OrdenServicioService -> PresupuestoRepository : ObtenerOriginal(idOrden)
+    PresupuestoRepository --> OrdenServicioService : Presupuesto o null
+    OrdenServicioService -> PresupuestoRepository : ExisteAdicionalPendiente(idOrden)
+    PresupuestoRepository --> OrdenServicioService : bool
+    alt Original aprobado sin adicional pendiente
+        OrdenServicioService -> OrdenServicioService : ordenDb.SolicitarAdicional()
+        OrdenServicioService -> OrdenServicioRepository : CambiarEstadoConHistorial(idOrden, estadoAnterior, PendientePresupuesto, idUsuario, motivo, null, null, null)
+        OrdenServicioRepository --> OrdenServicioService : int
+        alt codigoResultado = 0
+            OrdenServicioService -> BitacoraService : Registrar("ADICIONAL_SOLICITADO", detalle, "ORDENES")
+            BitacoraService -> BitacoraRepository : Insertar(entrada)
+            BitacoraRepository --> BitacoraService : Finalización sin excepción (void)
+            BitacoraService --> OrdenServicioService : Finalización sin excepción (void)
+            OrdenServicioService --> Detalle : Finalización sin excepción (void)
+            Detalle -> Detalle : CargarOrden()
+            Detalle --> Operador : Confirmar solicitud
+        else codigoResultado = -2
+            OrdenServicioService --> Detalle : OrdenOriginalSoloConsultaException
+            Detalle --> Operador : Informar bloqueo
+        end
+    else Original no aprobado o adicional pendiente
+        OrdenServicioService --> Detalle : ReglaNegocioException
+        Detalle --> Operador : Informar impedimento
+    end
+end
+group Cancelación de solicitud
+    Operador -> Detalle : Cancelar solicitud adicional
+    Detalle --> Operador : Solicitar confirmación
+    Operador -> Detalle : Confirmar
+    Detalle -> OrdenServicioService : CancelarSolicitudAdicional(idOrden)
+    OrdenServicioService -> OrdenServicioRepository : ObtenerPorId(idOrden)
+    OrdenServicioRepository --> OrdenServicioService : OrdenServicio o null
+    OrdenServicioService -> OrdenServicioRepository : TieneReingresosGarantia(idOrden)
+    OrdenServicioRepository --> OrdenServicioService : bool
+    OrdenServicioService -> HistorialEstadoOrdenRepository : ListarPorOrden(idOrden)
+    HistorialEstadoOrdenRepository --> OrdenServicioService : List<HistorialEstadoOrden>
+    OrdenServicioService -> OrdenServicioService : TryObtenerOrigenSolicitud(ignorar "Presupuesto anulado")
+    OrdenServicioService -> PresupuestoRepository : ListarAdicionales(idOrden)
+    PresupuestoRepository --> OrdenServicioService : List<Presupuesto>
+    alt Origen de solicitud válido sin adicional pendiente
+        OrdenServicioService -> OrdenServicioService : ordenDb.CancelarSolicitudAdicional(estadoOrigen)
+        OrdenServicioService -> PresupuestoRepository : CancelarSolicitudAdicional(idOrden, estadoOrigen, estadoAnterior, idUsuario, "Solicitud de presupuesto adicional cancelada.")
+        PresupuestoRepository --> OrdenServicioService : Finalización sin excepción (void)
+        OrdenServicioService -> BitacoraService : Registrar("SOLICITUD_ADICIONAL_CANCELADA", detalle, "ORDENES")
+        BitacoraService -> BitacoraRepository : Insertar(entrada)
+        BitacoraRepository --> BitacoraService : Finalización sin excepción (void)
+        BitacoraService --> OrdenServicioService : Finalización sin excepción (void)
+        OrdenServicioService --> Detalle : Finalización sin excepción (void)
+        Detalle -> Detalle : CargarOrden()
+        Detalle --> Operador : Confirmar cancelación
+    else Sin origen o con adicional pendiente
+        OrdenServicioService --> Detalle : ReglaNegocioException
+        Detalle --> Operador : Informar impedimento
+    end
+end
+@enduml

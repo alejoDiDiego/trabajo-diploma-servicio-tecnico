@@ -1,108 +1,74 @@
 @startuml
 title N02-02 - Secuencia de Gestión de equipos
-
+autonumber
+hide footbox
 actor "Recepcionista o encargado" as Operador
-participant "pantalla : FrmEquipos" as Pantalla
-participant "dialogo : FrmEquipoEditar" as Dialogo
-participant "servicio : EquipoService" as Servicio
-participant "equipos : EquipoRepository" as Equipos
-participant "clientes : ClienteRepository" as Clientes
-participant "tipos : TipoEquipoRepository" as Tipos
-participant "marcas : MarcaRepository" as Marcas
-participant "auditoria : BitacoraService" as Auditoria
-
-Operador -> Pantalla : Acceder a Equipos
-Pantalla -> Pantalla : Verificar permiso de consulta
-Pantalla -> Servicio : Consultar según cliente e inactivos
-Servicio -> Equipos : Recuperar equipos
-Equipos --> Servicio : Equipos
-Servicio --> Pantalla : Equipos
-Pantalla --> Operador : Mostrar listado
-
-Operador -> Pantalla : Seleccionar operación
-
-alt Consulta
-    Operador -> Pantalla : Informar filtros
-    opt Cambia cliente o inclusión de inactivos
-        Pantalla -> Servicio : Consultar equipos
-        Servicio -> Equipos : Recuperar según criterios
-        Equipos --> Servicio : Equipos
-        Servicio --> Pantalla : Equipos
+boundary FrmEquipos as Pantalla
+control ClienteService as ClientesSvc
+control TipoEquipoService as TiposSvc
+control MarcaService as MarcasSvc
+control EquipoService as Servicio
+participant ClienteRepository as Clientes
+participant TipoEquipoRepository as Tipos
+participant MarcaRepository as Marcas
+participant EquipoRepository as Equipos
+group Carga inicial
+    Operador -> Pantalla : Abrir Equipos
+    Pantalla -> ClientesSvc : Listar(false)
+    ClientesSvc -> Clientes : Listar(false)
+    Clientes --> ClientesSvc : List<Cliente>
+    ClientesSvc --> Pantalla : List<Cliente>
+    Pantalla -> TiposSvc : Listar(true)
+    TiposSvc -> Tipos : Listar(true)
+    Tipos --> TiposSvc : List<TipoEquipo>
+    TiposSvc --> Pantalla : List<TipoEquipo>
+    Pantalla -> MarcasSvc : Listar(true)
+    MarcasSvc -> Marcas : Listar(true)
+    Marcas --> MarcasSvc : List<Marca>
+    MarcasSvc --> Pantalla : List<Marca>
+    Pantalla -> Pantalla : Verificar permiso EquiposVer
+    alt Acceso permitido
+        alt Cliente seleccionado
+            Pantalla -> Servicio : ListarPorCliente(idCliente, incluirInactivos)
+            Servicio -> Equipos : ListarPorCliente(idCliente, incluirInactivos)
+            Equipos --> Servicio : List<Equipo>
+            Servicio --> Pantalla : List<Equipo>
+        else Todos los clientes
+            Pantalla -> Servicio : Listar(incluirInactivos)
+            Servicio -> Equipos : Listar(incluirInactivos)
+            Equipos --> Servicio : List<Equipo>
+            Servicio --> Pantalla : List<Equipo>
+        end
+        Pantalla -> Pantalla : AplicarFiltro()
+        Pantalla --> Operador : Mostrar equipos
+    else Acceso denegado
+        Pantalla --> Operador : Informar acceso denegado
     end
-    Pantalla -> Pantalla : Filtrar por modelo o número de serie
-
-else Registro o modificación
-    Pantalla -> Dialogo : Mostrar formulario y referencias
-    Operador -> Dialogo : Completar y aceptar
-    Dialogo -> Dialogo : Validar referencias seleccionadas
-    Dialogo --> Pantalla : Datos aceptados
-
-    alt Registro
-        Pantalla -> Servicio : Crear equipo con los datos aceptados
-    else Modificación
-        Pantalla -> Servicio : Modificar equipo con los datos aceptados
-        Servicio -> Equipos : ObtenerPorId(id)
-        Equipos --> Servicio : Equipo actual
-    end
-
-    Servicio -> Clientes : ObtenerPorId(idCliente)
-    Clientes --> Servicio : Cliente
-    Servicio -> Tipos : ObtenerPorId(idTipoEquipo)
-    Tipos --> Servicio : Tipo de equipo
-    Servicio -> Marcas : ObtenerPorId(idMarca)
-    Marcas --> Servicio : Marca
-    Servicio -> Servicio : Validar existencia y condición activa
-
-    alt Registro admitido
-        Servicio -> Equipos : Agregar(equipo)
-        Equipos --> Servicio : Equipo persistido
-    else Modificación admitida
-        Servicio -> Equipos : Modificar(equipoActualizado)
-        Equipos --> Servicio : Resultado
-    end
-
-    Servicio -> Auditoria : Registrar(actividad, detalle, tipoActividad)
-    Auditoria --> Servicio : Resultado
-    Servicio --> Pantalla : Resultado del mantenimiento
-
-else Desactivación o reactivación confirmada
-    Pantalla --> Operador : Solicitar confirmación
-    Operador -> Pantalla : Confirmar
-
-    alt Desactivación
-        Pantalla -> Servicio : Desactivar(id)
-    else Reactivación
-        Pantalla -> Servicio : Reactivar(id)
-    end
-
-    Servicio -> Equipos : ObtenerPorId(id)
-    Equipos --> Servicio : Equipo existente
-
-    alt Desactivación
-        Servicio -> Equipos : Desactivar(id)
-    else Reactivación
-        Servicio -> Equipos : Reactivar(id)
-    end
-
-    Equipos --> Servicio : Resultado
-    Servicio -> Auditoria : Registrar(actividad, detalle, tipoActividad)
-    Auditoria --> Servicio : Resultado
-    Servicio --> Pantalla : Resultado del mantenimiento
 end
-
-opt Mantenimiento satisfactorio
-    Pantalla -> Servicio : Consultar equipos según filtros vigentes
-    Servicio -> Equipos : Recuperar equipos
-    Equipos --> Servicio : Equipos
-    Servicio --> Pantalla : Equipos
-    Pantalla -> Pantalla : Reaplicar búsqueda
+group Cambio de filtros
+    alt Cambia cliente o incluir inactivos
+        Operador -> Pantalla : Cambiar cliente o incluir inactivos
+        alt Cliente seleccionado
+            Pantalla -> Servicio : ListarPorCliente(idCliente, incluirInactivos)
+            Servicio -> Equipos : ListarPorCliente(idCliente, incluirInactivos)
+            Equipos --> Servicio : List<Equipo>
+            Servicio --> Pantalla : List<Equipo>
+        else Todos los clientes
+            Pantalla -> Servicio : Listar(incluirInactivos)
+            Servicio -> Equipos : Listar(incluirInactivos)
+            Equipos --> Servicio : List<Equipo>
+            Servicio --> Pantalla : List<Equipo>
+        end
+    else Cambia modelo o número de serie
+        Operador -> Pantalla : Cambiar texto de búsqueda
+    end
+    Pantalla -> Pantalla : AplicarFiltro()
+    opt Cliente no disponible en caché
+        Pantalla -> ClientesSvc : ObtenerPorId(idCliente)
+        ClientesSvc -> Clientes : ObtenerPorId(idCliente)
+        Clientes --> ClientesSvc : Cliente o null
+        ClientesSvc --> Pantalla : Cliente o null
+    end
+    Pantalla --> Operador : Mostrar coincidencias
 end
-
-Pantalla --> Operador : Presentar resultado
-
-note over Equipos, Auditoria
-La escritura principal y la auditoría
-son operaciones separadas.
-end note
-
 @enduml

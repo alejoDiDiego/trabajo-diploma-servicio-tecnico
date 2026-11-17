@@ -11,8 +11,11 @@ namespace UI.Forms.Repuestos
             base.Dispose(disposing);
         }
 
+        private System.Windows.Forms.Button BTN_Ayuda;
+
         private void InitializeComponent()
         {
+            this.BTN_Ayuda = new System.Windows.Forms.Button();
             this.PNL_Header = new System.Windows.Forms.Panel();
             this.LBL_Titulo = new System.Windows.Forms.Label();
             this.PNL_Filtros = new System.Windows.Forms.Panel();
@@ -291,6 +294,22 @@ namespace UI.Forms.Repuestos
             this.PNL_Filtros.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.DGV_Repuestos)).EndInit();
             this.PNL_Botones.ResumeLayout(false);
+            this.BTN_Ayuda.Name = "BTN_Ayuda";
+            this.BTN_Ayuda.Tag = "Ayuda.Boton";
+            this.BTN_Ayuda.Text = "? Ayuda";
+            this.BTN_Ayuda.Size = new System.Drawing.Size(110, 30);
+            this.BTN_Ayuda.TabIndex = 99;
+            this.BTN_Ayuda.CausesValidation = false;
+            this.BTN_Ayuda.DialogResult = System.Windows.Forms.DialogResult.None;
+            this.BTN_Ayuda.UseVisualStyleBackColor = true;
+            this.BTN_Ayuda.Click += this.BTN_Ayuda_Click;
+            this.BTN_Ayuda.Location = new System.Drawing.Point(795, 15);
+            this.BTN_Ayuda.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
+            this.PNL_Header.Controls.Add(this.BTN_Ayuda);
+            this.LBL_Titulo.AutoSize = false;
+            this.LBL_Titulo.AutoEllipsis = true;
+            this.LBL_Titulo.Size = new System.Drawing.Size(765, 32);
+            this.LBL_Titulo.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
             this.ResumeLayout(false);
         }
 

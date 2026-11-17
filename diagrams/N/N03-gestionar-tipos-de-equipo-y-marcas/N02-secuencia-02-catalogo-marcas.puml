@@ -1,0 +1,113 @@
+@startuml
+title N02-03 - Catálogo de marcas y mantenimiento
+autonumber
+hide footbox
+actor "Recepcionista o encargado" as Operador
+boundary FrmMarcas as MarcasPantalla
+boundary FrmCatalogoEditar as Dialogo
+control MarcaService as MarcasServicio
+participant MarcaRepository as MarcasRepo
+control BitacoraService as Auditoria
+participant BitacoraRepository as Bitacora
+group Catálogo de marcas
+    Operador -> MarcasPantalla : Abrir Marcas
+    MarcasPantalla -> MarcasPantalla : Verificar permiso MarcasVer
+    alt Acceso permitido
+        MarcasPantalla -> MarcasServicio : Listar(incluirInactivos)
+        MarcasServicio -> MarcasRepo : Listar(incluirInactivos)
+        MarcasRepo --> MarcasServicio : List<Marca>
+        MarcasServicio --> MarcasPantalla : List<Marca>
+        MarcasPantalla -> MarcasPantalla : AplicarFiltro()
+        MarcasPantalla --> Operador : Mostrar marcas
+    else Acceso denegado
+        MarcasPantalla --> Operador : Informar acceso denegado
+    end
+    loop Cambio de filtro
+        Operador -> MarcasPantalla : Cambiar nombre o incluir inactivos
+        alt Cambia incluir inactivos
+            MarcasPantalla -> MarcasServicio : Listar(incluirInactivos)
+            MarcasServicio -> MarcasRepo : Listar(incluirInactivos)
+            MarcasRepo --> MarcasServicio : List<Marca>
+            MarcasServicio --> MarcasPantalla : List<Marca>
+        end
+        MarcasPantalla -> MarcasPantalla : AplicarFiltro()
+    end
+    group Alta
+        Operador -> MarcasPantalla : Crear
+        MarcasPantalla -> MarcasPantalla : Verificar permiso MarcasCrear
+        MarcasPantalla -> Dialogo : Solicitar nombre nuevo
+        Operador -> Dialogo : Ingresar nombre y aceptar
+        Dialogo -> Dialogo : Validar nombre obligatorio
+        Dialogo --> MarcasPantalla : Nombre aceptado
+        MarcasPantalla -> MarcasServicio : Crear(nombre)
+        MarcasServicio -> MarcasRepo : Agregar(marca)
+        MarcasRepo --> MarcasServicio : Marca
+        MarcasServicio -> Auditoria : Registrar("Creacion de marca", detalle, "MARCAS")
+        Auditoria -> Bitacora : Insertar(entrada)
+        Bitacora --> Auditoria : Finalización sin excepción (void)
+        Auditoria --> MarcasServicio : Finalización sin excepción (void)
+        MarcasServicio --> MarcasPantalla : Marca
+        MarcasPantalla -> MarcasServicio : Listar(incluirInactivos)
+        MarcasServicio -> MarcasRepo : Listar(incluirInactivos)
+        MarcasRepo --> MarcasServicio : List<Marca>
+        MarcasServicio --> MarcasPantalla : List<Marca>
+    end
+    group Modificación
+        Operador -> MarcasPantalla : Editar
+        MarcasPantalla -> MarcasPantalla : Verificar permiso MarcasEditar
+        MarcasPantalla -> Dialogo : Solicitar nombre precargado
+        Operador -> Dialogo : Modificar nombre y aceptar
+        Dialogo -> Dialogo : Validar nombre obligatorio
+        Dialogo --> MarcasPantalla : Nombre aceptado
+        MarcasPantalla -> MarcasServicio : Modificar(id, nombre)
+        MarcasServicio -> MarcasRepo : ObtenerPorId(id)
+        MarcasRepo --> MarcasServicio : Marca o null
+        alt Marca existente
+            MarcasServicio -> MarcasServicio : Marca.CargarDesdeDB(id, nombre, activo)
+            MarcasServicio -> MarcasRepo : Modificar(marcaActualizada)
+            MarcasRepo --> MarcasServicio : Finalización sin excepción (void)
+            MarcasServicio -> Auditoria : Registrar("Modificacion de marca", detalle, "MARCAS")
+            Auditoria -> Bitacora : Insertar(entrada)
+            Bitacora --> Auditoria : Finalización sin excepción (void)
+            Auditoria --> MarcasServicio : Finalización sin excepción (void)
+            MarcasServicio --> MarcasPantalla : Marca
+        else Marca inexistente
+            MarcasServicio --> MarcasPantalla : ReglaNegocioException
+        end
+    end
+    group Desactivación o reactivación
+        Operador -> MarcasPantalla : Desactivar o reactivar
+        MarcasPantalla -> MarcasPantalla : Verificar permiso MarcasDesactivar
+        MarcasPantalla --> Operador : Solicitar confirmación
+        Operador -> MarcasPantalla : Confirmar
+        alt Desactivación
+            MarcasPantalla -> MarcasServicio : Desactivar(id)
+        else Reactivación
+            MarcasPantalla -> MarcasServicio : Reactivar(id)
+        end
+        MarcasServicio -> MarcasRepo : ObtenerPorId(id)
+        MarcasRepo --> MarcasServicio : Marca o null
+        alt Marca existente
+            alt Desactivación
+                MarcasServicio -> MarcasRepo : Desactivar(id)
+            else Reactivación
+                MarcasServicio -> MarcasRepo : Reactivar(id)
+            end
+            MarcasRepo --> MarcasServicio : Finalización sin excepción (void)
+            MarcasServicio -> Auditoria : Registrar(cambio, detalle, "MARCAS")
+            Auditoria -> Bitacora : Insertar(entrada)
+            Bitacora --> Auditoria : Finalización sin excepción (void)
+            Auditoria --> MarcasServicio : Finalización sin excepción (void)
+            MarcasServicio --> MarcasPantalla : Finalización sin excepción (void)
+        else Marca inexistente
+            MarcasServicio --> MarcasPantalla : ReglaNegocioException
+        end
+        MarcasPantalla -> MarcasServicio : Listar(incluirInactivos)
+        MarcasServicio -> MarcasRepo : Listar(incluirInactivos)
+        MarcasRepo --> MarcasServicio : List<Marca>
+        MarcasServicio --> MarcasPantalla : List<Marca>
+    end
+end
+MarcasPantalla -> MarcasPantalla : Actualizar presentación
+MarcasPantalla --> Operador : Presentar resultado
+@enduml

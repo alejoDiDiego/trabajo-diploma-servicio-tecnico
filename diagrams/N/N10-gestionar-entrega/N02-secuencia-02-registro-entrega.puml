@@ -1,0 +1,42 @@
+@startuml
+title N02-10 - Registro de entrega
+autonumber
+hide footbox
+actor "Recepcionista o encargado" as Operador
+actor "Receptor del equipo" as Receptor
+boundary FrmOrdenServicioDetalle as Detalle
+control OrdenServicioService
+control BitacoraService
+participant OrdenServicioRepository
+participant EntregaRepository
+participant BitacoraRepository
+group Registro
+    Operador -> Detalle : Informar receptor y solicitar entrega
+    Detalle -> Detalle : Validar permiso y receptor obligatorio
+    Detalle --> Operador : Solicitar confirmación
+    Operador -> Detalle : Confirmar
+    Detalle -> OrdenServicioService : EntregarOrden(idOrden, entregadoA, documentoReceptor, observaciones)
+    OrdenServicioService -> OrdenServicioRepository : ObtenerPorId(idOrden)
+    OrdenServicioRepository --> OrdenServicioService : OrdenServicio o null
+    OrdenServicioService -> OrdenServicioRepository : TieneReingresosGarantia(idOrden)
+    OrdenServicioRepository --> OrdenServicioService : bool
+    alt Orden ListoRetiro
+        OrdenServicioService -> OrdenServicioService : ordenDb.Entregar()
+        OrdenServicioService -> EntregaRepository : CrearConTransicion(entrega, estadoAnterior, Entregado, idUsuario, "Orden entregada")
+        EntregaRepository -> EntregaRepository : Insertar entrega, estado e historial
+        EntregaRepository -> EntregaRepository : Crear garantía automática si Normal, Reparado y días mayor a cero
+        EntregaRepository --> OrdenServicioService : Entrega
+        OrdenServicioService -> BitacoraService : Registrar("Orden entregada", detalle, "ORDENES")
+        BitacoraService -> BitacoraRepository : Insertar(entrada)
+        BitacoraRepository --> BitacoraService : Finalización sin excepción (void)
+        BitacoraService --> OrdenServicioService : Finalización sin excepción (void)
+        OrdenServicioService --> Detalle : Entrega
+        Detalle -> Detalle : CargarOrden()
+        Detalle --> Operador : Confirmar entrega
+        Operador -> Receptor : Completar devolución física del equipo
+    else Estado, orden o datos no admitidos
+        OrdenServicioService --> Detalle : ReglaNegocioException u OrdenOriginalSoloConsultaException
+        Detalle --> Operador : Informar impedimento
+    end
+end
+@enduml
