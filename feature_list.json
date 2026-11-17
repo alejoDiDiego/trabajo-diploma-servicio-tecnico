@@ -2844,56 +2844,56 @@
                          "feat-021",
                          "feat-022"
                      ],
-    "status":  "in-progress",
+    "status":  "done",
     "acceptance_criteria":  [
                                 {
                                     "description":  "Pending application repair is committed/pushed to checkpoint-7-tercer-entrega and remote source hash is verified before behavioral tests; tested source/binary/runtime provenance and configuration exclusions are recorded.",
-                                    "verified":  false
+                                    "verified":  true
                                 },
                                 {
                                     "description":  "Actual UI backup creates a verified local backup, controlled scratch data changes, declined confirmation leaves data unchanged, confirmed restore recovers pre-backup data and retains original; scoped cancellation/error/permissions checks are recorded on available authorized Docker/local fallback engines without altering the current database.",
-                                    "verified":  false
+                                    "verified":  true
                                 },
                                 {
                                     "description":  "Actual FrmEquipos JSON export matches filtered visible-grid rows/order/fields for customer, model/serial and inactive filters; types/escaped text/leading zeros, cancel/empty/overwrite or locked-file handling verified from generated files.",
-                                    "verified":  false
+                                    "verified":  true
                                 },
                                 {
                                     "description":  "Actual FrmEquipos PDF export matches the same grid/JSON snapshot, with readable professional table, complete rows and relevant multipage/Unicode/header/footer checks, plus scoped save/cancel/error behavior.",
-                                    "verified":  false
+                                    "verified":  true
                                 },
                                 {
                                     "description":  "Actual application help menu/footer, form buttons and order-tab context navigate the shipped HTML correctly on the real Unicode deployment path; repeated index links, close/reopen and waits beyond timeout preserve caller state. Independent scoped checks, source preservation, final state and publication evidence are recorded without claiming untested DPI/failure coverage.",
-                                    "verified":  false
+                                    "verified":  true
                                 }
                             ],
     "visual_scenarios":  [
                              {
-                                 "evidence":  "Final run not executed; historical passes are not substituted for this request.",
-                                 "status":  "planned",
+                                 "evidence":  "Checker 2026-11-17, verificacion independiente fresca: hosts STA externos y configs TEMP solo-UrlDB sobre la UI publicada 2E139F97; Main/initializers/Load/login reales y menu/formularios propios. LocalDB17 scratch27->29 y Docker16 scratch23->25: backup completo propio y RESTORE VERIFYONLY WITH CHECKSUM ejecutado aparte (5820416/6803456B); mutacion Color=CHK023 solo por UI; primera y ultima confirmacion capturadas con cuerpo literal, archivo/destino reales y DefaultButton=No (defid7) probado con Enter sin cambio de primario; Yes restaura prebackup, mensaje de completado con nombre de recuperacion, Main=0, reapertura/login/readback72 identico al prebackup; originales 27/23 retenidos ONLINE con CHK023 y journals exactos. Permisos reales: sin sesion y lector ocultan menu; create-only T/F; restore-only F/T. Limites: AltF4 no intentado; medio invalido/readonly de backup solo evidencia Builder auditada; sin ACL ni fallos inducidos.",
+                                 "status":  "passed",
                                  "description":  "Native scratch UI: open backup menu, save full backup locally, mutate only synthetic fixture, decline then confirm restore and verify persisted readback/original retention; targeted cancellation/invalid-media/denied paths, no original DB writes.",
                                  "id":  "vis-final-backup"
                              },
                              {
-                                 "evidence":  "Final run not executed.",
-                                 "status":  "planned",
+                                 "evidence":  "Checker 2026-11-17: exportacion JSON nativa propia desde la grilla72 (9 campos/orden) y filtro tecleado SerieOnly(45); paridad exacta con el snapshot DGV del producto y con la BD leida aparte, Id int/Activo bool, UTF-8 sin BOM, ceros/comillas/barra/salto y largos150/100 conservados; Cancelar SFD, grilla vacia bloqueada y overwrite No preservan hash. Auditoria independiente de los 11 JSON del Builder contra sus grids/BD: 60/72/40/48/20/24/69/45/1/72/60 filas y matriz de filtros exacta. Lock exclusivo JSON no repetido.",
+                                 "status":  "passed",
                                  "description":  "Native equipment filtering and JSON SaveFileDialog export with data parity, offscreen/unselected rows, inactive/customer/text combinations and direct cancel/empty/error paths.",
                                  "id":  "vis-final-json"
                              },
                              {
-                                 "evidence":  "Final run not executed.",
-                                 "status":  "planned",
+                                 "evidence":  "Checker 2026-11-17: PDF nativo propio desde la misma grilla72; PyMuPDF 4 paginas/72 filas/648 celdas con 0 diferencias frente a JSON/grid (solo NFC/CRLF/U200B), encabezados repetidos y pies1-4/4; render office_render144DPI de paginas1 y4 revisado legible con continuacion de largos y ceros. Cancel/empty/overwriteNo nativos; lock PDF independiente no ejecutado. Auditoria del PDF Builder: mismas4paginas/72filas/648celdas con 0 diferencias y metadatos de producto.",
+                                 "status":  "passed",
                                  "description":  "Native PDF export from identical filtered result; parse/render the real generated PDF and compare row set/order/values, pagination, labels and Unicode with JSON/grid.",
                                  "id":  "vis-final-pdf"
                              },
                              {
-                                 "evidence":  "Final run not executed.",
-                                 "status":  "planned",
+                                 "evidence":  "Checker 2026-11-17: ayuda real tras Main/login; menu Ayuda, footer, Equipos, editor con PENDING023 (Cancel sin commit/DialogResultNone), tabs Recepcion y Garantia de la orden23001; cada request espero15,5s con _listo=true/_error=null, owner modal y main deshabilitado; indice, enlace Equipos, Volver e Indice repetido con grilla/seleccion/controles preservados. Auditoria independiente de los 26 snapshots Builder (ES/EN por menu idioma real, manual espanol): todos listos, sin error, url file y headings correctos. Sin sweep35superficies ni otros DPI/monitores.",
+                                 "status":  "passed",
                                  "description":  "Native actual main/form/modal/order-tab help entry and manual links/repeat/index/close, ES/EN controls and at least15-second waits on Unicode deployment; preserve pending input.",
                                  "id":  "vis-final-help"
                              }
                          ],
-    "evidence":  "2026-11-17 owner explicitly requests commit/push pending changes first and a final verification of the four implemented capabilities after remote publication. Root registers this single verification task before publication; scope is state files only. Fresh Planner/Builder-executor/Checker will run after source push is verified. Prior 22 done feature objects remain unchanged; no application fix is authorized by this verification record."
+    "evidence":  "2026-11-17 Checker final independiente y fresco: PASS de completion. Fuente publicada verificada HEAD4757556e9ab6fdfe01fbfc15ae3c4622f2f6f988/tree4821aa355b65741ff40ce593029aa64e9c8673ea/origin igual, UI2E139F97... y manual5C541503...; build locked6 PASS0/0 reproducible con hash identico; preservacion480/480 y otros22 deep-identicos; solo estados escritos. Cuatro gates reejecutados nativamente sobre DBs propias (LocalDB17 IDs24-29, Docker16 IDs20-25; primarios29/25, recuperaciones27/23 con CHK023, original TPIntegrador solo metadata sin cambios); JSON/PDF/ayuda ademas auditados contra artefactos Builder. Cierre del gap de confirmacion final: cuerpo literal y DefaultButton=No (defid7) con Enter sin cutover en ambos motores. Sin defecto real; AltF4, medio invalido/readonly de backup, lock PDF independiente, DPI150/x86/otros monitores y fallos de red/energia no reejecutados y declarados. Artefactos privados %TEMP%/feat023-checker-20261117-1930."
 }
 ]
 }
